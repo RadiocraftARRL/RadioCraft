@@ -176,6 +176,79 @@ public class RadioFaxGameTests {
                 .thenSucceed();
     }
 
+    /**
+     * A camera photo goes like any map (1.12 step 4): B prints it on an empty map, the same picture, still a photo, and
+     * A keeps its photo.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 900, batch = BATCH)
+    public static void photoGoesLikeAMap(GameTestHelper helper) {
+        station(helper, RADIO_A, 144_830, "W7FAA", Direction.WEST);
+        station(helper, RADIO_B, 144_830, "W7FBB", Direction.EAST);
+        byte[] pixels = new byte[com.arrl.radiocraft.common.photo.PhotoImage.PIXELS];
+        com.arrl.radiocraft.common.photo.PhotoPalette palette = com.arrl.radiocraft.common.photo.MapPalettes.vanilla();
+        for(int i = 0; i < pixels.length; i++)
+            pixels[i] = palette.id(i % palette.size());
+        ItemStack photo = com.arrl.radiocraft.common.photo.PhotoPrints.photo(helper.getLevel(), pixels,
+                new com.arrl.radiocraft.common.datacomponents.PhotoInfo("W7FAA", true, com.arrl.radiocraft.common.datacomponents.PhotoInfo.CAMERA), helper.absolutePos(RADIO_A));
+        helper.startSequence()
+                .thenExecute(() -> {
+                    powerOn(helper, RADIO_A);
+                    powerOn(helper, RADIO_B);
+                    fax(helper, FAX_A).getOutbox().setStackInSlot(0, photo.copy());
+                    fax(helper, FAX_B).insertSupply(new ItemStack(Items.MAP));
+                })
+                .thenIdle(1)
+                .thenExecute(() -> helper.assertTrue(fax(helper, FAX_A).send("W7FBB") == null, "A could not send the photo"))
+                .thenWaitUntil(() -> helper.assertFalse(printed(helper, FAX_B).isEmpty(), "B never printed the photo: " + state(helper, FAX_B) + " / A " + state(helper, FAX_A)))
+                .thenExecute(() -> {
+                    ItemStack copy = printed(helper, FAX_B);
+                    helper.assertTrue(copy.is(Items.FILLED_MAP) && com.arrl.radiocraft.common.photo.PhotoPrints.isPhoto(copy), "B printed " + copy);
+                    helper.assertTrue(java.util.Arrays.equals(pixels, com.arrl.radiocraft.common.photo.PhotoPrints.pixels(helper.getLevel(), copy)), "B's print is another picture");
+                    helper.assertTrue(com.arrl.radiocraft.common.photo.PhotoPrints.isPhoto(fax(helper, FAX_A).getOutbox().getStackInSlot(0)), "A lost its photo");
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * A fax with photo paper loaded prints photos on it (1.12 step 4): a colour photo on black and white paper comes out
+     * as a grey print of its own, one sheet used, the empty maps left alone.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 900, batch = BATCH)
+    public static void photoPrintsOnPhotoPaper(GameTestHelper helper) {
+        station(helper, RADIO_A, 144_850, "W8FAA", Direction.WEST);
+        station(helper, RADIO_B, 144_850, "W8FBB", Direction.EAST);
+        byte[] pixels = new byte[com.arrl.radiocraft.common.photo.PhotoImage.PIXELS];
+        com.arrl.radiocraft.common.photo.PhotoPalette palette = com.arrl.radiocraft.common.photo.MapPalettes.vanilla();
+        for(int i = 0; i < pixels.length; i++)
+            pixels[i] = palette.id(i % palette.size());
+        ItemStack photo = com.arrl.radiocraft.common.photo.PhotoPrints.photo(helper.getLevel(), pixels,
+                new com.arrl.radiocraft.common.datacomponents.PhotoInfo("W8FAA", true, com.arrl.radiocraft.common.datacomponents.PhotoInfo.CAMERA), helper.absolutePos(RADIO_A));
+        helper.startSequence()
+                .thenExecute(() -> {
+                    powerOn(helper, RADIO_A);
+                    powerOn(helper, RADIO_B);
+                    fax(helper, FAX_A).getOutbox().setStackInSlot(0, photo.copy());
+                    fax(helper, FAX_B).insertSupply(new ItemStack(Items.MAP, 2));
+                    fax(helper, FAX_B).insertSupply(new ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.PHOTO_PAPER.get(), 2));
+                })
+                .thenIdle(1)
+                .thenExecute(() -> helper.assertTrue(fax(helper, FAX_A).send("W8FBB") == null, "A could not send the photo"))
+                .thenWaitUntil(() -> helper.assertFalse(printed(helper, FAX_B).isEmpty(), "B never printed the photo: " + state(helper, FAX_B) + " / A " + state(helper, FAX_A)))
+                .thenExecute(() -> {
+                    ItemStack copy = printed(helper, FAX_B);
+                    com.arrl.radiocraft.common.datacomponents.PhotoInfo info = com.arrl.radiocraft.common.photo.PhotoPrints.info(copy);
+                    helper.assertTrue(info != null && !info.colour(), "B printed " + copy + " with " + info);
+                    helper.assertFalse(Objects.equals(copy.get(DataComponents.MAP_ID), photo.get(DataComponents.MAP_ID)), "the B&W print shares the colour photo's map");
+                    byte[] printedPixels = com.arrl.radiocraft.common.photo.PhotoPrints.pixels(helper.getLevel(), copy);
+                    helper.assertTrue(printedPixels != null, "no picture on B's print");
+                    for(byte id : printedPixels)
+                        helper.assertTrue(palette.greys().contains(id), "B's print has colour " + (id & 0xFF));
+                    helper.assertTrue(fax(helper, FAX_B).getSupplies().getStackInSlot(RadioFaxBlockEntity.SLOT_PHOTO).getCount() == 1, "B did not use one sheet of photo paper");
+                    helper.assertTrue(fax(helper, FAX_B).getSupplies().getStackInSlot(RadioFaxBlockEntity.SLOT_MAP).getCount() == 2, "B used an empty map");
+                })
+                .thenSucceed();
+    }
+
     /** An enchanted book is used up when sent: A's slot empties and B prints the same book. */
     @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 1400, batch = BATCH)
     public static void enchantedBookIsUsedUp(GameTestHelper helper) {

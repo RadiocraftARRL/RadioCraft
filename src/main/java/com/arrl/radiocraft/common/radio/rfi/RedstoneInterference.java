@@ -159,18 +159,12 @@ public class RedstoneInterference {
 
 	/**
 	 * How much of the noise a band hears: the long HF bands pick up nearly all of it, 20m half, 10m and VHF a tenth.
-	 * Takes the band's wavelength in metres from its name ("80m").
+	 * Takes the band's wavelength in metres at its centre (40m is 42 m there, low band about 7.5 m, like 10m).
 	 */
 	public static double bandFactor(Band band) {
 		if(band == null)
 			return 1.0D;
-		int wavelength;
-		try {
-			wavelength = Integer.parseInt(band.name().replaceAll("[^0-9]", ""));
-		}
-		catch(NumberFormatException e) {
-			return 1.0D;
-		}
+		double wavelength = band.wavelengthMeters();
 		if(wavelength >= 40)
 			return 1.0D;
 		if(wavelength >= 20)

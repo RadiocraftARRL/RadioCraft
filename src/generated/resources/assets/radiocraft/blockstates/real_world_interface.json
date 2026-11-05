@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "ceiling=false,facing=east": {
+      "model": "radiocraft:block/real_world_interface",
+      "y": 90
+    },
+    "ceiling=false,facing=north": {
+      "model": "radiocraft:block/real_world_interface"
+    },
+    "ceiling=false,facing=south": {
+      "model": "radiocraft:block/real_world_interface",
+      "y": 180
+    },
+    "ceiling=false,facing=west": {
+      "model": "radiocraft:block/real_world_interface",
+      "y": 270
+    },
+    "ceiling=true,facing=east": {
+      "model": "radiocraft:block/real_world_interface_ceiling",
+      "y": 90
+    },
+    "ceiling=true,facing=north": {
+      "model": "radiocraft:block/real_world_interface_ceiling"
+    },
+    "ceiling=true,facing=south": {
+      "model": "radiocraft:block/real_world_interface_ceiling",
+      "y": 180
+    },
+    "ceiling=true,facing=west": {
+      "model": "radiocraft:block/real_world_interface_ceiling",
+      "y": 270
+    }
+  }
+}

@@ -51,10 +51,12 @@ public class RadioGameTests {
         helper.assertTrue(radio.getFrequency() == min, "Radio should start at band bottom, was " + radio.getFrequency());
         radio.updateFrequency(3);
         helper.assertTrue(radio.getFrequency() == min + 3_000, "Expected 3 steps of 1 kHz, was " + radio.getFrequency());
-        radio.updateFrequency(-10);
-        helper.assertTrue(radio.getFrequency() == min, "Should clamp at band bottom, was " + radio.getFrequency());
+        radio.updateFrequency(-10); // The dial goes past the band edge (general coverage receive, 1.12).
+        helper.assertTrue(radio.getFrequency() == min - 7_000, "Expected 7 kHz below the band, was " + radio.getFrequency());
+        radio.updateFrequency(-1_000_000);
+        helper.assertTrue(radio.getFrequency() == 13_913_000.0F, "Should stop a quarter of the band below it (13.913 MHz on the grid), was " + radio.getFrequency());
         radio.updateFrequency(1_000_000);
-        helper.assertTrue(radio.getFrequency() <= radio.getBand().maxFrequency(), "Should clamp at band top, was " + radio.getFrequency());
+        helper.assertTrue(radio.getFrequency() == 14_437_000.0F, "Should stop a quarter of the band above it, was " + radio.getFrequency());
         helper.succeed();
     }
 

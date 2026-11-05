@@ -33,7 +33,12 @@ public enum TransmissionKind {
 	/** Morse: the key timings and the decoded text. */
 	CW(Store.DATA),
 	/** RTTY, APRS, packet, fax: the packets' saved records. */
-	DATA(Store.DATA);
+	DATA(Store.DATA),
+	/**
+	 * A real radio's audio put on the air in game by a Real-World Interface (1.12): whoever spoke on the real frequency.
+	 * Audio: encoded by the writer thread. Last, so the kinds before it keep their place in query masks.
+	 */
+	REAL_WORLD(Store.AUDIO);
 
 	/** How a kind is kept. */
 	public enum Store {

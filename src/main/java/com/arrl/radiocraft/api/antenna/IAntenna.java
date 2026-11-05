@@ -39,6 +39,13 @@ public interface IAntenna {
 	/**
 	 * As {@link #transmitAudioPacket(de.maxhenkel.voicechat.api.ServerLevel, short[], Band, float, UUID)}, with a CTCSS
 	 * tone under the voice (0 for none). Antennas that can carry a tone override this; the default drops it.
+	 *
+	 * @param level The {@link ServerLevel} object (SVC API) for this {@link IAntenna}'s {@link Level}.
+	 * @param rawAudio The raw PCM audio being sent in the packet.
+	 * @param band The band of the transmission.
+	 * @param frequencyHertz The frequency (Hertz) of the transmission.
+	 * @param sourcePlayer The {@link UUID} of the player who sent the audio.
+	 * @param ctcssTone The CTCSS tone in Hz, 0 for none.
 	 */
 	default void transmitAudioPacket(de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone) {
 		transmitAudioPacket(level, rawAudio, band, frequencyHertz, sourcePlayer);
@@ -47,6 +54,14 @@ public interface IAntenna {
 	/**
 	 * As above, from a transmitter {@code power} times as strong as a standard one (1): what the far end hears is that
 	 * much stronger, still only out to the band's range. Antennas that do not model it send at standard strength.
+	 *
+	 * @param level The {@link ServerLevel} object (SVC API) for this {@link IAntenna}'s {@link Level}.
+	 * @param rawAudio The raw PCM audio being sent in the packet.
+	 * @param band The band of the transmission (the radio's own band: outside it the signal splatters).
+	 * @param frequencyHertz The frequency (Hertz) of the transmission.
+	 * @param sourcePlayer The {@link UUID} of the player who sent the audio.
+	 * @param ctcssTone The CTCSS tone in Hz, 0 for none.
+	 * @param power The transmitter's strength against a standard radio's (1).
 	 */
 	default void transmitAudioPacket(de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone, float power) {
 		transmitAudioPacket(level, rawAudio, band, frequencyHertz, sourcePlayer, ctcssTone);
@@ -118,6 +133,8 @@ public interface IAntenna {
 		 * Where the antenna really is: {@link #position()} unless it is on a moving Sable sub-level (an airship, a
 		 * boat), whose blocks live in a plot far away. Use this for range, terrain and weather, and {@code position}
 		 * for the block itself.
+		 *
+		 * @return the world position
 		 */
 		public BlockPos world() {
 			return com.arrl.radiocraft.compat.sable.Sublevels.world(level, position);
@@ -127,6 +144,8 @@ public interface IAntenna {
 	/**
 	 * True while this antenna has no sky above it (a handheld indoors or underground), which costs it some signal when
 	 * terrain is on. Thread safe: read on the voice thread. Fixed antennas are outside by nature: false.
+	 *
+	 * @return true indoors
 	 */
 	default boolean isIndoors() {
 		return false;

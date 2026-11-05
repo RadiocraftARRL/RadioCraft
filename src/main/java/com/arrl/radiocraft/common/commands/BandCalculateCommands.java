@@ -61,12 +61,14 @@ public class BandCalculateCommands {
 		}
 	}
 
-	/** Every configured band between {@code a} and {@code b}, best first. */
+	/** Every configured ham band between {@code a} and {@code b}, best first. */
 	public static List<Result> calculate(Level level, BlockPos a, BlockPos b) {
 		double distance = Math.sqrt(a.distToCenterSqr(b.getX() + 0.5D, a.getY() + 0.5D, b.getZ() + 0.5D));
 		List<Result> results = new ArrayList<>();
 		for(RadiocraftServerConfig.BandConfig config : RadiocraftServerConfig.BAND_CONFIGS.values()) {
 			Band band = config.getBand();
+			if(!band.isAmateur())
+				continue; // The ham bands only: the commercial ones are for commercial radios.
 			if(distance <= band.losRange()) {
 				results.add(new Result(band, Path.LINE_OF_SIGHT, null, 1.0D).through(TerrainPropagation.factor(level, band, a, false, b, false, false)));
 				continue;

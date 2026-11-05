@@ -1,0 +1,22 @@
+{
+  "name": "Frequency Manager",
+  "icon": "radiocraft:floppy_freqman",
+  "category": "radiocraft:computer",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "FREQMAN",
+      "text": "The $(item)Frequency Manager$() keeps lists of the frequencies you use: nets, repeaters (with their offset and tone), the club's simplex, weather channels. Each has a name, receive and transmit MHz, the mode (FM, DIG, USB, LSB, CW or AM), a CTCSS tone and notes, and under the list the $(l:radiocraft:propagation/band_plan)band plan$() says what the frequency is for."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Ins adds, Enter edits, Del deletes, Ctrl+Up and Down move one, F8 sorts by frequency. Lists are saved at once as .FRQ files.$(br2)Mark channels with Space and $(thing)F5$() sends them into a commercial mobile wired to the computer, from the knob position you choose (for a handheld, open the list's channels in CPS and program it by hand). The radio's other channels, and their keys, stay as they were. F6 reads a radio's channels into the list (without their keys)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_freqman",
+      "text": "A blank floppy and a band plan sheet."
+    }
+  ]
+}

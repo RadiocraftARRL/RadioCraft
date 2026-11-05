@@ -1,0 +1,242 @@
+{
+  "credit": "Placeholder from tools/real_world_interface_assets.py (see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "textures": {
+    "case": "radiocraft:block/real_world_interface_case",
+    "front": "radiocraft:block/real_world_interface_front",
+    "particle": "radiocraft:block/real_world_interface_case"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        4,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "front",
+      "from": [
+        3.5,
+        0.5,
+        3.75
+      ],
+      "to": [
+        12.5,
+        3.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "jack_left",
+      "from": [
+        4,
+        1,
+        13
+      ],
+      "to": [
+        5,
+        2,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            6,
+            4,
+            8
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            2,
+            6,
+            4,
+            8
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            2,
+            6,
+            4,
+            8
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            2,
+            6,
+            4,
+            8
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            2,
+            6,
+            4,
+            8
+          ],
+          "texture": "#front"
+        },
+        "down": {
+          "uv": [
+            2,
+            6,
+            4,
+            8
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "jack_right",
+      "from": [
+        11,
+        1,
+        13
+      ],
+      "to": [
+        12,
+        2,
+        13.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "texture": "#front"
+        },
+        "down": {
+          "uv": [
+            5,
+            6,
+            7,
+            8
+          ],
+          "texture": "#front"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "radiocraft:wire"
+    },
+    "C": [
+      {
+        "item": "radiocraft:encased_crystal_10m_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_10m_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_10m_pure"
+      }
+    ],
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "radiocraft:hand_microphone"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "radiocraft:radio_speaker"
+    }
+  },
+  "pattern": [
+    "III",
+    "MCS",
+    "#R#"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:low_band_mobile"
+  }
+}

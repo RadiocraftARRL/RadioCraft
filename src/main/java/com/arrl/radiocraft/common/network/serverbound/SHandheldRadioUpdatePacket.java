@@ -112,6 +112,16 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
             cap.setPTTDown(this.ptt);
             cap.setGain(this.gain);
             cap.setMicGain(this.micGain);
+            if(com.arrl.radiocraft.common.items.CommercialHandheldItem.is(stack)) {
+                // Channelized: its frequency, tones and offset come only from its programming, never from a client.
+                com.arrl.radiocraft.common.items.CommercialHandheldItem.syncState(stack);
+                return;
+            }
+            if(com.arrl.radiocraft.common.items.MarineHandheldItem.is(stack)) {
+                // Channel-only: its frequencies come from the marine channel (SMarineRadioPacket), never from a client.
+                com.arrl.radiocraft.common.items.MarineHandheldItem.syncState(stack);
+                return;
+            }
             cap.setFrequencyHertz(this.frequencyHertz); //TODO server should handle frequency steps
             cap.setCtcssTone(this.ctcssTone);
             cap.setOffsetHz(this.offsetHz);

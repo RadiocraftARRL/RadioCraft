@@ -27,6 +27,15 @@ public final class HandheldRadiation {
 
 	/** Sends voice (or tones) from {@code self} to every antenna on {@code network} in reach. */
 	public static void voice(IAntenna self, AntennaNetwork network, de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone) {
+		voice(self, network, level, rawAudio, band, frequencyHertz, sourcePlayer, ctcssTone, 1.0F);
+	}
+
+	/**
+	 * {@link #voice(IAntenna, AntennaNetwork, de.maxhenkel.voicechat.api.ServerLevel, short[], Band, float, UUID, float)}
+	 * at {@code power} times a standard handheld's strength (the marine handheld's 1 W setting is below 1).
+	 */
+	public static void voice(IAntenna self, AntennaNetwork network, de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone,
+							 float power) {
 		IAntenna.AntennaPos here = self.getAntennaPos();
 		com.arrl.radiocraft.common.radio.TransmitterLog.record(self, here, band, frequencyHertz); // On the air: direction finders can hear it.
 		if(network == null || here == null || here.level() == null || !here.level().equals(level.getServerLevel()))
@@ -38,7 +47,7 @@ public final class HandheldRadiation {
 				continue;
 			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio.clone(), band, frequencyHertz, 1.0F, self, sourcePlayer, ctcssTone);
 			packet.setDestination(antenna);
-			packet.setStrength(strength(packet, (ServerLevel)here.level(), band, here, there));
+			packet.setStrength(Math.min(1.0D, strength(packet, (ServerLevel)here.level(), band, here, there) * power));
 			antenna.receiveAudioPacket(packet);
 		}
 	}

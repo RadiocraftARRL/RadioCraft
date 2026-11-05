@@ -67,7 +67,9 @@ public abstract class VHFRadioBlockEntity extends RadioBlockEntity {
     public float getTransmitFrequency() {
         if(offsetHz == 0 || band == null)
             return frequency;
-        return Math.max(band.minFrequency(), Math.min(band.maxFrequency(), frequency + offsetHz));
+        if(band.contains(frequency) || !tunesOutOfBand()) // In band the offset stays in band, as it always has.
+            return Math.max(band.minFrequency(), Math.min(band.maxFrequency(), frequency + offsetHz));
+        return Math.max(com.arrl.radiocraft.common.radio.BandEdges.tuneMin(band), Math.min(com.arrl.radiocraft.common.radio.BandEdges.tuneMax(band), frequency + offsetHz));
     }
 
     @Override

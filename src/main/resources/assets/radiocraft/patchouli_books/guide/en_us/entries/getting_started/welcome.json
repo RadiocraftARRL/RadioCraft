@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Two families of radio:$(li)$(thing)VHF$() (2 m band, 144-148 MHz): handhelds and base stations. Short range, line of sight, no static. Easy to start with.$(li)$(thing)HF$() (80, 40, 20 and 10 m): long range by bouncing off the sky (\"skip\"), but they need a real antenna, power and some care.",
+      "text": "Two families of radio:$(li)$(thing)VHF$() (2 m band, 144-148 MHz): handhelds and base stations. Short range, line of sight, no static. Easy to start with.$(li)$(thing)HF$() (80, 40, 20 and 10 m): long range by bouncing off the sky (\"skip\"), but they need a real antenna, power and some care.$(br2)Besides the ham radios there are channel-only $(l:radiocraft:radios/commercial_radios)commercial$(/l) and $(l:radiocraft:radios/marine_radios)marine$(/l) radios, which need no call sign.",
       "title": "Two kinds of radio"
     },
     {

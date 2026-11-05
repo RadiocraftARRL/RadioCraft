@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:blue_dye"
+    },
+    "G": {
+      "item": "minecraft:green_dye"
+    },
+    "M": {
+      "item": "minecraft:map"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "R": {
+      "item": "minecraft:red_dye"
+    }
+  },
+  "pattern": [
+    "PPP",
+    "PMP",
+    "RGB"
+  ],
+  "result": {
+    "count": 16,
+    "id": "radiocraft:color_photo_paper"
+  }
+}

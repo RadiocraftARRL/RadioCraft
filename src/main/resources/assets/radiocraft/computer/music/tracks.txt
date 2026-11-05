@@ -1,0 +1,14 @@
+# The music player's tracks, in play order: file|title|composer|seconds. All public domain, from the Mutopia Project
+# (see doc/Credits-Music.md for each file's page and licence).
+entertainer.mid|The Entertainer|Scott Joplin|253
+maple_leaf_rag.mid|Maple Leaf Rag|Scott Joplin|144
+fur_elise.mid|Fur Elise|Ludwig van Beethoven|130
+rondo_alla_turca.mid|Rondo alla Turca (K. 331)|W. A. Mozart|255
+mountain_king.mid|In the Hall of the Mountain King|Edvard Grieg|145
+arabesque_1.mid|Premiere Arabesque|Claude Debussy|176
+burgmuller_arabesque.mid|L'Arabesque (Op. 100 No. 2)|J. F. F. Burgmuller|26
+greensleeves.mid|Greensleeves|Traditional|39
+jesu_meine_freude.mid|Jesu, meine Freude (BWV 610)|J. S. Bach|38
+minuet_b_flat.mid|Minuet in B-flat (BWV Anh. 118)|J. S. Bach|78
+belle_qui_tiens.mid|Belle qui tiens ma vie|Thoinot Arbeau|24
+air.mid|Air (Suite No. 3, BWV 1068)|J. S. Bach|63

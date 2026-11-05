@@ -1,6 +1,6 @@
 {
-  "name": "Radiocraft Handbook",
-  "landing_text": "Welcome to amateur radio. This handbook walks you from your first $(item)VHF handheld$() to a full HF station, repeaters, packet radio and the instruments that read the sky.$(br2)Every build in here can be shown in the world: press $(thing)Visualize$() on a build page and follow the ghost blocks.",
+  "name": "ARRL Radiocraft Handbook",
+  "landing_text": "Welcome to amateur radio, and to the ARRL Radiocraft Handbook. It walks you from your first $(item)VHF handheld$() to a full HF station, repeaters, packet radio and the instruments that read the sky.$(br2)Every build in here can be shown in the world: press $(thing)Visualize$() on a build page and follow the ghost blocks.",
   "version": "1",
   "use_resource_pack": true,
   "creative_tab": "radiocraft:radiocraft_tabs",

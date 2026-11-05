@@ -18,7 +18,8 @@ public final class ConfigNames {
 			Map.entry("tnc", "TNC"), Map.entry("aprs", "APRS"), Map.entry("pabx", "PABX"), Map.entry("fe", "FE"), Map.entry("rpm", "RPM"),
 			Map.entry("snr", "SNR"), Map.entry("mhz", "MHz"), Map.entry("hz", "Hz"), Map.entry("db", "dB"), Map.entry("gb", "GB"),
 			Map.entry("los", "LOS"), Map.entry("h19", "H19"), Map.entry("pa", "PA"), Map.entry("qrp", "QRP"), Map.entry("wefax", "WEFAX"),
-			Map.entry("id", "ID"), Map.entry("e", "E"), Map.entry("z", "Z"), Map.entry("fax", "Fax"), Map.entry("mic", "Mic"));
+			Map.entry("id", "ID"), Map.entry("e", "E"), Map.entry("z", "Z"), Map.entry("fax", "Fax"), Map.entry("mic", "Mic"), Map.entry("mars", "MARS"),
+			Map.entry("kb", "KB"), Map.entry("adsb", "ADS-B"));
 	/** Small words, lower case but at the start. */
 	private static final Set<String> SMALL = Set.of("a", "an", "and", "at", "by", "for", "in", "of", "on", "or", "per", "the", "to", "with");
 	/** A band's settings ({@code <band>m_los} and so on; the section names the band). */
@@ -26,6 +27,9 @@ public final class ConfigNames {
 			"los", "Line of Sight Range", "minSkipDay", "Shortest Skip (Day)", "maxSkipDay", "Longest Skip (Day)",
 			"minSkipNight", "Shortest Skip (Night)", "maxSkipNight", "Longest Skip (Night)",
 			"minFrequency", "Lowest Frequency (Hz)", "maxFrequency", "Highest Frequency (Hz)");
+
+	/** Key prefixes of the commercial bands' settings (they have no "m_" in them). */
+	private static final java.util.List<String> COMMERCIAL_BAND_PREFIXES = java.util.List.of("low_band_", "vhf_commercial_");
 
 	private ConfigNames() {}
 
@@ -35,6 +39,9 @@ public final class ConfigNames {
 		int band = key.indexOf("m_");
 		if(band > 0 && BAND.containsKey(key.substring(band + 2)))
 			return BAND.get(key.substring(band + 2));
+		for(String prefix : COMMERCIAL_BAND_PREFIXES) // low_band_los, vhf_commercial_maxFrequency
+			if(key.startsWith(prefix) && BAND.containsKey(key.substring(prefix.length())))
+				return BAND.get(key.substring(prefix.length()));
 		return words(key.replaceAll("([a-z])([A-Z])", "$1_$2").split("_"));
 	}
 

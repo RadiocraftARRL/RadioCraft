@@ -44,7 +44,12 @@ public class BENetworkTypes {
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.blockentities.CommercialRepeaterBlockEntity.Commercial.TYPE,
                 (level, pos) -> new com.arrl.radiocraft.common.blockentities.CommercialRepeaterBlockEntity.Commercial(level, pos, 0, 0));
         BENetworkRegistry.registerObject(DirectionFinderNetworkObject.TYPE, DirectionFinderNetworkObject::new);
+        BENetworkRegistry.registerObject(AdsbNetworkObjects.Beacon.TYPE, AdsbNetworkObjects.Beacon::new); // ADS-B (1.12 step 9).
+        BENetworkRegistry.registerObject(AdsbNetworkObjects.Receiver.TYPE, AdsbNetworkObjects.Receiver::new);
+        BENetworkRegistry.registerObject(AdsbNetworkObjects.Antenna.TYPE, AdsbNetworkObjects.Antenna::new);
         BENetworkRegistry.registerObject(AprsTerminalNetworkObject.TYPE, AprsTerminalNetworkObject::new);
+        BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.RadioComputerNetworkObject.TYPE,
+                com.arrl.radiocraft.common.be_networks.network_objects.RadioComputerNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.DeskChargerNetworkObject.TYPE, com.arrl.radiocraft.common.be_networks.network_objects.DeskChargerNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.PabxNetworkObject.TYPE, com.arrl.radiocraft.common.be_networks.network_objects.PabxNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.FieldPhoneNetworkObject.TYPE, com.arrl.radiocraft.common.be_networks.network_objects.FieldPhoneNetworkObject::new);

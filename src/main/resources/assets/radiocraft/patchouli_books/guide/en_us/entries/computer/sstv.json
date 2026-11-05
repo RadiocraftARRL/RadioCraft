@@ -1,0 +1,21 @@
+{
+  "name": "SSTV",
+  "icon": "radiocraft:floppy_sstv",
+  "category": "radiocraft:computer",
+  "sortnum": 9,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)Slow-scan television$() sends a picture, in colour, to everyone listening (or to one callsign) in about half a minute. The $(item)SSTV$() program does it through a radio interface cabled to the computer, on any band.$(br2)A picture coming in builds up line by line on the left. Lines that arrive while the radio cannot copy the signal come out as noise, so a weak or fading signal gives a torn picture, as on the air."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Pictures received are kept on the disk ($(thing)SSTV0001.IMG$()) and stay digital until printed. The gallery lists every picture on the disk:$(li)F3 sends the one picked (again).$(li)F4 writes a caption along the top and the bottom and saves it as a new picture.$(li)F5 prints it, F6 scans one in from the $(l:radiocraft:computer/scanner)scanner$(), Del deletes.$(li)L shows the picture coming in."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_sstv",
+      "text": "A blank floppy and a painting."
+    }
+  ]
+}

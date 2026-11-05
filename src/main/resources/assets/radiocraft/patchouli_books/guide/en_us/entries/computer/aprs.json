@@ -1,0 +1,21 @@
+{
+  "name": "APRS on the Computer",
+  "icon": "radiocraft:floppy_aprs",
+  "category": "radiocraft:computer",
+  "sortnum": 7,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)APRS$() program makes the computer an $(l:radiocraft:digital/aprs)APRS$() station, like the H19 but on the big screen. It needs a $(item)Radio Interface$() cabled to the computer (touching it, or on its $(l:radiocraft:radios/data_wire)data wire$()) with a VHF radio on beside the interface. It sends under the interface's callsign; F7 sets it (empty for your own)."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Tab turns the pages:$(li)$(thing)STATIONS$(): everyone heard, how far and which way, when, their comment.$(li)$(thing)MESSAGES$(): N writes one (ALL for a bulletin), R replies. A message goes again until the far end acks it: SENDING, RETRY, SENT or FAILED.$(li)$(thing)MAP$(): the stations on a map.$(br2)F5 beacons now; F6 sets the comment, the symbol and automatic beacons. The computer keeps the station going while nobody sits at it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_aprs",
+      "text": "A blank floppy and a compass."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "Marine Radios",
+  "icon": "radiocraft:marine_handheld",
+  "category": "radiocraft:radios",
+  "sortnum": 13,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Ships and boats talk on the $(thing)VHF marine channels$(), 156-162 MHz. A marine radio has no dial: you pick a $(thing)channel$() and it knows the frequencies. Channel $(thing)16$() is distress, safety and calling: every ship listens there. Channel $(thing)9$() is for hailing other boats; then you move to a working channel such as 68 or 72.$(br2)Marine radios need no ham callsign."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:marine_handheld",
+      "title": "Marine Handheld",
+      "text": "5 W or 1 W, with a 16/9 key and dual watch. Sneak and use it for the keys and channel; hold right click to talk. It runs on a small battery and charges in a desk charger like the other handhelds."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:marine_radio",
+      "title": "Marine Radio",
+      "text": "The fixed-mount radio for a boat's console or a harbour office: 25 W or 1 W, with a hand mic on a cord (sneak and use). It needs power and a VHF antenna, and it works on a ship that sails."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The keys",
+      "text": "$(thing)16/9$(): to channel 16, press again for 9, and once more back to the channel you were on.$(br)$(thing)H/L$(): high or low power. Use 1 W for ships close by; channels 13, 15, 17 and 67 are always 1 W.$(br)$(thing)DW$() (dual watch): listen to your channel and 16 at once. While 16 is busy you hear only 16."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Special channels",
+      "text": "Some channels are $(thing)duplex$(): you transmit on the ship frequency and hear the coast station 4.6 MHz higher, so two ships on one cannot hear each other. The $(thing)WX$() channels are NOAA weather and only receive. Channel 70 is DSC, digital calling only: no voice.$(br2)Servers use the US channel plan unless set to the international one."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:marine_handheld",
+      "recipe2": "radiocraft:marine_radio",
+      "text": "Built like the commercial radios, on waterproof wire."
+    }
+  ]
+}

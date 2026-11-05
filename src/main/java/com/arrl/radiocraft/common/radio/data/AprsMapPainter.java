@@ -10,7 +10,6 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Paints APRS maps (vanilla maps an H19 made, see {@code AprsTerminalBlockEntity#createMaps}) in the style of an old
@@ -188,7 +187,7 @@ public final class AprsMapPainter {
 			for(int dz = -1; dz <= 5; dz++)
 				set(colors, fit, x + dx, z + dz, BLACK);
 		for(int c = 0; c < text.length(); c++) {
-			String[] glyph = FONT.getOrDefault(text.charAt(c), FONT.get('-'));
+			String[] glyph = PixelFont.glyph(text.charAt(c));
 			for(int row = 0; row < 5; row++)
 				for(int col = 0; col < 3; col++)
 					if(glyph[row].charAt(col) == '#')
@@ -227,28 +226,6 @@ public final class AprsMapPainter {
 
 	/** The 3 by 5 pixel glyph for {@code c}, rows of '#' (lit) and '.'; a dash for a character the font lacks. */
 	public static String[] glyph(char c) {
-		return FONT.getOrDefault(Character.toUpperCase(c), FONT.get('-'));
+		return PixelFont.glyph(c);
 	}
-
-	/** A 3 by 5 pixel font for callsigns: capitals, digits, dash and slash. */
-	private static final Map<Character, String[]> FONT = Map.ofEntries(
-			Map.entry('A', new String[] { ".#.", "#.#", "###", "#.#", "#.#" }), Map.entry('B', new String[] { "##.", "#.#", "##.", "#.#", "##." }),
-			Map.entry('C', new String[] { ".##", "#..", "#..", "#..", ".##" }), Map.entry('D', new String[] { "##.", "#.#", "#.#", "#.#", "##." }),
-			Map.entry('E', new String[] { "###", "#..", "##.", "#..", "###" }), Map.entry('F', new String[] { "###", "#..", "##.", "#..", "#.." }),
-			Map.entry('G', new String[] { ".##", "#..", "#.#", "#.#", ".##" }), Map.entry('H', new String[] { "#.#", "#.#", "###", "#.#", "#.#" }),
-			Map.entry('I', new String[] { "###", ".#.", ".#.", ".#.", "###" }), Map.entry('J', new String[] { "..#", "..#", "..#", "#.#", ".#." }),
-			Map.entry('K', new String[] { "#.#", "#.#", "##.", "#.#", "#.#" }), Map.entry('L', new String[] { "#..", "#..", "#..", "#..", "###" }),
-			Map.entry('M', new String[] { "#.#", "###", "#.#", "#.#", "#.#" }), Map.entry('N', new String[] { "##.", "#.#", "#.#", "#.#", "#.#" }),
-			Map.entry('O', new String[] { ".#.", "#.#", "#.#", "#.#", ".#." }), Map.entry('P', new String[] { "##.", "#.#", "##.", "#..", "#.." }),
-			Map.entry('Q', new String[] { ".#.", "#.#", "#.#", "##.", ".##" }), Map.entry('R', new String[] { "##.", "#.#", "##.", "#.#", "#.#" }),
-			Map.entry('S', new String[] { ".##", "#..", ".#.", "..#", "##." }), Map.entry('T', new String[] { "###", ".#.", ".#.", ".#.", ".#." }),
-			Map.entry('U', new String[] { "#.#", "#.#", "#.#", "#.#", "###" }), Map.entry('V', new String[] { "#.#", "#.#", "#.#", "#.#", ".#." }),
-			Map.entry('W', new String[] { "#.#", "#.#", "###", "###", "#.#" }), Map.entry('X', new String[] { "#.#", "#.#", ".#.", "#.#", "#.#" }),
-			Map.entry('Y', new String[] { "#.#", "#.#", ".#.", ".#.", ".#." }), Map.entry('Z', new String[] { "###", "..#", ".#.", "#..", "###" }),
-			Map.entry('0', new String[] { "###", "#.#", "#.#", "#.#", "###" }), Map.entry('1', new String[] { ".#.", "##.", ".#.", ".#.", "###" }),
-			Map.entry('2', new String[] { "##.", "..#", ".#.", "#..", "###" }), Map.entry('3', new String[] { "##.", "..#", ".#.", "..#", "##." }),
-			Map.entry('4', new String[] { "#.#", "#.#", "###", "..#", "..#" }), Map.entry('5', new String[] { "###", "#..", "##.", "..#", "##." }),
-			Map.entry('6', new String[] { ".##", "#..", "###", "#.#", "###" }), Map.entry('7', new String[] { "###", "..#", ".#.", ".#.", ".#." }),
-			Map.entry('8', new String[] { "###", "#.#", "###", "#.#", "###" }), Map.entry('9', new String[] { "###", "#.#", "###", "..#", "##." }),
-			Map.entry('-', new String[] { "...", "...", "###", "...", "..." }), Map.entry('/', new String[] { "..#", "..#", ".#.", "#..", "#.." }));
 }

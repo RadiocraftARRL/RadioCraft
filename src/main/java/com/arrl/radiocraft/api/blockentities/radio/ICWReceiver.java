@@ -9,6 +9,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * Any {@link BlockEntity} which receives and plays back CW/morse should implement {@link ICWReceiver}.
+ *
+ * <p>The HF radios ({@code HFRadioBlockEntity}) are CW receivers. Since 1.12 any other block entity that implements
+ * this and has a radio network object on an antenna's coax (or is a radio using its bare connector) is handed the CW
+ * its antenna hears too, when {@link #acceptsCW} says yes.</p>
  */
 public interface ICWReceiver {
 
@@ -25,6 +29,19 @@ public interface ICWReceiver {
 	 * on etc. should be done here.
 	 */
 	boolean canReceiveCW();
+
+	/**
+	 * Whether this receiver wants {@code packet}: is it open and tuned near enough to the packet's frequency? Asked
+	 * before {@link #receiveCW} for receivers that are not RadioCraft's own HF radios (those check a 1 kHz window
+	 * themselves). The default is {@link #canReceiveCW()} alone: override it to check the frequency.
+	 *
+	 * @param packet the CW arriving
+	 * @return true to have {@link #receiveCW} called
+	 * @since 1.12.0
+	 */
+	default boolean acceptsCW(AntennaCWPacket packet) {
+		return canReceiveCW();
+	}
 
 	/**
 	 * Handles the (server-side) receiving of CW packets from an {@link AntennaNetwork}. This should also be where any

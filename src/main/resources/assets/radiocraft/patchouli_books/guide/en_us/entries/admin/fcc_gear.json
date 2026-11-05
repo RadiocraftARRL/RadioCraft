@@ -1,0 +1,28 @@
+{
+  "name": "FCC Field Gear",
+  "icon": "radiocraft:fcc_badge",
+  "category": "radiocraft:admin",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fcc_badge",
+      "text": "Marks a server's radio police. Not craftable: an operator issues it with $(thing)/radiocraft fcc badge <player>$(), stamped with that player's name and badge number.$(br2)$(thing)Right click$() shows it to everyone within eight blocks; shown by anyone else, it says whose it is."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wearing it",
+      "text": "With $(thing)Curios$() installed the badge is worn in the $(thing)body$() (chest) slot. Without Curios, keep it in your inventory or off hand.$(br2)For the rest of the look there is a 1970s field agent's felt $(item)Hat$() and corduroy $(item)Jacket$() with a wide tie. Anyone can make them. They protect like leather and mend with brown wool."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:fcc_hat",
+      "recipe2": "radiocraft:fcc_jacket"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:fcc_banner_pattern",
+      "text": "Use the $(item)FCC Seal$() pattern at a loom to put the seal on a banner or shield. A ready-made blue FCC banner is in the creative menu."
+    }
+  ]
+}

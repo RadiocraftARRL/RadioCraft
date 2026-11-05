@@ -45,7 +45,7 @@ public final class FaxRates {
 		if(band == null)
 			return 1.0D;
 		return switch(band.name()) {
-			case "10m" -> RadiocraftServerConfig.FAX_SLOWER_10M.get();
+			case "10m", com.arrl.radiocraft.common.radio.Band.LOW_BAND -> RadiocraftServerConfig.FAX_SLOWER_10M.get();
 			case "20m" -> RadiocraftServerConfig.FAX_SLOWER_20M.get();
 			case "40m" -> RadiocraftServerConfig.FAX_SLOWER_40M.get();
 			case "80m" -> RadiocraftServerConfig.FAX_SLOWER_80M.get();

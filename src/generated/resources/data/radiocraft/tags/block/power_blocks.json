@@ -45,6 +45,10 @@
     "radiocraft:vhf_receiver",
     "radiocraft:vhf_repeater",
     "radiocraft:commercial_repeater",
+    "radiocraft:commercial_mobile",
+    "radiocraft:low_band_mobile",
+    "radiocraft:marine_radio",
+    "radiocraft:real_world_interface",
     "radiocraft:direction_finder_module",
     "radiocraft:microwave_radio",
     "radiocraft:direction_finder",
@@ -52,6 +56,9 @@
     "radiocraft:aprs_h19",
     "radiocraft:desk_charger",
     "radiocraft:pabx",
-    "radiocraft:field_phone"
+    "radiocraft:field_phone",
+    "radiocraft:adsb_beacon",
+    "radiocraft:adsb_receiver",
+    "radiocraft:radio_computer"
   ]
 }

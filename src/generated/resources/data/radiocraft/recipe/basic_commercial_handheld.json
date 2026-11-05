@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "minecraft:buttons"
+    },
+    "C": [
+      {
+        "item": "radiocraft:encased_crystal_vhf_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ],
+    "E": {
+      "item": "radiocraft:microphone_element"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:lightning_rod"
+    },
+    "S": {
+      "item": "radiocraft:radio_speaker"
+    }
+  },
+  "pattern": [
+    " L ",
+    "SCE",
+    "IBI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:basic_commercial_handheld"
+  }
+}

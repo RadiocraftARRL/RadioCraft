@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "radiocraft:floppy_disk"
+    },
+    {
+      "item": "minecraft:daylight_detector"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:floppy_solar"
+  }
+}

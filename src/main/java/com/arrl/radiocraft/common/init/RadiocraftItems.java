@@ -54,8 +54,50 @@ public class RadiocraftItems {
 	public static final Supplier<Item> ANTENNA_ANALYZER = ITEMS.register("antenna_analyzer", () -> new AntennaAnalyzerItem(new Properties().stacksTo(1)));
 	public static final CrystalVariants<Item, VHFHandheldItem> VHF_HANDHELD_VARIANTS = CrystalVariants.register(ITEMS, "vhf_handheld", crystal -> new VHFHandheldItem(new Properties().stacksTo(1).component(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value(), HandheldRadioState.getDefault()), crystal));
 	public static final DeferredHolder<Item, VHFHandheldItem> VHF_HANDHELD = VHF_HANDHELD_VARIANTS.good();
+	/** The commercial handhelds (1.12): a cheap 1990s brick, and the fire-service radio with a display, digital and encryption. */
+	public static final DeferredHolder<Item, CommercialHandheldItem> BASIC_COMMERCIAL_HANDHELD = commercialHandheld("basic_commercial_handheld",
+			com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel.BASIC_HANDHELD);
+	public static final DeferredHolder<Item, CommercialHandheldItem> UPGRADED_COMMERCIAL_HANDHELD = commercialHandheld("upgraded_commercial_handheld",
+			com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel.UPGRADED_HANDHELD);
+	/** The VHF marine handheld (1.12): channel-only, 5 W / 1 W, 16/9 and dual watch. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.MarineHandheldItem> MARINE_HANDHELD = ITEMS.register("marine_handheld",
+			() -> new com.arrl.radiocraft.common.items.MarineHandheldItem(new Properties().stacksTo(1)
+					.component(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value(), marineHandheldState())
+					.component(RadiocraftDataComponent.MARINE_RADIO.value(), com.arrl.radiocraft.common.radio.marine.MarineRadioState.DEFAULT)));
 	/** Crafted into a VHF handheld: the handheld's APRS button then opens its APRS menu. */
 	public static final Supplier<Item> APRS_MODULE = ITEMS.register("aprs_module", () -> new com.arrl.radiocraft.common.items.AprsModuleItem(new Properties()));
+	/** Opens a ham radio's transmitter past the band edges; crafted with the radio. Contraband for amateurs. */
+	public static final Supplier<Item> MARS_MOD = ITEMS.register("mars_mod", () -> new com.arrl.radiocraft.common.items.MarsModItem(new Properties()));
+	/** Reads one radio's programming and writes it into others (1.12 playtest fixes 2). */
+	public static final Supplier<Item> RADIO_CLONER = ITEMS.register("radio_cloner", () -> new com.arrl.radiocraft.common.items.RadioClonerItem(new Properties().stacksTo(1)));
+	/** The band plan sheet: right click to read what each part of each band is for. */
+	public static final Supplier<Item> BAND_PLAN = ITEMS.register("band_plan", () -> new com.arrl.radiocraft.common.items.BandPlanItem(new Properties().stacksTo(16)));
+	/** The camera (1.12): right click prints what you see on a sheet of photo paper (see {@link com.arrl.radiocraft.common.photo.PhotoPrints}). */
+	public static final DeferredHolder<Item, CameraItem> CAMERA = ITEMS.register("camera", () -> new CameraItem(new Properties().stacksTo(1)));
+	/** Black and white photo paper: the camera prints greys on it. */
+	public static final Supplier<Item> PHOTO_PAPER = simpleItem("photo_paper", null);
+	/** Colour photo paper. */
+	public static final Supplier<Item> COLOR_PHOTO_PAPER = simpleItem("color_photo_paper", null);
+	/** A blank 3.5" floppy disk (1.12): crafted into a program's disk for the radio computer. */
+	public static final DeferredHolder<Item, FloppyDiskItem> FLOPPY_DISK = ITEMS.register("floppy_disk", () -> new FloppyDiskItem(new Properties().stacksTo(16), null));
+	/**
+	 * One floppy disk per radio computer program that is not built in, by app id ({@code floppy_<id>}; see
+	 * {@link com.arrl.radiocraft.common.computer.ComputerApps}). The secret ones (found in structures) are rare.
+	 */
+	public static final Map<String, DeferredHolder<Item, FloppyDiskItem>> FLOPPIES = floppies();
+	// FCC field gear (1.12): a 1970s field agent's hat and jacket (leather's protection), the seal banner pattern, and
+	// the badge only operators hand out (/radiocraft fcc badge; see com.arrl.radiocraft.common.fcc.FccGear).
+	public static final DeferredHolder<Item, net.minecraft.world.item.ArmorItem> FCC_HAT = ITEMS.register("fcc_hat",
+			() -> new net.minecraft.world.item.ArmorItem(RadiocraftArmorMaterials.FCC, net.minecraft.world.item.ArmorItem.Type.HELMET,
+					new Properties().durability(net.minecraft.world.item.ArmorItem.Type.HELMET.getDurability(RadiocraftArmorMaterials.FCC_DURABILITY))));
+	public static final DeferredHolder<Item, net.minecraft.world.item.ArmorItem> FCC_JACKET = ITEMS.register("fcc_jacket",
+			() -> new net.minecraft.world.item.ArmorItem(RadiocraftArmorMaterials.FCC, net.minecraft.world.item.ArmorItem.Type.CHESTPLATE,
+					new Properties().durability(net.minecraft.world.item.ArmorItem.Type.CHESTPLATE.getDurability(RadiocraftArmorMaterials.FCC_DURABILITY))));
+	public static final DeferredHolder<Item, net.minecraft.world.item.BannerPatternItem> FCC_BANNER_PATTERN = ITEMS.register("fcc_banner_pattern",
+			() -> new net.minecraft.world.item.BannerPatternItem(com.arrl.radiocraft.common.fcc.FccGear.PATTERN_ITEM, new Properties().stacksTo(1)));
+	/** Not craftable and not in the creative tab: an operator issues it with {@code /radiocraft fcc badge}. */
+	public static final DeferredHolder<Item, FccBadgeItem> FCC_BADGE = ITEMS.register("fcc_badge",
+			() -> new FccBadgeItem(new Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC).fireResistant()));
 	public static final DeferredHolder<Item, AntennaWireItem> ANTENNA_WIRE = ITEMS.register("antenna_wire", () -> new AntennaWireItem(new Properties()));
 	public static final DeferredHolder<Item, PassthroughItem> PASSTHROUGH = ITEMS.register("passthrough", () -> new PassthroughItem(new Properties()));
 
@@ -85,6 +127,9 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> VHF_BASE_STATION = VHF_BASE_STATION_VARIANTS.good();
 	public static final Supplier<BlockItem> VHF_RECEIVER = simpleBlockItem("vhf_receiver", RadiocraftBlocks.VHF_RECEIVER);
 	public static final Supplier<BlockItem> VHF_REPEATER = simpleBlockItem("vhf_repeater", RadiocraftBlocks.VHF_REPEATER);
+	public static final Supplier<BlockItem> COMMERCIAL_MOBILE = ITEMS.register("commercial_mobile", () -> new BlockItem(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> LOW_BAND_MOBILE = ITEMS.register("low_band_mobile", () -> new BlockItem(RadiocraftBlocks.LOW_BAND_MOBILE.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> MARINE_RADIO = ITEMS.register("marine_radio", () -> new BlockItem(RadiocraftBlocks.MARINE_RADIO.get(), new Properties().stacksTo(1)));
 	public static final Supplier<BlockItem> COMMERCIAL_REPEATER = simpleBlockItem("commercial_repeater", RadiocraftBlocks.COMMERCIAL_REPEATER);
 	public static final Supplier<BlockItem> COMMERCIAL_RADIO_MODULE = simpleBlockItem("commercial_radio_module", RadiocraftBlocks.COMMERCIAL_RADIO_MODULE);
 	public static final Supplier<BlockItem> TAPE_PLAYER = simpleBlockItem("tape_player", RadiocraftBlocks.TAPE_PLAYER);
@@ -170,6 +215,13 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> PABX = simpleBlockItem("pabx", RadiocraftBlocks.PABX);
 	public static final Supplier<BlockItem> PHONE_PA = simpleBlockItem("phone_pa", RadiocraftBlocks.PHONE_PA);
 	public static final Supplier<BlockItem> MODERATION_COMPUTER = simpleBlockItem("moderation_computer", RadiocraftBlocks.MODERATION_COMPUTER);
+	public static final Supplier<BlockItem> RADIO_COMPUTER = simpleBlockItem("radio_computer", RadiocraftBlocks.RADIO_COMPUTER);
+	public static final Supplier<BlockItem> COMPUTER_MONITOR = simpleBlockItem("computer_monitor", RadiocraftBlocks.COMPUTER_MONITOR);
+	public static final Supplier<BlockItem> SCANNER = simpleBlockItem("scanner", RadiocraftBlocks.SCANNER);
+	public static final Supplier<BlockItem> ADSB_BEACON = simpleBlockItem("adsb_beacon", RadiocraftBlocks.ADSB_BEACON);
+	public static final Supplier<BlockItem> ADSB_RECEIVER = simpleBlockItem("adsb_receiver", RadiocraftBlocks.ADSB_RECEIVER);
+	public static final Supplier<BlockItem> ADSB_ANTENNA = simpleBlockItem("adsb_antenna", RadiocraftBlocks.ADSB_ANTENNA);
+	public static final Supplier<BlockItem> REAL_WORLD_INTERFACE = simpleBlockItem("real_world_interface", RadiocraftBlocks.REAL_WORLD_INTERFACE);
 	public static final Supplier<BlockItem> REPEATER_AUTOPATCH = simpleBlockItem("repeater_autopatch", RadiocraftBlocks.REPEATER_AUTOPATCH);
 	/** A telephone's handset while it is off the hook; never crafted or in a creative tab. */
 	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.TelephoneHandsetItem> TELEPHONE_HANDSET = ITEMS.register("telephone_handset",
@@ -231,6 +283,40 @@ public class RadiocraftItems {
 		Map<String, Supplier<BlockItem>> out = new java.util.LinkedHashMap<>();
 		RadiocraftBlocks.DESK_SPEAKERS.forEach((wood, block) -> out.put(wood, simpleBlockItem("desk_speaker_" + wood, block)));
 		return out;
+	}
+
+	/** A commercial handheld of {@code model}, with its factory channels and the handheld's radio state. */
+	private static DeferredHolder<Item, CommercialHandheldItem> commercialHandheld(String name, com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel model) {
+		return ITEMS.register(name, () -> new CommercialHandheldItem(new Properties().stacksTo(1)
+				.component(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value(), HandheldRadioState.getDefault())
+				.component(RadiocraftDataComponent.COMMERCIAL_PROGRAM.value(), model.factoryProgram()), model));
+	}
+
+	/** A new marine handheld's radio state: off, on channel 16 (156.800 MHz). */
+	private static HandheldRadioState marineHandheldState() {
+		return new HandheldRadioState(false, false, (float)com.arrl.radiocraft.common.radio.marine.MarineRadioState.SIXTEEN_HZ, 1.0F, 1.0F, 0.0F);
+	}
+
+	/** A floppy for each program in {@link com.arrl.radiocraft.common.computer.ComputerApps} that comes on one. */
+	private static Map<String, DeferredHolder<Item, FloppyDiskItem>> floppies() {
+		Map<String, DeferredHolder<Item, FloppyDiskItem>> out = new java.util.LinkedHashMap<>();
+		for(com.arrl.radiocraft.common.computer.ComputerApp app : com.arrl.radiocraft.common.computer.ComputerApps.onFloppies()) {
+			net.minecraft.world.item.Rarity rarity = app.kind() == com.arrl.radiocraft.common.computer.ComputerApp.Kind.SECRET ? net.minecraft.world.item.Rarity.RARE : net.minecraft.world.item.Rarity.COMMON;
+			out.put(app.id(), ITEMS.register(app.floppyItemId(), () -> new FloppyDiskItem(new Properties().stacksTo(16).rarity(rarity), app)));
+		}
+		return out;
+	}
+
+	/** The floppy disk {@code app} comes on, or null for a built-in program. */
+	@org.jetbrains.annotations.Nullable
+	public static FloppyDiskItem floppy(com.arrl.radiocraft.common.computer.ComputerApp app) {
+		DeferredHolder<Item, FloppyDiskItem> holder = FLOPPIES.get(app.id());
+		return holder == null ? null : holder.get();
+	}
+
+	/** Both commercial handhelds. */
+	public static Item[] commercialHandhelds() {
+		return new Item[] { BASIC_COMMERCIAL_HANDHELD.get(), UPGRADED_COMMERCIAL_HANDHELD.get() };
 	}
 
 	private static Supplier<BlockItem> simpleBlockItem(String name, Supplier<? extends Block> block) {

@@ -18,6 +18,8 @@ public class AntennaVoicePacket implements IAntennaPacket {
 	private IAntenna destination = null; // Set by the transmitting antenna for each receiver, for terrain.
 	private final UUID sourcePlayer;
 	private final float ctcssTone; // Sub-audible tone under the voice, 0 for none (see Ctcss).
+	// Analog or digital (and its key), from the transmitter: whatever it pushed on this thread (DigitalVoice#push).
+	private final com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode voiceMode = com.arrl.radiocraft.common.radio.voice.DigitalVoice.current();
 
 
 	public AntennaVoicePacket(de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, Band band, float frequency, double strength, IAntenna source, UUID sourcePlayer) {
@@ -83,6 +85,11 @@ public class AntennaVoicePacket implements IAntennaPacket {
 	/** The CTCSS tone the transmitter sent, 0 for none. */
 	public float getCtcssTone() {
 		return ctcssTone;
+	}
+
+	/** Analog FM, or digital voice with its encryption key id (see {@link com.arrl.radiocraft.common.radio.voice.DigitalVoice}). */
+	public com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode getVoiceMode() {
+		return voiceMode;
 	}
 
 }

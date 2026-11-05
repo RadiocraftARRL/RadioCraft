@@ -236,6 +236,18 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 
 	// -------------------- RADIO HOOKS --------------------
 
+	/** A repeater's input and output stay inside its band. */
+	@Override
+	public boolean tunesOutOfBand() {
+		return false;
+	}
+
+	/** Not a ham rig's transmitter: nothing to inhibit (its output is clamped to the band anyway). */
+	@Override
+	public boolean limitsTransmitToBand() {
+		return false;
+	}
+
 	@Override
 	public float getTransmitFrequency() {
 		return txFrequency;
@@ -326,6 +338,15 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 	@Override
 	protected double desense(com.arrl.radiocraft.api.antenna.IAntennaPacket packet) {
 		return 1.0D;
+	}
+
+	/**
+	 * A repeater passes on what it hears as it is: relaying (from inside {@link #receiveVoice}) a digital signal goes
+	 * out digital with its key, so an encrypted call stays encrypted through it. Its own beeps and IDs are analog.
+	 */
+	@Override
+	protected com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode transmitMode() {
+		return com.arrl.radiocraft.common.radio.voice.DigitalVoice.current();
 	}
 
 	/** A signal on the input with the right tone is repeated on the output as it arrives. Voice chat thread. */

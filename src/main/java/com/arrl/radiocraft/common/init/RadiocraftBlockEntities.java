@@ -43,6 +43,11 @@ public class RadiocraftBlockEntities {
 			() -> BlockEntityType.Builder.of(VHFBaseStationBlockEntity::new, RadiocraftBlocks.VHF_BASE_STATION_VARIANTS.values().toArray(Block[]::new)).build(null));
 	public static final Supplier<BlockEntityType<VHFReceiverBlockEntity>> VHF_RECEIVER = BLOCK_ENTITY_TYPES.register("vhf_receiver",
 			() -> BlockEntityType.Builder.of(VHFReceiverBlockEntity::new, RadiocraftBlocks.VHF_RECEIVER.get()).build(null));
+	/** Both commercial mobiles (the model comes from the block). */
+	public static final Supplier<BlockEntityType<CommercialMobileBlockEntity>> COMMERCIAL_MOBILE = BLOCK_ENTITY_TYPES.register("commercial_mobile",
+			() -> BlockEntityType.Builder.of(CommercialMobileBlockEntity::new, RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get()).build(null));
+	public static final Supplier<BlockEntityType<MarineRadioBlockEntity>> MARINE_RADIO = BLOCK_ENTITY_TYPES.register("marine_radio",
+			() -> BlockEntityType.Builder.of(MarineRadioBlockEntity::new, RadiocraftBlocks.MARINE_RADIO.get()).build(null));
 
 	public static final Supplier<BlockEntityType<PassthroughBlockEntity>> PASSTHROUGH = BLOCK_ENTITY_TYPES.register("passthrough",
 			() -> BlockEntityType.Builder.of(PassthroughBlockEntity::new, RadiocraftBlocks.PASSTHROUGH.get()).build(null));
@@ -126,6 +131,20 @@ public class RadiocraftBlockEntities {
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.PhonePaBlockEntity::new, RadiocraftBlocks.PHONE_PA.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.ModerationComputerBlockEntity>> MODERATION_COMPUTER = BLOCK_ENTITY_TYPES.register("moderation_computer",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.ModerationComputerBlockEntity::new, RadiocraftBlocks.MODERATION_COMPUTER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity>> RADIO_COMPUTER = BLOCK_ENTITY_TYPES.register("radio_computer",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity::new, RadiocraftBlocks.RADIO_COMPUTER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.ComputerMonitorBlockEntity>> COMPUTER_MONITOR = BLOCK_ENTITY_TYPES.register("computer_monitor",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.ComputerMonitorBlockEntity::new, RadiocraftBlocks.COMPUTER_MONITOR.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.ScannerBlockEntity>> SCANNER = BLOCK_ENTITY_TYPES.register("scanner",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.ScannerBlockEntity::new, RadiocraftBlocks.SCANNER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.adsb.AdsbBeaconBlockEntity>> ADSB_BEACON = BLOCK_ENTITY_TYPES.register("adsb_beacon",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.adsb.AdsbBeaconBlockEntity::new, RadiocraftBlocks.ADSB_BEACON.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.adsb.AdsbReceiverBlockEntity>> ADSB_RECEIVER = BLOCK_ENTITY_TYPES.register("adsb_receiver",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.adsb.AdsbReceiverBlockEntity::new, RadiocraftBlocks.ADSB_RECEIVER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.adsb.AdsbAntennaBlockEntity>> ADSB_ANTENNA = BLOCK_ENTITY_TYPES.register("adsb_antenna",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.adsb.AdsbAntennaBlockEntity::new, RadiocraftBlocks.ADSB_ANTENNA.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.RealWorldInterfaceBlockEntity>> REAL_WORLD_INTERFACE = BLOCK_ENTITY_TYPES.register("real_world_interface",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.RealWorldInterfaceBlockEntity::new, RadiocraftBlocks.REAL_WORLD_INTERFACE.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.RepeaterAutopatchBlockEntity>> REPEATER_AUTOPATCH = BLOCK_ENTITY_TYPES.register("repeater_autopatch",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.RepeaterAutopatchBlockEntity::new, RadiocraftBlocks.REPEATER_AUTOPATCH.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.FieldPhoneBlockEntity>> FIELD_PHONE = BLOCK_ENTITY_TYPES.register("field_phone",

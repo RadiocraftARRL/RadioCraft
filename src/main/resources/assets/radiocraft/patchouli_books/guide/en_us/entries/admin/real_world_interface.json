@@ -1,0 +1,34 @@
+{
+  "name": "Real-World Interface",
+  "icon": "radiocraft:real_world_interface",
+  "category": "radiocraft:admin",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:real_world_interface",
+      "title": "Licence Warning",
+      "text": "$(4)$(l)This transmits on a REAL radio.$()$(br2)It links the game's radios to a real rig. $(l)Every$() player who talks through it must hold a real amateur licence and give their own callsign. The server operator is the $(thing)control operator$() and is responsible for all it sends."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Both Ways",
+      "text": "What is said in game on its frequency comes out of the sound card with the real radio keyed (PTT on a serial port's $(thing)RTS$() or $(thing)DTR$() line), and unkeys a moment after.$(br2)What the real radio hears goes on the air in game from the block when its level passes the $(thing)VOX$() threshold, or while its squelch line ($(thing)COS$() on CTS or DSR) is open. A $(thing)time-out timer$(), three minutes by default, drops a transmission that runs too long."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Setting It Up",
+      "text": "It is $(l)off$() until the operator turns on $(thing)real_world_interface_enabled$() and lists the sound cards in $(thing)real_world_interfaces$(), in the server config file only; the comment there explains each setting. $(thing)/radiocraft realworld devices$() lists the names to use.$(br2)The block's screen just picks one of those by name, and shows each device found or not, PTT, VOX/COS and the levels. One block per interface."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "On the Air",
+      "text": "In game it is a radio: an antenna on its coax (any band), its frequency, $(thing)FM$() or $(thing)SSB$(), power from the wire. Only operators may change it unless the server allows otherwise.$(br2)$(thing)Everywhere$() needs no antenna and ignores distance: it hears every transmission on its frequency in its dimension, and every station there hears it at full strength. Its traffic is in the moderation log like any other."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:real_world_interface",
+      "text": "Remember: real licence, real callsign, and identify as the rules require."
+    }
+  ]
+}

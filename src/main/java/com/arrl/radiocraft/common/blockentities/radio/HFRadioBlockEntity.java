@@ -57,7 +57,7 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 
 	/** True while the radio is on and in CW mode, which is all keying needs (there is no PTT for CW). */
 	public boolean canTransmitCW() {
-		return cwEnabled && isPowered();
+		return cwEnabled && isPowered() && !isTransmitInhibited(); // Out of band without a MARS mod the key does nothing.
 	}
 
 	@Override

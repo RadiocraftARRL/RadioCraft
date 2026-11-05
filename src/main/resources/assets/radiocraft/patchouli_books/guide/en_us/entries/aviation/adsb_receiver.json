@@ -1,0 +1,27 @@
+{
+  "name": "ADS-B Receiver",
+  "icon": "radiocraft:adsb_receiver",
+  "category": "radiocraft:aviation",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)ADS-B Receiver$() shows the craft its antenna hears on a round green radar screen, north up: range rings, each craft as a block with its track line and a trail of the last half minute, and a tag with its flight ID, altitude in hundreds of feet and speed in knots (^ climbing, v descending)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Using it",
+      "text": "It needs power (4 FE/t) and an $(item)ADS-B Antenna$(): set the antenna on top of it, or coax it from the receiver. How far it hears depends on how high the craft fly, not on the antenna.$(br2)Open it and press On. - and + (or the mouse wheel) set the range, 250 m to 20 km. Click a craft, on the scope or in the list, for its ICAO address, squawk, climb, bearing and distance."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Notes",
+      "text": "While it is on, the square display filling its front shows the live scope in the world too, for anyone within 32 blocks. A receiver on a ship leaves its own ship's beacon off the screen. A craft that stops sending stays as LOST for a few seconds, then goes.$(br2)Cable a $(l:radiocraft:computer/radio_computer)radio computer$(/l) to the receiver (touching, or by $(l:radiocraft:radios/data_wire)data wire$(/l)) to run the $(l:radiocraft:computer/adsb)ADS-B program$(/l) from it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:adsb_receiver",
+      "recipe2": "radiocraft:adsb_antenna"
+    }
+  ]
+}

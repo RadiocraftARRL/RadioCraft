@@ -203,9 +203,9 @@ public class WireUtils {
 		if(level.isClientSide)
 			return;
 		BlockState state = level.getBlockState(pos);
-		if(state.is(RadiocraftTags.Blocks.POWER_BLOCKS))
+		if(state.is(RadiocraftTags.Blocks.POWER_BLOCKS) || com.arrl.radiocraft.api.benetworks.IWireConnectable.accepts(state, true))
 			tryConnect(level, pos, no -> no instanceof PowerNetworkObject, PowerBENetwork::new, powerWires());
-		if(state.is(RadiocraftTags.Blocks.COAX_BLOCKS) || state.getBlock() instanceof RadioBlock)
+		if(state.is(RadiocraftTags.Blocks.COAX_BLOCKS) || state.getBlock() instanceof RadioBlock || com.arrl.radiocraft.api.benetworks.IWireConnectable.accepts(state, false))
 			tryConnect(level, pos, no -> no instanceof ICoaxNetworkObject, BENetwork::new, coaxWires());
 	}
 

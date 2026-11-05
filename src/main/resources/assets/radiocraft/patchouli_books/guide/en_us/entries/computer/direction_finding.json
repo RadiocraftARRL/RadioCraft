@@ -1,0 +1,21 @@
+{
+  "name": "Direction Finding on the Computer",
+  "icon": "radiocraft:floppy_df",
+  "category": "radiocraft:computer",
+  "sortnum": 11,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Cable a $(l:radiocraft:direction_finding/direction_finder)direction finder$() to the computer (touching, or on its data wire) and the $(item)Direction Finding$() program becomes its display. The left shows the set: frequency, modules locked, the signal and its bearing, and every bearing the $(l:radiocraft:direction_finding/fixes)fix$() is worked out from: its own, those typed in (F6), those coming over microwave."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Tab turns the pages:$(li)$(thing)MAP$(): the terrain of the search, each bearing with its spread dashed either side, the fix in its circle.$(li)$(thing)3D$(): the search turning in wireframe, the fix a hill of likelihood. A tall spike is a good fix; a low wide mound a poor one.$(li)$(thing)SEARCHES$(): F3 saves the search now; Enter shows a saved one on the map.$(br2)F5 switches the set on, Left and Right tune, PgUp and PgDn change band, F7 types a frequency."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_df",
+      "text": "A blank floppy and a spyglass."
+    }
+  ]
+}

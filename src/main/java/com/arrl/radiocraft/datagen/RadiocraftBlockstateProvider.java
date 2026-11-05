@@ -61,8 +61,16 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		radio(RadiocraftBlocks.VHF_RECEIVER.get());
 		radio(RadiocraftBlocks.HF_RECEIVER.get());
 		radio(RadiocraftBlocks.VHF_REPEATER.get());
+		radio(RadiocraftBlocks.COMMERCIAL_MOBILE.get()); // Placeholder models (ModelDesignBounty), case tinted (tintindex 0).
+		radio(RadiocraftBlocks.LOW_BAND_MOBILE.get());
+		radio(RadiocraftBlocks.MARINE_RADIO.get()); // Placeholder model (ModelDesignBounty, tools/marine_radio_assets.py).
+		radio(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()); // Placeholder model (ModelDesignBounty, tools/real_world_interface_assets.py).
 		radio(RadiocraftBlocks.ALL_BAND_RADIO.get());
 		complexHorizontalBlockWithItem(RadiocraftBlocks.MODERATION_COMPUTER.get()); // Placeholder from tools/moderation_computer_model.py.
+		// The radio computer (1.12 step 5): placeholders from tools/radio_computer_models.py (ModelDesignBounty).
+		complexHorizontalBlockWithItem(RadiocraftBlocks.RADIO_COMPUTER.get());
+		complexHorizontalBlockWithItem(RadiocraftBlocks.COMPUTER_MONITOR.get());
+		complexHorizontalBlockWithItem(RadiocraftBlocks.SCANNER.get());
 	}
 
 	/**

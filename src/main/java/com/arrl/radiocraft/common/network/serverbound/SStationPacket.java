@@ -39,6 +39,11 @@ public record SStationPacket(long pos, String action, CompoundTag data) implemen
             if(context.player() instanceof ServerPlayer player && player.containerMenu instanceof StationMenu menu
                     && menu.getBlockPos().equals(BlockPos.of(pos)))
                 menu.handleAction(player, action, data);
+            // A radio computer's MUSIC stopped away from its screen (walked off, end of the list): only ever lets go.
+            else if(context.player() instanceof ServerPlayer player && action.equals("music") && !data.getBoolean("on")
+                    && player.level().isLoaded(BlockPos.of(pos))
+                    && player.level().getBlockEntity(BlockPos.of(pos)) instanceof com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity computer)
+                computer.listen(player, false);
         });
     }
 

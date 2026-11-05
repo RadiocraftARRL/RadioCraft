@@ -62,6 +62,12 @@
     "radiocraft:vhf_base_station_poor",
     "radiocraft:vhf_receiver",
     "radiocraft:vhf_repeater",
-    "radiocraft:commercial_repeater"
+    "radiocraft:commercial_repeater",
+    "radiocraft:commercial_mobile",
+    "radiocraft:low_band_mobile",
+    "radiocraft:marine_radio",
+    "radiocraft:real_world_interface",
+    "radiocraft:adsb_receiver",
+    "radiocraft:adsb_antenna"
   ]
 }

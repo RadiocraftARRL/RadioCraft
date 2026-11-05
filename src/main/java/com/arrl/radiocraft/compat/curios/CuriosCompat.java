@@ -10,8 +10,9 @@ import java.util.List;
  * Curios support, safe to call whether or not Curios is installed: a VHF handheld (or a spare small battery) can be
  * worn in the belt slot. A worn handheld receives like one in the inventory, drains its battery, and talks with the
  * "talk on worn radio" key. Nothing here touches a Curios class; {@link CuriosIntegration} does, and only runs when
- * Curios is loaded. The slot itself comes from data: {@code data/radiocraft/curios/entities} gives players the belt
- * slot and {@code data/curios/tags/item/belt} lists what fits.
+ * Curios is loaded. The slots themselves come from data: {@code data/radiocraft/curios/entities} gives players the belt,
+ * back and body slots and {@code data/curios/tags/item/<slot>} lists what fits (the FCC badge goes on the body
+ * slot and needs no code).
  */
 public final class CuriosCompat {
 

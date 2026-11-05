@@ -49,8 +49,21 @@ public class Radiocraft {
         modEventBus.register(tcr);
         modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(CuriosCompat::register));
         modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(AwmCompat::register));
+        // The radio computer's office programs' server sides (1.12 step 6).
+        modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(com.arrl.radiocraft.common.computer.apps.OfficeApps::register));
+        // And its radio programs' (1.12 step 7).
+        modEventBus.addListener(FMLCommonSetupEvent.class, event -> event.enqueueWork(com.arrl.radiocraft.common.computer.apps.RadioApps::register));
 
         NeoForge.EVENT_BUS.register(RadiocraftSavedData.class);
+        // The ham shack in village house pools (1.12 step 8).
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerAboutToStartEvent.class, com.arrl.radiocraft.common.worldgen.VillageHouses::onServerAboutToStart);
+        // ADS-B (1.12 step 9): the beacons on the air are kept in memory per level; a closed world forgets them.
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, event -> com.arrl.radiocraft.common.radio.adsb.AdsbAirspace.clear());
+        // The CPS's "Program radios" mode: a radio held while right clicking the computer (1.12 playtest fixes 2).
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock.class, com.arrl.radiocraft.common.computer.apps.HandProgramming::onRightClickBlock);
+        // Real-World Interfaces (1.12 step 11): unkey every real radio and close every sound card and serial port.
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppingEvent.class, event -> com.arrl.radiocraft.common.realworld.Bridges.closeAll(2_000L));
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, event -> com.arrl.radiocraft.common.realworld.Everywhere.clear());
 
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC, Radiocraft.MOD_ID + "-common.toml");
         ModLoadingContext.get().getActiveContainer().registerConfig(ModConfig.Type.SERVER, RadiocraftServerConfig.SPEC, Radiocraft.MOD_ID + "-server.toml");
@@ -71,6 +84,7 @@ public class Radiocraft {
         RadiocraftAntennaTypes.register();
         BENetworkTypes.register();
         RadiocraftBlocks.BLOCKS.register(modEventBus);
+        com.arrl.radiocraft.common.init.RadiocraftArmorMaterials.ARMOR_MATERIALS.register(modEventBus);
         RadiocraftItems.ITEMS.register(modEventBus);
         RadiocraftBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
         RadiocraftEntityTypes.ENTITIES.register(modEventBus);

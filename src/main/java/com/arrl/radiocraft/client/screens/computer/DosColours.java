@@ -1,0 +1,31 @@
+package com.arrl.radiocraft.client.screens.computer;
+
+/**
+ * The sixteen CGA/EGA text-mode colours (0xRRGGBB), as a VGA card shows them in 80x25 colour text, and the radio
+ * computer's standard look built from them ({@link #TITLE_FG} and so on). A program may use any 0xRRGGBB colour (the
+ * band plan uses the plan's own), but these keep it looking like DOS.
+ */
+public final class DosColours {
+
+	public static final int BLACK = 0x000000, BLUE = 0x0000AA, GREEN = 0x00AA00, CYAN = 0x00AAAA, RED = 0xAA0000,
+			MAGENTA = 0xAA00AA, BROWN = 0xAA5500, LIGHT_GREY = 0xAAAAAA, DARK_GREY = 0x555555, LIGHT_BLUE = 0x5555FF,
+			LIGHT_GREEN = 0x55FF55, LIGHT_CYAN = 0x55FFFF, LIGHT_RED = 0xFF5555, LIGHT_MAGENTA = 0xFF55FF, YELLOW = 0xFFFF55,
+			WHITE = 0xFFFFFF;
+
+	/** All sixteen, in their CGA order (0 black to 15 white). */
+	public static final int[] PALETTE = { BLACK, BLUE, GREEN, CYAN, RED, MAGENTA, BROWN, LIGHT_GREY, DARK_GREY, LIGHT_BLUE,
+			LIGHT_GREEN, LIGHT_CYAN, LIGHT_RED, LIGHT_MAGENTA, YELLOW, WHITE };
+
+	// The standard look (EDIT / DOS Shell): a grey bar on top, blue body, cyan key bar at the bottom.
+	public static final int TITLE_FG = BLACK, TITLE_BG = LIGHT_GREY;
+	public static final int BODY_FG = LIGHT_GREY, BODY_BG = BLUE;
+	public static final int TEXT_FG = WHITE;
+	public static final int HIGHLIGHT_FG = BLACK, HIGHLIGHT_BG = CYAN;
+	public static final int KEYS_FG = BLACK, KEYS_BG = CYAN;
+	public static final int DIALOG_FG = BLACK, DIALOG_BG = LIGHT_GREY;
+	public static final int FIELD_FG = WHITE, FIELD_BG = BLACK;
+	public static final int ERROR_FG = WHITE, ERROR_BG = RED;
+	public static final int HOTKEY_FG = RED;
+
+	private DosColours() {}
+}

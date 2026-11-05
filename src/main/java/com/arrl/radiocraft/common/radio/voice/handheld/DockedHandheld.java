@@ -47,7 +47,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DockedHandheld implements IAntenna, HandheldTnc.Host {
 
 	/** What the voice thread needs to know of the handheld, renewed every tick (null while it is off). */
-	private record State(float frequency, float rxTone, float gain, boolean muted) {}
+	private record State(float frequency, float rxTone, float gain, boolean muted, int channelStep,
+						 @Nullable com.arrl.radiocraft.common.radio.voice.DigitalVoice.Decoder decoder, boolean blank) {}
 
 	private final ServerLevel level;
 	private final BlockPos pos;
@@ -89,7 +90,16 @@ public class DockedHandheld implements IAntenna, HandheldTnc.Host {
 			return;
 		}
 		HandheldAprs aprs = handheld.get(RadiocraftDataComponent.HANDHELD_APRS.value());
-		state = new State(cap.getFrequencyHertz(), cap.getRxTone(), cap.getGain(), aprs != null && aprs.mute());
+		if(com.arrl.radiocraft.common.items.CommercialHandheldItem.is(handheld)) { // A commercial handheld listens on its channel.
+			com.arrl.radiocraft.common.radio.commercial.CommercialChannel channel = com.arrl.radiocraft.common.items.CommercialHandheldItem.activeChannel(handheld);
+			state = channel == null ? new State(0.0F, 0.0F, cap.getGain(), false, 0, null, true)
+					: new State(channel.rxHz(), channel.analogTone(), cap.getGain(), false, com.arrl.radiocraft.common.radio.commercial.CommercialChannel.CHANNEL_STEP_HZ, channel.decoder(), false);
+		}
+		else if(com.arrl.radiocraft.common.items.MarineHandheldItem.is(handheld)) // A marine handheld listens on its channel (no dual watch in the cradle).
+			state = new State((float)com.arrl.radiocraft.common.items.MarineHandheldItem.state(handheld).receiveHz(com.arrl.radiocraft.common.radio.marine.MarineRadios.region()),
+					0.0F, cap.getGain(), false, com.arrl.radiocraft.common.radio.marine.MarineRadioState.CHANNEL_STEP_HZ, null, false);
+		else
+			state = new State(cap.getFrequencyHertz(), cap.getRxTone(), cap.getGain(), aprs != null && aprs.mute(), RadiocraftServerConfig.VHF_FREQUENCY_STEP.get(), null, false);
 		tnc.tick(level);
 		tickSquelchTail();
 	}
@@ -114,15 +124,18 @@ public class DockedHandheld implements IAntenna, HandheldTnc.Host {
 	@Override
 	public void receiveAudioPacket(AntennaVoicePacket packet) {
 		State now = state;
-		if(now == null || tnc.isSending() || packet.getLevel() != level || RadiocraftVoicePlugin.API == null)
+		if(now == null || now.blank() || tnc.isSending() || packet.getLevel() != level || RadiocraftVoicePlugin.API == null)
 			return;
 		if(now.muted() && Afsk.isDataSource(packet.getSourcePlayer()))
 			return;
-		Detuning.Effect effect = Detuning.fm(now.frequency(), packet.getFrequency(), RadiocraftServerConfig.VHF_FREQUENCY_STEP.get());
+		Detuning.Effect effect = Detuning.fm(now.frequency(), packet.getFrequency(), now.channelStep(), packet.getSplatterReach());
 		if(!effect.audible() || !Ctcss.opens(now.rxTone(), packet.getCtcssTone()))
 			return;
 		double strength = packet.getStrength() * effect.strength();
 		if(strength <= 0.0D)
+			return;
+		com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception reception = com.arrl.radiocraft.common.radio.voice.DigitalVoice.receive(now.decoder(), packet.getVoiceMode(), strength);
+		if(reception == com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception.DROPPED)
 			return;
 		com.arrl.radiocraft.common.moderation.ModerationHooks.heard(packet, this, level, pos, null, strength); // Its speaker: players near it are found by the log.
 		AntennaPos source = packet.getSource() == null ? null : packet.getSource().getAntennaPos();
@@ -133,13 +146,15 @@ public class DockedHandheld implements IAntenna, HandheldTnc.Host {
 				return;
 			long nanos = System.nanoTime();
 			lastHeardNanos = nanos;
+			short[] audio = com.arrl.radiocraft.common.radio.voice.DigitalVoice.render(reception, packet.getRawAudio(), strength, nanos);
 			List<VoiceMix.Signal> slot = aligner.offer(new VoiceMix.Signal(VoiceMix.key(packet.getSourcePlayer(), packet.getSource()), packet.getSourcePlayer(),
-					packet.getRawAudio(), 0.5D * PlayerRadio.speakerLevel(now.gain()), beyondLos ? 1.0D : 0.0D, 0.0D, 0.0D, 0.0D, strength), nanos);
+					audio, 0.5D * PlayerRadio.speakerLevel(now.gain()), beyondLos ? 1.0D : 0.0D, 0.0D, 0.0D, 0.0D, reception.digitalAudio() ? -1.0D : strength), nanos);
 			if(slot.isEmpty())
 				return; // Another station leads: this frame goes out mixed with its next one.
 			VoiceMix.Mixed mixed = renderer.render(slot, SpeakerKind.BUILT_IN.apply(RadioVoiceProcessor.currentSettings()), 1.0D, nanos);
 			channel.send(encoder().encode(mixed.pcm()));
-			squelchTail.heard(mixed.loudest().fmSignal(), mixed.loudest().level(), mixed.loudest().source(), nanos);
+			if(mixed.loudest().fm()) // Digital has no squelch tail.
+				squelchTail.heard(mixed.loudest().fmSignal(), mixed.loudest().level(), mixed.loudest().source(), nanos);
 		}
 	}
 

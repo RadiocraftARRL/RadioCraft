@@ -27,6 +27,8 @@ public class RadiocraftMenuTypes {
 	public static final Supplier<MenuType<QRPRadio40mMenu>> QRP_RADIO_40M = MENU_TYPES.register("qrp_radio_40m", () -> IMenuTypeExtension.create(QRPRadio40mMenu::new));
 
 	public static final Supplier<MenuType<VHFBaseStationMenu>> VHF_BASE_STATION = MENU_TYPES.register("vhf_base_station", () -> IMenuTypeExtension.create(VHFBaseStationMenu::new));
+	public static final Supplier<MenuType<CommercialMobileMenu>> COMMERCIAL_MOBILE = MENU_TYPES.register("commercial_mobile", () -> IMenuTypeExtension.create(CommercialMobileMenu::new));
+	public static final Supplier<MenuType<MarineRadioMenu>> MARINE_RADIO = MENU_TYPES.register("marine_radio", () -> IMenuTypeExtension.create(MarineRadioMenu::new));
 
 	public static final Supplier<MenuType<VHFReceiverMenu>> VHF_RECEIVER = MENU_TYPES.register("vhf_receiver", () -> IMenuTypeExtension.create(VHFReceiverMenu::new));
 	public static final Supplier<MenuType<DeskChargerMenu>> DESK_CHARGER = MENU_TYPES.register("desk_charger", () -> IMenuTypeExtension.create(DeskChargerMenu::new));
@@ -45,6 +47,16 @@ public class RadiocraftMenuTypes {
 	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.PhonePaMenu>> PHONE_PA = MENU_TYPES.register("phone_pa", () -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.PhonePaMenu::new));
 	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.ModerationComputerMenu>> MODERATION_COMPUTER = MENU_TYPES.register("moderation_computer",
 			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.ModerationComputerMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.RadioComputerMenu>> RADIO_COMPUTER = MENU_TYPES.register("radio_computer",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.RadioComputerMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.ScannerMenu>> SCANNER = MENU_TYPES.register("scanner",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.ScannerMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.AdsbBeaconMenu>> ADSB_BEACON = MENU_TYPES.register("adsb_beacon",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.AdsbBeaconMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.AdsbReceiverMenu>> ADSB_RECEIVER = MENU_TYPES.register("adsb_receiver",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.AdsbReceiverMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.RealWorldInterfaceMenu>> REAL_WORLD_INTERFACE = MENU_TYPES.register("real_world_interface",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.RealWorldInterfaceMenu::new));
 	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.RepeaterAutopatchMenu>> REPEATER_AUTOPATCH = MENU_TYPES.register("repeater_autopatch", () -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.RepeaterAutopatchMenu::new));
 	public static final Supplier<MenuType<TelephoneMenu>> TELEPHONE = MENU_TYPES.register("telephone", () -> IMenuTypeExtension.create(TelephoneMenu::new));
 	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.IonosphericProcessorMenu>> IONOSPHERIC_PROCESSOR = MENU_TYPES.register("ionospheric_processor",

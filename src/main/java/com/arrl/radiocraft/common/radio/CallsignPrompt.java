@@ -42,7 +42,9 @@ public final class CallsignPrompt {
 
 	@SubscribeEvent
 	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-		if(event.getEntity() instanceof ServerPlayer player && event.getLevel().getBlockState(event.getPos()).getBlock() instanceof RadioBlock && prompt(player)) {
+		if(event.getEntity() instanceof ServerPlayer player && event.getLevel().getBlockState(event.getPos()).getBlock() instanceof RadioBlock
+				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock)
+				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.MarineRadioBlock) && prompt(player)) { // Commercial and marine radios need no ham call.
 			event.setCanceled(true);
 			event.setCancellationResult(InteractionResult.SUCCESS);
 		}
@@ -50,7 +52,8 @@ public final class CallsignPrompt {
 
 	@SubscribeEvent
 	public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-		if(event.getEntity() instanceof ServerPlayer player && event.getItemStack().getItem() instanceof VHFHandheldItem && prompt(player)) {
+		if(event.getEntity() instanceof ServerPlayer player && event.getItemStack().getItem() instanceof VHFHandheldItem
+				&& !VHFHandheldItem.isChannelized(event.getItemStack()) && prompt(player)) { // Commercial and marine handhelds need no ham call.
 			event.setCanceled(true);
 			event.setCancellationResult(InteractionResult.SUCCESS);
 		}

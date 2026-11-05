@@ -1,0 +1,22 @@
+{
+  "name": "Solar Weather and Forecasts",
+  "icon": "radiocraft:floppy_solar",
+  "category": "radiocraft:computer",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "SOLAR",
+      "text": "The $(item)Solar Weather$() program shows the $(l:radiocraft:propagation/solar_weather)solar weather$(): the conditions and the noise floor, each HF band now, by day and by night, VHF and the aurora, sporadic E, and the next spell once it is known, with a blackout warning in red.$(br2)Tab turns to the $(thing)forecast$(): the weather where the computer is, the days ahead and the storms about."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Like the Teletype's SOLAR WX, the computer has to hear these: wire it to a powered radio with a real antenna (it copies the geophysical alert and weather broadcasts), or to an $(l:radiocraft:sky/ionosphere)Ionospheric Processor$(). Servers can drop that need (solar_weather_station_needs_radio).$(br2)Both pages refresh every 20 seconds. F6 prints the page as a book, F7 saves it as a text file."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_solar",
+      "text": "A blank floppy and a daylight detector."
+    }
+  ]
+}

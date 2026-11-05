@@ -25,8 +25,15 @@ public record WeatherReport(Precipitation precipitation, float rain, float thund
 	public enum Hazard { LIGHTNING, HAIL, BLIZZARD, SANDSTORM, DAMAGING_WIND, HURRICANE_EYE, TORNADO, DENSE_FOG, HEAT_WAVE,
 		COLD_SNAP, HIGH_WIND }
 
+	/** A calm, dry, mild day (15 C, 1013.25 hPa, 50 % humidity): what a report with nothing to say gives. */
 	public static final WeatherReport CALM = new WeatherReport(Precipitation.NONE, 0, 0, 0, 0, 15, 1013.25, 50, Set.of());
 
+	/**
+	 * Whether this report includes a hazard.
+	 *
+	 * @param hazard the hazard
+	 * @return true if present
+	 */
 	public boolean has(Hazard hazard) {
 		return hazards.contains(hazard);
 	}

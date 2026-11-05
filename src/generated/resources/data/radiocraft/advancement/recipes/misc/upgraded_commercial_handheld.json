@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_basic_commercial_handheld": {
+      "conditions": {
+        "items": [
+          {
+            "items": "radiocraft:basic_commercial_handheld"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "radiocraft:upgraded_commercial_handheld"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_basic_commercial_handheld"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "radiocraft:upgraded_commercial_handheld"
+    ]
+  }
+}

@@ -26,6 +26,11 @@ public interface IVoiceTransmitter {
 	/**
 	 * As {@link #acceptVoicePacket(ServerLevel, short[], UUID)}, knowing where the speaker stood, for transmitters
 	 * whose microphone gets quieter with distance (a radio's desk microphone). The default ignores the position.
+	 *
+	 * @param level level object (SVC API)
+	 * @param rawAudio raw PCM audio
+	 * @param sourcePlayer UUID of the player who sent the audio
+	 * @param speakerPos where the speaker stood
 	 */
 	default void acceptVoicePacket(ServerLevel level, short[] rawAudio, UUID sourcePlayer, Vec3 speakerPos) {
 		acceptVoicePacket(level, rawAudio, sourcePlayer);

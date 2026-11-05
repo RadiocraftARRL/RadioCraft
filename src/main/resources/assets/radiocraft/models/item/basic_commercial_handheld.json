@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "radiocraft:item/commercial_handheld_case",
+    "layer1": "radiocraft:item/basic_commercial_handheld"
+  }
+}

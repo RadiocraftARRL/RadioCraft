@@ -40,6 +40,83 @@ What was done for the parrot controller, as the pattern for the next one:
 
 ## Open bounties
 
+### Item: Radio Cloner (2026-11-05)
+
+`radiocraft:radio_cloner` (`models/item/radio_cloner.json`, `textures/item/radio_cloner.png`, from
+`tools/radio_cloner_assets.py`): a radio shop's cloning box, read from one radio and write into others. Placeholder: a
+grey box with a little LCD, a green and a red lamp and a coiled cable. Wanted: a flat item sprite of a small handheld
+cloning box (a two-digit display, READ/WRITE buttons) with its cable and radio plug, perhaps a second texture (or an
+item property) for the loaded state; the item glints while loaded. No block model.
+
+### Models: ADS-B beacon, receiver and antenna (2026-11-05)
+
+Placeholders from `tools/adsb_models.py` (32x32 textures; blockstates hand-made in `src/main/resources`, each with a
+lit part added by `lit=true`):
+
+- `radiocraft:adsb_beacon` (`models/block/adsb_beacon.json`, `adsb_beacon_lamp.json`, `textures/block/adsb_beacon.png`):
+  the 1090 MHz transponder a craft carries. Placeholder: a 10 x 5 x 12 pixel grey box with an amber code window, two
+  knobs, an IDENT button and a white blade antenna on top. Wanted: a panel-mount avionics transponder (a Garmin/King
+  style face: four-digit squawk readout, IDENT, mode knob) on a small tray, or a remote box with a shark-fin blade.
+  The front is where the player looked when placing it (the craft's nose), north in the model. Keep the reply lamp
+  (`adsb_beacon_lamp`, full bright, cutout) as its own model, lit while transmitting.
+- `radiocraft:adsb_receiver` (`adsb_receiver.json`, `adsb_receiver_screen.json`, `textures/block/adsb_receiver.png`):
+  a full-block display unit whose **whole front is a square screen, edge to edge** (maintainer, 1.12 playtest fixes
+  2), like a modern ATC/ADS-B display. Placeholder: a dark cabinet, the front a dark green square with one ring, knobs
+  on the side. Wanted: the cabinet sides, top and back (a monitor housing, vents, knobs on the side or top), keeping the
+  front face a flat screen to its edges; the glowing face (`adsb_receiver_screen`, full bright, the whole north face at
+  z -0.02) when on. `client/render/AdsbScopeRenderer` draws the live picture over that face (`SCREEN_X0..Z`), so keep
+  them in step if the screen moves. Its screen GUI is drawn in code and needs no art.
+- `radiocraft:adsb_antenna` (`adsb_antenna.json`, `textures/block/adsb_antenna.png`): a short 1090 MHz vertical (a
+  quarter wave is 7 cm) with a ground plane, or a white fibreglass collinear. Placeholder: a black stub with a white
+  tip on a metal plate.
+
+### Real-World Interface (2026-11-05)
+
+Placeholder from `tools/real_world_interface_assets.py` (re-run it to rebuild; it overwrites the files below):
+`radiocraft:real_world_interface`, a small dark box (`models/block/real_world_interface.json`, 10 x 4 x 9 px,
+`textures/block/real_world_interface_case.png` and `_front.png`) with a red and white licence stripe, PTT and COS lamps,
+two level knobs and two jacks at the back. Wanted: a proper rig interface (think SignaLink or a repeater controller):
+a front with PTT/TX and COS/RX lamps and IN/OUT level knobs, a cable or two to the back, and a sticker saying it goes to
+a real transmitter. The block is 4 px high; keep the hanging (ceiling) variant in mind. The GUI is plain fills too
+(`client/screens/RealWorldInterfaceScreen`): a panel texture with the warning area, lamps and two level meters would
+help.
+
+### FCC field gear: hat, jacket, badge, banner seal (2026-11-05)
+
+Placeholders from `tools/fcc_assets.py` (re-run it to rebuild them; it overwrites the files below):
+
+- `radiocraft:fcc_hat` (`textures/item/fcc_hat.png`) and its worn look in `textures/models/armor/fcc_layer_1.png`
+  (the 64x32 vanilla armour layout, head and hat boxes): a 1970s FCC field agent's felt fedora. The placeholder only
+  paints the top half of the head box brown with a black band, so it reads as a beanie; a real brim needs a model.
+  Wanted: a sprite, and either a better layer texture or a small custom armour model (a NeoForge
+  `IClientItemExtensions#getHumanoidArmorModel` with a brim, which is code we can add once the art exists).
+- `radiocraft:fcc_jacket` (`textures/item/fcc_jacket.png`, body and arm boxes of `fcc_layer_1.png`): a 1970s mustard
+  corduroy sport coat with wide lapels, a white shirt and a wide maroon tie. Wanted: a proper sprite and layer texture
+  (corduroy ribs, lapels, pockets, maybe the badge on a breast-pocket wallet).
+- `radiocraft:fcc_badge` (`textures/item/fcc_badge.png`): the FCC field agent's badge, worn in the Curios body (chest) slot.
+  Placeholder: a gold shield with a blue enamel seal. Wanted: a sprite in the style of a US federal badge (eagle on
+  top, "Federal Communications Commission" ring, "Field Agent"). Nothing draws it on the player when worn; a Curios
+  renderer (like the handheld on the belt) could hang it on the chest if someone draws a small model.
+- `radiocraft:fcc_banner_pattern` (`textures/item/fcc_banner_pattern.png`): a pattern item like the vanilla ones.
+- The seal pattern itself, `textures/entity/banner/fcc.png` and `textures/entity/shield/fcc.png` (64x64 white masks in
+  the vanilla banner and shield layouts; the dye colours them): placeholder is a ring with a bolt over "FCC" and an
+  underline. Wanted: a seal-like emblem (the 1970s FCC seal had an eagle over lightning bolts) that reads at 20x40
+  pixels, and its 12x22 shield version.
+
+### Item: Band Plan Sheet (2026-11-04)
+
+`radiocraft:band_plan` (`models/item/band_plan.json`, `textures/item/band_plan.png`, from `tools/band_plan_assets.py`):
+the ARRL-style band plan chart a ham pins over the desk. The placeholder is a 16x16 sheet of paper with four rows of
+coloured stripes. Wanted: a proper flat item sprite in the mod's style (a sheet, perhaps slightly curled, with a few
+recognisable coloured band bars and a title line). Its screen is drawn in code and needs no art.
+
+### Item: MARS Mod (2026-11-04)
+
+`radiocraft:mars_mod` (`models/item/mars_mod.json`, `textures/item/mars_mod.png`, from `tools/band_plan_assets.py`):
+the little modification board that opens a ham rig's transmitter out of band. Placeholder: a green board with a red
+diode and two jumper wires. Wanted: a small PCB sprite (a diode or a cut jumper, a couple of SMD parts) that reads as
+"a part you solder into a radio", a little shady/contraband in feel.
+
 ### Model: Radio Moderation Computer (2026-11-04)
 
 `radiocraft:moderation_computer` (`models/block/moderation_computer.json`, `textures/block/moderation_computer.png`, from
@@ -261,3 +338,53 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
 - **Ionospheric Processor screen** (maintainer, 2026-10-27): the rack's terminal screen is not obvious enough on the
   model; wants a clearly readable amber screen face (lit while on, as the block state already provides) so players
   see there is something to right click.
+- **Commercial radios** (1.12 step 2, placeholders from `tools/commercial_radio_assets.py`): the case must stay a
+  light grey layer (item `layer0` / block faces with `tintindex: 0`) so dye can tint it, with the details untinted on
+  top.
+  - **Basic Commercial Handheld**: a 1990s brick (Motorola HT1000 / Kenwood TK-series feel): stubby antenna, a
+    16-position channel knob and a volume/power knob on top, RX (green) and TX (red) LEDs, speaker grille, no display.
+    Item texture `basic_commercial_handheld` over `commercial_handheld_case`; ideally a 3D item model too.
+  - **Upgraded Commercial Handheld**: the fire-service radio (XTS-3000 feel): the same with a small green LCD for the
+    channel name and an emergency button.
+  - **Commercial Mobile Radio** and **Low Band Mobile Radio**: dash-mount mobiles (blocks), a box with a front panel,
+    display (the element named `DISPLAY` is where the channel text is drawn), channel knob, TX/RX lamps (positions in
+    `RadioDisplays`), a mic hook on the side. The low band one older and plainer. Models `commercial_mobile`,
+    `low_band_mobile`; textures `commercial_mobile_case`, `commercial_mobile_front`, `low_band_mobile_front`.
+  - The handheld's top panel screen and the mobile's front panel screen are drawn with plain fills: want textures.
+- **Marine radios** (1.12 step 3, placeholders from `tools/marine_radio_assets.py`):
+  - **Marine Handheld** (`marine_handheld`, item): a floating VHF marine handheld (Standard Horizon HX / Icom M-series
+    feel): dark grey, a yellow or orange float collar, rubber antenna, a big display for the channel number, keys for
+    CH up/down, 16/9 (red), H/L and DW. Ideally a 3D item model.
+  - **Marine Radio** (`marine_radio`, block): a fixed-mount VHF marine radio (Standard Horizon Eclipse / Icom M330
+    feel): white case, dark front panel, big channel display (the element named `DISPLAY` is where the channel text
+    is drawn), a channel knob, the red 16/9 key, TX/RX lamps (positions in `RadioDisplays`), a mic hook on the side.
+    Textures `marine_radio_case`, `marine_radio_front`. It works on Sable ships, so it may be seen on boat consoles.
+  - Both screens (handheld front, fixed-mount front panel) are drawn with plain fills: want textures.
+- **Camera and photo paper** (1.12 step 4, placeholders from `tools/camera_assets.py`):
+  - **Camera** (`camera`, item): a mid-century press or box camera (Graflex / Kodak Brownie feel): black leather body,
+    chrome top plate and lens ring, viewfinder, a red or chrome shutter button. Item texture `camera`; ideally a 3D item
+    model held up to the eye in first person.
+  - **Photo Paper** (`photo_paper`) and **Color Photo Paper** (`color_photo_paper`): a small packet or stack of glossy
+    sheets (a Kodak/Polaroid-style box would be nice), the colour one with a red-green-blue mark. Item textures.
+  - **Sound: camera shutter**: the camera uses the stone button click (pitched up) for now; a real mechanical shutter
+    and film-advance sound (CC0) would be better.
+  - **Viewfinder overlay**: drawn with plain fills (darkened border, white corner marks, centre cross); a texture of a
+    real camera viewfinder (rounded mask, brightline frame) would look better.
+  - **Radio fax PHOTO slot**: the fax panel art has three supply slots; the fourth (photo paper, right of MAP) has its
+    frame drawn by code. Redraw the panel with four (`tools/radio_fax_models.py`).
+- **Radio computer** (1.12 step 5, placeholders from `tools/radio_computer_models.py`):
+  - **Computer Monitor** (`computer_monitor`, block): the moderation computer's CRT and keyboard without its desktop
+    case, as the brief asked ("the moderation computer's model, slightly changed"): an early-90s VGA monitor on a
+    swivel stand with a putty case, and a clicky keyboard in front. The glass must stay where
+    `ComputerMonitorRenderer` draws the live screen (north face, x 3.75-12.25, y 3.25-9.5 model units, z 6), or move
+    both together. The idle glass shows a blue DOS screen.
+  - **Radio Computer** (`radio_computer`, block): the PC under the monitor, a full-height putty tower or a desktop on
+    a small desk: a 5.25" and a 3.5" drive bay (the floppy goes in the 3.5"), power switch, green power and amber disk
+    lamps. A lit disk lamp while a program reads or writes would be a nice extra (needs a blockstate).
+  - **Scanner** (`scanner`, block): a 1990s flatbed scanner and printer (an HP OfficeJet or a Canon all-in-one):
+    a lid, a paper tray standing at the back, a print slot at the front, a ready lamp.
+  - **Floppy disks** (items): one disk texture (`textures/item/floppy_disk.png`, a black 3.5" disk with its metal
+    shutter) and a white label layer (`floppy_disk_label.png`) tinted per program in `ComputerAppScreens`. Better art:
+    a label with a little picture per program (logbook, APRS, SSTV...), and the secret disks (Snake, the
+    falling-blocks game, the music player, the Bible) in other colours or hand-written labels.
+  - **Scanner screen**: the lid-up panel is plain fills (`ScannerScreen`); wants a texture.

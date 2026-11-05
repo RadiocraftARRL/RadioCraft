@@ -205,6 +205,42 @@ public class RadiocraftServerConfig {
 
 	public static final Map<String, BandConfig> BAND_CONFIGS = new ConcurrentHashMap<>();
 
+	public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> BAND_PLAN_SEGMENTS;
+	public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> BAND_PLAN_MARKERS;
+	public static final ModConfigSpec.ConfigValue<Double> MARS_MOD_SPLATTER;
+	public static final ModConfigSpec.EnumValue<com.arrl.radiocraft.common.radio.MarineChannels.Region> MARINE_CHANNEL_PLAN;
+	public static final ModConfigSpec.ConfigValue<Boolean> CAMERA_ENABLED;
+	public static final ModConfigSpec.ConfigValue<Double> CAMERA_COOLDOWN_SECONDS;
+	public static final ModConfigSpec.ConfigValue<Integer> CAMERA_PHOTO_CAP;
+	public static final ModConfigSpec.ConfigValue<Integer> COMPUTER_STORAGE_KB;
+	public static final ModConfigSpec.ConfigValue<Integer> COMPUTER_MAX_FILES;
+	public static final ModConfigSpec.ConfigValue<Integer> COMPUTER_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Integer> ADSB_FULL_RANGE_Y;
+	public static final ModConfigSpec.ConfigValue<Integer> ADSB_MIN_RANGE;
+	public static final ModConfigSpec.ConfigValue<Integer> ADSB_MAX_RANGE;
+	public static final ModConfigSpec.ConfigValue<Integer> ADSB_BEACON_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Integer> ADSB_RECEIVER_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Boolean> REAL_WORLD_INTERFACE_ENABLED;
+	public static final ModConfigSpec.ConfigValue<Boolean> REAL_WORLD_INTERFACE_OP_ONLY;
+	public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> REAL_WORLD_INTERFACES;
+
+	/**
+	 * Config key prefix for a band's settings. The amateur bands keep their old keys ({@code 20mm_los}: the band name
+	 * plus "m_"), so existing server configs still load; the commercial bands use {@code low_band_los}.
+	 */
+	public static String configKeyPrefix(String bandName) {
+		return bandName.matches("[0-9]+c?m") ? bandName + "m_" : bandName + "_";
+	}
+
+	private static String sectionName(Band band) {
+		return switch(band.name()) {
+			case "2m" -> "2m band settings, also known as VHF";
+			case Band.LOW_BAND -> "Commercial Low Band (30-50 MHz)";
+			case Band.VHF_COMMERCIAL -> "Commercial VHF (150-174 MHz and marine)";
+			default -> band.name() + " band settings";
+		};
+	}
+
 	static {
 		BUILDER.push("Antenna Options ( * = Restart game to take effect)");
 		ANTENNA_UPDATE_DELAY = BUILDER.comment(" Delay in seconds of an antenna to recalculate it's state after being changed #default 5").define("antenna_update_delay", 5);
@@ -219,20 +255,102 @@ public class RadiocraftServerConfig {
 		BUILDER.comment(" Band names like 10m are just for human convenience (so you don't have to say radio capable of 144MHz to 146MHz");
 
 		BAND_CONFIGS.clear();
-		for(Band band : Band.getDefaults()) {
-			BUILDER.push(band.name().equals("2m") ? band.name() + " band settings, also known as VHF" : band.name() + " band settings");
+		for(Band band : Band.getAllDefaults()) {
+			BUILDER.push(sectionName(band));
+			String key = configKeyPrefix(band.name());
 			BAND_CONFIGS.put(band.name(), new BandConfig(
 					band.name(),
-					BUILDER.comment(" Line of sight range for this band").define(band.name() + "m_los", band.losRange()),
-					BUILDER.comment(" minimum range for the skip effect during the day").define(band.name() + "m_minSkipDay", band.minSkipDay()),
-					BUILDER.comment(" maximum range for the skip effect during the day").define(band.name() + "m_maxSkipDay", band.maxSkipDay()),
-					BUILDER.comment(" minimum range for the skip effect during the night").define(band.name() + "m_minSkipNight", band.minSkipNight()),
-					BUILDER.comment(" maximum range for the skip effect during the night").define(band.name() + "m_maxSkipNight", band.maxSkipNight()),
-					BUILDER.comment(" The minimum frequency for this band").defineInRange(band.name() + "m_minFrequency", (double)band.minFrequency(), 0.0D, 1.0E12D),
-					BUILDER.comment(" The maximum frequency for this band").defineInRange(band.name() + "m_maxFrequency", (double)band.maxFrequency(), 0.0D, 1.0E12D)
+					BUILDER.comment(" Line of sight range for this band").define(key + "los", band.losRange()),
+					BUILDER.comment(" minimum range for the skip effect during the day").define(key + "minSkipDay", band.minSkipDay()),
+					BUILDER.comment(" maximum range for the skip effect during the day").define(key + "maxSkipDay", band.maxSkipDay()),
+					BUILDER.comment(" minimum range for the skip effect during the night").define(key + "minSkipNight", band.minSkipNight()),
+					BUILDER.comment(" maximum range for the skip effect during the night").define(key + "maxSkipNight", band.maxSkipNight()),
+					BUILDER.comment(" The minimum frequency for this band").defineInRange(key + "minFrequency", (double)band.minFrequency(), 0.0D, 1.0E12D),
+					BUILDER.comment(" The maximum frequency for this band").defineInRange(key + "maxFrequency", (double)band.maxFrequency(), 0.0D, 1.0E12D)
 			));
 			BUILDER.pop();
 		}
+
+		BUILDER.push("Band Plan");
+		BUILDER.comment(" What the Band Plan sheet (and later the radio computer) shows. Edit freely; players see the change when they",
+				" next open the sheet. Each segment is \"<from MHz>-<to MHz>|<use>|<colour>\", the colour one of " + String.join(", ", com.arrl.radiocraft.common.radio.bandplan.BandPlan.COLOURS) + ",",
+				" and each marker is \"<MHz>|<label>\". Segments and markers are drawn on the band whose range holds them.");
+		BAND_PLAN_SEGMENTS = BUILDER.comment(" Segments of the band plan").defineListAllowEmpty("band_plan_segments",
+				com.arrl.radiocraft.common.radio.bandplan.BandPlan.DEFAULT_SEGMENTS, () -> "144.000-144.100|CW|cw",
+				o -> o instanceof String s && com.arrl.radiocraft.common.radio.bandplan.BandPlan.parseSegment(s) != null);
+		BAND_PLAN_MARKERS = BUILDER.comment(" Markers for single frequencies (a net, the APRS channel, a calling frequency)").defineListAllowEmpty("band_plan_markers",
+				com.arrl.radiocraft.common.radio.bandplan.BandPlan.DEFAULT_MARKERS, () -> "146.520|National simplex calling",
+				o -> o instanceof String s && com.arrl.radiocraft.common.radio.bandplan.BandPlan.parseMarker(s) != null);
+		BUILDER.pop();
+
+		BUILDER.push("MARS Mod");
+		MARS_MOD_SPLATTER = BUILDER.comment(" How much further than usual a transmission outside its band splatters onto the frequencies next to it",
+				" (a MARS-modded rig's filters are not made for it). 1 = no worse than in band").defineInRange("mars_mod_splatter", 2.0D, 1.0D, 5.0D);
+		BUILDER.pop();
+
+		BUILDER.push("Marine Radios");
+		MARINE_CHANNEL_PLAN = BUILDER.comment(" The VHF marine channel plan the marine radios follow. US: the US plan (simplex \"A\" channels such as 22A,",
+				" duplex marine operator channels 24-28 and 84-87, and the NOAA weather channels WX1-WX7, receive only).",
+				" INTERNATIONAL: the ITU plan (more duplex channels, no A channels, no weather channels)").defineEnum("marine_channel_plan", com.arrl.radiocraft.common.radio.MarineChannels.Region.US);
+		BUILDER.pop();
+
+		BUILDER.push("Camera");
+		CAMERA_ENABLED = BUILDER.comment(" Cameras take photos. Each photo is a 16 KB picture the player's game sends up in four small packets, only",
+				" after the server has fired the shutter; off stops all of that").define("camera_enabled", true);
+		CAMERA_COOLDOWN_SECONDS = BUILDER.comment(" Seconds before a camera can take the next photo (the film advance). Also how often one player can send a",
+				" picture up").defineInRange("camera_cooldown_seconds", 3.0D, 1.0D, 600.0D);
+		CAMERA_PHOTO_CAP = BUILDER.comment(" Most photos one player may keep in this world (each is a map file). 0: no limit. A player at the limit is",
+				" offered their oldest photos to delete (/radiocraft photos); deleting one blanks it and frees a place. Players in",
+				" creative mode and operators are not limited").defineInRange("camera_photo_cap", 0, 0, 100000);
+		BUILDER.pop();
+
+		BUILDER.push("Radio Computer");
+		COMPUTER_STORAGE_KB = BUILDER.comment(" Disk space of each radio computer, in KB (1024 = 1 MB): documents, pictures (16 KB each), logbooks and",
+				" frequency lists. Kept in the world save, one file per computer").defineInRange("computer_storage_kb", 1024, 64, 65536);
+		COMPUTER_MAX_FILES = BUILDER.comment(" Most files one radio computer keeps").defineInRange("computer_max_files", 256, 16, 4096);
+		COMPUTER_POWER_USE = BUILDER.comment(" Power a radio computer draws per tick from the power wire while in use (a screen open, or a program that runs",
+				" in the background installed: APRS, fax, pictures); about an HF radio receiving. radios_need_power = false runs it free")
+				.defineInRange("computer_power_use", 8, 0, 10000);
+		BUILDER.pop();
+
+		BUILDER.push("ADS-B");
+		ADSB_FULL_RANGE_Y = BUILDER.comment(" How far 1090 MHz ADS-B reaches depends on how high the aircraft flies: at or above this Y (absolute) it is",
+				" heard out to adsb_max_range; below it the range falls off steeply (with the square of its height above sea level)",
+				" down to adsb_min_range at sea level").defineInRange("adsb_full_range_y", 200, -64, 4096);
+		ADSB_MIN_RANGE = BUILDER.comment(" How far an aircraft at sea level (or on the ground below it) is heard, blocks").defineInRange("adsb_min_range", 200, 1, 1000000);
+		ADSB_MAX_RANGE = BUILDER.comment(" How far an aircraft at adsb_full_range_y or higher is heard, blocks. 0 = twice the large microwave horn's",
+				" range (microwave_dish_range x microwave_horn_range_factor x 2: 18,000 blocks with the defaults)").defineInRange("adsb_max_range", 0, 0, 1000000);
+		ADSB_BEACON_POWER_USE = BUILDER.comment(" Power an ADS-B beacon draws per tick while on (radios_need_power = false runs it free)").defineInRange("adsb_beacon_power_use", 2, 0, 10000);
+		ADSB_RECEIVER_POWER_USE = BUILDER.comment(" Power an ADS-B receiver draws per tick while on").defineInRange("adsb_receiver_power_use", 4, 0, 10000);
+		BUILDER.pop();
+
+		BUILDER.push("Real-World Interface");
+		BUILDER.comment(" LICENCE WARNING. The Real-World Interface block links the game's radios to a real radio through this server's",
+				" sound card (and a serial port for PTT and COS). What players say on the air in game is then transmitted on real",
+				" radio frequencies. Turn it on only if EVERY player who can talk through it holds a real amateur radio licence and",
+				" uses their own real callsign, on the real radio's frequency and band, and identifies as the rules require. The",
+				" server operator is the control operator of the real station and is responsible for everything it transmits",
+				" (in the US, FCC Part 97: no music, no broadcasting, no obscenity, no business, no encryption, station ID every",
+				" 10 minutes). Players without a licence must not be able to reach it: keep real_world_interface_op_only on.",
+				" The interfaces can only be set up here, in this file; the block's screen only picks one of them by name.");
+		REAL_WORLD_INTERFACE_ENABLED = BUILDER.comment(" Turn the Real-World Interface on. Off by default: no sound card or serial port is touched, and",
+				" the serial library is not even loaded, while this is false").define("real_world_interface_enabled", false);
+		REAL_WORLD_INTERFACE_OP_ONLY = BUILDER.comment(" Only operators (permission level 2) may pick an interface or change a Real-World Interface",
+				" block's frequency, mode or Everywhere setting").define("real_world_interface_op_only", true);
+		REAL_WORLD_INTERFACES = BUILDER.comment(" The interfaces, one string each: key=value pairs separated by ;. Only name is needed:",
+				"   name=Shack 2m;input=USB Audio CODEC;output=USB Audio CODEC;rate=48000;serial=COM3;ptt=RTS;trigger=VOX",
+				" Keys (defaults in brackets): name (up to 24 characters, shown on the block's screen); input and output, part of",
+				" the sound card's name as /radiocraft realworld devices lists it [default = the system's]; rate, the card's sample",
+				" rate in Hz [48000]; serial, the port for PTT and COS such as COM3 or /dev/ttyUSB0 [none]; ptt, the line that",
+				" keys the radio, RTS, DTR or NONE [RTS]; ptt_invert, low to transmit [false]; trigger, what puts the real radio's",
+				" audio on the air in game, VOX (its level) or COS (the radio's squelch line on the serial port) [VOX];",
+				" vox_threshold, dBFS [-35]; vox_hang, ms the VOX or COS stays open after it drops [800]; cos, CTS or DSR [CTS];",
+				" cos_invert, low while receiving [false]; input_gain and output_gain [1.0]; ptt_hang, ms PTT stays keyed after the",
+				" last in-game audio [300]; ptt_delay, ms of silence after keying before the audio [150]; timeout, the longest",
+				" one transmission may last either way in seconds, like a repeater's time-out timer, 0 for none [180].",
+				" A line that does not read is skipped and logged.")
+				.defineListAllowEmpty("real_world_interfaces", java.util.List.of(), () -> "name=Shack 2m;input=default;output=default", o -> o instanceof String);
+		BUILDER.pop();
 
 		BUILDER.push("VHF Handheld Options");
 		HANDHELD_MAX_GAIN = BUILDER.comment(" Maximum output gain").defineInRange("handheld_max_gain", 5.0, 1.0, 25.0);
@@ -501,7 +619,7 @@ public class RadiocraftServerConfig {
 		BUILDER.pop();
 
 		BUILDER.push("Guide Book");
-		GUIDE_ON_FIRST_JOIN = BUILDER.comment(" Give each player the RadioCraft guide book the first time they join (needs Patchouli). /radiocraft guide",
+		GUIDE_ON_FIRST_JOIN = BUILDER.comment(" Give each player the ARRL Radiocraft Handbook (the guide book) the first time they join (needs Patchouli). /radiocraft guide",
 				" (or /radio guide) gives another any time").define("guide_on_first_join", true);
 		BUILDER.pop();
 

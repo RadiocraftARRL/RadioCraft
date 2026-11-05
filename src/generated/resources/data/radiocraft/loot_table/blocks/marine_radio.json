@@ -1,0 +1,33 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "radiocraft:mars_mod",
+                "radiocraft:commercial_program",
+                "radiocraft:marine_radio",
+                "minecraft:dyed_color"
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "radiocraft:marine_radio"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "radiocraft:blocks/marine_radio"
+}

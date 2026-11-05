@@ -4,6 +4,7 @@
   ],
   "slots": [
     "belt",
-    "back"
+    "back",
+    "body"
   ]
 }

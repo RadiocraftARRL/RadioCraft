@@ -55,4 +55,19 @@ class DetuningTest {
 		assertTrue(Detuning.splatterOn(0.5D, 0.8D, 0.4D) > Detuning.splatterOn(0.5D, 0.2D, 0.4D));
 		assertEquals(1.0D, Detuning.splatterOn(0.5D, 1.0D, 0.1D));
 	}
+
+	/** Out-of-band transmissions (a MARS-modded rig) splatter twice as far into the neighbouring frequencies. */
+	@Test
+	void outOfBandSplatterReachesTwiceAsFar() {
+		assertTrue(Detuning.ssb(F + 15_000, F, false).isNone(), "in band, 15 kHz off is clear");
+		Detuning.Effect wide = Detuning.ssb(F + 15_000, F, false, 2.0D);
+		assertFalse(wide.audible());
+		assertTrue(wide.qrm() > 0.0D, "out of band, 15 kHz off still splatters");
+		assertTrue(Detuning.ssb(F + 21_000, F, false, 2.0D).isNone());
+		assertTrue(Detuning.ssb(F + 5_000, F, false, 2.0D).splatter() > Detuning.ssb(F + 5_000, F, false).splatter(), "and inside the window sooner");
+		assertTrue(Detuning.fm(F + 15_000, F, 0).isNone());
+		assertTrue(Detuning.fm(F + 15_000, F, 0, 2.0D).qrm() > 0.0D);
+		assertTrue(Detuning.fm(146_520_000.0D, 146_560_000.0D, 20_000.0D, 2.0D).qrm() > 0.0D, "two channel steps off");
+		assertSame(Detuning.ON_FREQUENCY, Detuning.fm(F, F, 0, 2.0D));
+	}
 }

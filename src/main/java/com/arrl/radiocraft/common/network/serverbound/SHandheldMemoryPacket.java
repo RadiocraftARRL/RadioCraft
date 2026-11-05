@@ -36,7 +36,7 @@ public record SHandheldMemoryPacket(int index, HandheldMemory memory) implements
 			if(index < 0 || index >= context.player().getInventory().getContainerSize())
 				return;
 			ItemStack stack = context.player().getInventory().getItem(index);
-			if(stack.getItem() instanceof VHFHandheldItem)
+			if(stack.getItem() instanceof VHFHandheldItem && !VHFHandheldItem.isChannelized(stack)) // Commercial and marine radios have no VFO or memories.
 				stack.set(RadiocraftDataComponent.HANDHELD_MEMORY.value(), memory.sanitized());
 		});
 	}

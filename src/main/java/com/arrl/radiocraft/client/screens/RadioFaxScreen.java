@@ -153,6 +153,11 @@ public class RadioFaxScreen extends StationPanelScreen<RadioFaxMenu> {
 	@Override
 	protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
 		guiGraphics.blit(TEXTURE, leftPos, topPos, 0, 0, PANEL_WIDTH, PANEL_HEIGHT, PANEL_WIDTH, PANEL_HEIGHT);
+		// The photo paper slot is newer than the panel's art: a vanilla-style slot frame (on the bounty list).
+		int px = leftPos + RadioFaxMenu.SUPPLY_X[3] - 1, py = topPos + RadioFaxMenu.SUPPLY_Y - 1;
+		guiGraphics.fill(px, py, px + 18, py + 18, 0xFF373737);
+		guiGraphics.fill(px + 1, py + 1, px + 18, py + 18, 0xFFFFFFFF);
+		guiGraphics.fill(px + 1, py + 1, px + 17, py + 17, 0xFF8B8B8B);
 		guiGraphics.blit(INVENTORY_TEXTURE, leftPos + RadioFaxMenu.INVENTORY_X - 8, topPos + PANEL_HEIGHT - 1, 0, 126, 176, 96);
 	}
 
@@ -170,6 +175,7 @@ public class RadioFaxScreen extends StationPanelScreen<RadioFaxMenu> {
 		text(guiGraphics, "PAPER", RadioFaxMenu.SUPPLY_X[0] + 8, RadioFaxMenu.SUPPLY_Y - 7, 0.5F, LABEL, true);
 		text(guiGraphics, "BOOK", RadioFaxMenu.SUPPLY_X[1] + 8, RadioFaxMenu.SUPPLY_Y - 7, 0.5F, LABEL, true);
 		text(guiGraphics, "MAP", RadioFaxMenu.SUPPLY_X[2] + 8, RadioFaxMenu.SUPPLY_Y - 7, 0.5F, LABEL, true);
+		text(guiGraphics, "PHOTO", RadioFaxMenu.SUPPLY_X[3] + 8, RadioFaxMenu.SUPPLY_Y - 7, 0.5F, LABEL, true);
 		text(guiGraphics, "RECEIVED", RadioFaxMenu.TRAY_X[0], RadioFaxMenu.TRAY_Y - 7, 0.5F, LABEL, false);
 		renderLcd(guiGraphics, fax);
 	}
@@ -254,7 +260,7 @@ public class RadioFaxScreen extends StationPanelScreen<RadioFaxMenu> {
 			for(String line : fax().getLog())
 				tip.add(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
 		}
-		else if(inside(new int[] {RadioFaxMenu.SUPPLY_X[0] - 2, RadioFaxMenu.SUPPLY_Y - 8, RadioFaxMenu.SUPPLY_X[2] - RadioFaxMenu.SUPPLY_X[0] + 20, 8}, mouseX, mouseY))
+		else if(inside(new int[] {RadioFaxMenu.SUPPLY_X[0] - 2, RadioFaxMenu.SUPPLY_Y - 8, RadioFaxMenu.SUPPLY_X[3] - RadioFaxMenu.SUPPLY_X[0] + 20, 8}, mouseX, mouseY))
 			tip.add(Component.translatable("screen.radiocraft.radio_fax.tip.supplies"));
 		if(!tip.isEmpty())
 			guiGraphics.renderComponentTooltip(font, tip, mouseX, mouseY);

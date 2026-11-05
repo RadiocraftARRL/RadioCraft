@@ -66,6 +66,19 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                 .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(TowerFootholdBlock.BROKEN, false)))))));
+            else if(block == RadiocraftBlocks.RADIO_COMPUTER.get()) // A radio computer keeps its id (so its files) and programs.
+                add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
+                                .copyComponents(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.COMPUTER.get()))))));
+            else if(block instanceof com.arrl.radiocraft.common.blocks.radios.RadioBlock) // A radio keeps its MARS mod.
+                add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
+                                .copyComponents(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.MARS_MOD.get())
+                                .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.COMMERCIAL_PROGRAM.get()) // A commercial mobile keeps its channels...
+                                .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.MARINE_RADIO.get()) // ...a marine radio its channel and switches...
+                                .include(net.minecraft.core.component.DataComponents.DYED_COLOR))))));  // ...and its case colour.
             else
                 dropSelf(block);
         }

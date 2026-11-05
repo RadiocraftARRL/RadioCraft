@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "radiocraft:basic_commercial_handheld",
+    "radiocraft:upgraded_commercial_handheld",
+    "radiocraft:commercial_mobile",
+    "radiocraft:low_band_mobile"
+  ]
+}

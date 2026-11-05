@@ -1,6 +1,6 @@
 {
   "name": "Server Admins",
-  "description": "Tools for running a server: the Radio Moderation Computer and the moderation log behind it.",
+  "description": "Tools for running a server: the Radio Moderation Computer, the moderation log behind it, the FCC badge and field gear, and the Real-World Interface to a real radio.",
   "icon": "radiocraft:moderation_computer",
-  "sortnum": 12
+  "sortnum": 14
 }

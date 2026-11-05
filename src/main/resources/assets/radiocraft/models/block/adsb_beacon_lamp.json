@@ -1,0 +1,44 @@
+{
+  "credit": "RadioCraft placeholder, made by tools/adsb_models.py (see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "texture_size": [
+    32,
+    32
+  ],
+  "textures": {
+    "0": "radiocraft:block/adsb_beacon",
+    "particle": "radiocraft:block/adsb_beacon"
+  },
+  "elements": [
+    {
+      "name": "lamp_lit",
+      "from": [
+        4,
+        3,
+        1.85
+      ],
+      "to": [
+        5,
+        4,
+        1.95
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

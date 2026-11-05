@@ -1,0 +1,22 @@
+{
+  "name": "Radio Cloner",
+  "icon": "radiocraft:radio_cloner",
+  "category": "radiocraft:radios",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Radio Cloner$() copies one radio's programming into others, as a radio shop's cloning cable does. Empty, use it on a radio to $(thing)read$() it; loaded, use it on as many radios as you like to $(thing)write$(). Sneak and use it in the air to clear it; sneak-use on a radio reads that one instead.$(br2)Use it on a placed radio, or in the air with a handheld in your other hand."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What it copies",
+      "text": "$(li)$(l:radiocraft:radios/commercial_radios)Commercial radios$(): channels and contact list, into other commercial radios that can take them (a smaller radio takes what fits; the brick refuses digital). Each keeps its own unit ID. Keys marked not readable are $(thing)left behind$(): those channels arrive clear.$(li)2m ham radios: the dial (frequency, tones, offset) and a handheld's memory channels. Base stations have no memories.$(li)Marine radios have fixed channels: nothing to clone."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:radio_cloner",
+      "text": "The cable on a box with its memory and logic."
+    }
+  ]
+}

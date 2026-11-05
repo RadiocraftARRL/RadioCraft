@@ -205,6 +205,7 @@ val registrate_version = "MC1.21-1.3.0+67"
 val sable_companion_version = "1.6.0"
 val sable_version = "2.0.6"
 val veil_version = "4.3.2"
+val jserialcomm_version = "2.11.4" // Released 2025-11-01.
 
 dependencies {
     compileOnly(libs.mixinextras.common)
@@ -233,6 +234,22 @@ dependencies {
     // (tasks.shadowJar below): the Minecraft client ships its own jorbis module, and a jar-in-jar copy made the client
     // fail module resolution with "reads more than one module named jorbis" (issue #101).
     shade("org.jcraft:jorbis:0.0.17")
+
+    // jSerialComm (Apache 2.0 / LGPL 3, Maven Central: https://repo1.maven.org/maven2/com/fazecast/jSerialComm/), for
+    // the Real-World Interface's PTT (RTS/DTR) and COS (CTS/DSR) lines (1.12 step 11). Jar-in-jar, NOT shaded: its
+    // native methods are bound by JNI to the class names com.fazecast.jSerialComm.*, so relocating it would break every
+    // native call (UnsatisfiedLinkError), and an unrelocated shaded copy would clash with any other mod that ships it
+    // ("reads more than one module", as JOrbis did in issue #101). As a nested jar it stays intact, keeps its own
+    // module name (com.fazecast.jSerialComm) and its native libraries (Windows/, Linux/, OSX/... at the jar root, which
+    // it unpacks to the temp folder on first use), and NeoForge picks one copy if several mods nest it. RadioCraft only
+    // touches it by reflection (common/realworld/SerialControlPort) once real_world_interface_enabled is on and an
+    // interface has a serial port, so it never loads otherwise. verifyModJar checks it is nested and not unpacked.
+    implementation("com.fazecast:jSerialComm:${jserialcomm_version}")
+    // Not a mod, so dev runs (runClient/runServer/GameTests) only see it on MDG's legacy classpath (cross-step review).
+    "additionalRuntimeClasspath"("com.fazecast:jSerialComm:${jserialcomm_version}")
+    jarJar("com.fazecast:jSerialComm:[${jserialcomm_version},3.0)") {
+        version { prefer(jserialcomm_version) }
+    }
 
     // Create (https://github.com/Creators-of-Create/Create), for the alternator: compat/create only loads when Create is
     // installed and Create Crafts & Additions is not (it has its own). From maven.createmod.net (declared above).
@@ -371,6 +388,9 @@ val verifyModJar = tasks.register("verifyModJar") {
             if (names.any { it.startsWith("com/jcraft/") }) problems += "unrelocated com/jcraft classes in the jar"
             if (names.none { it.startsWith("com/arrl/radiocraft/shaded/com/jcraft/") }) problems += "relocated JOrbis missing"
             if (listed.any { it.contains("jorbis") }) problems += "JOrbis is jar-in-jar; it must be shaded (issue #101)"
+            // jSerialComm is the other way round: nested whole (JNI binds its class names, so it cannot be relocated).
+            if (listed.none { it.contains("jSerialComm") }) problems += "jSerialComm is not jar-in-jar (the Real-World Interface's serial port)"
+            if (names.any { it.startsWith("com/fazecast/") || it.contains("/com/fazecast/") }) problems += "jSerialComm classes are unpacked or relocated into the jar; it must stay a nested jar"
         }
         if (problems.isNotEmpty()) {
             throw GradleException("The mod jar ${jarFile.get().asFile.name} is broken:\n  " + problems.joinToString("\n  "))

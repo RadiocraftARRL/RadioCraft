@@ -11,6 +11,18 @@
       "entries": [
         {
           "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "radiocraft:mars_mod",
+                "radiocraft:commercial_program",
+                "radiocraft:marine_radio",
+                "minecraft:dyed_color"
+              ],
+              "source": "block_entity"
+            }
+          ],
           "name": "radiocraft:vhf_base_station_poor"
         }
       ],

@@ -73,6 +73,11 @@ public final class WefaxPrints {
 		return new Print(sheet(level, center, pixels, name, lore), pixels);
 	}
 
+	/** A sheet of a picture as it came ({@link WefaxChart#SIZE} square map colours): a chart another station sent. */
+	public static Print printPicture(ServerLevel level, BlockPos center, Component name, byte[] pixels) {
+		return new Print(sheet(level, center, pixels, name, List.of()), pixels);
+	}
+
 	/** The title a solar bulletin from {@code from} prints under. */
 	public static String bulletinTitle(String from) {
 		return "SOLAR WEATHER " + from;

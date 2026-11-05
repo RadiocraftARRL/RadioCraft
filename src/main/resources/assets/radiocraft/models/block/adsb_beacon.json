@@ -1,0 +1,167 @@
+{
+  "credit": "RadioCraft placeholder, made by tools/adsb_models.py (see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "texture_size": [
+    32,
+    32
+  ],
+  "textures": {
+    "0": "radiocraft:block/adsb_beacon",
+    "particle": "radiocraft:block/adsb_beacon"
+  },
+  "elements": [
+    {
+      "name": "box",
+      "from": [
+        3,
+        0,
+        2
+      ],
+      "to": [
+        13,
+        5,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            0,
+            13,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            14,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            14,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            4,
+            5,
+            10
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            4,
+            5,
+            10
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "lamp",
+      "from": [
+        4,
+        3,
+        1.9
+      ],
+      "to": [
+        5,
+        4,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            4,
+            9,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "blade",
+      "from": [
+        7.5,
+        5,
+        6
+      ],
+      "to": [
+        8.5,
+        9,
+        10
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            10,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            10,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "north": {
+          "uv": [
+            11.5,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            11.5,
+            4,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            10,
+            4,
+            12,
+            4.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

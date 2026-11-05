@@ -1,0 +1,28 @@
+{
+  "name": "MARS Mod",
+  "icon": "radiocraft:mars_mod",
+  "category": "radiocraft:radios",
+  "sortnum": 11,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Every ham radio $(thing)tunes$() past its band, like a real rig's general coverage receiver: an HF band a quarter of its width each side (20 m tunes 13.9125-14.4375 MHz), and VHF radios from 143 MHz up to 174 MHz, through the commercial and marine channels.$(br2)Out of the band it only $(thing)listens$(): key up there and the display reads $(thing)OUT OF BAND$() and nothing goes out."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:mars_mod",
+      "title": "MARS Mod",
+      "text": "A redstone torch and two jumper wires on a spare encased crystal of any band. Craft it together with an HF radio, the all-band, a QRP rig, the VHF base station, a VHF handheld or the manpack, and that radio $(thing)transmits$() anywhere it tunes. Everything else on the radio is kept. Receivers, repeaters, commercial and marine radios take no mod."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contraband",
+      "text": "In real life this is the modification hams make for the Military Auxiliary Radio System. For anyone else it is $(4)not legal$(): a ham may only transmit inside the ham bands.$(br2)A modded rig's filters are not built for it either: an $(thing)out-of-band$() signal $(thing)splatters$() onto the frequencies next to it twice as far as usual. The tooltip of a modded radio says it has the mod."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:mars_mod",
+      "text": "Then craft the mod and the radio together (shapeless). The $(l:radiocraft:propagation/band_plan)band plan$(/l) shows where the ham bands end. Contraband: no recipe book or JEI shows it, only this page."
+    }
+  ]
+}

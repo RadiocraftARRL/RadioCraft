@@ -64,7 +64,12 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 
 		String frequency = String.format(Locale.ROOT, "%.3f", radio.getFrequency() / 1_000_000.0D);
 		// Another radio on the antenna's coax (it hears nothing then), or the automatic tuner gave up.
-		String status = radio.isCoaxShared() ? "COAX SHARED" : radio.isTuneFailed() ? "TUNE FAIL" : mode(radio) + " " + meter(radio);
+		String status = radio.isCoaxShared() ? "COAX SHARED" : radio.isTuneFailed() ? "TUNE FAIL"
+				: radio.isTransmitInhibited() ? "OUT OF BAND" : mode(radio) + " " + meter(radio); // Out of band without a MARS mod: no transmit.
+		if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.ChannelDisplay channelized) { // Commercial and marine: the channel, not a frequency.
+			frequency = channelized.displayLine();
+			status = radio.isCoaxShared() ? "COAX SHARED" : channelized.displayStatus();
+		}
 		float width = (display.x2() - display.x1()) / 16.0F, height = (display.y2() - display.y1()) / 16.0F;
 		float big = Math.min(width * 0.9F / font.width(frequency), height * 0.55F / font.lineHeight);
 		float small = Math.min(big * 0.6F, width * 0.9F / font.width(status));
@@ -89,7 +94,7 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 	                                java.util.List<RadioDisplays.Lamp> lamps, PoseStack poseStack, MultiBufferSource buffer) {
 		if(lamps.isEmpty())
 			return;
-		boolean tx = radio.isPTTDown() || radio.isSendingDataSynced(), rx = !tx && radio.getSyncedSignal() > 0.0D;
+		boolean tx = (radio.isPTTDown() && !radio.isTransmitInhibited()) || radio.isSendingDataSynced(), rx = !tx && radio.getSyncedSignal() > 0.0D;
 		if(!tx && !rx)
 			return;
 		poseStack.pushPose();

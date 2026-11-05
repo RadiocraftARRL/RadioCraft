@@ -1,6 +1,7 @@
 package com.arrl.radiocraft.common.init;
 
 import com.arrl.radiocraft.Radiocraft;
+import com.arrl.radiocraft.common.worldgen.RotateBlocksProcessor;
 import com.arrl.radiocraft.common.worldgen.SitePiece;
 import com.arrl.radiocraft.common.worldgen.SiteProcessor;
 import com.arrl.radiocraft.common.worldgen.SiteStructure;
@@ -28,6 +29,9 @@ public final class RadiocraftStructures {
 			() -> (StructurePieceType.StructureTemplateType)SitePiece::new);
 	public static final DeferredHolder<StructureProcessorType<?>, StructureProcessorType<SiteProcessor>> SITE_PROCESSOR = PROCESSORS.register("site",
 			() -> () -> SiteProcessor.CODEC);
+	/** Turns RadioCraft's blocks with a turned piece: the ham shack in village house pools (see {@code VillageHouses}). */
+	public static final DeferredHolder<StructureProcessorType<?>, StructureProcessorType<RotateBlocksProcessor>> ROTATE_BLOCKS = PROCESSORS.register("rotate_blocks",
+			() -> () -> RotateBlocksProcessor.CODEC);
 
 	private RadiocraftStructures() {}
 

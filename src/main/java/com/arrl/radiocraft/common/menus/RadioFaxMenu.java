@@ -34,7 +34,7 @@ public final class RadioFaxMenu extends AbstractContainerMenu implements Station
 	public static final int[] OUTBOX_AT = {20, 30};
 	public static final int[] TRAY_X = {110, 132, 154, 176};
 	public static final int TRAY_Y = 80;
-	public static final int[] SUPPLY_X = {20, 42, 64};
+	public static final int[] SUPPLY_X = {20, 42, 64, 86};
 	public static final int SUPPLY_Y = 80;
 
 	public final RadioFaxBlockEntity blockEntity;
@@ -43,7 +43,7 @@ public final class RadioFaxMenu extends AbstractContainerMenu implements Station
 	private static final int OUTBOX_SLOT = 0;
 	private static final int RECEIVED_START = 1;
 	private static final int SUPPLY_START = RECEIVED_START + RadioFaxBlockEntity.RECEIVED_SLOTS;
-	private static final int PLAYER_START = SUPPLY_START + 3;
+	private static final int PLAYER_START = SUPPLY_START + RadioFaxBlockEntity.SUPPLY_SLOTS;
 	private static final int PLAYER_END = PLAYER_START + 36;
 
 	public RadioFaxMenu(int id, Inventory playerInventory, RadioFaxBlockEntity blockEntity) {
@@ -54,7 +54,7 @@ public final class RadioFaxMenu extends AbstractContainerMenu implements Station
 		addSlot(new SlotItemHandler(blockEntity.getOutbox(), 0, OUTBOX_AT[0], OUTBOX_AT[1]));
 		for(int i = 0; i < RadioFaxBlockEntity.RECEIVED_SLOTS; i++)
 			addSlot(new SlotItemHandler(blockEntity.getReceived(), i, TRAY_X[i], TRAY_Y));
-		for(int i = 0; i < 3; i++)
+		for(int i = 0; i < RadioFaxBlockEntity.SUPPLY_SLOTS; i++)
 			addSlot(new SlotItemHandler(blockEntity.getSupplies(), i, SUPPLY_X[i], SUPPLY_Y));
 
 		for(int row = 0; row < 3; row++)
@@ -111,7 +111,7 @@ public final class RadioFaxMenu extends AbstractContainerMenu implements Station
 		}
 		else {
 			boolean moved = false;
-			for(int s = 0; s < 3; s++)
+			for(int s = 0; s < RadioFaxBlockEntity.SUPPLY_SLOTS; s++)
 				if(RadioFaxBlockEntity.isSupply(s, stack))
 					moved = moveItemStackTo(stack, SUPPLY_START + s, SUPPLY_START + s + 1, false);
 			if(!moved && FileTransfer.canSend(stack))

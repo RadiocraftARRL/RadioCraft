@@ -1,0 +1,21 @@
+{
+  "name": "ADS-B on the Computer",
+  "icon": "radiocraft:floppy_adsb",
+  "category": "radiocraft:computer",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Cable an $(l:radiocraft:aviation/adsb_receiver)ADS-B receiver$(/l) to the computer (touching, or on its data wire) and the $(item)ADS-B$() program becomes a second display for it. On the left, the scope: range rings, trails, each craft with its track line and flight ID. On the right, the receiver's state and a table of the traffic, nearest first, and the craft you pick in full."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "F5 switches the receiver on or off. + and - (or PgUp and PgDn, or the mouse wheel on the scope) change the range; it is the program's own, so the receiver's screen can show another. Up and Down pick a craft; T turns the tags on the scope off and on. Emergency squawks show in red."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_adsb",
+      "text": "A blank floppy and a feather."
+    }
+  ]
+}

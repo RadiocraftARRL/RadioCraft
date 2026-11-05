@@ -22,7 +22,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 
 /**
- * The RadioCraft guide book (a Patchouli book, see assets/radiocraft/patchouli_books): given once on a player's first
+ * The ARRL Radiocraft Handbook, the guide book (a Patchouli book, see assets/radiocraft/patchouli_books): given once on a player's first
  * join ({@code guide_on_first_join}), and any time with {@code /radiocraft guide} or {@code /radio guide}. Patchouli is
  * optional, so the book is looked up by name; without Patchouli nothing is given.
  */

@@ -1,0 +1,62 @@
+{
+  "name": "Commercial Radios",
+  "icon": "radiocraft:basic_commercial_handheld",
+  "category": "radiocraft:radios",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Businesses, fire departments and the forest service use $(thing)commercial$() radios: no dial, just a $(thing)16-position channel knob$() (16 channels; the upgraded handheld holds 40, see its page). Each channel was set up by a radio shop: its receive and transmit frequencies, analog FM or digital, a CTCSS tone, and an encryption key.$(br2)You cannot change a channel on the radio itself. A radio computer's $(l:radiocraft:computer/radio_programmer)programmer$() does that, or a $(l:radiocraft:radios/radio_cloner)Radio Cloner$() copies another radio (or an operator with $(thing)/rcdebug commercial$())."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Who is talking",
+      "text": "Each radio has a $(thing)unit ID$() and sends it every time it keys up: on FM as a short $(thing)brrrp$() of data at the start, on digital inside the data. The upgraded handheld and the mobiles show the caller's ID, or the name their contact list gives it (\"ENG 5\"), while they talk and for a few seconds after. Encrypted calls show the ID even without the key. The basic brick has no display: it only sends."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Out of the box",
+      "text": "A new radio comes with the five license-free $(thing)MURS$() channels: 151.820, 151.880, 151.940, 154.570 and 154.600 MHz. The dual-band handheld adds 146.520, the 2 m calling frequency. The low band mobile comes with four simplex channels around 33-39 MHz.$(br2)A knob position with no channel is dead: no receive, no transmit. Commercial radios always transmit inside their own band, and take no MARS mod."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:basic_commercial_handheld",
+      "title": "Basic Commercial Handheld",
+      "text": "A 1990s brick for 150-174 MHz, analog FM only. No display: just RX and TX lights and the knob. Sneak and use it to turn the knob, power and volume; hold right click to talk. It runs on a small battery and charges in a desk charger like the ham handheld."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:upgraded_commercial_handheld",
+      "title": "Upgraded Commercial Handheld",
+      "text": "The fire-service radio: 40 channels, digital voice and encryption, and the 2 m ham band too. Its 16-position knob works with a $(thing)zone switch$(): zone A is channels 1-16, B 17-32, C 33-40. The display shows the channel name, zone and number."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:commercial_mobile",
+      "title": "Mobile Radios",
+      "text": "The $(item)Commercial Mobile Radio$() (150-174 MHz, analog and digital) and the $(item)Low Band Mobile Radio$() (30-50 MHz, analog) sit on a desk, in a vehicle or on a ship, with a hand mic on a cord: sneak and use to take it. They need power and an antenna for their band, like the base stations."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Digital voice",
+      "text": "Digital has no static at all: it is perfectly clean until the signal is about as weak as FM would be with 70% static, warbles for a moment, then drops out.$(br2)An $(thing)encrypted$() channel needs the same key at the other end. Without it you hear garbled digital noise; on an analog or ham radio a digital signal is a harsh buzz. A repeater passes it on as it is."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Paint",
+      "text": "The cases take dye like leather armour: craft a radio with dyes to colour it. A mobile keeps its colour and its channels when you break it and place it again."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:basic_commercial_handheld",
+      "recipe2": "radiocraft:upgraded_commercial_handheld",
+      "text": "Upgrading a brick does not keep its channels: the new radio starts on its factory channels."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:commercial_mobile",
+      "recipe2": "radiocraft:low_band_mobile",
+      "text": "The low band mobile takes a 10 m crystal. A $(l:radiocraft:computer/frequency_manager)frequency list$(/l) can fill a whole fleet's channels."
+    }
+  ]
+}

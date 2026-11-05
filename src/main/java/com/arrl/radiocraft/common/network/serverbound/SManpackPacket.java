@@ -57,7 +57,7 @@ public record SManpackPacket(String action, float value) implements CustomPacket
 				case "tune" -> {
 					Band band = Band.getBand(state.bandName());
 					if(band != null)
-						state = state.withFrequency(com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.snapToStep(band, state.frequency(),
+						state = state.withFrequency(com.arrl.radiocraft.common.radio.BandEdges.snapToTuningRange(band, state.frequency(), // Past the band edges too.
 								RadiocraftServerConfig.HF_FREQUENCY_STEP.get(), Math.max(-1000, Math.min(1000, Math.round(value)))));
 				}
 				case "gain" -> state = state.withGain(Math.max(0.0F, Math.min(2.0F, value)));

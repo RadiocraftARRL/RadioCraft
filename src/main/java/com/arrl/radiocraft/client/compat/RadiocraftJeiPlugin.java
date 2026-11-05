@@ -6,14 +6,19 @@ import com.arrl.radiocraft.client.screens.StationPanelScreen;
 import com.arrl.radiocraft.client.screens.RadioFaxScreen;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.RecipeTypes;
+import mezz.jei.api.runtime.IJeiRuntime;
 import mezz.jei.api.gui.handlers.IGuiContainerHandler;
 import mezz.jei.api.gui.handlers.IGuiProperties;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,6 +51,26 @@ public class RadiocraftJeiPlugin implements IModPlugin {
 		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.DtmfEncoderScreen.class, screen -> null);
 		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.DtmfDecoderScreen.class, screen -> null);
 		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.moderation.ModerationComputerScreen.class, screen -> null); // It fills the window.
+		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.computer.RadioComputerScreen.class, screen -> null); // So does the radio computer.
+	}
+
+	/** Recipes JEI must not show: the MARS mod is contraband (maintainer, 2026-11-05). The item stays in the list. */
+	static final List<ResourceLocation> HIDDEN_RECIPES = List.of(Radiocraft.id("mars_mod"), Radiocraft.id("mars_mod_install"));
+
+	@Override
+	public void onRuntimeAvailable(@NotNull IJeiRuntime runtime) {
+		net.minecraft.client.multiplayer.ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+		if(level == null)
+			return;
+		List<RecipeHolder<CraftingRecipe>> hidden = new ArrayList<>();
+		for(ResourceLocation id : HIDDEN_RECIPES) {
+			level.getRecipeManager().byKey(id).ifPresent(holder -> {
+				if(holder.value() instanceof CraftingRecipe crafting)
+					hidden.add(new RecipeHolder<>(holder.id(), crafting));
+			});
+		}
+		if(!hidden.isEmpty())
+			runtime.getRecipeManager().hideRecipes(RecipeTypes.CRAFTING, hidden);
 	}
 
 	/** The panel's rectangle on the window, scaled up as it is drawn. */

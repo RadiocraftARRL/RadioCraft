@@ -402,8 +402,19 @@ public final class ModerationLog {
 
 	private OpenTransmission newTransmission(long id, TransmissionKind kind, Object source, OpenTransmission.Channel channel, float hz, Level level, Station station,
 			@Nullable Band band, float ctcss, long linkedTo, boolean keepAudio, @Nullable UUID tapeRecording) {
+		String mode = channel == OpenTransmission.Channel.VOICE ? voiceMode(station.mode(), com.arrl.radiocraft.common.radio.voice.DigitalVoice.current()) : station.mode();
 		return new OpenTransmission(id, kind, source, channel, hz, TransmissionRecord.startMsOf(id), server.overworld().getGameTime(), level.dimension().location().toString(),
-				station.kind(), station.pos(), station.antennaPos(), band == null ? "" : band.name(), station.mode(), ctcss, linkedTo, keepAudio, level, tapeRecording);
+				station.kind(), station.pos(), station.antennaPos(), band == null ? "" : band.name(), mode, ctcss, linkedTo, keepAudio, level, tapeRecording);
+	}
+
+	/**
+	 * The mode a voice transmission is logged with: the radio's, or DIG / DIG ENC for a commercial digital channel, and
+	 * the sending radio's unit ID when it has one ("FM ID 1205"; 1.12 playtest fixes 2). Read on the transmitting
+	 * thread, where the transmitter set its {@code DigitalVoice} mode.
+	 */
+	static String voiceMode(String radioMode, com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode voice) {
+		String mode = voice.digital() ? voice.encrypted() ? "DIG ENC" : "DIG" : radioMode;
+		return voice.unitId() > 0 ? (mode.isEmpty() ? "" : mode + " ") + "ID " + voice.unitId() : mode;
 	}
 
 	/** What {@code radio} (sending through {@code antenna}) is, for a record. */

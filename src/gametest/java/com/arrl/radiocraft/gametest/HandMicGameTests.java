@@ -66,7 +66,9 @@ public class HandMicGameTests {
         helper.startSequence()
                 .thenIdle(2)
                 .thenExecute(() -> {
-                    TransmissionGameTests.setupSsb(helper, RADIO, 400);
+                    // 14.345 MHz: inside 20m. This was 400 steps, which the dial used to clamp to the band top (14.350);
+                    // since 1.12 it tunes past the band, so 14.400 is OUT OF BAND and the radio rightly refuses to key.
+                    TransmissionGameTests.setupSsb(helper, RADIO, 345);
                     stand(helper, player, 2.0D);
                     player.setShiftKeyDown(true);
                     helper.useBlock(RADIO, player);

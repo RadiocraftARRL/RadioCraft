@@ -47,7 +47,7 @@ public class AprsModuleInstallRecipe extends CustomRecipe {
 			ItemStack stack = input.getItem(i);
 			if(stack.isEmpty())
 				continue;
-			if(stack.getItem() instanceof VHFHandheldItem && handheld.isEmpty() && !stack.has(RadiocraftDataComponent.HANDHELD_APRS.value()))
+			if(stack.getItem() instanceof VHFHandheldItem && !VHFHandheldItem.isChannelized(stack) && handheld.isEmpty() && !stack.has(RadiocraftDataComponent.HANDHELD_APRS.value()))
 				handheld = stack;
 			else if(stack.is(RadiocraftItems.APRS_MODULE.get()))
 				modules++;

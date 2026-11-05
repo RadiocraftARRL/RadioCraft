@@ -305,6 +305,8 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         buildHfRadio80mRecipe(recipeOutput);
         buildVhfRepeaterRecipe(recipeOutput);
         buildVhfHandheldRecipe(recipeOutput);
+        buildCommercialRadioRecipes(recipeOutput);
+        buildMarineRadioRecipes(recipeOutput);
         buildQrpRadioRecipes(recipeOutput);
 
         // All band radio variants (shapeless)
@@ -1133,6 +1135,111 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         return Ingredient.of(radio.values().toArray(Item[]::new));
     }
 
+    /** Any quality of encased crystal for {@code band}: a commercial radio is synthesized, the crystal is only its reference. */
+    private static Ingredient encasedCrystal(CrystalBand band) {
+        return Ingredient.of(RadiocraftItems.ENCASED_CRYSTALS.get(band).values().stream().map(Supplier::get).toArray(ItemLike[]::new));
+    }
+
+    /** Any encased crystal, any band and quality. */
+    private static Ingredient anyEncasedCrystal() {
+        return Ingredient.of(RadiocraftItems.ENCASED_CRYSTALS.values().stream().flatMap(m -> m.values().stream()).map(Supplier::get).toArray(ItemLike[]::new));
+    }
+
+    /** The commercial radios (1.12 step 2, for review): a cheap brick, its fire-service upgrade, and the two mobiles. */
+    private void buildCommercialRadioRecipes(RecipeOutput recipeOutput) {
+        // The 1990s brick (maintainer, 2026-11-05): an antenna, a VHF crystal, a speaker and a built-in mic element in an
+        // iron case with one PTT button. No keypad, so it costs about what the ham VHF handheld does.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get())
+                .pattern(" L ")
+                .pattern("SCE")
+                .pattern("IBI")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('C', encasedCrystal(CrystalBand.VHF))
+                .define('E', RadiocraftItems.MICROPHONE_ELEMENT.get())
+                .define('I', Items.IRON_INGOT)
+                .define('B', ItemTags.BUTTONS)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        // The fire-service handheld (maintainer, 2026-11-05): the brick with a display (glass pane), a keypad (buttons)
+        // and a comparator for the digital and encryption logic. Its channels are not carried over.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get())
+                .pattern(" G ")
+                .pattern("BHB")
+                .pattern("RCR")
+                .define('G', Items.GLASS_PANE)
+                .define('B', ItemTags.BUTTONS)
+                .define('H', RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get())
+                .define('R', Items.REDSTONE)
+                .define('C', Items.COMPARATOR)
+                .unlockedBy("has_basic_commercial_handheld", has(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get()))
+                .save(recipeOutput);
+        // The mobiles (maintainer, 2026-11-05): the VHF base station's parts in an all-metal case with power leads. Low band
+        // takes a 10m crystal.
+        mobileRecipe(recipeOutput, RadiocraftItems.COMMERCIAL_MOBILE.get(), CrystalBand.VHF);
+        mobileRecipe(recipeOutput, RadiocraftItems.LOW_BAND_MOBILE.get(), CrystalBand.BAND_10M);
+    }
+
+    /**
+     * The marine radios (1.12 step 3, for review): built like the commercial ones, with waterproof wire for a life
+     * at sea. The fixed-mount radio is the mobile's recipe on waterproof wire; the handheld the brick's with it.
+     */
+    private void buildMarineRadioRecipes(RecipeOutput recipeOutput) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.MARINE_HANDHELD.get())
+                .pattern("WLW")
+                .pattern("SCE")
+                .pattern("IBI")
+                .define('W', RadiocraftItems.WATERPROOF_WIRE.get())
+                .define('L', Items.LIGHTNING_ROD)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('C', encasedCrystal(CrystalBand.VHF))
+                .define('E', RadiocraftItems.MICROPHONE_ELEMENT.get())
+                .define('I', Items.IRON_INGOT)
+                .define('B', ItemTags.BUTTONS)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.MARINE_RADIO.get())
+                .pattern("III")
+                .pattern("MCS")
+                .pattern("#R#")
+                .define('I', Items.IRON_INGOT)
+                .define('M', RadiocraftItems.HAND_MICROPHONE.get())
+                .define('C', encasedCrystal(CrystalBand.VHF))
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('#', RadiocraftItems.WATERPROOF_WIRE.get())
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        // The Real-World Interface (1.12 step 11; maintainer, 2026-11-05): a rig interface box. A radio interface (the TNC,
+        // which already carries the audio both ways), leads to the real rig, a comparator for the VOX, a board, an iron case.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.REAL_WORLD_INTERFACE.get())
+                .pattern("ICI")
+                .pattern("#R#")
+                .pattern("IBI")
+                .define('I', Items.IRON_INGOT)
+                .define('C', Items.COMPARATOR)
+                .define('#', RadiocraftItems.WIRE.get())
+                .define('R', RadiocraftItems.RADIO_INTERFACE.get())
+                .define('B', RadiocraftItems.HF_CIRCUIT_BOARD.get())
+                .unlockedBy("has_radio_interface", has(RadiocraftItems.RADIO_INTERFACE.get()))
+                .save(recipeOutput);
+    }
+
+    private void mobileRecipe(RecipeOutput recipeOutput, Item result, CrystalBand crystal) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
+                .pattern("III")
+                .pattern("MCS")
+                .pattern("#R#")
+                .define('I', Items.IRON_INGOT)
+                .define('M', RadiocraftItems.HAND_MICROPHONE.get())
+                .define('C', encasedCrystal(crystal))
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('#', RadiocraftItems.WIRE.get())
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+    }
+
     private void buildVhfHandheldRecipe(RecipeOutput recipeOutput) {
         crystalRadio(recipeOutput, RadiocraftItems.VHF_HANDHELD_VARIANTS, CrystalBand.VHF, result -> ShapedRecipeBuilder.shaped(RecipeCategory.MISC, result)
                         .pattern("L  ")
@@ -1156,6 +1263,212 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .save(recipeOutput);
         net.minecraft.data.recipes.SpecialRecipeBuilder.special(com.arrl.radiocraft.common.crafting.AprsModuleInstallRecipe::new)
                 .save(recipeOutput, Radiocraft.id("vhf_handheld_aprs_module"));
+
+        // The MARS mod (maintainer, 2026-11-05): a diode (redstone torch) and jumper wires on a spare crystal of any band.
+        // Crafted with a radio it goes inside.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.MARS_MOD.get())
+                .pattern("WTW")
+                .pattern(" C ")
+                .define('W', RadiocraftItems.WIRE.get())
+                .define('T', Items.REDSTONE_TORCH)
+                .define('C', anyEncasedCrystal())
+                // Contraband (maintainer, 2026-11-05): never offered by the recipe book. Its only criterion can never
+                // trigger, so the recipe is unlocked only by /recipe give. JEI hides it too (RadiocraftJeiPlugin); the
+                // Handbook still shows it.
+                .unlockedBy("impossible", net.minecraft.advancements.CriteriaTriggers.IMPOSSIBLE.createCriterion(
+                        new net.minecraft.advancements.critereon.ImpossibleTrigger.TriggerInstance()))
+                .save(recipeOutput);
+        net.minecraft.data.recipes.SpecialRecipeBuilder.special(com.arrl.radiocraft.common.crafting.MarsModInstallRecipe::new)
+                .save(recipeOutput, Radiocraft.id("mars_mod_install"));
+
+        // The Radio Cloner (1.12 playtest fixes 2; for review): the cloning cable (wire) on an iron box with its memory
+        // (diamond) and logic (comparator).
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, RadiocraftItems.RADIO_CLONER.get())
+                .pattern(" W ")
+                .pattern("IDI")
+                .pattern("ICI")
+                .define('W', RadiocraftItems.WIRE.get())
+                .define('I', Items.IRON_INGOT)
+                .define('D', Items.DIAMOND)
+                .define('C', Items.COMPARATOR)
+                .unlockedBy("has_basic_commercial_handheld", has(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get()))
+                .unlockedBy("has_vhf_handheld", has(RadiocraftItems.VHF_HANDHELD.get()))
+                .save(recipeOutput);
+
+        // The band plan sheet: paper and ink. Cheap, so every shack can pin one up.
+        net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, RadiocraftItems.BAND_PLAN.get())
+                .requires(Items.PAPER)
+                .requires(Items.INK_SAC)
+                .unlockedBy("has_paper", has(Items.PAPER))
+                .save(recipeOutput);
+
+        // The camera (1.12 step 4): an iron body, a glass lens, a redstone shutter and a button to fire it.
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, RadiocraftItems.CAMERA.get())
+                .pattern(" B ")
+                .pattern("IGI")
+                .pattern("IRI")
+                .define('B', ItemTags.BUTTONS)
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.GLASS_PANE)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_map", has(Items.MAP))
+                .save(recipeOutput);
+        // Photo paper: an empty map in eight paper makes sixteen black and white sheets; the bottom row as red, green and
+        // blue dye makes colour paper.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.PHOTO_PAPER.get(), 16)
+                .pattern("PPP")
+                .pattern("PMP")
+                .pattern("PPP")
+                .define('P', Items.PAPER)
+                .define('M', Items.MAP)
+                .unlockedBy("has_map", has(Items.MAP))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.COLOR_PHOTO_PAPER.get(), 16)
+                .pattern("PPP")
+                .pattern("PMP")
+                .pattern("RGB")
+                .define('P', Items.PAPER)
+                .define('M', Items.MAP)
+                .define('R', Items.RED_DYE)
+                .define('G', Items.GREEN_DYE)
+                .define('B', Items.BLUE_DYE)
+                .unlockedBy("has_map", has(Items.MAP))
+                .save(recipeOutput);
+
+        radioComputer(recipeOutput);
+        adsb(recipeOutput);
+        fccGear(recipeOutput);
+    }
+
+    /**
+     * FCC field gear (1.12 step 10): the felt hat (brown wool with a black band), the corduroy jacket (brown wool with a
+     * red tie) and the seal banner pattern (paper and a lightning rod, for the bolts on the seal). The badge has no
+     * recipe: operators issue it with /radiocraft fcc badge.
+     */
+    private void fccGear(RecipeOutput recipeOutput) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, RadiocraftItems.FCC_HAT.get())
+                .pattern("WWW")
+                .pattern("WBW")
+                .define('W', Items.BROWN_WOOL)
+                .define('B', Items.BLACK_DYE)
+                .unlockedBy("has_brown_wool", has(Items.BROWN_WOOL))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, RadiocraftItems.FCC_JACKET.get())
+                .pattern("W W")
+                .pattern("WTW")
+                .pattern("WWW")
+                .define('W', Items.BROWN_WOOL)
+                .define('T', Items.RED_DYE)
+                .unlockedBy("has_brown_wool", has(Items.BROWN_WOOL))
+                .save(recipeOutput);
+        net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, RadiocraftItems.FCC_BANNER_PATTERN.get())
+                .requires(Items.PAPER)
+                .requires(Items.LIGHTNING_ROD)
+                .unlockedBy("has_lightning_rod", has(Items.LIGHTNING_ROD))
+                .save(recipeOutput);
+    }
+
+    /**
+     * ADS-B (1.12 step 9): the beacon (a transponder box: its blade antenna, a circuit board, iron case), the receiver
+     * (a green CRT over a circuit board) and the antenna (a short copper stub on coax).
+     */
+    private static void adsb(RecipeOutput recipeOutput) {
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.ADSB_BEACON.get())
+                .pattern(" L ")
+                .pattern("ICI")
+                .pattern("IRI")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('I', Items.IRON_INGOT)
+                .define('C', encasedCrystal(CrystalBand.VHF))
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_lightning_rod", has(Items.LIGHTNING_ROD))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.ADSB_RECEIVER.get())
+                .pattern("IGI")
+                .pattern("RCR")
+                .pattern("III")
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.LIME_STAINED_GLASS_PANE)
+                .define('R', Items.REDSTONE)
+                .define('C', Items.COMPARATOR)
+                .unlockedBy("has_comparator", has(Items.COMPARATOR))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.ADSB_ANTENNA.get())
+                .pattern("C")
+                .pattern("I")
+                .pattern("X")
+                .define('C', Items.COPPER_INGOT)
+                .define('I', Items.IRON_INGOT)
+                .define('X', RadiocraftItems.COAX_WIRE.get())
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
+    }
+
+    /**
+     * The radio computer (1.12 step 5): the computer, its monitor and scanner, a blank floppy, and each program's floppy
+     * (a blank disk and something that stands for the program). The secret programs have no recipe: they are found.
+     */
+    private static void radioComputer(RecipeOutput recipeOutput) {
+        // The computer is late game (maintainer, 2026-11-05): gold edge connectors and a crystal clock oscillator, a diamond
+        // processor between nether quartz blocks, and a floppy drive door in an iron case.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.RADIO_COMPUTER.get())
+                .pattern("GXG")
+                .pattern("QDQ")
+                .pattern("ITI")
+                .define('G', Items.GOLD_INGOT)
+                .define('X', anyEncasedCrystal())
+                .define('Q', Items.QUARTZ_BLOCK)
+                .define('D', Items.DIAMOND)
+                .define('I', Items.IRON_INGOT)
+                .define('T', Items.IRON_TRAPDOOR)
+                .unlockedBy("has_diamond", has(Items.DIAMOND))
+                .save(recipeOutput);
+        // A CRT (a glass pane in an iron case, a redstone tube) over a keyboard of buttons.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.COMPUTER_MONITOR.get())
+                .pattern("III")
+                .pattern("IGI")
+                .pattern("BRB")
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.GLASS_PANE)
+                .define('B', ItemTags.BUTTONS)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_hf_circuit_board", has(RadiocraftItems.HF_CIRCUIT_BOARD.get()))
+                .save(recipeOutput);
+        // Flatbed glass on top, ink for the printer underneath.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.SCANNER.get())
+                .pattern("GGG")
+                .pattern("IRI")
+                .pattern("IKI")
+                .define('G', Items.GLASS_PANE)
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.REDSTONE)
+                .define('K', Items.INK_SAC)
+                .unlockedBy("has_paper", has(Items.PAPER))
+                .save(recipeOutput);
+        net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, RadiocraftItems.FLOPPY_DISK.get(), 2)
+                .requires(Items.IRON_NUGGET) // The shutter.
+                .requires(Items.REDSTONE) // The magnetic disk.
+                .requires(Items.BLACK_DYE) // The plastic shell.
+                .requires(Items.PAPER) // The label.
+                .unlockedBy("has_redstone", has(Items.REDSTONE))
+                .save(recipeOutput);
+        java.util.Map<com.arrl.radiocraft.common.computer.ComputerApp, net.minecraft.world.level.ItemLike> programs = new java.util.LinkedHashMap<>();
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.BOOK_EDITOR, Items.WRITABLE_BOOK);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.LOGBOOK, Items.BOOK);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.FREQUENCY_MANAGER, RadiocraftItems.BAND_PLAN.get());
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.PROGRAMMER, Items.COMPARATOR);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SOLAR_WEATHER, Items.DAYLIGHT_DETECTOR);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.APRS, Items.COMPASS);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.WEFAX, Items.MAP);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.RADIO_FAX, Items.PAPER);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SSTV, Items.PAINTING);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.DIRECTION_FINDING, Items.SPYGLASS);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.ADSB, Items.FEATHER);
+        programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
+                .requires(RadiocraftItems.FLOPPY_DISK.get())
+                .requires(ingredient)
+                .unlockedBy("has_floppy_disk", has(RadiocraftItems.FLOPPY_DISK.get()))
+                .save(recipeOutput));
     }
 
     /** Every pure crystal, raw or encased, of any band. */

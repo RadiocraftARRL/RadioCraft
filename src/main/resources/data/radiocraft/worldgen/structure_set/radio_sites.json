@@ -15,6 +15,10 @@
     {
       "structure": "radiocraft:direction_finding_station",
       "weight": 1
+    },
+    {
+      "structure": "radiocraft:ham_shack",
+      "weight": 2
     }
   ],
   "placement": {

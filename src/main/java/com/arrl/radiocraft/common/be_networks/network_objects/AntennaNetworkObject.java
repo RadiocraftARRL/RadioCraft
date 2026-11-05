@@ -75,8 +75,8 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
         for(BlockPos checkPos : receivers()) {
             if(level.isLoaded(checkPos)) {
                 BlockEntity be = level.getChunkAt(checkPos).getBlockEntity(checkPos, LevelChunk.EntityCreationType.IMMEDIATE);
-                if(be instanceof RadioBlockEntity radio) {
-                    radio.receiveVoice(packet); // The radio decides whether it is close enough in frequency (Detuning).
+                if(be instanceof com.arrl.radiocraft.api.blockentities.radio.IAntennaReceiver receiver) {
+                    receiver.receiveVoice(packet); // The radio decides whether it is close enough in frequency (Detuning). Every radio is one.
                 }
                 else if(be instanceof DirectionFinderModuleBlockEntity module)
                     module.hear(packet);
@@ -122,6 +122,10 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
                     if(BandUtils.areFrequenciesEqualWithTolerance(radio.getTunedFrequency(), packet.getFrequency(), 1000.0F)) // Only receive if listening to correct frequency.
                         radio.receiveCW(packet);
                 }
+                else if(be instanceof com.arrl.radiocraft.api.blockentities.radio.ICWReceiver receiver) { // Another mod's CW receiver.
+                    if(receiver.acceptsCW(packet))
+                        receiver.receiveCW(packet);
+                }
                 else if(be instanceof DirectionFinderModuleBlockEntity module)
                     module.hear(packet);
             }
@@ -141,8 +145,8 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
     public void receiveDataPacket(AntennaDataPacket packet) {
         packet.setStrength(packet.getStrength() * receivePass(packet.getFrequency()) * splitShare());
         for(BlockPos checkPos : receivers()) {
-            if(level.isLoaded(checkPos) && level.getBlockEntity(checkPos) instanceof RadioBlockEntity radio)
-                radio.receiveData(packet);
+            if(level.isLoaded(checkPos) && level.getBlockEntity(checkPos) instanceof com.arrl.radiocraft.api.blockentities.radio.IAntennaReceiver receiver)
+                receiver.receiveData(packet);
             else if(level.isLoaded(checkPos) && level.getBlockEntity(checkPos) instanceof DirectionFinderModuleBlockEntity module)
                 module.hear(packet);
         }

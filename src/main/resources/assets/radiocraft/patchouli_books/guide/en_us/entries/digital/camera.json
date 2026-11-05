@@ -1,0 +1,30 @@
+{
+  "name": "Camera and Photos",
+  "icon": "radiocraft:camera",
+  "category": "radiocraft:digital",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Camera$() photographs what you see. $(thing)Hold right click$() to raise it: the viewfinder marks the square the photo will be, and the $(thing)scroll wheel$() zooms from 1x to 3x. $(thing)Let go$() to take it. The photo comes out on a sheet of $(item)Photo Paper$() from your inventory, without your hand or the HUD."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(item)Color Photo Paper$() prints in color, plain $(item)Photo Paper$() in black and white; paper in your other hand is used first. Sixteen sheets come from an empty map and eight paper.$(br2)The camera needs a few seconds to advance the film between photos."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A photo is a locked map: frame it, copy it at a cartography table, or send it by $(l:radiocraft:digital/radio_fax)Radio Fax$(). A fax with photo paper in its PHOTO slot prints photos on that (a color photo on B&W paper comes out grey), otherwise on an empty map.$(br2)A server may limit how many photos each player keeps. At the limit you are offered your old photos to delete ($(thing)/radiocraft photos$()); a deleted photo goes blank everywhere."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:camera",
+      "text": "An iron body, a glass lens, a redstone shutter and a button to fire it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:photo_paper",
+      "recipe2": "radiocraft:color_photo_paper"
+    }
+  ]
+}

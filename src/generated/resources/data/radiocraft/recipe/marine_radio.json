@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "item": "radiocraft:waterproof_wire"
+    },
+    "C": [
+      {
+        "item": "radiocraft:encased_crystal_vhf_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ],
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "radiocraft:hand_microphone"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "radiocraft:radio_speaker"
+    }
+  },
+  "pattern": [
+    "III",
+    "MCS",
+    "#R#"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:marine_radio"
+  }
+}

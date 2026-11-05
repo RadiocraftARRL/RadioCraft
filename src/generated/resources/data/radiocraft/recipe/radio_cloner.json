@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "W": {
+      "item": "radiocraft:wire"
+    }
+  },
+  "pattern": [
+    " W ",
+    "IDI",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:radio_cloner"
+  }
+}

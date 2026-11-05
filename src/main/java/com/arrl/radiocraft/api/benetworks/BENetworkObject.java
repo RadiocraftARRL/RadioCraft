@@ -30,8 +30,17 @@ public class BENetworkObject {
      * there. A side has one slot for power and one for everything else (coax), so a bundle of power wire and coax into
      * one face puts the object on both (2026-10-28: with one slot a side, a bundle into a microwave radio's face left it
      * on its coax network only, and it never powered on).
+     *
+     * @param side the side of the block
+     * @param power true for the power slot, false for coax
      */
     public record Slot(Direction side, boolean power) {
+        /**
+         * The slot a network takes on a side: the power slot for a {@link PowerBENetwork}.
+         * @param side the side
+         * @param network the network
+         * @return the slot
+         */
         public static Slot of(Direction side, BENetwork network) {
             return new Slot(side, network instanceof PowerBENetwork);
         }
@@ -47,7 +56,10 @@ public class BENetworkObject {
      */
     protected final Map<Slot, BENetwork> networks = new HashMap<>();
 
-    /** The networks this object is in, by side and kind. Read only. */
+    /**
+     * The networks this object is in, by side and kind.
+     * @return a read-only view
+     */
     public Map<Slot, BENetwork> getNetworks() {
         return Collections.unmodifiableMap(networks);
     }
@@ -86,7 +98,12 @@ public class BENetworkObject {
         return getNetwork(side, false);
     }
 
-    /** The power network ({@code power}) or the other one (coax) on {@code side}, or null. */
+    /**
+     * The power network or the other one (coax) on a side.
+     * @param side the side
+     * @param power true for power, false for coax
+     * @return the network, or null
+     */
     public BENetwork getNetwork(@NotNull Direction side, boolean power) {
         return networks.get(new Slot(side, power));
     }
@@ -115,6 +132,8 @@ public class BENetworkObject {
     /**
      * Whether this object joins {@code other} just by touching it, with no wire in between. Solar panels link to each
      * other and to a charge controller this way; everything else needs wire. Either side saying yes is enough.
+     * @param other the object next to it
+     * @return true to link without wire
      */
     public boolean linksDirectlyTo(BENetworkObject other) {
         return false;
@@ -124,12 +143,18 @@ public class BENetworkObject {
      * {@link #linksDirectlyTo(BENetworkObject)} for one kind of network: {@code power} for the power walk, false for the
      * coax walk. By default the same for both; a device on both kinds (a direction finder module) can touch-link on
      * one only.
+     * @param other the object next to it
+     * @param power true for the power walk
+     * @return true to link without wire
      */
     public boolean linksDirectlyTo(BENetworkObject other, boolean power) {
         return linksDirectlyTo(other);
     }
 
-    /** Takes this object off its networks of one kind only: the power ones ({@code power}) or the others (coax). */
+    /**
+     * Takes this object off its networks of one kind only.
+     * @param power true for the power ones, false for the others (coax)
+     */
     public void clearNetworks(boolean power) {
         for(Slot slot : List.copyOf(networks.keySet())) {
             if(slot.power() != power)

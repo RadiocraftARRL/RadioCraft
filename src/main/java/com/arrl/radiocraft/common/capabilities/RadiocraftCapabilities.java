@@ -39,7 +39,8 @@ public class RadiocraftCapabilities {
 	}
 
 	private static Item[] handhelds() {
-		return RadiocraftItems.VHF_HANDHELD_VARIANTS.values().toArray(Item[]::new);
+		return Stream.concat(RadiocraftItems.VHF_HANDHELD_VARIANTS.values().map(item -> (Item)item),
+				Stream.concat(Stream.<Item>of(RadiocraftItems.commercialHandhelds()), Stream.<Item>of(RadiocraftItems.MARINE_HANDHELD.get()))).toArray(Item[]::new); // The commercial and marine ones are handhelds underneath.
 	}
 
 	@SubscribeEvent
@@ -61,6 +62,9 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.VHF_RECEIVER.get(),
 				RadiocraftBlocks.VHF_REPEATER.get(),
 				RadiocraftBlocks.COMMERCIAL_REPEATER.get(),
+				RadiocraftBlocks.COMMERCIAL_MOBILE.get(),
+				RadiocraftBlocks.LOW_BAND_MOBILE.get(),
+				RadiocraftBlocks.MARINE_RADIO.get(),
 				RadiocraftBlocks.DUPLEXER.get(),
 				RadiocraftBlocks.ANTENNA_SPLITTER.get(),
 				RadiocraftBlocks.ANTENNA_SWITCH.get(),
@@ -93,6 +97,9 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.REPEATER_AUTOPATCH.get(),
 				RadiocraftBlocks.FIELD_PHONE.get(),
 				RadiocraftBlocks.MICROWAVE_HORN.get(),
+				RadiocraftBlocks.ADSB_BEACON.get(), RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get(), // ADS-B (1.12 step 9).
+				RadiocraftBlocks.REAL_WORLD_INTERFACE.get(), // A radio station on power and coax (1.12 step 11).
+				RadiocraftBlocks.RADIO_COMPUTER.get(), // On the power wire (1.12).
 				net.minecraft.world.level.block.Blocks.LIGHTNING_ROD); // An antenna when coax runs to it (LightningRodAntennas).
 		event.registerBlock(BE_NETWORKS, (level, pos, state, be, side) -> BENetworksCapability.get(level), premiumAndCheapRadios()); // The plain ones are above.
 		event.registerBlock(ANTENNA_NETWORKS, (level, pos, state, be, side) -> new AntennaNetworkCapability(), RadiocraftBlocks.HF_RADIO_10M_VARIANTS.values().toArray(Block[]::new));

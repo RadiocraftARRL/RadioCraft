@@ -88,6 +88,80 @@ public class RadiocraftDataComponent {
                     .networkSynchronized(HandheldAprs.STREAM_CODEC)
     );
 
+    /**
+     * A MARS mod is fitted (see {@link com.arrl.radiocraft.common.items.MarsModItem}): the radio may transmit anywhere it
+     * tunes, not just inside its band. On HF radio, VHF base station, all-band and QRP items, the VHF handheld and the
+     * HF manpack; a placed radio keeps it in its block entity.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.util.Unit>> MARS_MOD = DATA_COMPONENTS.registerComponentType(
+            "mars_mod",
+            builder -> builder
+                    .persistent(net.minecraft.util.Unit.CODEC)
+                    .networkSynchronized(net.minecraft.network.codec.StreamCodec.unit(net.minecraft.util.Unit.INSTANCE))
+    );
+
+    /**
+     * A commercial radio's channel list and knob position (see
+     * {@link com.arrl.radiocraft.common.radio.commercial.CommercialProgram}): on the commercial handhelds, and on a
+     * commercial mobile's item (its block entity takes it when placed and gives it back when broken).
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.commercial.CommercialProgram>> COMMERCIAL_PROGRAM = DATA_COMPONENTS.registerComponentType(
+            "commercial_program",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.commercial.CommercialProgram.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.commercial.CommercialProgram.STREAM_CODEC)
+    );
+
+    /**
+     * A marine radio's channel, HI/LO switch and dual watch (see
+     * {@link com.arrl.radiocraft.common.radio.marine.MarineRadioState}): on the marine handheld, and on the marine
+     * radio's item (its block entity takes it when placed and gives it back when broken).
+     */
+    /** What a Radio Cloner holds: one radio's programming to write into others (see {@link CloneImage}). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CloneImage>> CLONE_IMAGE = DATA_COMPONENTS.registerComponentType(
+            "clone_image",
+            builder -> builder
+                    .persistent(CloneImage.CODEC)
+                    .networkSynchronized(CloneImage.STREAM_CODEC)
+    );
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.marine.MarineRadioState>> MARINE_RADIO = DATA_COMPONENTS.registerComponentType(
+            "marine_radio",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.marine.MarineRadioState.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.marine.MarineRadioState.STREAM_CODEC)
+    );
+
+    /**
+     * A filled map that is a photo (see {@link PhotoInfo} and {@link com.arrl.radiocraft.common.photo.PhotoPrints}):
+     * who took it and on which photo paper. The picture itself is the map's.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<PhotoInfo>> PHOTO = DATA_COMPONENTS.registerComponentType(
+            "photo",
+            builder -> builder
+                    .persistent(PhotoInfo.CODEC)
+                    .networkSynchronized(PhotoInfo.STREAM_CODEC)
+    );
+
+    /**
+     * A radio computer's item: its id (which names its disk in the world save) and installed programs (see
+     * {@link ComputerData}). The block entity takes it when placed and gives it back when broken.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ComputerData>> COMPUTER = DATA_COMPONENTS.registerComponentType(
+            "computer",
+            builder -> builder
+                    .persistent(ComputerData.CODEC)
+                    .networkSynchronized(ComputerData.STREAM_CODEC)
+    );
+
+    /** An FCC badge's agent and number (1.12, see {@link FccBadge}); set by {@code /radiocraft fcc badge}. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<FccBadge>> FCC_BADGE = DATA_COMPONENTS.registerComponentType(
+            "fcc_badge",
+            builder -> builder
+                    .persistent(FccBadge.CODEC)
+                    .networkSynchronized(FccBadge.STREAM_CODEC)
+    );
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<HandheldRadioState>> HANDHELD_RADIO_STATE_COMPONENT = DATA_COMPONENTS.registerComponentType(
             "handheld_radio_state",
             builder -> builder

@@ -83,12 +83,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class RadioBlockEntity extends BlockEntity implements ITogglableBE, IVoiceTransmitter, IBEVoiceReceiver, INetworkObjectProvider, MenuProvider {
+public abstract class RadioBlockEntity extends BlockEntity implements ITogglableBE, IVoiceTransmitter, IBEVoiceReceiver, INetworkObjectProvider, MenuProvider,
+        com.arrl.radiocraft.api.blockentities.radio.IRadio, com.arrl.radiocraft.api.blockentities.radio.IAntennaReceiver {
 
     protected boolean ssbEnabled = true; // A fresh radio comes up in SSB, so it plays static and hears voice as soon as it is powered.
     protected boolean isPTTDown = false; // Set by PTT button packets; synced to clients so the receiver sounds can go quiet while transmitting.
 
     protected Band band; // Band the radio is configured for, usually not changed.
+    protected boolean marsMod = false; // A MARS mod is fitted: it may transmit anywhere it tunes (BandEdges).
     protected float frequency; // Frequency the radio is currently using (in Hz)
     protected volatile float speakerGain = 1.0F; // Read on the voice thread.
     protected volatile float micGain = 1.0F;
@@ -189,7 +191,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             double newSWR = 0.0D; // No power, no SWR (and no static).
             AntennaNetworkObject antenna = null;
             if(!level.isClientSide)
-                be.tickBareConnector(powered && networkObject.getAntennas().isEmpty());
+                be.tickBareConnector(powered && be.usesBareConnector() && networkObject.getAntennas().isEmpty());
             if(powered) {
                 List<AntennaNetworkObject> antennas = networkObject.getAntennas();
                 if(antennas.size() == 1) {
@@ -280,6 +282,11 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     // -------------------- BARE CONNECTOR (NO ANTENNA) --------------------
 
     /** Keeps the bare connector on the antenna network of this radio's band while it is wanted, and off it otherwise. */
+    /** False for a station that reaches the air some other way with no antenna (a Real-World Interface in Everywhere mode). */
+    protected boolean usesBareConnector() {
+        return true;
+    }
+
     private void tickBareConnector(boolean wanted) {
         if(wanted) {
             if(bareConnector == null)
@@ -490,7 +497,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     /** Puts a packet on the air on the radio's own frequency (packet is simplex), the way voice goes out. */
     protected void transmitData(ServerLevel serverLevel, TncPacket packet) {
-        if(isBlown())
+        if(isBlown() || isTransmitInhibited())
             return;
         if(!(IBENetworks.getObject(serverLevel, worldPosition) instanceof RadioNetworkObject networkObject))
             return;
@@ -1145,7 +1152,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      * @return True if the radio was listening and the packet is heard.
      */
     public boolean receiveVoice(AntennaVoicePacket packet) {
-        Detuning.Effect effect = getDetuning(packet.getFrequency());
+        Detuning.Effect effect = getDetuning(packet.getFrequency(), packet.getSplatterReach());
         if(effect.isNone() || isDeafNow())
             return false;
         boolean skip = isSkipPath(packet);
@@ -1166,7 +1173,15 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         if(!Ctcss.opens(getToneSquelch(), packet.getCtcssTone()))
             return false; // Tone squelch: not our tone, the speaker stays quiet.
         strength *= effect.strength();
+        // Digital voice (commercial radios): decoded clean, scrambled without the key, a buzz on an analog receiver,
+        // or gone below the cliff (the S-meter still shows it).
+        com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception reception = com.arrl.radiocraft.common.radio.voice.DigitalVoice.receive(digitalDecoder(), packet.getVoiceMode(), strength);
+        lastReception = reception;
         recordSignal(strength);
+        if(reception == com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception.DROPPED)
+            return false;
+        if(level != null) // Who was heard, for the radio computer's logbook (fixed slots, no allocation per frame).
+            stationsHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime());
         ModerationHooks.heard(packet, this, level, worldPosition, null, strength); // A hearer of the logged transmission.
         if(isParrot()) // Queue the audio as it arrived, before the receiver scales it, so the echo carries one path's loss, not two.
             parrotVoiceQueue.add(new QueuedVoice(packet.getRawAudio().clone(), packet.getSourcePlayer(), lastSignalGameTime + parrotDelayTicks));
@@ -1178,15 +1193,56 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         if(dtmfDecoderLinked && this.level != null && Math.abs(effect.pitchShiftHz()) <= com.arrl.radiocraft.common.radio.voice.Dtmf.MAX_PITCH_SHIFT_HZ)
             dtmfListener.frame(dtmfSource(packet), packet.getRawAudio(), strength / copyThreshold(getNoiseFloor(skip)), rasp,
                     Math.max(effect.splatter(), Detuning.splatterOn(1.0D, getAdjacentQrm(), strength)), this.level.getGameTime());
-        // FM holds its volume as the signal fades and gets noisier instead; SSB sinks into the noise.
-        double level = isFM() ? speakerGain : ReceiverMix.voiceLevel(strength, getNoiseFloor(skip)) * speakerGain;
+        // FM holds its volume as the signal fades and gets noisier instead; SSB sinks into the noise. Decoded digital
+        // has no noise at all: full volume, no FM hiss, no squelch tail.
+        boolean digitalAudio = reception.digitalAudio();
+        double level = isFM() || digitalAudio ? speakerGain : ReceiverMix.voiceLevel(strength, getNoiseFloor(skip)) * speakerGain;
+        short[] audio = com.arrl.radiocraft.common.radio.voice.DigitalVoice.render(reception, packet.getRawAudio(), strength, nextDigitalSeed());
         double blocks = packet.getSource() == null || packet.getSource().getAntennaPos() == null ? Double.MAX_VALUE
                 : Math.sqrt(Sublevels.distSqr(this.level, packet.getSource().getAntennaPos().position(), worldPosition));
         boolean ssbHf = !isFM() && band != null && !band.isVhf();
-        getVoiceReceiver().receive(packet, level, rasp, effect.pitchShiftHz(), isFM() ? effect.splatter() : Math.max(effect.splatter(), ReceiverMix.overload(blocks)),
-                Detuning.splatterOn(1.0D, getAdjacentQrm(), strength), isFM() ? strength : -1.0D, strength * ReceiverMix.nearness(blocks),
+        getVoiceReceiver().receive(packet, audio, level, rasp, effect.pitchShiftHz(), isFM() ? effect.splatter() : Math.max(effect.splatter(), ReceiverMix.overload(blocks)),
+                Detuning.splatterOn(1.0D, getAdjacentQrm(), strength), isFM() && !digitalAudio ? strength : -1.0D, strength * ReceiverMix.nearness(blocks),
                 skip && ssbHf ? RadiocraftServerConfig.SKIP_MULTIPATH_DEPTH.get() : 0.0D);
         return true;
+    }
+
+    /** The stations this radio heard talking lately (who, where, how strong), for the logbook (1.12 step 6). */
+    private final com.arrl.radiocraft.common.radio.StationsHeard stationsHeard = new com.arrl.radiocraft.common.radio.StationsHeard();
+
+    /** The stations this radio heard talking lately, server side (the radio computer's logbook reads them). */
+    public com.arrl.radiocraft.common.radio.StationsHeard getStationsHeard() {
+        return stationsHeard;
+    }
+
+    // -------------------- DIGITAL VOICE --------------------
+
+    /** What the receiver made of the last transmission it heard (analog, decoded, scrambled...), for debug and tests. */
+    private volatile com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception lastReception = com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception.ANALOG;
+    private long digitalSeed = System.nanoTime() | 1L; // Voice thread; a race only changes the noise.
+
+    /** What the receiver made of the last transmission it heard: analog FM/SSB, or how it took a digital one. */
+    public com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception getLastReception() {
+        return lastReception;
+    }
+
+    private long nextDigitalSeed() {
+        digitalSeed = digitalSeed * 6364136223846793005L + 1442695040888963407L;
+        return digitalSeed;
+    }
+
+    /**
+     * How this radio's transmissions go out: analog for ham radios; a commercial radio's channel may be digital (and
+     * encrypted). Read on the voice thread around each frame sent (see {@link #transmitVoice}).
+     */
+    protected com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode transmitMode() {
+        return com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode.ANALOG;
+    }
+
+    /** The receiver's digital decoder (with its key), or null for an analog receiver, which hears digital as a buzz. */
+    @Nullable
+    protected com.arrl.radiocraft.common.radio.voice.DigitalVoice.Decoder digitalDecoder() {
+        return null;
     }
 
     /**
@@ -1217,9 +1273,14 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     /** How this radio's receiver takes a signal on {@code txHz}: as SSB, or as FM for {@link #isFM() FM} radios. */
     public Detuning.Effect getDetuning(float txHz) {
+        return getDetuning(txHz, 1.0D);
+    }
+
+    /** {@link #getDetuning(float)} for a transmitter whose splatter reaches {@code splatterReach} times as far (out of band). */
+    public Detuning.Effect getDetuning(float txHz, double splatterReach) {
         if(isFM())
-            return Detuning.fm(getTunedFrequency(), txHz, band != null && band.isVhf() ? RadiocraftServerConfig.VHF_FREQUENCY_STEP.get() : 0);
-        return Detuning.ssb(getTunedFrequency(), txHz, isLowerSideband());
+            return Detuning.fm(getTunedFrequency(), txHz, band != null && band.isVhf() ? RadiocraftServerConfig.VHF_FREQUENCY_STEP.get() : 0, splatterReach);
+        return Detuning.ssb(getTunedFrequency(), txHz, isLowerSideband(), splatterReach);
     }
 
     /** True if the radio receives voice as FM (VHF radios); SSB otherwise. */
@@ -1479,9 +1540,71 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      * @param stepCount The number of steps to increment by.
      */
     public void updateFrequency(int stepCount) {
-        frequency = snapToStep(band, frequency, getFrequencyStep(), stepCount);
+        frequency = snapToTuningRange(frequency, stepCount);
         setChanged();
         updateBlock();
+    }
+
+    /**
+     * {@code frequency} moved {@code stepCount} steps, inside what the radio tunes: past its band on ham radios
+     * ({@link com.arrl.radiocraft.common.radio.BandEdges}), only the band where {@link #tunesOutOfBand()} is false.
+     */
+    protected float snapToTuningRange(float frequency, int stepCount) {
+        if(band == null)
+            return frequency;
+        if(!tunesOutOfBand())
+            return snapToStep(band, frequency, getFrequencyStep(), stepCount);
+        return com.arrl.radiocraft.common.radio.BandEdges.snapToTuningRange(band, frequency, getFrequencyStep(), stepCount);
+    }
+
+    /**
+     * True if the dial goes past the band edges (a ham rig's general coverage receive): HF transceivers, VHF radios and
+     * the receivers. Repeaters stay in their band.
+     */
+    public boolean tunesOutOfBand() {
+        return true;
+    }
+
+    /** True if this radio's transmitter is limited to its band (unless it has a MARS mod); false for repeaters and receivers. */
+    public boolean limitsTransmitToBand() {
+        return hasTransmitter();
+    }
+
+    /** True if a MARS mod is fitted. */
+    public boolean hasMarsMod() {
+        return marsMod;
+    }
+
+    /** Fits or removes the MARS mod (crafting puts it on the item; placing the item sets it here). */
+    public void setMarsMod(boolean value) {
+        if(marsMod != value) {
+            marsMod = value;
+            setChanged();
+            updateBlock();
+        }
+    }
+
+    /** True if the radio transmits outside its band (its transmissions there splatter). */
+    public boolean isOutOfBand() {
+        return band != null && !band.contains(getTransmitFrequency());
+    }
+
+    /**
+     * True while the transmitter refuses to key: tuned out of band without a MARS mod. The display shows OUT OF BAND.
+     * Works client side too (the band config is synced, and so is the MARS flag).
+     */
+    public boolean isTransmitInhibited() {
+        return limitsTransmitToBand() && band != null && !mayTransmitOn(getTransmitFrequency());
+    }
+
+    /**
+     * True if the transmitter may key on {@code hz}: in its band, or anywhere it tunes with a MARS mod
+     * ({@link com.arrl.radiocraft.common.radio.BandEdges#canTransmit}). A radio (another mod's, too) whose allowed
+     * transmit range is something else overrides this; {@link #isTransmitInhibited()} follows it. Client safe.
+     */
+    @Override
+    public boolean mayTransmitOn(double hz) {
+        return com.arrl.radiocraft.common.radio.BandEdges.canTransmit(band, hz, marsMod);
     }
 
     /** Hz the frequency dial moves per click: the HF step, or the VHF channel step on VHF radios. */
@@ -1518,25 +1641,32 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      * when nothing is on the coax. More than one antenna overdraws the radio instead.
      */
     protected void transmitVoice(de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, float txHz, UUID sourcePlayer, float ctcssTone) {
-        if(isBlown())
+        if(isBlown() || isTransmitInhibited())
             return;
         if(!(IBENetworks.getObject(this.level, worldPosition) instanceof RadioNetworkObject networkObject))
             return;
         RadioModeration.voice(level, sourcePlayer, rawAudio, txHz); // Operators listening in (/radio moderateall).
         List<AntennaNetworkObject> antennas = networkObject.getAntennas();
-        if(antennas.size() == 1) {
-            AntennaNetworkObject antenna = antennas.get(0);
-            ModerationHooks.voice(antenna.getAntenna(), this, this.level, sourcePlayer, rawAudio, txHz, band, ctcssTone); // The moderation log (logged once, here at the source).
-            antenna.transmitAudioPacket(level, rawAudio, band, txHz, sourcePlayer, ctcssTone, transmitPower());
-        }
-        else if(antennas.size() > 1)
-            overdraw();
-        else {
-            BareConnectorAntenna bare = bareConnector;
-            if(bare != null) {
-                ModerationHooks.voice(bare, this, this.level, sourcePlayer, rawAudio, txHz, band, ctcssTone);
-                bare.transmitAudioPacket(level, rawAudio, band, txHz, sourcePlayer, ctcssTone);
+        // Every packet made below carries this radio's mode (analog, or a commercial channel's digital and key).
+        com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode was = com.arrl.radiocraft.common.radio.voice.DigitalVoice.push(transmitMode());
+        try {
+            if(antennas.size() == 1) {
+                AntennaNetworkObject antenna = antennas.get(0);
+                ModerationHooks.voice(antenna.getAntenna(), this, this.level, sourcePlayer, rawAudio, txHz, band, ctcssTone); // The moderation log (logged once, here at the source).
+                antenna.transmitAudioPacket(level, rawAudio, band, txHz, sourcePlayer, ctcssTone, transmitPower());
             }
+            else if(antennas.size() > 1)
+                overdraw();
+            else {
+                BareConnectorAntenna bare = bareConnector;
+                if(bare != null) {
+                    ModerationHooks.voice(bare, this, this.level, sourcePlayer, rawAudio, txHz, band, ctcssTone);
+                    bare.transmitAudioPacket(level, rawAudio, band, txHz, sourcePlayer, ctcssTone);
+                }
+            }
+        }
+        finally {
+            com.arrl.radiocraft.common.radio.voice.DigitalVoice.pop(was);
         }
     }
 
@@ -1563,7 +1693,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     @Override
     public boolean canTransmitVoice() {
         if(getNetworkObject(level, worldPosition) instanceof RadioNetworkObject networkObject)
-            return ssbEnabled && networkObject.isPowered && isPTTDown;
+            return ssbEnabled && networkObject.isPowered && isPTTDown && !isTransmitInhibited();
         return false;
     }
 
@@ -1620,6 +1750,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      */
     protected void setupSaveTag(CompoundTag nbt) {
         nbt.putBoolean("ssbEnabled", ssbEnabled);
+        nbt.putBoolean("marsMod", marsMod);
         if(band != null)
             nbt.putString("band", band.name());
         nbt.putFloat("frequency", frequency);
@@ -1648,6 +1779,8 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      */
     protected void readSaveTag(CompoundTag nbt) {
         ssbEnabled = nbt.getBoolean("ssbEnabled");
+        if(nbt.contains("marsMod"))
+            marsMod = nbt.getBoolean("marsMod");
         if(nbt.contains("band")) {
             Band saved = Band.getBand(nbt.getString("band"));
             if(saved != null)
@@ -1677,11 +1810,13 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             voiceReceiver.setWiredSpeakers(wired);
         }
 
-        if(band != null) { // Reset the frequency if the saved one is outside the band, and put it back on a step.
-            if(frequency > band.maxFrequency() || frequency < band.minFrequency())
+        if(band != null) { // Reset the frequency if the saved one is outside what the radio tunes, and put it back on a step.
+            boolean tunable = tunesOutOfBand() ? com.arrl.radiocraft.common.radio.BandEdges.canTune(band, frequency)
+                    : frequency <= band.maxFrequency() && frequency >= band.minFrequency();
+            if(!tunable)
                 frequency = band.minFrequency();
             else
-                frequency = snapToStep(band, frequency, getFrequencyStep(), 0);
+                frequency = snapToTuningRange(frequency, 0);
         }
     }
 
@@ -1695,6 +1830,21 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     protected void saveAdditional(@NotNull CompoundTag nbt, HolderLookup.@NotNull Provider registries) {
         super.saveAdditional(nbt, registries);
         setupSaveTag(nbt);
+    }
+
+    /** A MARS-modded radio item placed down keeps the mod (the item's mars_mod component). */
+    @Override
+    protected void applyImplicitComponents(BlockEntity.@NotNull DataComponentInput input) {
+        super.applyImplicitComponents(input);
+        marsMod = input.get(RadiocraftDataComponent.MARS_MOD.value()) != null;
+    }
+
+    /** Broken again, it drops with the mod (the loot table copies the component). */
+    @Override
+    protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.@NotNull Builder components) {
+        super.collectImplicitComponents(components);
+        if(marsMod)
+            components.set(RadiocraftDataComponent.MARS_MOD.value(), net.minecraft.util.Unit.INSTANCE);
     }
 
     @Override

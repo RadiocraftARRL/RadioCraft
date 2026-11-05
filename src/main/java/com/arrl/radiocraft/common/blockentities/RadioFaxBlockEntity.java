@@ -70,24 +70,26 @@ import java.util.UUID;
  */
 public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, StationTerminal, INetworkObjectProvider {
 
-	/** Supply slots: blank paper, books and maps. */
+	/** Supply slots: blank paper, books, maps and photo paper (either kind). */
 	public static final int SLOT_PAPER = 0;
 	public static final int SLOT_BOOK = 1;
 	public static final int SLOT_MAP = 2;
+	public static final int SLOT_PHOTO = 3;
+	public static final int SUPPLY_SLOTS = 4;
 	/** Slots for the copies received. */
 	public static final int RECEIVED_SLOTS = 4;
 	/** Lines of the log kept. */
 	public static final int LOG_LINES = 6;
 	/** Callsigns remembered on the LCD. */
 	public static final int RECENT_MAX = 6;
-	/** Times the call goes out before NO ANSWER. */
-	private static final int CALL_TRIES = 3;
+	/** Times the call goes out before NO ANSWER. (Public: the radio computer's fax keeps the same timing.) */
+	public static final int CALL_TRIES = 3;
 	/** Ticks after the call's tones that the answer may take. */
-	private static final int ANSWER_WAIT_TICKS = 80;
+	public static final int ANSWER_WAIT_TICKS = 80;
 	/** Ticks after a packet's tones that its ack may take. */
-	private static final int ACK_WAIT_TICKS = 40;
+	public static final int ACK_WAIT_TICKS = 40;
 	/** Ticks a receiving fax waits for the next packet, beyond that packet's tones and the sender's retries. */
-	private static final int RECEIVE_PATIENCE_TICKS = 200;
+	public static final int RECEIVE_PATIENCE_TICKS = 200;
 	/** Ticks a SENT or FAILED status stays on the LCD. */
 	private static final int STATUS_TICKS = 200;
 	public static final String STATUS_READY = "READY";
@@ -97,10 +99,21 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 
 	public enum Transport { RADIO, LINK }
 
-	private final ItemStackHandler supplies = new ItemStackHandler(3) {
+	private final ItemStackHandler supplies = new ItemStackHandler(SUPPLY_SLOTS) {
 		@Override
 		public boolean isItemValid(int slot, @NotNull ItemStack stack) {
 			return isSupply(slot, stack);
+		}
+
+		@Override
+		public void deserializeNBT(@NotNull HolderLookup.Provider provider, @NotNull CompoundTag nbt) {
+			super.deserializeNBT(provider, nbt); // A fax saved before the photo paper slot comes back with three.
+			if(stacks.size() < SUPPLY_SLOTS) {
+				java.util.List<ItemStack> old = new ArrayList<>(stacks);
+				setSize(SUPPLY_SLOTS);
+				for(int i = 0; i < old.size(); i++)
+					stacks.set(i, old.get(i));
+			}
 		}
 
 		@Override
@@ -418,7 +431,10 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 		return null;
 	}
 
-	private static int supplySlotFor(ItemStack document) {
+	/** The supply a document prints on: a photo on photo paper when there is some, else its blank (see {@link FileTransfer#blankFor}). */
+	private int supplySlotFor(ItemStack document) {
+		if(com.arrl.radiocraft.common.photo.PhotoPrints.isPhoto(document) && !supplies.getStackInSlot(SLOT_PHOTO).isEmpty())
+			return SLOT_PHOTO;
 		ItemStack blank = FileTransfer.blankFor(document);
 		return blank.is(Items.BOOK) ? SLOT_BOOK : blank.is(Items.MAP) ? SLOT_MAP : SLOT_PAPER;
 	}
@@ -483,9 +499,15 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 			fail(problem);
 			return;
 		}
-		ItemStack copy = FileTransfer.copy(document);
+		int supplySlot = supplySlotFor(document);
+		ItemStack copy = supplySlot == SLOT_PHOTO ? photoCopy(level, document) : FileTransfer.copy(document);
+		copy = FileTransfer.materialise(level, copy, worldPosition); // A radio computer's picture has no map: it gets this blank (1.12 step 7).
 		int slot = receivedSlotFor(copy);
-		supplies.extractItem(supplySlotFor(document), 1, false);
+		if(slot < 0) {
+			fail("TRAY FULL");
+			return;
+		}
+		supplies.extractItem(supplySlot, 1, false);
 		ItemStack inSlot = received.getStackInSlot(slot);
 		if(inSlot.isEmpty())
 			received.setStackInSlot(slot, copy);
@@ -499,6 +521,23 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 		setStatus("RECEIVED " + label);
 		level.playSound(null, worldPosition, SoundEvents.BOOK_PAGE_TURN, SoundSource.BLOCKS, 0.6F, 0.9F);
 		level.playSound(null, worldPosition, RadiocraftSoundEvents.TELETYPE_DING.get(), SoundSource.BLOCKS, 0.5F, 1.2F);
+	}
+
+	/**
+	 * A received photo printed on the photo paper loaded: the same photo (its map) on colour paper, or a black and white
+	 * print of it (a new map, greys only) when the paper is black and white and the photo is in colour.
+	 */
+	private ItemStack photoCopy(ServerLevel level, ItemStack document) {
+		ItemStack copy = FileTransfer.copy(document);
+		com.arrl.radiocraft.common.datacomponents.PhotoInfo info = com.arrl.radiocraft.common.photo.PhotoPrints.info(document);
+		boolean colourPaper = com.arrl.radiocraft.common.items.CameraItem.isPaper(supplies.getStackInSlot(SLOT_PHOTO), true);
+		if(colourPaper || info == null || !info.colour())
+			return copy;
+		byte[] pixels = com.arrl.radiocraft.common.photo.PhotoPrints.pixels(level, document);
+		if(pixels == null)
+			return copy;
+		return com.arrl.radiocraft.common.photo.PhotoPrints.photo(level, pixels,
+				new com.arrl.radiocraft.common.datacomponents.PhotoInfo(info.photographer(), false, info.source()), worldPosition);
 	}
 
 	/** The received slot a copy goes in: one holding the same thing with room, else an empty one; -1 if none. */
@@ -738,12 +777,13 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 
 	// -------------------- SUPPLIES --------------------
 
-	/** True if {@code stack} goes in supply slot {@code slot}: blank paper, books and maps. */
+	/** True if {@code stack} goes in supply slot {@code slot}: blank paper, books, maps and photo paper. */
 	public static boolean isSupply(int slot, ItemStack stack) {
 		return switch(slot) {
 			case SLOT_PAPER -> stack.is(Items.PAPER);
 			case SLOT_BOOK -> stack.is(Items.BOOK);
 			case SLOT_MAP -> stack.is(Items.MAP);
+			case SLOT_PHOTO -> com.arrl.radiocraft.common.items.CameraItem.isPaper(stack);
 			default -> false;
 		};
 	}

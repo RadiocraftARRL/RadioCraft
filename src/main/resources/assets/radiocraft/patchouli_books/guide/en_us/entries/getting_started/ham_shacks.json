@@ -1,0 +1,17 @@
+{
+  "name": "Ham Shacks",
+  "icon": "radiocraft:vhf_base_station",
+  "category": "radiocraft:getting_started",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Out in the country, now and then, you find a little timber $(thing)ham shack$() with a $(l:radiocraft:antennas/vhf_antennas)J-pole$(/l) on its flat roof. Look in plains, forests, meadows, taiga, snowy plains, savanna and the hills. A few villages (plains, taiga, snowy, savanna and desert) have one too, built in the village's own wood, with a villager living in it.$(br2)Whoever lived there left the station running."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What is inside",
+      "text": "$(li)A $(l:radiocraft:radios/vhf_base_station)VHF base station$(/l), switched on, on 146.520 MHz (the 2 m calling frequency), on a large battery and coax up to the J-pole.$(li)A $(l:radiocraft:computer/radio_computer)radio computer$(/l) with its monitor, the Logbook and Frequency Manager installed.$(li)A chest of radio parts: cores, speakers, microphones, crystals, a band plan, blank floppies. Old hams kept odd things in there too.$(br2)Everything in it is yours to keep or move."
+    }
+  ]
+}

@@ -10,6 +10,8 @@ public final class PowerSharing {
      * gets the same, except one with less room, which takes what it can and leaves the rest of its share to the
      * others. A remainder that does not divide goes one each to the first takers. Pure, so it is unit tested.
      *
+     * @param amount How much there is to share.
+     * @param room How much each taker can take.
      * @return How much each taker gets; the sum is {@code min(amount, total room)}.
      */
     public static int[] shareEvenly(int amount, int[] room) {

@@ -9,8 +9,11 @@ import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.CommercialStations;
 import com.arrl.radiocraft.common.radio.TransmitterLog;
 import com.arrl.radiocraft.common.radio.voice.StationProgram;
+import com.arrl.radiocraft.common.worldgen.RotateBlocksProcessor;
 import com.arrl.radiocraft.common.worldgen.SitePiece;
 import com.arrl.radiocraft.common.worldgen.SiteVariant;
+import com.arrl.radiocraft.common.worldgen.VillageHouses;
+import com.arrl.radiocraft.common.blocks.WireBlock;
 import com.arrl.radiocraft.gametest.sites.SiteCheck;
 import com.arrl.radiocraft.gametest.sites.SiteTemplates;
 import net.minecraft.core.BlockPos;
@@ -24,8 +27,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.templatesystem.JigsawReplacementProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.neoforged.neoforge.gametest.GameTestHolder;
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate;
@@ -105,6 +112,79 @@ public class SiteGameTests {
 	@GameTest(template = SITE, batch = SITES_BATCH, timeoutTicks = 200)
 	public static void longLinesWorks(GameTestHelper helper) {
 		siteWorks(helper, "long_lines", true);
+	}
+
+	@GameTest(template = SITE, batch = SITES_BATCH, timeoutTicks = 200)
+	public static void hamShackWorks(GameTestHelper helper) {
+		siteWorks(helper, "ham_shack", true);
+	}
+
+	/**
+	 * The village ham shack, turned as a village turns its houses (known shapes, so nothing is fixed up after): the radio
+	 * faces into the room, its coax still reaches the J-pole and its wire the battery, for every turn.
+	 */
+	@GameTest(template = SITE, batch = SITES_BATCH, timeoutTicks = 200)
+	public static void villageHamShackWorksTurned(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		level.setDayTime(6000L);
+		StructureTemplate template = level.getStructureManager().get(VillageHouses.template("plains"))
+				.orElseThrow(() -> new IllegalStateException("no template " + VillageHouses.template("plains")));
+		List<BoundingBox> boxes = new java.util.ArrayList<>();
+		Rotation[] turns = { Rotation.NONE, Rotation.CLOCKWISE_90, Rotation.CLOCKWISE_180, Rotation.COUNTERCLOCKWISE_90 };
+		for(int i = 0; i < turns.length; i++) {
+			// Four copies, one in each corner of the plot (a turn swings the house round its origin).
+			BlockPos origin = helper.absolutePos(ORIGINS[i]);
+			StructurePlaceSettings settings = new StructurePlaceSettings().setRotation(turns[i]).setKnownShape(true)
+					.addProcessor(JigsawReplacementProcessor.INSTANCE).addProcessor(RotateBlocksProcessor.INSTANCE);
+			template.placeInWorld(level, origin, origin, settings, level.getRandom(), Block.UPDATE_ALL);
+			boxes.add(template.getBoundingBox(settings, origin));
+			BlockPos radio = StructureTemplate.calculateRelativePosition(settings, new BlockPos(2, 1, 1)).offset(origin);
+			BlockState state = level.getBlockState(radio);
+			helper.assertTrue(state.is(RadiocraftBlocks.VHF_BASE_STATION.get()), turns[i] + ": no radio at " + radio.toShortString() + " but " + state);
+			helper.assertTrue(state.getValue(com.arrl.radiocraft.common.blocks.radios.RadioBlock.HORIZONTAL_FACING) == turns[i].rotate(net.minecraft.core.Direction.SOUTH),
+					turns[i] + ": the radio faces " + state);
+		}
+		helper.succeedWhen(() -> {
+			for(int i = 0; i < boxes.size(); i++) {
+				BoundingBox box = boxes.get(i);
+				SiteCheck.Report report = SiteCheck.check(level, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), true);
+				helper.assertTrue(report.problems().isEmpty(), turns[i] + ": " + String.join("; ", report.problems()));
+			}
+		});
+	}
+
+	/** Where each turned copy of the village shack goes, so the four miss each other on the 24 by 24 plot. */
+	private static final BlockPos[] ORIGINS = { new BlockPos(1, 1, 1), new BlockPos(22, 1, 1), new BlockPos(9, 1, 22), new BlockPos(14, 1, 22) };
+
+	/** The server added the shack to every vanilla village type's house pool, once. */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void villagesCanHaveAHamShack(GameTestHelper helper) {
+		var pools = helper.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.TEMPLATE_POOL);
+		for(String type : VillageHouses.TYPES) {
+			var pool = pools.get(VillageHouses.housePool(type));
+			helper.assertTrue(pool != null, "no house pool for " + type);
+			var templates = VillageHouses.templates(pool);
+			long shacks = templates.stream().filter(element -> element.toString().contains(VillageHouses.template(type).toString())).count();
+			helper.assertTrue(shacks == VillageHouses.WEIGHT, type + " houses have " + shacks + " ham shacks");
+			helper.assertTrue(helper.getLevel().getStructureManager().get(VillageHouses.template(type)).isPresent(), "no template for " + type);
+		}
+		helper.assertTrue(VillageHouses.add(helper.getLevel().registryAccess()) == 0, "the shacks were added a second time");
+		helper.succeed();
+	}
+
+	/** RadioCraft's blocks turn with a turned piece: a radio's facing, a wire's sides and the side it hugs. */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void radioCraftBlocksTurnWithThePiece(GameTestHelper helper) {
+		BlockState coax = RadiocraftBlocks.COAX_WIRE.get().defaultBlockState().setValue(WireBlock.EAST, true).setValue(WireBlock.UP, true)
+				.setValue(WireBlock.HUG, WireBlock.Edge.NORTH);
+		BlockState turned = RotateBlocksProcessor.rotate(coax, Rotation.CLOCKWISE_90);
+		helper.assertTrue(turned.getValue(WireBlock.SOUTH) && !turned.getValue(WireBlock.EAST) && turned.getValue(WireBlock.UP), "coax sides: " + turned);
+		helper.assertTrue(turned.getValue(WireBlock.HUG) == WireBlock.Edge.EAST, "coax hug: " + turned);
+		helper.assertTrue(RotateBlocksProcessor.rotate(coax, Rotation.NONE) == coax, "turned by nothing");
+		BlockState radio = RadiocraftBlocks.VHF_BASE_STATION.get().defaultBlockState().setValue(com.arrl.radiocraft.common.blocks.radios.RadioBlock.HORIZONTAL_FACING, net.minecraft.core.Direction.SOUTH);
+		helper.assertTrue(RotateBlocksProcessor.rotate(radio, Rotation.CLOCKWISE_180).getValue(com.arrl.radiocraft.common.blocks.radios.RadioBlock.HORIZONTAL_FACING) == net.minecraft.core.Direction.NORTH,
+				"the radio did not turn");
+		helper.succeed();
 	}
 
 	private static int horns(List<BoundingBox> removed) {

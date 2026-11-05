@@ -51,7 +51,8 @@ public class DeskChargerBlockRenderer extends GeoBlockRenderer<DeskChargerBlockE
 
         // Hide the "Radio" bone if there's no radio in the charger slot, or a handheld drawn with its own model
         var stack = blockEntity.inventory.getStackInSlot(0);
-        boolean handheld = stack != null && stack.getItem() instanceof VHFHandheldItem;
+        // The ham handheld draws itself (its LCD); a commercial or marine one shows as the charger's own radio for now.
+        boolean handheld = stack != null && stack.getItem() instanceof VHFHandheldItem && !VHFHandheldItem.isChannelized(stack);
         try {
             var bone = MODEL.getAnimationProcessor().getBone("Radio");
             if (bone != null) {

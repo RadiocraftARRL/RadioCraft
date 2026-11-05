@@ -15,4 +15,8 @@ public class RadiocraftRecipeSerializers {
 	/** A VHF handheld plus an APRS module: the handheld with the module installed. */
 	public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<AprsModuleInstallRecipe>> APRS_MODULE_INSTALL = RECIPE_SERIALIZERS.register(
 			"aprs_module_install", () -> new SimpleCraftingRecipeSerializer<>(AprsModuleInstallRecipe::new));
+
+	/** A ham radio plus a MARS mod: the radio, transmitting out of band (see {@link com.arrl.radiocraft.common.radio.BandEdges}). */
+	public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<com.arrl.radiocraft.common.crafting.MarsModInstallRecipe>> MARS_MOD_INSTALL = RECIPE_SERIALIZERS.register(
+			"mars_mod_install", () -> new SimpleCraftingRecipeSerializer<>(com.arrl.radiocraft.common.crafting.MarsModInstallRecipe::new));
 }

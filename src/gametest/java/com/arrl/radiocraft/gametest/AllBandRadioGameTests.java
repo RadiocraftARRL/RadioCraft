@@ -73,7 +73,7 @@ public class AllBandRadioGameTests {
         helper.assertTrue(copy.getFrequency() == radio.getFrequency(), "The 2m frequency should survive a save, got " + copy.getFrequency());
 
         radio.updateFrequency(1_000_000);
-        helper.assertTrue(radio.getFrequency() == radio.getBand().maxFrequency(), "Should stop at the top of 2m, was " + radio.getFrequency());
+        helper.assertTrue(radio.getFrequency() == 174_000_000.0F, "Should stop at the top of commercial VHF (2m tunes past its band), was " + radio.getFrequency());
         helper.succeed();
     }
 

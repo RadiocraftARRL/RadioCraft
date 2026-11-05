@@ -57,6 +57,26 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 	private final SquelchTail tail = new SquelchTail();
 	private List<WiredSpeaker> outputsFor = List.of();
 
+	/**
+	 * Where a receiver with no speaker of its own sends what it plays (the Real-World Interface's sound card): each
+	 * mixed 20 ms frame, on the thread that received it. Needs no voice chat server.
+	 */
+	@FunctionalInterface
+	public interface Tap {
+		void frame(short[] pcm);
+	}
+
+	@org.jetbrains.annotations.Nullable
+	private volatile Tap tap = null;
+	// The tap's own mix (its processors carry state), under this receiver's lock.
+	private final VoiceMix.Aligner tapAligner = new VoiceMix.Aligner();
+	private final VoiceMix.Renderer tapRenderer = new VoiceMix.Renderer();
+
+	/** Sends what this receiver plays to {@code tap} instead of a speaker; null puts the speaker back. */
+	public void setTap(@org.jetbrains.annotations.Nullable Tap tap) {
+		this.tap = tap;
+	}
+
 	public BEVoiceReceiver(int x, int y, int z) {
 		this(x, y, z, false);
 	}
@@ -144,8 +164,22 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 	 * ({@link VoiceMix.Signal#multipath}).
 	 */
 	public void receive(AntennaVoicePacket antennaPacket, double level, double rasp, double pitchShiftHz, double splatter, double qrm, double fmSignal, double onAir, double multipath) {
+		receive(antennaPacket, antennaPacket.getRawAudio(), level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath);
+	}
+
+	/**
+	 * As above, playing {@code pcm} in place of the packet's own audio: what a digital receiver made of it (decoded,
+	 * scrambled without the key, or an analog receiver's buzz, see {@link com.arrl.radiocraft.common.radio.voice.DigitalVoice}).
+	 */
+	public void receive(AntennaVoicePacket antennaPacket, short[] pcm, double level, double rasp, double pitchShiftHz, double splatter, double qrm, double fmSignal, double onAir, double multipath) {
 		if(!isReceiving)
 			return;
+		Tap out = tap;
+		if(out != null) {
+			tapPlay(new VoiceMix.Signal(VoiceMix.key(antennaPacket.getSourcePlayer(), antennaPacket.getSource()),
+					antennaPacket.getSourcePlayer(), pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath), out);
+			return;
+		}
 		if(RadiocraftVoicePlugin.API == null) {
 			if(!warnedNoApi) {
 				warnedNoApi = true;
@@ -155,7 +189,7 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		}
 
 		play(antennaPacket.getLevel(), new VoiceMix.Signal(VoiceMix.key(antennaPacket.getSourcePlayer(), antennaPacket.getSource()),
-				antennaPacket.getSourcePlayer(), antennaPacket.getRawAudio(), level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath));
+				antennaPacket.getSourcePlayer(), pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath));
 	}
 
 	/**
@@ -163,7 +197,14 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 	 * at output {@code level}.
 	 */
 	public void receive(net.minecraft.server.level.ServerLevel mcLevel, Object source, short[] pcm, double level) {
-		if(!isReceiving || RadiocraftVoicePlugin.API == null)
+		if(!isReceiving)
+			return;
+		Tap out = tap;
+		if(out != null) {
+			tapPlay(new VoiceMix.Signal(VoiceMix.key(null, source), null, pcm, level, 0.0D, 0.0D, 0.0D, 0.0D, -1.0D), out);
+			return;
+		}
+		if(RadiocraftVoicePlugin.API == null)
 			return;
 		play(mcLevel, new VoiceMix.Signal(VoiceMix.key(null, source), null, pcm, level, 0.0D, 0.0D, 0.0D, 0.0D, -1.0D));
 	}
@@ -195,6 +236,20 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 				output.play(slot, target.kind().apply(settings), target.kind().loudness, this.frame, now);
 			}
 		}
+	}
+
+	/** Mixes {@code signal} as the speaker would and hands the frame to the tap. */
+	private void tapPlay(VoiceMix.Signal signal, Tap out) {
+		RadioVoiceProcessor.Settings settings = RadioVoiceProcessor.currentSettings();
+		long now = System.nanoTime();
+		short[] pcm;
+		synchronized(this) {
+			List<VoiceMix.Signal> slot = tapAligner.offer(signal, now);
+			if(slot.isEmpty())
+				return;
+			pcm = tapRenderer.render(slot, settings, 1.0D, now).pcm();
+		}
+		out.frame(pcm);
 	}
 
 	private OpusEncoder encoder() {

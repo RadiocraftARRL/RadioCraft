@@ -48,12 +48,12 @@ public class VHFHandheldCapability implements IVHFHandheldCapability {
 			(old) -> new HandheldRadioState(
 				old.power(),
 				old.ptt(),
-				Math.max(
+				Math.max( // The dial tunes past 2m (general coverage receive); transmitting there needs a MARS mod.
 						Math.min(
                                 frequencyHertz,
-								Band.getBand(2).maxFrequency()
+								com.arrl.radiocraft.common.radio.BandEdges.tuneMax(Band.getBand(2))
 						),
-						Band.getBand(2).minFrequency()
+						com.arrl.radiocraft.common.radio.BandEdges.tuneMin(Band.getBand(2))
 				),
 				old.gain(),
 				old.micGain(),

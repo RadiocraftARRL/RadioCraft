@@ -52,13 +52,17 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.VHF_RECEIVER.get())
                 .add(RadiocraftBlocks.VHF_REPEATER.get())
                 .add(RadiocraftBlocks.COMMERCIAL_REPEATER.get()) // Its charger runs off the station's power wire, to any cell of the rack.
+                .add(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get(), RadiocraftBlocks.MARINE_RADIO.get())
+                .add(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()) // A station on power and coax (1.12 step 11).
                 .add(RadiocraftBlocks.DIRECTION_FINDER_MODULE.get()) // Passes power on to the finder and the next module.
                 .add(RadiocraftBlocks.MICROWAVE_RADIO.get())
                 .add(RadiocraftBlocks.DIRECTION_FINDER.get(), RadiocraftBlocks.MAP_DIRECTION_FINDER.get())
                 .add(RadiocraftBlocks.APRS_TERMINAL.get()) // The H19 is mains fed (TerminalPowerGameTests).
                 .add(RadiocraftBlocks.DESK_CHARGER.get()) // Charges from the wire (DeskChargerNetworkObject).
                 .add(RadiocraftBlocks.PABX.get())
-                .add(RadiocraftBlocks.FIELD_PHONE.get()); // Needs none, but is louder and takes more phones with it.
+                .add(RadiocraftBlocks.FIELD_PHONE.get()) // Needs none, but is louder and takes more phones with it.
+                .add(RadiocraftBlocks.ADSB_BEACON.get(), RadiocraftBlocks.ADSB_RECEIVER.get()) // ADS-B (1.12 step 9).
+                .add(RadiocraftBlocks.RADIO_COMPUTER.get()); // Draws an HF receiver's power while in use (1.12).
 
         // Data wire (2026-10-30) links these to radios and to each other; power wire no longer does. Radios take it too
         // (WireBlock#isDataConnection).
@@ -76,7 +80,9 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.RADIO_FAXES.values().stream().map(net.neoforged.neoforge.registries.DeferredHolder::get).toArray(Block[]::new))
                 .add(RadiocraftBlocks.RADIO_INTERFACE.get(), RadiocraftBlocks.TELETYPE.get(), RadiocraftBlocks.WEFAX_RECEIVER.get(),
                         RadiocraftBlocks.TAPE_PLAYER.get(), RadiocraftBlocks.IONOSPHERIC_PROCESSOR.get())
-                .add(RadiocraftBlocks.DTMF_DECODER.get(), RadiocraftBlocks.DTMF_ENCODER.get());
+                .add(RadiocraftBlocks.DTMF_DECODER.get(), RadiocraftBlocks.DTMF_ENCODER.get())
+                .add(RadiocraftBlocks.RADIO_COMPUTER.get(), RadiocraftBlocks.SCANNER.get()) // The computer's line to its radios, scanner and station bus.
+                .add(RadiocraftBlocks.ADSB_RECEIVER.get()); // The computer's ADS-B program reads it.
 
         // Signal sources that only report a reading: Another Weather Mod's instruments re-read the weather every second, and
         // in a storm each new reading popped a nearby radio with interference (2026-10-30).
@@ -134,7 +140,10 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.VHF_BASE_STATION_VARIANTS.values().toArray(Block[]::new))
                 .add(RadiocraftBlocks.VHF_RECEIVER.get())
                 .add(RadiocraftBlocks.VHF_REPEATER.get())
-                .add(RadiocraftBlocks.COMMERCIAL_REPEATER.get());
+                .add(RadiocraftBlocks.COMMERCIAL_REPEATER.get())
+                .add(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get(), RadiocraftBlocks.MARINE_RADIO.get())
+                .add(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()) // A station on power and coax (1.12 step 11).
+                .add(RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get()); // ADS-B's 1090 MHz antenna to its receiver.
 
         // Define the ANTENNA_BLOCKS tag
         tag(RadiocraftTags.Blocks.ANTENNA_BLOCKS)

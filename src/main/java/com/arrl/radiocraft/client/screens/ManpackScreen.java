@@ -210,7 +210,7 @@ public class ManpackScreen extends Screen {
 		pointer(guiGraphics, FREQ, -135.0D + 270.0D * Math.max(0.0D, Math.min(1.0D, (state.frequency() - bottom) / span)), 0.35D);
 		pointer(guiGraphics, AF, -135.0D + 135.0D * state.gain(), 0.45D);
 		pointer(guiGraphics, MIC, -135.0D + 135.0D * state.micGain(), 0.45D);
-		renderWindow(guiGraphics, state, keyed);
+		renderWindow(guiGraphics, state, keyed, pttHeld);
 	}
 
 	private void widget(GuiGraphics guiGraphics, int[] r) {
@@ -228,11 +228,17 @@ public class ManpackScreen extends Screen {
 	}
 
 	/** The window: frequency, mode, band, TX, the S-meter and the battery. Dark while it is off. */
-	private void renderWindow(GuiGraphics guiGraphics, ManpackState state, boolean keyed) {
+	private void renderWindow(GuiGraphics guiGraphics, ManpackState state, boolean keyed, boolean pttHeld) {
 		if(!state.on())
 			return;
 		int x = left + WINDOW[0], y = top + WINDOW[1];
-		String freq = String.format(Locale.ROOT, "%.3f", state.frequency() / 1.0E6D);
+		net.minecraft.world.entity.player.Player player = net.minecraft.client.Minecraft.getInstance().player;
+		boolean inhibited = player != null && !com.arrl.radiocraft.common.radio.voice.handheld.ManpackRadio.mayTransmit(state,
+				com.arrl.radiocraft.common.items.MarsModItem.isFitted(com.arrl.radiocraft.common.radio.voice.handheld.ManpackRadio.find(player)));
+		// Keyed out of band without a MARS mod: the rig refuses, and says so where the frequency was.
+		String freq = inhibited && pttHeld ? "OUT OF BAND" : String.format(Locale.ROOT, "%.3f", state.frequency() / 1.0E6D);
+		if(inhibited && pttHeld)
+			keyed = true; // Red, like a keyed window.
 		guiGraphics.pose().pushPose();
 		guiGraphics.pose().translate(x + WINDOW[2] / 2.0F, y + 12, 0.0F);
 		guiGraphics.pose().scale(1.6F, 1.6F, 1.0F);
@@ -240,8 +246,10 @@ public class ManpackScreen extends Screen {
 		guiGraphics.pose().popPose();
 		small(guiGraphics, state.cw() ? "CW" : "SSB", x + 3, y + 2, AMBER);
 		small(guiGraphics, state.bandName().toUpperCase(Locale.ROOT), x + 3, y + 26, AMBER);
-		if(keyed)
+		if(keyed && !inhibited)
 			small(guiGraphics, "TX", x + WINDOW[2] - 12, y + 2, RED);
+		else if(inhibited)
+			small(guiGraphics, "OOB", x + WINDOW[2] - 16, y + 2, RED);
 		int bars = Math.round(ManpackClient.signal() * 10.0F);
 		for(int i = 0; i < 10; i++)
 			guiGraphics.fill(x + 30 + i * 6, y + 28, x + 34 + i * 6, y + 32, i < bars ? AMBER : DIM);

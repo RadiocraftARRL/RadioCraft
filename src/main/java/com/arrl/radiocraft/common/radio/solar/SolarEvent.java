@@ -63,6 +63,11 @@ public class SolarEvent {
 		return (isDay ? dayConditions : nightConditions).getOrDefault(band, BandCondition.GOOD);
 	}
 
+	/** True if the event data names {@code band} for that time of day. */
+	public boolean hasCondition(String band, boolean isDay) {
+		return (isDay ? dayConditions : nightConditions).containsKey(band);
+	}
+
 	/** True unless this event closes {@code band} at that time of day. */
 	public boolean isBandOpen(String band, boolean isDay) {
 		return getCondition(band, isDay) != BandCondition.CLOSED;

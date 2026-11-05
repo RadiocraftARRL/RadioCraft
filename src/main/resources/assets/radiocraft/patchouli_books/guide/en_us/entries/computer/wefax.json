@@ -1,0 +1,21 @@
+{
+  "name": "WEFAX on the Computer",
+  "icon": "radiocraft:floppy_wefax",
+  "category": "radiocraft:computer",
+  "sortnum": 10,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)WEFAX$() program receives weather fax charts through a radio interface cabled to the computer: charts other stations send, the solar bulletins and blackout alerts of $(l:radiocraft:sky/ionosphere)Ionospheric Processors$(), and on request (F4, WX REPT) the coast station's broadcast, the radar chart and then the forecast, as the $(l:radiocraft:sky/wefax)WEFAX receiver$() prints them. WX REPT needs a radio with a real antenna."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Charts come in line by line, speckled where the signal was lost, and are kept on the disk ($(thing)WFX00001.IMG$()).$(br2)F7 draws a chart of the weather where the computer is (radar or forecast); F3 sends any picture as a chart, in greys, as long on the air as a fax sheet. WEFAX receivers with AUTO on start printing when they hear one."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_wefax",
+      "text": "A blank floppy and an empty map."
+    }
+  ]
+}

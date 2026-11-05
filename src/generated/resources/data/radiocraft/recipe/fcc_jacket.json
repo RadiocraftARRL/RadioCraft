@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "T": {
+      "item": "minecraft:red_dye"
+    },
+    "W": {
+      "item": "minecraft:brown_wool"
+    }
+  },
+  "pattern": [
+    "W W",
+    "WTW",
+    "WWW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:fcc_jacket"
+  }
+}

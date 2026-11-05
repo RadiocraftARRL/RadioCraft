@@ -1,0 +1,25 @@
+{
+  "name": "Programs and Floppy Disks",
+  "icon": "radiocraft:floppy_disk",
+  "category": "radiocraft:computer",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Every computer comes with four programs:$(li)$(thing)EDIT$(), the text editor: Ctrl+S saves, F3 opens, F5 prints, F6 reads in a book from the scanner.$(li)$(thing)SYSINFO$(): the disk, the floppy drive, the scanner's paper and what is wired to the computer.$(li)$(thing)BANDPLAN$(): the $(l:radiocraft:propagation/band_plan)band plan$() as coloured bars.$(li)$(thing)INSTALL$(): installs programs from floppy disks."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Everything else comes on a $(item)Floppy Disk$(). Craft a blank one, then craft it with the part that stands for the program: a book and quill for the book editor, a book for the logbook, the band plan sheet for the frequency manager, a comparator for the radio programmer, and so on (look the disks up in your recipe book).$(br2)Use the disk on the computer or its monitor, or pick it in INSTALL, then install it. The disk is not used up. Sneak and right click the computer to eject it."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Rumour has it some disks were never sold in shops: old programs and games turn up in chests here and there, deep underground and in old libraries, on wrecks, and now and then in a village house. Hams who lived out in the country, in a little shack with an antenna on the roof, had a few too.$(br2)Programs can be removed in INSTALL with Del; their files stay on the disk."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_disk",
+      "recipe2": "radiocraft:floppy_logbook"
+    }
+  ]
+}

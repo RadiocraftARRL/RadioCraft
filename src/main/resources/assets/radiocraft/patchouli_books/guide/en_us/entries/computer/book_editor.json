@@ -1,0 +1,31 @@
+{
+  "name": "Book Editor and Logbook",
+  "icon": "radiocraft:floppy_bookedit",
+  "category": "radiocraft:computer",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "BOOKEDIT",
+      "text": "The $(item)Book Editor$() writes books of any length on the computer, a page at a time, and keeps them as .BOK files. The side panel counts the lines a page takes in a real book: fourteen lines of about nineteen letters fit, and it warns you when a page runs over.$(br2)F7 and F8 turn the page, F9 adds one, F10 takes one out, F12 sets the title and author. Ctrl+S saves, F3 opens, F6 reads in a book from the scanner's glass."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "F5 prints through the $(l:radiocraft:computer/scanner)scanner$(): a written book, a sheet of paper a page. A long book prints in $(thing)volumes$() of up to 64 pages, a full paper tray each; you are asked which volume to print, and take each one out of the output tray before the next."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "LOGBOOK",
+      "text": "The $(item)Logbook$() keeps your contacts as a real station log does: the date and time in UTC, the other station's call, the frequency, the mode, the reports sent and received (59 on phone, 599 on CW) and notes. Ins adds a contact, Enter edits one, Del deletes one. Changes are saved at once in LOGBOOK.LOG (F3 opens another log, F4 starts a new one)."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Wire your radios to the computer (touching it, or by $(l:radiocraft:radios/data_wire)data wire$()) and $(thing)F6$() lists the stations they heard talking in the last ten minutes: pick one and the call, frequency, mode and a signal report from how strong it came in are filled in for you.$(br2)F7 writes the log out as an $(thing)ADIF$() file (.ADI), the format every logging program reads."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_bookedit",
+      "recipe2": "radiocraft:floppy_logbook"
+    }
+  ]
+}

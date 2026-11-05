@@ -383,6 +383,11 @@ public class WefaxReceiverBlockEntity extends BlockEntity implements MenuProvide
 	private void receive(TncPacket packet, Source source) {
 		if(!(level instanceof ServerLevel serverLevel) || packet.id() == lastPacketId)
 			return;
+		if(packet.kind() == TncPacket.Kind.FILE_HEADER && com.arrl.radiocraft.common.radio.data.FileTransfer.MODE_WEFAX.equals(com.arrl.radiocraft.common.radio.data.FileTransfer.mode(packet.item()))) {
+			lastPacketId = packet.id();
+			chartHeard(serverLevel, packet, source);
+			return;
+		}
 		if(packet.kind() != TncPacket.Kind.SOLAR && packet.kind() != TncPacket.Kind.ALERT)
 			return;
 		List<String> lines = packet.solarLines();
@@ -415,6 +420,22 @@ public class WefaxReceiverBlockEntity extends BlockEntity implements MenuProvide
 			}
 		}
 		sync();
+	}
+
+	/**
+	 * A weather chart another station is sending (a radio computer's WEFAX, 1.12 step 7), heard as its start tone begins:
+	 * with AUTO on, paper and nothing printing, the recorder starts on the tone, as a real one does, and prints the chart
+	 * in greys line by line as it comes (speckle where the radio stops copying it).
+	 */
+	private void chartHeard(ServerLevel serverLevel, TncPacket packet, Source source) {
+		if(!auto || isPrinting() || isRequesting() || getPaper() <= 0)
+			return;
+		byte[] pixels = com.arrl.radiocraft.common.radio.data.FileTransfer.imagePixels(packet.item(), serverLevel);
+		if(pixels == null)
+			return;
+		pixels = com.arrl.radiocraft.common.photo.MapPalettes.vanilla().greyscaled(pixels);
+		Component name = Component.translatable("item.radiocraft.wefax_chart.station", packet.from());
+		start(WefaxPrints.printPicture(serverLevel, worldPosition, name, pixels), 1, source);
 	}
 
 	public boolean isAuto() {

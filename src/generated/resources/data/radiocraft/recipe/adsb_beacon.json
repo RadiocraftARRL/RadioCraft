@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": [
+      {
+        "item": "radiocraft:encased_crystal_vhf_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ],
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:lightning_rod"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " L ",
+    "ICI",
+    "IRI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:adsb_beacon"
+  }
+}

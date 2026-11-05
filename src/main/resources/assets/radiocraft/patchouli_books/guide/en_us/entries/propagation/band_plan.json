@@ -1,0 +1,34 @@
+{
+  "name": "Band Plan",
+  "icon": "radiocraft:band_plan",
+  "category": "radiocraft:propagation",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:band_plan",
+      "title": "Band Plan Sheet",
+      "text": "Paper and an ink sac make a $(item)Band Plan Sheet$(). Right click it: every band is a bar coloured by what each part is for, with a legend at the bottom. Hover a bar to read the frequency and its use."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ham bands",
+      "text": "A simplified ARRL band plan. On HF: $(thing)CW$() at the bottom of each band, then $(thing)digital$(), then $(thing)phone$() (voice) with a little $(thing)SSTV / fax$() window (14.230 on 20 m).$(br2)On 2 m: CW and weak signal at 144.0, $(thing)data$() around $(thing)144.390 APRS$(), FM $(thing)simplex$() (146.520 is the calling frequency) and the $(thing)repeater$() inputs and outputs, 600 kHz apart."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Commercial bands",
+      "text": "$(thing)Low band$() (30-50 MHz, just above 10 m) and $(thing)commercial VHF$() (150-174 MHz) belong to business users (licence required), public safety and the military. Most of 162-174 MHz is federal. $(thing)MURS$() channels (151.820, 151.880, 151.940, 154.570, 154.600) are licence free, and the $(l:radiocraft:radios/marine_radios)marine$(/l) channels sit at 156-162 MHz. $(l:radiocraft:radios/commercial_radios)Commercial radios$(/l) work these bands."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Server markers",
+      "text": "Black ticks mark single frequencies, listed under each bar: APRS, calling frequencies, the marine distress channel, or a $(thing)server-wide net$() on 7.060. Server admins can change all of it in the server config ($(thing)band_plan_segments$() and $(thing)band_plan_markers$()), and everyone's sheet follows."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:band_plan",
+      "text": "A sheet of paper and an ink sac. The radio computer's $(thing)BANDPLAN$() shows the same plan."
+    }
+  ]
+}

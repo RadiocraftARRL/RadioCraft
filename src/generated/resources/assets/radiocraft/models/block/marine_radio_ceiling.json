@@ -1,0 +1,10 @@
+{
+  "parent": "radiocraft:block/marine_radio",
+  "transform": {
+    "translation": [
+      0.0,
+      0.6875,
+      0.0
+    ]
+  }
+}

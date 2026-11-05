@@ -68,8 +68,6 @@ public interface IAntennaType<T extends AntennaData> {
 	/**
 	 * Calculates the SWR of an antenna for a given frequency based on it's properties. This has an
 	 * impact on the efficiency of the antenna.
-     *
-     * TODO: Make this take a (center) frequency in MHz from the Band data, instead of this garbage int for a wavelength
 	 *
 	 * @param data {@link AntennaData} object belonging to this antenna.
 	 * @param frequencyHertz The frequency to be used for checking SWR.
@@ -90,6 +88,8 @@ public interface IAntennaType<T extends AntennaData> {
 	/**
 	 * The chance a lightning strike on this antenna does damage (burns the coax, blows the radios), as a share of an
 	 * ordinary antenna's: 1 for most, less for a DC-grounded commercial antenna that sheds the surge to ground.
+	 *
+	 * @return the factor, 0 to 1
 	 */
 	default double lightningDamageFactor() {
 		return 1.0D;

@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -38,11 +39,21 @@ public class AntennaBlockEntity extends BlockEntity implements INetworkObjectPro
 
 	/** The antenna network a block's antenna belongs on. */
 	public static ResourceLocation networkFor(BlockState state) {
+		if(state.getBlock() instanceof com.arrl.radiocraft.api.antenna.IAntennaBlock antennaBlock) // Another mod's antenna block says.
+			return antennaBlock.getAntennaNetwork(state);
 		return state.getBlock() instanceof com.arrl.radiocraft.common.blocks.antennas.VHFAntennaCenterBlock ? AntennaNetworkManager.VHF_ID : AntennaNetworkManager.HF_ID;
 	}
 
 	public AntennaBlockEntity(BlockPos pos, BlockState state, ResourceLocation networkId) {
-		super(RadiocraftBlockEntities.ANTENNA.get(), pos, state);
+		this(RadiocraftBlockEntities.ANTENNA.get(), pos, state, networkId);
+	}
+
+	/**
+	 * An antenna block entity of another block entity type: another mod's antenna block registers its own type (a
+	 * {@link BlockEntityType} only accepts the blocks it was built with) and makes its block entity with this.
+	 */
+	public AntennaBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, ResourceLocation networkId) {
+		super(type, pos, state);
 		this.networkId = networkId;
 	}
 	/**

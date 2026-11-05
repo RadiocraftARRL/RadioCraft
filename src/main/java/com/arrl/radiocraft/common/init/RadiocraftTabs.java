@@ -162,7 +162,37 @@ public class RadiocraftTabs {
         RadiocraftItems.COLOURED_WIRE.values().forEach(wire -> output.accept(wire.get()));
 
         RadiocraftItems.VHF_HANDHELD_VARIANTS.values().forEach(output::accept);
+        output.accept(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
+        output.accept(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());
+        output.accept(RadiocraftItems.RADIO_CLONER.get());
+        output.accept(RadiocraftItems.COMMERCIAL_MOBILE.get());
+        output.accept(RadiocraftItems.LOW_BAND_MOBILE.get());
+        output.accept(RadiocraftItems.MARINE_HANDHELD.get());
+        output.accept(RadiocraftItems.MARINE_RADIO.get());
         output.accept(RadiocraftItems.APRS_MODULE.get());
+        output.accept(RadiocraftItems.MARS_MOD.get());
+        output.accept(RadiocraftItems.BAND_PLAN.get());
+        output.accept(RadiocraftItems.CAMERA.get());
+        output.accept(RadiocraftItems.PHOTO_PAPER.get());
+        output.accept(RadiocraftItems.COLOR_PHOTO_PAPER.get());
+        // The radio computer (1.12): monitor on the computer, scanner beside it, and a floppy for each program.
+        output.accept(RadiocraftItems.COMPUTER_MONITOR.get());
+        output.accept(RadiocraftItems.RADIO_COMPUTER.get());
+        output.accept(RadiocraftItems.SCANNER.get());
+        output.accept(RadiocraftItems.FLOPPY_DISK.get());
+        RadiocraftItems.FLOPPIES.values().forEach(floppy -> output.accept(floppy.get()));
+        // ADS-B (1.12 step 9): the beacon for craft, the receiver and its antenna.
+        output.accept(RadiocraftItems.ADSB_BEACON.get());
+        output.accept(RadiocraftItems.ADSB_RECEIVER.get());
+        output.accept(RadiocraftItems.ADSB_ANTENNA.get());
+        output.accept(RadiocraftItems.REAL_WORLD_INTERFACE.get()); // 1.12 step 11; off unless the server config turns it on.
+        // FCC gear (1.12 step 10). The badge is left out on purpose: operators issue it with /radiocraft fcc badge.
+        output.accept(RadiocraftItems.FCC_HAT.get());
+        output.accept(RadiocraftItems.FCC_JACKET.get());
+        output.accept(RadiocraftItems.FCC_BANNER_PATTERN.get());
+        ItemStack fccBanner = com.arrl.radiocraft.common.fcc.FccGear.banner(itemDisplayParameters.holders());
+        if(!fccBanner.isEmpty())
+            output.accept(fccBanner);
 
     }).build();
 

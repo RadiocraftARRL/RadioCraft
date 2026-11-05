@@ -50,6 +50,8 @@ public final class ModerationHooks {
 		public static final Tag SKIP = new Tag(null, true, 0L, null, null);
 		public static final Tag PARROT = new Tag(TransmissionKind.PARROT, false, 0L, null, null);
 		public static final Tag AUTOPATCH = new Tag(TransmissionKind.AUTOPATCH, false, 0L, null, null);
+		/** A real radio heard through a Real-World Interface, put on the air in game. */
+		public static final Tag REAL_WORLD = new Tag(TransmissionKind.REAL_WORLD, false, 0L, null, null);
 
 		/** A repeater passing on what it heard in {@code input}. */
 		public static Tag repeated(IAntennaPacket input) {
@@ -158,6 +160,9 @@ public final class ModerationHooks {
 		ModerationLog log = ModerationHooks.radio;
 		if(log != null && antenna != null && level != null)
 			log.voiceFrame(antenna, radio, level, source, pcm, hz, band, ctcss);
+		// Every voice frame on the air passes here once, at its source: Real-World Interfaces in Everywhere mode hear it
+		// wherever they are (one empty-list read while none is on). After the log, so they are logged as its hearers.
+		com.arrl.radiocraft.common.realworld.Everywhere.onAir(antenna, radio, level, source, pcm, hz, band, ctcss);
 	}
 
 	/** A data packet going out from {@code antenna}, sent by {@code radio}, from {@code talker} if a player sent it. Server thread. */

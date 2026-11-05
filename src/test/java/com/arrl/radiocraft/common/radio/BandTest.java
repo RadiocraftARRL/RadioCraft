@@ -59,4 +59,33 @@ class BandTest {
         assertTrue(BandUtils.getBaseStrength(ten, 5000, 1.0, 1.0, true) > 0.5, "10m by day at 5000 blocks");
         assertEquals(0.0, BandUtils.getBaseStrength(ten, 1500, 1.0, 1.0, true), 1e-9, "1500 blocks is in 10m's skip zone (silent)");
     }
+
+    /** The commercial bands (1.12): low band 30-50 MHz on the HF network, commercial VHF 150-174 MHz like 2m. */
+    @Test
+    void commercialBandsSitBesideTheHamBands() {
+        Band low = null, vhf = null;
+        for (Band band : Band.getCommercialDefaults()) {
+            assertTrue(!band.isAmateur(), band.name() + " should not be a ham band");
+            if (band.name().equals(Band.LOW_BAND))
+                low = band;
+            if (band.name().equals(Band.VHF_COMMERCIAL))
+                vhf = band;
+        }
+        assertNotNull(low);
+        assertNotNull(vhf);
+        assertEquals(30_000_000, low.minFrequency(), 0.0F);
+        assertEquals(50_000_000, low.maxFrequency(), 0.0F);
+        assertEquals(150_000_000, vhf.minFrequency(), 0.0F);
+        assertEquals(174_000_000, vhf.maxFrequency(), 0.0F);
+        assertTrue(!low.isVhf() && vhf.isVhf());
+        Band ten = Band.getDefaults().stream().filter(b -> b.name().equals("10m")).findFirst().orElseThrow();
+        Band two = Band.getDefaults().stream().filter(b -> b.name().equals("2m")).findFirst().orElseThrow();
+        assertTrue(low.losRange() < ten.losRange() && low.losRange() > two.losRange(), "low band's line of sight is between 10m and 2m");
+        assertEquals(0, low.maxSkipNight(), "low band does not skip at night");
+        var all = Band.getAllDefaults();
+        for (Band a : all)
+            for (Band b : all)
+                if (!a.name().equals(b.name()))
+                    assertTrue(a.maxFrequency() <= b.minFrequency() || b.maxFrequency() <= a.minFrequency(), a.name() + " overlaps " + b.name());
+    }
 }

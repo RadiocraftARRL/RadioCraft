@@ -40,7 +40,19 @@ public final class RadioDisplays {
 	private static final Map<String, java.util.List<Lamp>> LAMPS = Map.of(
 			"vhf_base_station", java.util.List.of(
 					new Lamp(4.5F, 5.5F, 2.75F, 3.75F, 1.75F, 0xFFFF3B30, true), // TX, red, right of the display's left edge.
-					new Lamp(6.5F, 7.5F, 2.75F, 3.75F, 1.75F, 0xFF3BFF6A, false))); // RX, green.
+					new Lamp(6.5F, 7.5F, 2.75F, 3.75F, 1.75F, 0xFF3BFF6A, false)), // RX, green.
+			"commercial_mobile", commercialLamps(),
+			"low_band_mobile", commercialLamps(),
+			"marine_radio", java.util.List.of( // TX and RX lamps right of the display (placeholder model, see ModelDesignBounty).
+					new Lamp(2.75F, 3.75F, 3.0F, 3.75F, 3.75F, 0xFFFF3B30, true),
+					new Lamp(2.75F, 3.75F, 1.5F, 2.25F, 3.75F, 0xFF3BFF6A, false)));
+
+	/** The commercial mobiles' TX and RX lamps, right of the display (placeholder model, see ModelDesignBounty). */
+	private static java.util.List<Lamp> commercialLamps() {
+		return java.util.List.of(
+				new Lamp(3.0F, 4.0F, 2.25F, 3.0F, 2.75F, 0xFFFF3B30, true),
+				new Lamp(3.0F, 4.0F, 1.0F, 1.75F, 2.75F, 0xFF3BFF6A, false));
+	}
 
 	/** The lamps of the radio block {@code blockPath}, none if its model has none. */
 	public static java.util.List<Lamp> lamps(String blockPath) {

@@ -624,7 +624,8 @@ public class VHFHandheldScreen extends Screen {
             return;
         }
         switch(menuState) {
-            case DEFAULT -> lcd.main(item, cap.isPTTDown() ? "TX" : cap.getReceiveStrength() > 0 ? "RX" : "");
+            case DEFAULT -> lcd.main(item, cap.isPTTDown() ? (com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio.handheldInhibited(item, cap) ? "OOB" : "TX")
+                    : cap.getReceiveStrength() > 0 ? "RX" : ""); // OOB: keyed out of band without a MARS mod (OUT OF BAND).
             case SET_FREQ -> {
                 lcd.header("SET FREQ", "");
                 lcd.digitsCentered(entryDigits(), 10);
@@ -1053,7 +1054,7 @@ public class VHFHandheldScreen extends Screen {
             case APRS -> aprsEnter();
             case SET_FREQ -> {
                 float requestedFrequency = frequencyEntryState.getFrequencyHz();
-                if(requestedFrequency >= Band.getBand(2).minFrequency() && requestedFrequency <= Band.getBand(2).maxFrequency()) {
+                if(com.arrl.radiocraft.common.radio.BandEdges.canTune(Band.getBand(2), requestedFrequency)) { // General coverage: past 2m too.
                     cap.setFrequencyHertz(
                             requestedFrequency
                     );
@@ -1114,7 +1115,7 @@ public class VHFHandheldScreen extends Screen {
         cap.setFrequencyHertz(
                 Math.min( //ServerConfig is synced on game join, so no further checking is necessary
                         cap.getFrequencyHertz() + RadiocraftServerConfig.VHF_FREQUENCY_STEP.get(),
-                        Band.getBand(2).maxFrequency()
+                        com.arrl.radiocraft.common.radio.BandEdges.tuneMax(Band.getBand(2))
                 )
         );
         updateServer();
@@ -1129,7 +1130,7 @@ public class VHFHandheldScreen extends Screen {
         cap.setFrequencyHertz(
                 Math.max(  //ServerConfig is synced on game join, so no further checking is necessary
                         cap.getFrequencyHertz() - RadiocraftServerConfig.VHF_FREQUENCY_STEP.get(),
-                        Band.getBand(2).minFrequency()
+                        com.arrl.radiocraft.common.radio.BandEdges.tuneMin(Band.getBand(2))
                 )
         );
         updateServer();

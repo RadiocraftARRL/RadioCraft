@@ -1140,10 +1140,13 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 
 	/** True for a block data wire runs into: one tagged {@code radiocraft:data_blocks}, or any radio. */
 	public static boolean isDataConnection(BlockState state) {
-		return state.is(RadiocraftTags.Blocks.DATA_BLOCKS) || state.getBlock() instanceof RadioBlock;
+		return state.is(RadiocraftTags.Blocks.DATA_BLOCKS) || state.getBlock() instanceof RadioBlock
+				|| com.arrl.radiocraft.api.benetworks.IWireConnectable.acceptsDataWire(state); // Or another mod's block says so in code.
 	}
 
 	public static boolean isValidConnection(BlockState state, boolean isPower) {
+		if(com.arrl.radiocraft.api.benetworks.IWireConnectable.accepts(state, isPower))
+			return true; // Another mod's block says so in code.
 		return isPower ? state.is(RadiocraftTags.Blocks.POWER_BLOCKS) : state.is(RadiocraftTags.Blocks.COAX_BLOCKS) || state.getBlock() instanceof RadioBlock;
 	}
 

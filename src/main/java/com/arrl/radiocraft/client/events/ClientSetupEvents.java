@@ -35,6 +35,8 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.QRP_RADIO_20M.get(), QRPRadio20mScreen::new);
 		event.register(RadiocraftMenuTypes.QRP_RADIO_40M.get(), QRPRadio40mScreen::new);
 		event.register(RadiocraftMenuTypes.VHF_BASE_STATION.get(), VHFBaseStationScreen::new);
+		event.register(RadiocraftMenuTypes.COMMERCIAL_MOBILE.get(), CommercialMobileScreen::new);
+		event.register(RadiocraftMenuTypes.MARINE_RADIO.get(), MarineRadioScreen::new);
 		event.register(RadiocraftMenuTypes.VHF_RECEIVER.get(), VHFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.HF_RECEIVER.get(), HFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.DESK_CHARGER.get(), DeskChargerScreen::new);
@@ -53,6 +55,11 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.PABX.get(), com.arrl.radiocraft.client.screens.PabxScreen::new);
 		event.register(RadiocraftMenuTypes.PHONE_PA.get(), com.arrl.radiocraft.client.screens.PhonePaScreen::new);
 		event.register(RadiocraftMenuTypes.MODERATION_COMPUTER.get(), com.arrl.radiocraft.client.screens.moderation.ModerationComputerScreen::new);
+		event.register(RadiocraftMenuTypes.RADIO_COMPUTER.get(), com.arrl.radiocraft.client.screens.computer.RadioComputerScreen::new);
+		event.register(RadiocraftMenuTypes.SCANNER.get(), com.arrl.radiocraft.client.screens.ScannerScreen::new);
+		event.register(RadiocraftMenuTypes.ADSB_BEACON.get(), com.arrl.radiocraft.client.screens.adsb.AdsbBeaconScreen::new);
+		event.register(RadiocraftMenuTypes.ADSB_RECEIVER.get(), com.arrl.radiocraft.client.screens.adsb.AdsbReceiverScreen::new);
+		event.register(RadiocraftMenuTypes.REAL_WORLD_INTERFACE.get(), com.arrl.radiocraft.client.screens.RealWorldInterfaceScreen::new);
 		event.register(RadiocraftMenuTypes.REPEATER_AUTOPATCH.get(), com.arrl.radiocraft.client.screens.RepeaterAutopatchScreen::new);
 		event.register(RadiocraftMenuTypes.IONOSPHERIC_PROCESSOR.get(), com.arrl.radiocraft.client.screens.IonosphericProcessorScreen::new);
 		event.register(RadiocraftMenuTypes.TAPE_PLAYER.get(), com.arrl.radiocraft.client.screens.TapePlayerScreen::new);
@@ -74,6 +81,8 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.PASSTHROUGH.get(), com.arrl.radiocraft.client.render.PassthroughRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.TELEPHONE.get(), com.arrl.radiocraft.client.render.TelephoneRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MODERATION_COMPUTER.get(), com.arrl.radiocraft.client.render.ModerationComputerRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.COMPUTER_MONITOR.get(), com.arrl.radiocraft.client.render.ComputerMonitorRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.ADSB_RECEIVER.get(), com.arrl.radiocraft.client.render.AdsbScopeRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.FIELD_PHONE.get(), com.arrl.radiocraft.client.render.FieldPhoneRenderer::new);
 		// Satellite dish geo renderer
 		event.registerBlockEntityRenderer((net.minecraft.world.level.block.entity.BlockEntityType) RadiocraftBlockEntities.SATELLITE_DISH.get(), ctx -> new com.arrl.radiocraft.client.render.SatelliteDishRenderer(ctx));
@@ -87,6 +96,8 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.HF_RADIO_ALL_BAND.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.HF_RECEIVER.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_BASE_STATION.get(), RadioDisplayRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.COMMERCIAL_MOBILE.get(), RadioDisplayRenderer::new); // Channel display, lamps, mic cord.
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MARINE_RADIO.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_RECEIVER.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_20M.get(), RadioDisplayRenderer::new); // No screen; draws the mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_40M.get(), RadioDisplayRenderer::new);
@@ -102,8 +113,11 @@ public class ClientSetupEvents {
 	@SubscribeEvent
 	public static void clientSetup(net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) {
 		// The Config button in the mod list: NeoForge's own screen over the client, common and server (in a world) settings.
+		// The Real-World Interface's settings are left off it: they are set only in the server config file (maintainer,
+		// 2026-11-04), so nobody wires a sound card to the air from a menu.
 		net.neoforged.fml.ModList.get().getModContainerById(Radiocraft.MOD_ID).ifPresent(container -> container.registerExtensionPoint(
-				net.neoforged.neoforge.client.gui.IConfigScreenFactory.class, net.neoforged.neoforge.client.gui.ConfigurationScreen::new));
+				net.neoforged.neoforge.client.gui.IConfigScreenFactory.class, (net.neoforged.neoforge.client.gui.IConfigScreenFactory)(mod, parent) ->
+						new net.neoforged.neoforge.client.gui.ConfigurationScreen(mod, parent, (context, key, original) -> key.startsWith("real_world_interface") ? null : original)));
 		if(com.arrl.radiocraft.compat.create.CreateCompat.isActive())
 			event.enqueueWork(com.arrl.radiocraft.compat.create.CreateAlternatorClient::registerVisual);
 		if(com.arrl.radiocraft.compat.curios.CuriosCompat.isLoaded()) // The handheld on the belt.
@@ -117,6 +131,22 @@ public class ClientSetupEvents {
 	public static void registerItemColours(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
 		event.register((stack, tint) -> tint == 1 ? com.arrl.radiocraft.common.items.TapeItem.reelColour(stack)
 				: tint == 2 ? com.arrl.radiocraft.common.items.TapeItem.labelColour(stack) : -1, com.arrl.radiocraft.common.init.RadiocraftItems.TAPE_REEL.get());
+		// Commercial radios: the case (tint 0) takes dye like leather armour.
+		event.register((stack, tint) -> tint == 0 ? net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, com.arrl.radiocraft.common.items.CommercialHandheldItem.DEFAULT_CASE_COLOUR) : -1,
+				com.arrl.radiocraft.common.init.RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get(), com.arrl.radiocraft.common.init.RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get(),
+				com.arrl.radiocraft.common.init.RadiocraftItems.COMMERCIAL_MOBILE.get(), com.arrl.radiocraft.common.init.RadiocraftItems.LOW_BAND_MOBILE.get());
+		// Floppy disks: one texture, the label (tint 1) in each program's colour.
+		event.register((stack, tint) -> tint == 1 ? com.arrl.radiocraft.client.screens.computer.ComputerAppScreens.labelColour(stack) : -1,
+				com.arrl.radiocraft.common.init.RadiocraftItems.FLOPPIES.values().stream().map(net.neoforged.neoforge.registries.DeferredHolder::get).toArray(net.minecraft.world.level.ItemLike[]::new));
+	}
+
+	/** A placed commercial mobile's case in its dyed colour (the block entity holds it). */
+	@SubscribeEvent
+	public static void registerBlockColours(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block event) {
+		event.register((state, level, pos, tint) -> tint == 0 && level != null && pos != null
+						&& level.getBlockEntity(pos) instanceof com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity mobile
+						? mobile.getCaseColour() : tint == 0 ? com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity.DEFAULT_CASE_COLOUR : -1,
+				com.arrl.radiocraft.common.init.RadiocraftBlocks.COMMERCIAL_MOBILE.get(), com.arrl.radiocraft.common.init.RadiocraftBlocks.LOW_BAND_MOBILE.get());
 	}
 
 	/** The HF manpack on a player's back is drawn from its block model, which is loaded on its own for that. */

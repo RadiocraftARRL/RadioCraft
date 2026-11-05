@@ -202,7 +202,7 @@ public final class TerrainPropagation {
     /** Takeoff angle of a band's skip signal, in degrees. */
     public static double takeoffDegrees(Band band) {
         return switch(band.name()) {
-            case "10m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_10M.get();
+            case "10m", com.arrl.radiocraft.common.radio.Band.LOW_BAND -> RadiocraftServerConfig.TERRAIN_TAKEOFF_10M.get(); // Low band skips at a low angle like 10m.
             case "20m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_20M.get();
             case "40m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_40M.get();
             default -> RadiocraftServerConfig.TERRAIN_TAKEOFF_80M.get();

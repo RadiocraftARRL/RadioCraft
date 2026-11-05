@@ -82,10 +82,16 @@ public class SolarEventManager {
 	 * no event has been picked yet, and for bands without a name.
 	 */
 	public static BandCondition getCondition(Level level, @Nullable Band band) {
+		BandCondition fromApi = com.arrl.radiocraft.api.weather.SolarSources.condition(level, band, level.isDay()); // Another mod's space weather first.
+		if(fromApi != null)
+			return fromApi;
 		SolarEventInstance event = getEvent(level);
 		if(event == null || band == null)
 			return BandCondition.GOOD;
-		return event.getEvent().getCondition(band.name(), level.isDay());
+		boolean day = level.isDay();
+		// A band the event leaves out follows the band it behaves like (low band: 10m), see Band#conditionName.
+		String name = event.getEvent().hasCondition(band.name(), day) ? band.name() : band.conditionName();
+		return event.getEvent().getCondition(name, day);
 	}
 
 	/**

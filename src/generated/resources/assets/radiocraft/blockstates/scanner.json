@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "radiocraft:block/scanner",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "radiocraft:block/scanner"
+    },
+    "facing=south": {
+      "model": "radiocraft:block/scanner",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "radiocraft:block/scanner",
+      "y": 270
+    }
+  }
+}

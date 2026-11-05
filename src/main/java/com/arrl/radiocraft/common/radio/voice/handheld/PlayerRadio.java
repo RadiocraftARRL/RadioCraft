@@ -151,6 +151,21 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         final int offsetHz; // Repeater offset: transmits this far from frequency.
         final com.arrl.radiocraft.common.datacomponents.HandheldAprs aprs; // The APRS module, null without one.
 
+        // Commercial handhelds (CommercialHandheldItem): everything comes from the channel the knob is on.
+        final boolean commercial;
+        @org.jetbrains.annotations.Nullable
+        final com.arrl.radiocraft.common.radio.commercial.CommercialChannel channel; // Null on an unprogrammed position (and for ham radios).
+        final float txHz; // Where it transmits: the repeater offset on a ham radio, the channel's transmit frequency on a commercial one.
+        final Band txBand; // The band its transmissions go out on (2m for ham handhelds, so out-of-band ones splatter).
+        final int channelStep; // Adjacent-channel splatter step: the ham VHF step, or 12.5 kHz narrowband.
+        final com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode txMode;
+        @org.jetbrains.annotations.Nullable
+        final com.arrl.radiocraft.common.radio.voice.DigitalVoice.Decoder decoder; // Null for an analog receiver.
+        // Marine handhelds (MarineHandheldItem): the channel table's frequencies, 5 W or 1 W, dual watch on 16.
+        final boolean marine;
+        final float watchHz; // Dual watch: channel 16 as well (with priority), 0 for none.
+        final float txPower; // Against a standard handheld's 1: the marine handheld's 1 W setting is less.
+
         //used for calculating average amplitude for power meter
         volatile long runningSampleSum=0; //stores the sum of the square of every sample since last tick
         volatile long runningSampleCount=0; //number of samples since last tick
@@ -160,14 +175,61 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         }
 
         public SynchronousRadioState(ItemStack item, boolean canReceive, boolean canTransmit, float frequency, HandheldLocation itemLocation, float gain, float micGain, float ctcssTone, int offsetHz, float rxTone){
-            this.ctcssTone = ctcssTone;
-            this.rxTone = rxTone;
-            this.offsetHz = offsetHz;
             this.item = item;
             this.aprs = item.get(com.arrl.radiocraft.common.init.RadiocraftDataComponent.HANDHELD_APRS.value());
-            this.canReceive = canReceive && !canTransmit; // Keyed up, the radio hears nothing (it is not a repeater).
-            this.canTransmit = canTransmit;
-            this.frequency = frequency;
+            this.commercial = com.arrl.radiocraft.common.items.CommercialHandheldItem.is(item);
+            this.marine = com.arrl.radiocraft.common.items.MarineHandheldItem.is(item);
+            if(commercial) { // Channelized: the knob's channel sets the frequencies and the tone, whatever the state says.
+                com.arrl.radiocraft.common.radio.commercial.CommercialChannel on = com.arrl.radiocraft.common.items.CommercialHandheldItem.activeChannel(item);
+                this.channel = on;
+                this.frequency = on == null ? frequency : on.rxHz();
+                this.ctcssTone = on == null ? 0.0f : on.analogTone();
+                this.rxTone = this.ctcssTone;
+                this.offsetHz = 0;
+                this.txHz = on == null ? 0.0f : on.txHz();
+                Band band = com.arrl.radiocraft.common.items.CommercialHandheldItem.transmitBand(item);
+                this.txBand = band == null ? Band.getBand(Band.VHF_COMMERCIAL) : band;
+                this.channelStep = com.arrl.radiocraft.common.radio.commercial.CommercialChannel.CHANNEL_STEP_HZ;
+                this.txMode = on == null ? com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode.ANALOG : com.arrl.radiocraft.common.items.CommercialHandheldItem.transmitMode(item); // With the unit ID.
+                this.decoder = on == null ? null : on.decoder();
+                this.watchHz = 0.0f;
+                this.txPower = 1.0f;
+            }
+            else if(marine) { // Channel-only: the marine channel sets the frequencies, whatever the state says.
+                com.arrl.radiocraft.common.radio.MarineChannels.Region region = com.arrl.radiocraft.common.radio.marine.MarineRadios.region();
+                com.arrl.radiocraft.common.radio.marine.MarineRadioState settings = com.arrl.radiocraft.common.items.MarineHandheldItem.state(item);
+                this.channel = null;
+                this.frequency = (float)settings.receiveHz(region);
+                this.ctcssTone = 0.0f;
+                this.rxTone = 0.0f;
+                this.offsetHz = 0;
+                this.txHz = (float)settings.transmitHz(region);
+                this.txBand = com.arrl.radiocraft.common.radio.marine.MarineRadios.band(); // Commercial VHF: in band, no MARS splatter.
+                this.channelStep = com.arrl.radiocraft.common.radio.marine.MarineRadioState.CHANNEL_STEP_HZ;
+                this.txMode = com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode.ANALOG;
+                this.decoder = null;
+                this.watchHz = (float)settings.watchHz(region);
+                this.txPower = settings.handheldPower(region);
+            }
+            else {
+                this.channel = null;
+                this.frequency = frequency;
+                this.ctcssTone = ctcssTone;
+                this.rxTone = rxTone;
+                this.offsetHz = offsetHz;
+                this.txHz = transmitFrequency(frequency, offsetHz);
+                Band apiBand = item.getItem() instanceof com.arrl.radiocraft.api.items.IHandheldRadio api ? api.transmitBand(item) : null; // Another mod's handheld.
+                this.txBand = apiBand != null ? apiBand : Band.getBand("2m");
+                this.channelStep = RadiocraftServerConfig.VHF_FREQUENCY_STEP.get();
+                this.txMode = com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode.ANALOG;
+                this.decoder = null;
+                this.watchHz = 0.0f;
+                this.txPower = 1.0f;
+            }
+            boolean allowed = handheldMayTransmit(item, this.txHz);
+            this.canTransmit = canTransmit && allowed; // PTT held out of band without a MARS mod: the radio refuses (OUT OF BAND).
+            // Keyed up, the radio hears nothing (it is not a repeater); a commercial radio on a blank position hears nothing either.
+            this.canReceive = canReceive && !this.canTransmit && (!commercial || channel != null);
             this.crystal = VHFHandheldItem.crystalOf(item);
             this.itemLocation = itemLocation;
             this.gain = gain;
@@ -188,12 +250,59 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
             this(item, cap.isPowered(), cap.isPowered() && cap.isPTTDown(), frequency, itemLocation, cap.getGain(), cap.getMicGain(), cap.getCtcssTone(), cap.getOffsetHz(), cap.getRxTone());
         }
 
-        /** Where this radio transmits: its frequency plus the repeater offset, kept inside 2m. */
+        /**
+         * Where this radio transmits: its frequency plus the repeater offset, kept inside 2m (or, tuned out of 2m, inside
+         * what it tunes); on a commercial handheld, the channel's transmit frequency.
+         */
         float transmitFrequency() {
-            Band band = Band.getBand("2m");
-            float tx = frequency + offsetHz;
-            return band == null ? tx : Math.max(band.minFrequency(), Math.min(band.maxFrequency(), tx));
+            return txHz;
         }
+
+        static float transmitFrequency(float frequency, int offsetHz) {
+            return PlayerRadio.transmitFrequency(frequency, offsetHz);
+        }
+
+        static boolean handheldMayTransmit(ItemStack item, float txHz) {
+            return PlayerRadio.handheldMayTransmit(item, txHz);
+        }
+    }
+
+    /**
+     * Where a handheld on {@code frequency} with repeater offset {@code offsetHz} transmits: kept inside 2m when the dial
+     * is in 2m (as it always was), else inside what the handheld tunes ({@link com.arrl.radiocraft.common.radio.BandEdges}).
+     */
+    public static float transmitFrequency(float frequency, int offsetHz) {
+        Band band = Band.getBand("2m");
+        float tx = frequency + offsetHz;
+        if(band == null)
+            return tx;
+        if(band.contains(frequency))
+            return Math.max(band.minFrequency(), Math.min(band.maxFrequency(), tx));
+        return Math.max(com.arrl.radiocraft.common.radio.BandEdges.tuneMin(band), Math.min(com.arrl.radiocraft.common.radio.BandEdges.tuneMax(band), tx));
+    }
+
+    /**
+     * True if a handheld ({@code item}) may transmit on {@code txHz}: inside 2m, or anywhere it tunes with a MARS mod.
+     * A commercial handheld transmits only on its channel (programmed, not receive only, inside its bands).
+     */
+    public static boolean handheldMayTransmit(ItemStack item, float txHz) {
+        if(com.arrl.radiocraft.common.items.CommercialHandheldItem.is(item))
+            return com.arrl.radiocraft.common.items.CommercialHandheldItem.mayTransmit(item);
+        if(com.arrl.radiocraft.common.items.MarineHandheldItem.is(item)) // Any marine channel but weather and DSC.
+            return com.arrl.radiocraft.common.items.MarineHandheldItem.mayTransmit(item);
+        if(item.getItem() instanceof com.arrl.radiocraft.api.items.IHandheldRadio api) // Another mod's handheld decides.
+            return api.mayTransmit(item, txHz, com.arrl.radiocraft.common.items.MarsModItem.isFitted(item));
+        Band band = Band.getBand("2m");
+        return band == null || com.arrl.radiocraft.common.radio.BandEdges.canTransmit(band, txHz, com.arrl.radiocraft.common.items.MarsModItem.isFitted(item));
+    }
+
+    /** True if the handheld's PTT would be refused where it is tuned (out of band, no MARS mod): it shows OUT OF BAND. */
+    public static boolean handheldInhibited(ItemStack item, IVHFHandheldCapability cap) {
+        if(com.arrl.radiocraft.common.items.CommercialHandheldItem.is(item))
+            return !com.arrl.radiocraft.common.items.CommercialHandheldItem.mayTransmit(item);
+        if(com.arrl.radiocraft.common.items.MarineHandheldItem.is(item))
+            return !com.arrl.radiocraft.common.items.MarineHandheldItem.mayTransmit(item);
+        return !handheldMayTransmit(item, transmitFrequency(cap.getFrequencyHertz(), cap.getOffsetHz()));
     }
 
     /** The handheld's dial frequency moved by its crystal's drift (poor crystals only); each slot drifts on its own. */
@@ -296,6 +405,16 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         HandheldRadiation.voice(this, network, level, rawAudio, band, frequencyHertz, sourcePlayer, ctcssTone);
     }
 
+    /** Voice at {@code power} times a standard handheld's strength (the marine handheld on 1 W). */
+    @Override
+    public void transmitAudioPacket(ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone, float power) {
+        AntennaNetwork network;
+        synchronized (this) {
+            network = this.network;
+        }
+        HandheldRadiation.voice(this, network, level, rawAudio, band, frequencyHertz, sourcePlayer, ctcssTone, power);
+    }
+
     @Override //TODO get rid of this
     public synchronized boolean canTransmitVoice() {
         for(SynchronousRadioState state : radios) if(state.canTransmit) return true;
@@ -336,9 +455,11 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
             return;
         ItemStack stack = player.getInventory().getItem(slot);
         IVHFHandheldCapability cap = stack.getCapability(RadiocraftCapabilities.VHF_HANDHELDS);
-        if(cap == null || !cap.isPowered())
-            return;
+        if(cap == null || !cap.isPowered() || VHFHandheldItem.isChannelized(stack))
+            return; // The commercial and marine handhelds have no keypad.
         dtmfFrequency = new SynchronousRadioState(stack, cap, HandheldLocation.HELD, tunedFrequency(player, stack, cap, slot)).transmitFrequency();
+        if(!SynchronousRadioState.handheldMayTransmit(stack, dtmfFrequency))
+            return; // Out of band without a MARS mod: no tones either.
         dtmfCtcss = cap.getCtcssTone();
         dtmfFrames.addAll(com.arrl.radiocraft.common.radio.voice.Dtmf.frames(key));
         sendingDtmf = true;
@@ -484,7 +605,16 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
             for (int i = 0; i < audio.length; i++) {
                 audio[i] = (short)Math.round(audio[i] * radio.micGain);
             }
-            transmitAudioPacket(level, audio, Band.getBand("2m"), radio.transmitFrequency(), sourcePlayer, radio.ctcssTone);
+            if(radio.commercial) // The unit ID: an MDC burst over the start of each analog key-up (digital carries it in the data).
+                audio = mdcSender.frame(audio, radio.txMode.digital() ? 0 : radio.txMode.unitId(), System.nanoTime());
+            // Its own band (a commercial radio's is commercial VHF, so it is in band), and its channel's mode.
+            com.arrl.radiocraft.common.radio.voice.DigitalVoice.Mode was = com.arrl.radiocraft.common.radio.voice.DigitalVoice.push(radio.txMode);
+            try {
+                transmitAudioPacket(level, audio, radio.txBand, radio.transmitFrequency(), sourcePlayer, radio.ctcssTone, radio.txPower);
+            }
+            finally {
+                com.arrl.radiocraft.common.radio.voice.DigitalVoice.pop(was);
+            }
         }
     }
 
@@ -504,11 +634,27 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         return gain >= 1.0F ? gain : (double)gain * gain;
     }
 
+    private long digitalSeed = System.nanoTime() | 1L; // Under this object's lock (receive is synchronized).
+    // The unit ID burst at each analog key-up of a commercial handheld (voice thread).
+    private final com.arrl.radiocraft.common.radio.voice.MdcBurst.Sender mdcSender = new com.arrl.radiocraft.common.radio.voice.MdcBurst.Sender();
+    // The last caller ID sent to the holder's display, and when (under this object's lock).
+    private int callerSent = 0;
+    private long callerSentNanos = Long.MIN_VALUE / 2;
+    /** How often a caller still talking is sent to the display again, ns. */
+    private static final long CALLER_REPEAT_NANOS = 1_500_000_000L;
+
+    private long nextDigitalSeed() {
+        digitalSeed = digitalSeed * 6364136223846793005L + 1442695040888963407L;
+        return digitalSeed;
+    }
+
     /** How long splatter from a signal just off frequency is remembered: a few 20 ms voice frames. */
     private static final long ADJACENT_QRM_HOLD_NANOS = 100_000_000L;
     private double adjacentQrm = 0.0D;
     private long adjacentQrmNanos = Long.MIN_VALUE / 2;
     private final com.arrl.radiocraft.common.radio.voice.SquelchTail squelchTail = new com.arrl.radiocraft.common.radio.voice.SquelchTail();
+    // Marine dual watch: when channel 16 was last heard (it mutes the working channel for a moment after).
+    private final com.arrl.radiocraft.common.radio.marine.MarineRadioState.PriorityWatch priorityWatch = new com.arrl.radiocraft.common.radio.marine.MarineRadioState.PriorityWatch();
 
     @Override
     public synchronized void receive(AntennaVoicePacket antennaPacket) {
@@ -537,16 +683,31 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
             double detuneStrength = 0.0D; // Best of the handhelds that hear it (FM: up to 2 kHz off, weaker).
             CrystalQuality crystal = CrystalQuality.GOOD; // That handheld's crystal, for its receiver noise.
             double qrm = 0.0D; // Splatter it puts on the handhelds it is only near (3-10 kHz or one channel step off).
-            int channelStep = RadiocraftServerConfig.VHF_FREQUENCY_STEP.get();
+            com.arrl.radiocraft.common.radio.voice.DigitalVoice.Decoder decoder = null; // That handheld's digital decoder, null if analog.
+            SynchronousRadioState best = null; // The handheld that hears it best.
+            boolean heardPriority = false; // A marine handheld on dual watch heard it on channel 16.
+            long receivedNanos = System.nanoTime();
             for(SynchronousRadioState state : this.radios) {
                 if(state.canReceive && !(dataBurst && state.aprsMuted())) {
-                    Detuning.Effect effect = Detuning.fm(state.frequency, packetFrequency, channelStep);
+                    Detuning.Effect effect = Detuning.fm(state.frequency, packetFrequency, state.channelStep, antennaPacket.getSplatterReach());
+                    if(state.watchHz > 0.0f) { // Marine dual watch: channel 16 as well, and 16 holds the receiver while it is busy.
+                        Detuning.Effect sixteen = Detuning.fm(state.watchHz, packetFrequency, state.channelStep, antennaPacket.getSplatterReach());
+                        if(sixteen.audible()) {
+                            effect = sixteen;
+                            heardPriority = true;
+                        }
+                        else if(effect.audible() && priorityWatch.prioritySpeaking(receivedNanos))
+                            continue;
+                    }
                     if(effect.audible() && !Ctcss.opens(state.rxTone, antennaPacket.getCtcssTone()))
                         continue; // Tone squelch: not this radio's tone.
                     if(effect.audible()) {
                         shouldRecieve = true;
-                        if(effect.strength() > detuneStrength)
+                        if(effect.strength() > detuneStrength) {
                             crystal = state.crystal;
+                            decoder = state.decoder;
+                            best = state;
+                        }
                         detuneStrength = Math.max(detuneStrength, effect.strength());
                         if(state.itemLocation == HandheldLocation.HELD) {
                             isHeld = true;
@@ -558,6 +719,8 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
                 gain = state.gain;
             }
 
+            if(shouldRecieve && heardPriority)
+                priorityWatch.heardPriority(receivedNanos);
             if(!shouldRecieve) { // FM squelch stays shut; remember the splatter for the signal that is on frequency.
                 if(qrm > 0.0D) {
                     adjacentQrm = qrm * packetStrength;
@@ -566,6 +729,13 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
                 return;
             }
             packetStrength *= detuneStrength;
+            // Digital voice: clean, scrambled without the key, a buzz on a ham handheld, or nothing below the cliff.
+            com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception reception = com.arrl.radiocraft.common.radio.voice.DigitalVoice.receive(decoder, antennaPacket.getVoiceMode(), packetStrength);
+            if(reception == com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception.DROPPED)
+                return;
+            if(best != null && best.commercial) // A commercial handheld reads the caller's unit ID for its display.
+                callerHeard(player, best.frequency, com.arrl.radiocraft.common.radio.voice.DigitalVoice.unitHeard(antennaPacket.getVoiceMode(), reception));
+            short[] heardAudio = com.arrl.radiocraft.common.radio.voice.DigitalVoice.render(reception, antennaPacket.getRawAudio(), packetStrength, nextDigitalSeed());
             AntennaPos heardAt = getAntennaPos();
             com.arrl.radiocraft.common.moderation.ModerationHooks.heard(antennaPacket, this, heardAt == null ? null : heardAt.level(), heardAt == null ? null : heardAt.position(),
                     player, packetStrength); // The holder heard it: a hearer of the logged transmission.
@@ -581,7 +751,7 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
             long now = System.nanoTime();
             List<com.arrl.radiocraft.common.radio.voice.VoiceMix.Signal> slot = aligner.offer(new com.arrl.radiocraft.common.radio.voice.VoiceMix.Signal(
                     com.arrl.radiocraft.common.radio.voice.VoiceMix.key(antennaPacket.getSourcePlayer(), antennaPacket.getSource()), antennaPacket.getSourcePlayer(),
-                    antennaPacket.getRawAudio(), level, beyondLos ? 1.0D : 0.0D, 0.0D, 0.0D, splatter, packetStrength), now);
+                    heardAudio, level, beyondLos ? 1.0D : 0.0D, 0.0D, 0.0D, splatter, reception.digitalAudio() ? -1.0D : packetStrength), now);
             if(slot.isEmpty())
                 return; // Another station leads: this frame goes out mixed with its next one.
             com.arrl.radiocraft.common.radio.voice.VoiceMix.Mixed mixed = renderer.render(slot,
@@ -593,15 +763,48 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
 
             //TODO rework receiving to be per handheld, when frequency support is added
             for(SynchronousRadioState state : this.radios) {
-                if(state.canReceive && !(dataBurst && state.aprsMuted()) && Detuning.fm(state.frequency, packetFrequency, channelStep).audible() && Ctcss.opens(state.rxTone, antennaPacket.getCtcssTone())) {
+                if(state.canReceive && !(dataBurst && state.aprsMuted()) && hears(state, packetFrequency) && Ctcss.opens(state.rxTone, antennaPacket.getCtcssTone())) {
                     state.runningSampleCount += rawAudio.length;
                     state.runningSampleSum += runningTotal;
                 }
             }
 
             receiveChannel.send(encoder().encode(rawAudio));
-            squelchTail.heard(mixed.loudest().fmSignal(), mixed.loudest().level(), mixed.loudest().source(), now);
+            if(mixed.loudest().fm()) // Digital has no squelch tail.
+                squelchTail.heard(mixed.loudest().fmSignal(), mixed.loudest().level(), mixed.loudest().source(), now);
         }
+    }
+
+    /**
+     * A commercial handheld on {@code rxHz} heard unit {@code unit} (0: none): the holder's display is told, when the
+     * unit changes and again every {@link #CALLER_REPEAT_NANOS} while it talks. Voice thread; the packet goes out on
+     * the server thread.
+     */
+    private void callerHeard(Player player, float rxHz, int unit) {
+        if(unit <= 0 || !(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer))
+            return;
+        long now = System.nanoTime();
+        if(unit == callerSent && now - callerSentNanos < CALLER_REPEAT_NANOS)
+            return;
+        callerSent = unit;
+        callerSentNanos = now;
+        lastCallerHeard = unit;
+        net.minecraft.server.MinecraftServer server = serverPlayer.getServer();
+        if(server != null)
+            server.execute(() -> com.arrl.radiocraft.common.network.clientbound.CCallerIdPacket.send(serverPlayer, rxHz, unit));
+    }
+
+    private volatile int lastCallerHeard = 0;
+
+    /** The unit ID this player's commercial handheld last read off a transmission (0 if none), for tests and debug. */
+    public int getLastCallerHeard() {
+        return lastCallerHeard;
+    }
+
+    /** True if handheld {@code state} is on {@code packetFrequency}: its channel, or channel 16 on marine dual watch. */
+    private static boolean hears(SynchronousRadioState state, float packetFrequency) {
+        return Detuning.fm(state.frequency, packetFrequency, state.channelStep).audible()
+                || state.watchHz > 0.0f && Detuning.fm(state.watchHz, packetFrequency, state.channelStep).audible();
     }
 
     /** The squelch tail once a signal drops: a short burst of static through the handheld. Server thread, each tick. */

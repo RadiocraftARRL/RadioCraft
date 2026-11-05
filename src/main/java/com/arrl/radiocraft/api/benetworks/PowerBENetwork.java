@@ -57,6 +57,7 @@ public class PowerBENetwork extends BENetwork {
      * The batteries on this network discharge into what draws from them (indirect consumers), once a tick: the
      * first battery to tick does it for all of them, each giving an even share of what is drawn.
      *
+     * @param gameTime The level's game time, so it happens once a tick.
      * @return The energy drawn from the batteries.
      */
     public int dischargeBatteries(long gameTime) {

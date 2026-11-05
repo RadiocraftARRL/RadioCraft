@@ -60,6 +60,9 @@
     "radiocraft:tape_player",
     "radiocraft:ionospheric_processor",
     "radiocraft:dtmf_decoder",
-    "radiocraft:dtmf_encoder"
+    "radiocraft:dtmf_encoder",
+    "radiocraft:radio_computer",
+    "radiocraft:scanner",
+    "radiocraft:adsb_receiver"
   ]
 }

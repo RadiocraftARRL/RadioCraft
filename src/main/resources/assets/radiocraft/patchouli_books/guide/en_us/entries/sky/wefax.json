@@ -11,7 +11,7 @@
     {
       "type": "patchouli:text",
       "title": "Buttons",
-      "text": "$(li)$(thing)WX REPT$(): the radar chart and the forecast from the coast station, heard through its radio.$(li)$(thing)SOLR WX$(): the solar report from an $(l:radiocraft:sky/ionosphere)Ionospheric Processor$(/l): read directly if one touches it or its radio, otherwise asked for over the air (tune to the processor's frequency).$(li)$(thing)AUTO$(): prints a forecast when dangerous weather is coming.$(br)Blackout alerts always print, with three beeps."
+      "text": "$(li)$(thing)WX REPT$(): the radar chart and the forecast from the coast station, heard through its radio.$(li)$(thing)SOLR WX$(): the solar report from an $(l:radiocraft:sky/ionosphere)Ionospheric Processor$(/l): read directly if one touches it or its radio, otherwise asked for over the air (tune to the processor's frequency).$(li)$(thing)AUTO$(): prints a forecast when dangerous weather is coming, and any chart a station sends (the $(l:radiocraft:computer/wefax)computer's WEFAX$(/l)).$(br)Blackout alerts always print, with three beeps."
     },
     {
       "type": "patchouli:text",

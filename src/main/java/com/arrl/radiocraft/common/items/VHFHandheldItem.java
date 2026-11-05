@@ -42,6 +42,14 @@ public class VHFHandheldItem extends Item {
         return crystal;
     }
 
+    /**
+     * True for the channelized handhelds (commercial and marine): their frequencies come from a channel, and they have
+     * no VFO, keypad, memories, APRS module or MARS mod.
+     */
+    public static boolean isChannelized(ItemStack stack) {
+        return CommercialHandheldItem.is(stack) || MarineHandheldItem.is(stack);
+    }
+
     /** The crystal in the handheld {@code stack}, good if it is not a handheld. */
     public static CrystalQuality crystalOf(ItemStack stack) {
         return stack.getItem() instanceof VHFHandheldItem handheld ? handheld.crystal : CrystalQuality.GOOD;

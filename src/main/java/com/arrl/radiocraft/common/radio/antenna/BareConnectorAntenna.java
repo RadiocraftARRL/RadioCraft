@@ -125,9 +125,12 @@ public class BareConnectorAntenna implements IAntenna {
 	@Override
 	public void receiveCWPacket(AntennaCWPacket packet) {
 		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(packet.getSource().getAntennaPos().world().distSqr(pos.world()))));
-		if(packet.getStrength() > 0.0D && radio instanceof HFRadioBlockEntity hf
-				&& BandUtils.areFrequenciesEqualWithTolerance(hf.getFrequency(), packet.getFrequency(), 1000.0F))
-			hf.receiveCW(packet);
+		if(packet.getStrength() > 0.0D && radio instanceof HFRadioBlockEntity hf) {
+			if(BandUtils.areFrequenciesEqualWithTolerance(hf.getFrequency(), packet.getFrequency(), 1000.0F))
+				hf.receiveCW(packet);
+		}
+		else if(packet.getStrength() > 0.0D && radio instanceof com.arrl.radiocraft.api.blockentities.radio.ICWReceiver receiver && receiver.acceptsCW(packet))
+			receiver.receiveCW(packet); // Another mod's radio that hears CW.
 	}
 
 	@Override

@@ -1,0 +1,77 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "Q": {
+      "item": "minecraft:quartz_block"
+    },
+    "T": {
+      "item": "minecraft:iron_trapdoor"
+    },
+    "X": [
+      {
+        "item": "radiocraft:encased_crystal_80m_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_80m_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_80m_pure"
+      },
+      {
+        "item": "radiocraft:encased_crystal_40m_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_40m_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_40m_pure"
+      },
+      {
+        "item": "radiocraft:encased_crystal_20m_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_20m_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_20m_pure"
+      },
+      {
+        "item": "radiocraft:encased_crystal_10m_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_10m_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_10m_pure"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ]
+  },
+  "pattern": [
+    "GXG",
+    "QDQ",
+    "ITI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:radio_computer"
+  }
+}

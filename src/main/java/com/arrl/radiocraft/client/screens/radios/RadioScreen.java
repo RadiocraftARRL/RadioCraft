@@ -134,8 +134,10 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 			return;
 		}
 		boolean transmitting = isTransmitting();
-		String text = String.format("%.3f MHz", menu.getFrequency() / 1_000_000.0F);
-		drawScaled(guiGraphics, text, leftPos + x + w / 2.0F, topPos + y + h / 2.0F, scale, transmitting ? DISPLAY_TX_COLOUR : colour);
+		boolean inhibited = menu.blockEntity.isTransmitInhibited();
+		// Keyed out of band without a MARS mod: the rig refuses, and says so where the frequency was.
+		String text = inhibited && menu.blockEntity.isPTTDown() ? "OUT OF BAND" : String.format("%.3f MHz", menu.getFrequency() / 1_000_000.0F);
+		drawScaled(guiGraphics, text, leftPos + x + w / 2.0F, topPos + y + h / 2.0F, scale, transmitting || inhibited && menu.blockEntity.isPTTDown() ? DISPLAY_TX_COLOUR : colour);
 		if(h < 20)
 			return; // Too small for the corner markers.
 		float markerScale = Math.min(1.0F, scale * 0.6F);
@@ -146,6 +148,11 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 		if(transmitting) { // Top right: TX.
 			float markerWidth = font.width("TX") * markerScale;
 			drawScaled(guiGraphics, "TX", leftPos + x + w - 2 - markerWidth / 2.0F, markerY, markerScale, DISPLAY_TX_COLOUR);
+		}
+		else if(inhibited || menu.blockEntity.isOutOfBand()) { // Top right: tuned outside the band (OOB; MARS with a MARS mod).
+			String flag = inhibited ? "OOB" : "MARS";
+			float markerWidth = font.width(flag) * markerScale;
+			drawScaled(guiGraphics, flag, leftPos + x + w - 2 - markerWidth / 2.0F, markerY, markerScale, inhibited ? DISPLAY_TX_COLOUR : colour);
 		}
 	}
 
@@ -166,7 +173,7 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 
 	/** True while this radio is putting RF out, as far as the client knows: the PTT state synced from the server. */
 	protected boolean isTransmitting() {
-		return menu.blockEntity.isPTTDown() || menu.blockEntity.isSendingDataSynced(); // Data going out keys it too.
+		return (menu.blockEntity.isPTTDown() && !menu.blockEntity.isTransmitInhibited()) || menu.blockEntity.isSendingDataSynced(); // Data going out keys it too.
 	}
 
 

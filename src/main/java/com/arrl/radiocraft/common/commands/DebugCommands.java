@@ -75,6 +75,11 @@ import java.util.UUID;
  *     <li>/rcdebug transmit &lt;pos&gt; - send one frame of tone from an SSB radio, as if someone spoke into it</li>
  *     <li>/rcdebug key &lt;pos&gt; - key one buffer of morse from a CW radio</li>
  *     <li>/rcdebug parrot &lt;pos&gt; &lt;seconds&gt;|off - make a radio echo what it receives after a delay</li>
+ *     <li>/rcdebug commercial hand|&lt;pos&gt; [set &lt;ch&gt; &lt;spec&gt; | clear &lt;ch&gt; | select &lt;ch&gt; | factory] - read or program a
+ *     commercial radio (the held handheld or mobile item, or a placed mobile), as the radio computer's programmer will.
+ *     A spec is {@code NAME|rxMHz|txMHz|FM or DIG|tone|key|R or H} ({@link com.arrl.radiocraft.common.radio.commercial.CommercialChannel#parse})</li>
+ *     <li>/rcdebug marine hand|&lt;pos&gt; [channel &lt;name&gt; | sixteen | hilo | dw] - show or set a marine radio (the held
+ *     handheld, or a placed marine radio): pick a channel, press 16/9, HI/LO or DW</li>
  * </ul>
  */
 public class DebugCommands {
@@ -86,6 +91,7 @@ public class DebugCommands {
 			.then(Commands.literal("network").then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(DebugCommands::network)))
 			.then(Commands.literal("microwave").then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(DebugCommands::microwave)))
 			.then(Commands.literal("sable").then(Commands.argument("pos", BlockPosArgument.blockPos()).executes(DebugCommands::sable)))
+			.then(Commands.literal("adsb").executes(DebugCommands::adsb)) // 1.12 step 9: the beacons on the air here.
 			.then(Commands.literal("wires").then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos())
 					.executes(DebugCommands::wires))))
 			.then(Commands.literal("flipbundles").then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos())
@@ -127,6 +133,13 @@ public class DebugCommands {
 					.then(Commands.literal("off").executes(ctx -> power(ctx, false)))))
 			.then(Commands.literal("tune").then(Commands.argument("pos", BlockPosArgument.blockPos())
 					.then(Commands.argument("mhz", DoubleArgumentType.doubleArg(0)).executes(DebugCommands::tune))))
+			.then(Commands.literal("mars").then(Commands.argument("pos", BlockPosArgument.blockPos())
+					.then(Commands.literal("on").executes(ctx -> mars(ctx, true)))
+					.then(Commands.literal("off").executes(ctx -> mars(ctx, false)))))
+			.then(commercial())
+			.then(marine())
+			.then(Commands.literal("bandplan").executes(DebugCommands::bandPlan)
+					.then(Commands.argument("mhz", DoubleArgumentType.doubleArg(0)).executes(DebugCommands::bandPlanAt)))
 			.then(Commands.literal("mode").then(Commands.argument("pos", BlockPosArgument.blockPos())
 					.then(Commands.literal("ssb").executes(ctx -> mode(ctx, "ssb")))
 					.then(Commands.literal("cw").executes(ctx -> mode(ctx, "cw")))
@@ -136,12 +149,186 @@ public class DebugCommands {
 			.then(Commands.literal("terrain").executes(DebugCommands::terrain)
 					.then(Commands.literal("reset").executes(DebugCommands::terrainReset))
 					.then(Commands.literal("path").then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos())
-							.then(Commands.argument("band", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("2m", "10m", "20m", "40m", "80m"), b))
+							.then(Commands.argument("band", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("2m", "10m", "20m", "40m", "80m", Band.LOW_BAND, Band.VHF_COMMERCIAL), b))
 									.executes(DebugCommands::terrainPath))))))
 			.then(Commands.literal("parrot").then(Commands.argument("pos", BlockPosArgument.blockPos())
 					.then(Commands.literal("off").executes(ctx -> parrot(ctx, 0.0D)))
 					.then(Commands.argument("seconds", DoubleArgumentType.doubleArg(0.05D, 60.0D))
 							.executes(ctx -> parrot(ctx, DoubleArgumentType.getDouble(ctx, "seconds"))))));
+
+	// -------------------- COMMERCIAL RADIO PROGRAMMING --------------------
+
+	/** Finds the commercial radio a command is about: the held one, or the one at "pos". */
+	private interface CommercialTarget {
+		@org.jetbrains.annotations.Nullable
+		com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.Target find(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
+	}
+
+	private static com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> commercialActions(com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> node, CommercialTarget target) {
+		return node.executes(ctx -> commercialShow(ctx, target))
+				.then(Commands.literal("set").then(Commands.argument("channel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, com.arrl.radiocraft.common.radio.commercial.CommercialProgram.MAX_CHANNELS))
+						.then(Commands.argument("spec", StringArgumentType.greedyString()).executes(ctx -> commercialSet(ctx, target)))))
+				.then(Commands.literal("clear").then(Commands.argument("channel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, com.arrl.radiocraft.common.radio.commercial.CommercialProgram.MAX_CHANNELS))
+						.executes(ctx -> commercialClear(ctx, target))))
+				.then(Commands.literal("select").then(Commands.argument("channel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, com.arrl.radiocraft.common.radio.commercial.CommercialProgram.MAX_CHANNELS))
+						.executes(ctx -> commercialSelect(ctx, target))))
+				.then(Commands.literal("factory").executes(ctx -> commercialFactory(ctx, target)))
+				.then(Commands.literal("unit").then(Commands.argument("id", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, com.arrl.radiocraft.common.radio.commercial.CommercialProgram.UNIT_MAX))
+						.executes(ctx -> commercialUnit(ctx, target))));
+	}
+
+	/** Sets the radio's unit ID (0 gives it one at random). */
+	private static int commercialUnit(CommandContext<CommandSourceStack> ctx, CommercialTarget find) throws CommandSyntaxException {
+		var target = find.find(ctx);
+		if(target == null)
+			return fail(ctx, "No commercial radio there");
+		com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.setUnitId(target, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "id"));
+		return commercialShow(ctx, find);
+	}
+
+	private static LiteralArgumentBuilder<CommandSourceStack> commercial() {
+		LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("commercial");
+		root.then(commercialActions(Commands.literal("hand"), ctx -> com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.of(ctx.getSource().getPlayerOrException().getMainHandItem())));
+		root.then(commercialActions(Commands.argument("pos", BlockPosArgument.blockPos()),
+				ctx -> com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.of(ctx.getSource().getLevel(), BlockPosArgument.getLoadedBlockPos(ctx, "pos"))));
+		return root;
+	}
+
+	/** Where a marine command points: a placed radio's position, or null for the held handheld. */
+	@FunctionalInterface
+	private interface MarineTarget {
+		@org.jetbrains.annotations.Nullable
+		net.minecraft.core.BlockPos find(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException;
+	}
+
+	private static com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> marineActions(com.mojang.brigadier.builder.ArgumentBuilder<CommandSourceStack, ?> node, MarineTarget target) {
+		return node.executes(ctx -> marine(ctx, target, "", ""))
+				.then(Commands.literal("channel").then(Commands.argument("name", StringArgumentType.word())
+						.executes(ctx -> marine(ctx, target, "channel", StringArgumentType.getString(ctx, "name")))))
+				.then(Commands.literal("sixteen").executes(ctx -> marine(ctx, target, "sixteen", "")))
+				.then(Commands.literal("hilo").executes(ctx -> marine(ctx, target, "hilo", "")))
+				.then(Commands.literal("dw").executes(ctx -> marine(ctx, target, "dw", "")));
+	}
+
+	private static LiteralArgumentBuilder<CommandSourceStack> marine() {
+		LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("marine");
+		root.then(marineActions(Commands.literal("hand"), ctx -> null));
+		root.then(marineActions(Commands.argument("pos", BlockPosArgument.blockPos()), ctx -> BlockPosArgument.getLoadedBlockPos(ctx, "pos")));
+		return root;
+	}
+
+	/** Shows a marine radio, after pressing {@code action} ("" for none) with {@code argument}. */
+	private static int marine(CommandContext<CommandSourceStack> ctx, MarineTarget target, String action, String argument) throws CommandSyntaxException {
+		net.minecraft.core.BlockPos pos = target.find(ctx);
+		com.arrl.radiocraft.common.radio.MarineChannels.Region region = com.arrl.radiocraft.common.radio.marine.MarineRadios.region();
+		com.arrl.radiocraft.common.blockentities.radio.MarineRadioBlockEntity radio = null;
+		net.minecraft.world.item.ItemStack stack = net.minecraft.world.item.ItemStack.EMPTY;
+		com.arrl.radiocraft.common.radio.marine.MarineRadioState state;
+		if(pos == null) {
+			stack = ctx.getSource().getPlayerOrException().getMainHandItem();
+			if(!com.arrl.radiocraft.common.items.MarineHandheldItem.is(stack))
+				return fail(ctx, "Hold a marine handheld");
+			state = com.arrl.radiocraft.common.items.MarineHandheldItem.state(stack);
+		}
+		else if(ctx.getSource().getLevel().getBlockEntity(pos) instanceof com.arrl.radiocraft.common.blockentities.radio.MarineRadioBlockEntity placed) {
+			radio = placed;
+			state = placed.getRadioState();
+		}
+		else
+			return fail(ctx, "No marine radio there");
+		com.arrl.radiocraft.common.radio.marine.MarineRadioState pressed = switch(action) {
+			case "channel" -> state.select(region, argument);
+			case "sixteen" -> state.sixteenNine(region);
+			case "hilo" -> state.togglePower();
+			case "dw" -> state.toggleDualWatch();
+			default -> state;
+		};
+		if(action.equals("channel") && com.arrl.radiocraft.common.radio.MarineChannels.byName(region, argument) == null)
+			return fail(ctx, "No channel " + argument + " in the " + region + " plan");
+		if(pressed != state) {
+			if(radio != null)
+				radio.setRadioState(pressed);
+			else
+				com.arrl.radiocraft.common.items.MarineHandheldItem.setState(stack, pressed);
+		}
+		com.arrl.radiocraft.common.radio.MarineChannels.Channel channel = pressed.channel(region);
+		List<String> out = new ArrayList<>();
+		out.add("plan=" + region + " channel=" + channel.name() + " (" + channel.use() + ") duplex=" + channel.isDuplex());
+		out.add(String.format(java.util.Locale.ROOT, "rx=%.4f MHz tx=%.4f MHz power=%s dualWatch=%s mayTransmit=%s",
+				pressed.receiveHz(region) / 1e6, pressed.transmitHz(region) / 1e6, pressed.transmitsHigh(region) ? "HI" : "LO", pressed.dualWatch(), pressed.mayTransmit(region)));
+		if(radio != null)
+			out.add("txInhibited=" + radio.isTransmitInhibited() + " priorityBusy=" + radio.isPriorityBusy() + " lastReception=" + radio.getLastReception()
+					+ " band=" + (radio.getBand() == null ? "-" : radio.getBand().name()));
+		return send(ctx, out);
+	}
+
+	private static int commercialShow(CommandContext<CommandSourceStack> ctx, CommercialTarget find) throws CommandSyntaxException {
+		var target = find.find(ctx);
+		if(target == null)
+			return fail(ctx, "No commercial radio there (hold one, or give the position of a placed mobile)");
+		List<String> out = new ArrayList<>();
+		out.add("model=" + target.model().id() + " bands=" + target.model().bandNames() + " digital=" + target.model().digital() + " encryption=" + target.model().encryption()
+				+ " channels=" + target.model().channelCount() + " selected=" + (target.program().selected() + 1)
+				+ " zone=" + com.arrl.radiocraft.common.radio.commercial.CommercialProgram.zoneLetter(target.program().zone()) + " knob=" + (target.program().knob() + 1)
+				+ " unit=" + target.program().unitId() + " contacts=" + target.program().contacts().size());
+		List<com.arrl.radiocraft.common.radio.commercial.CommercialChannel> channels = com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.read(target);
+		for(int i = 0; i < channels.size(); i++)
+			if(!channels.get(i).isBlank())
+				out.add((i == target.program().selected() ? "> " : "  ") + (i + 1) + ": " + channels.get(i).format());
+		if(target instanceof RadioBlockEntity radio)
+			out.add("lastReception=" + radio.getLastReception() + " txInhibited=" + radio.isTransmitInhibited()
+					+ (radio instanceof com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity mobile ? " lastCaller=" + mobile.getLastCaller() : ""));
+		return send(ctx, out);
+	}
+
+	private static int commercialResult(CommandContext<CommandSourceStack> ctx, com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.Result result, CommercialTarget find) throws CommandSyntaxException {
+		if(result.ok())
+			return commercialShow(ctx, find);
+		List<String> out = new ArrayList<>();
+		for(var problem : result.problems())
+			out.add("channel " + (problem.position() + 1) + ": " + Component.translatable(Radiocraft.translationKey("message", "commercial." + problem.key())).getString());
+		ctx.getSource().sendFailure(Component.literal(String.join("\n", out)));
+		return 0;
+	}
+
+	private static int commercialSet(CommandContext<CommandSourceStack> ctx, CommercialTarget find) throws CommandSyntaxException {
+		var target = find.find(ctx);
+		if(target == null)
+			return fail(ctx, "No commercial radio there");
+		com.arrl.radiocraft.common.radio.commercial.CommercialChannel channel;
+		try {
+			channel = com.arrl.radiocraft.common.radio.commercial.CommercialChannel.parse(StringArgumentType.getString(ctx, "spec"));
+		}
+		catch(IllegalArgumentException e) {
+			return fail(ctx, e.getMessage() + " (NAME|rxMHz|txMHz|FM or DIG|tone|key|R or H)");
+		}
+		return commercialResult(ctx, com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.writeChannel(target,
+				com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "channel") - 1, channel), find);
+	}
+
+	private static int commercialClear(CommandContext<CommandSourceStack> ctx, CommercialTarget find) throws CommandSyntaxException {
+		var target = find.find(ctx);
+		if(target == null)
+			return fail(ctx, "No commercial radio there");
+		return commercialResult(ctx, com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.clear(target,
+				com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "channel") - 1), find);
+	}
+
+	private static int commercialSelect(CommandContext<CommandSourceStack> ctx, CommercialTarget find) throws CommandSyntaxException {
+		var target = find.find(ctx);
+		if(target == null)
+			return fail(ctx, "No commercial radio there");
+		com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.select(target, com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "channel") - 1);
+		return commercialShow(ctx, find);
+	}
+
+	private static int commercialFactory(CommandContext<CommandSourceStack> ctx, CommercialTarget find) throws CommandSyntaxException {
+		var target = find.find(ctx);
+		if(target == null)
+			return fail(ctx, "No commercial radio there");
+		com.arrl.radiocraft.common.radio.commercial.CommercialProgramming.factoryReset(target);
+		return commercialShow(ctx, find);
+	}
 
 	private static RadioBlockEntity getRadio(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 		BlockPos pos = BlockPosArgument.getLoadedBlockPos(ctx, "pos");
@@ -180,6 +367,37 @@ public class DebugCommands {
 		radio.setFrequency((float)(DoubleArgumentType.getDouble(ctx, "mhz") * 1e6));
 		radio.updateFrequency(0); // Clamps to the band and syncs to clients.
 		return send(ctx, List.of(String.format(Locale.ROOT, "freq=%.3fMHz", radio.getFrequency() / 1e6)));
+	}
+
+	/** Fits or removes a block radio's MARS mod, as crafting the item with one would. */
+	private static int mars(CommandContext<CommandSourceStack> ctx, boolean on) throws CommandSyntaxException {
+		RadioBlockEntity radio = getRadio(ctx);
+		if(radio == null)
+			return fail(ctx, "No radio there");
+		radio.setMarsMod(on);
+		return send(ctx, List.of("mars=" + radio.hasMarsMod() + " outOfBand=" + radio.isOutOfBand() + " txInhibited=" + radio.isTransmitInhibited()));
+	}
+
+	/** The band plan as the server has it: every band with its segments and markers. */
+	private static int bandPlan(CommandContext<CommandSourceStack> ctx) {
+		com.arrl.radiocraft.common.radio.bandplan.BandPlan plan = com.arrl.radiocraft.common.radio.bandplan.BandPlan.current();
+		List<String> out = new ArrayList<>();
+		for(com.arrl.radiocraft.common.radio.bandplan.BandPlan.Row row : plan.rows(com.arrl.radiocraft.common.radio.bandplan.BandPlan.sheetBands()))
+			out.add(String.format(Locale.ROOT, "%s %.3f-%.3fMHz: %d segments, %d markers", row.band().name(), row.band().minFrequency() / 1e6,
+					row.band().maxFrequency() / 1e6, row.segments().size(), row.markers().size()));
+		return send(ctx, out);
+	}
+
+	/** What the band plan says about one frequency. */
+	private static int bandPlanAt(CommandContext<CommandSourceStack> ctx) {
+		double hz = DoubleArgumentType.getDouble(ctx, "mhz") * 1e6;
+		com.arrl.radiocraft.common.radio.bandplan.BandPlan plan = com.arrl.radiocraft.common.radio.bandplan.BandPlan.current();
+		Band band = Band.getBand((float)hz);
+		List<String> out = new ArrayList<>();
+		out.add(String.format(Locale.ROOT, "%.4fMHz band=%s use=%s", hz / 1e6, band == null ? "none" : band.name(), plan.useAt(hz)));
+		for(com.arrl.radiocraft.common.radio.bandplan.BandPlan.Marker marker : plan.markersNear(hz, 5_000.0D))
+			out.add(String.format(Locale.ROOT, "  marker %.3f %s", marker.hz() / 1e6, marker.label()));
+		return send(ctx, out);
 	}
 
 	private static int mode(CommandContext<CommandSourceStack> ctx, String mode) throws CommandSyntaxException {
@@ -267,6 +485,8 @@ public class DebugCommands {
 		out.add("radio " + pos.toShortString() + " " + radio.getClass().getSimpleName());
 		out.add(String.format(Locale.ROOT, "band=%s freq=%.3fMHz range=%.3f-%.3fMHz", band == null ? "none" : band.name(),
 				radio.getFrequency() / 1e6, band == null ? 0 : band.minFrequency() / 1e6, band == null ? 0 : band.maxFrequency() / 1e6));
+		out.add(String.format(Locale.ROOT, "mars=%s outOfBand=%s txInhibited=%s tunes=%.4f-%.4fMHz", radio.hasMarsMod(), radio.isOutOfBand(), radio.isTransmitInhibited(),
+				band == null ? 0 : com.arrl.radiocraft.common.radio.BandEdges.tuneMin(band) / 1e6, band == null ? 0 : com.arrl.radiocraft.common.radio.BandEdges.tuneMax(band) / 1e6));
 
 		String mode = radio.getSSBEnabled() ? "SSB" : "off";
 		if(radio instanceof HFRadioBlockEntity hf && hf.getCWEnabled())
@@ -410,6 +630,23 @@ public class DebugCommands {
 		return send(ctx, List.of(pos.toShortString() + " is on sub-level " + (ship.getName() == null ? ship.getUniqueId() : ship.getName()),
 				String.format(Locale.ROOT, "really at %.2f, %.2f, %.2f (block %s)", at.x, at.y, at.z,
 						com.arrl.radiocraft.compat.sable.Sublevels.world(level, pos).toShortString())));
+	}
+
+	/** Every ADS-B beacon on the air in this level: address, flight ID, squawk, where, altitude, speed, track. */
+	private static int adsb(CommandContext<CommandSourceStack> ctx) {
+		ServerLevel level = ctx.getSource().getLevel();
+		long now = level.getGameTime();
+		List<String> out = new ArrayList<>();
+		for(com.arrl.radiocraft.common.radio.adsb.AdsbTarget t : com.arrl.radiocraft.common.radio.adsb.AdsbAirspace.reports(level)) {
+			boolean fresh = com.arrl.radiocraft.common.radio.adsb.AdsbAirspace.isFresh(t, now);
+			out.add(String.format(Locale.ROOT, "%s %-8s sq %s at %.0f %.0f %.0f  %d ft  %d kt  trk %03d  vs %d  beacon %s%s",
+					com.arrl.radiocraft.common.radio.adsb.AdsbMath.hex(t.icao()), t.label(), com.arrl.radiocraft.common.radio.adsb.AdsbMath.squawk(t.squawk()),
+					t.x(), t.y(), t.z(), t.feet(), t.knots(), Math.round(t.heading()) % 360, t.feetPerMinute(), BlockPos.of(t.beacon()).toShortString(),
+					fresh ? "" : " (stale)"));
+		}
+		if(out.isEmpty())
+			out.add("No ADS-B beacon on the air in " + level.dimension().location());
+		return send(ctx, out);
 	}
 
 	private static int network(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

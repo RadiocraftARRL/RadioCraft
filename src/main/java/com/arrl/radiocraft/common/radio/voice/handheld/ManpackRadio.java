@@ -70,6 +70,7 @@ public class ManpackRadio implements IAntenna {
 	private volatile boolean screenPtt = false;
 	private volatile boolean indoors = false;
 	private volatile boolean transmitting = false;
+	private volatile boolean marsMod = false; // The manpack has a MARS mod: it may transmit past its band edges.
 	// Stations heard at once are added up (SSB); used under this object's lock.
 	private final com.arrl.radiocraft.common.radio.voice.VoiceMix.Aligner aligner = new com.arrl.radiocraft.common.radio.voice.VoiceMix.Aligner();
 	private final com.arrl.radiocraft.common.radio.voice.VoiceMix.Renderer renderer = new com.arrl.radiocraft.common.radio.voice.VoiceMix.Renderer();
@@ -133,6 +134,12 @@ public class ManpackRadio implements IAntenna {
 		return micInHand && PlayerRadioManager.get(player.getUUID()).map(PlayerRadio::isUseHeld).orElse(false);
 	}
 
+	/** True if a manpack in {@code state} may transmit where it is tuned: in its band, or anywhere it tunes with a MARS mod. */
+	public static boolean mayTransmit(ManpackState state, boolean marsMod) {
+		Band band = Band.getBand(state.bandName());
+		return band == null || com.arrl.radiocraft.common.radio.BandEdges.canTransmit(band, state.frequency(), marsMod);
+	}
+
 	/** Once a tick: where it is, whether it is on, its battery, and what the player's client should show. */
 	private void tick() {
 		Player player = getPlayer();
@@ -146,8 +153,9 @@ public class ManpackRadio implements IAntenna {
 		ManpackState current = stateOf(stack);
 		if(current.micOut() && !ManpackMicItem.carries(player)) // The handset came back (or was lost): it is on its hook.
 			current = current.withMicOut(false);
+		marsMod = com.arrl.radiocraft.common.items.MarsModItem.isFitted(stack);
 		if(current.on()) {
-			boolean keyed = !current.cw() && pttHeld(player);
+			boolean keyed = !current.cw() && pttHeld(player) && mayTransmit(current, marsMod); // Out of band without a MARS mod: refused.
 			transmitting = keyed;
 			if(RadiocraftServerConfig.RADIO_POWER_REQUIRED.get()) {
 				spent += keyed ? RadiocraftServerConfig.MANPACK_TRANSMIT_USE.get() : RadiocraftServerConfig.MANPACK_RECEIVE_USE.get();
@@ -229,7 +237,8 @@ public class ManpackRadio implements IAntenna {
 	public void transmitMorse(Collection<CWBuffer> buffers) {
 		ManpackState current = state;
 		AntennaPos here = antennaPos.get();
-		if(current == null || !current.on() || !current.cw() || here == null || !(here.level() instanceof net.minecraft.server.level.ServerLevel serverLevel))
+		if(current == null || !current.on() || !current.cw() || here == null || !(here.level() instanceof net.minecraft.server.level.ServerLevel serverLevel)
+				|| !mayTransmit(current, marsMod))
 			return;
 		transmitCWPacket(serverLevel, buffers, Band.getBand(current.bandName()), current.frequency());
 	}
@@ -275,7 +284,7 @@ public class ManpackRadio implements IAntenna {
 		if(current == null || !current.on() || current.cw() || transmitting || here == null || player == null || RadiocraftVoicePlugin.API == null
 				|| packet.getLevel() != here.level())
 			return;
-		Detuning.Effect effect = Detuning.ssb(current.frequency(), packet.getFrequency(), current.frequency() < 10_000_000.0F);
+		Detuning.Effect effect = Detuning.ssb(current.frequency(), packet.getFrequency(), current.frequency() < 10_000_000.0F, packet.getSplatterReach());
 		if(!effect.audible())
 			return;
 		double strength = ManpackWhipAntennaType.INSTANCE.getReceiveEfficiency(packet, new EmptyAntennaData(), here.position()) * effect.strength()

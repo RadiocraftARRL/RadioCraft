@@ -1,0 +1,32 @@
+{
+  "name": "ADS-B Beacon",
+  "icon": "radiocraft:adsb_beacon",
+  "category": "radiocraft:aviation",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Real aircraft carry a transponder that broadcasts where they are on $(thing)1090 MHz$(), about once a second: $(thing)ADS-B$(). The $(item)ADS-B Beacon$() does the same for your airships. Put it on a $(thing)Sable$() ship or a $(thing)Create Aeronautics$() craft, give it power, and switch it on: it sends its position, flight ID, squawk, altitude, track, ground speed and climb."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fitting it",
+      "text": "Place it facing the nose: parked, a craft reports that heading; moving, it reports the track it is really making. It needs power (2 FE/t) from a $(l:radiocraft:power/overview)battery on its wire$(/l), carried on the ship. Its lamp lights while it transmits.$(br2)A beacon on the ground works too: a fixed one marks an airfield or a mast."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Flight ID and squawk",
+      "text": "Open it to set the $(thing)Flight ID$() (up to 8 letters and digits) and the $(thing)squawk$() (four digits, 0 to 7). Left empty, a beacon on a named ship sends the ship's name; with no name, receivers show its six digit ICAO address.$(br2)Squawk 1200 is the everyday VFR code. $(thing)7700$() is an emergency, $(thing)7600$() radio failure, $(thing)7500$() hijack: receivers show those in red."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "How far",
+      "text": "1090 MHz goes in straight lines, so the higher a craft flies, the further it is heard. From $(thing)Y 200$() up it reaches very far: about 18,000 blocks. Below that the range falls off quickly, down to only 200 blocks for a craft at sea level or on the ground. Climb before you expect to be seen. Lightning and solar storms do not touch it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:adsb_beacon",
+      "text": "A lightning rod for the blade antenna, an encased VHF crystal, redstone and an iron case."
+    }
+  ]
+}

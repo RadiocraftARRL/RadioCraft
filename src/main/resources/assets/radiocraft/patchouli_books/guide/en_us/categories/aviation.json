@@ -1,0 +1,6 @@
+{
+  "name": "Aviation & ADS-B",
+  "description": "ADS-B: a 1090 MHz beacon for anything that flies, and a receiver with a radar screen that shows the craft around you. Built for Sable ships and Create Aeronautics.",
+  "icon": "radiocraft:adsb_receiver",
+  "sortnum": 13
+}

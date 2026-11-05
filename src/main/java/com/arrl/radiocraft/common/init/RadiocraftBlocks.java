@@ -67,6 +67,14 @@ public class RadiocraftBlocks {
 	public static final DeferredHolder<Block, VHFBaseStationBlock> VHF_BASE_STATION = VHF_BASE_STATION_VARIANTS.good();
 	public static final DeferredHolder<Block, VHFReceiverBlock> VHF_RECEIVER = BLOCKS.register("vhf_receiver", () -> new VHFReceiverBlock(PROPERTIES_RADIO));
 	public static final DeferredHolder<Block, VHFRepeaterBlock> VHF_REPEATER = BLOCKS.register("vhf_repeater", () -> new VHFRepeaterBlock(PROPERTIES_RADIO));
+	/** The commercial mobile radios (1.12): VHF high band (analog and digital) and low band (analog). */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock> COMMERCIAL_MOBILE = BLOCKS.register("commercial_mobile",
+			() -> new com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock(PROPERTIES_RADIO, com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel.VHF_MOBILE));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock> LOW_BAND_MOBILE = BLOCKS.register("low_band_mobile",
+			() -> new com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock(PROPERTIES_RADIO, com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel.LOW_BAND_MOBILE));
+	/** The fixed-mount VHF marine radio (1.12): channel-only, 25 W / 1 W, 16/9 and dual watch, hand mic. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.MarineRadioBlock> MARINE_RADIO = BLOCKS.register("marine_radio",
+			() -> new com.arrl.radiocraft.common.blocks.radios.MarineRadioBlock(PROPERTIES_RADIO));
 	/** Plays tapes out loud and into the radios it touches, and records on blank ones. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.TapePlayerBlock> TAPE_PLAYER = BLOCKS.register("tape_player",
 			() -> new com.arrl.radiocraft.common.blocks.TapePlayerBlock(Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(1.5F).noOcclusion()));
@@ -79,6 +87,23 @@ public class RadiocraftBlocks {
 	/** Not craftable: the server admins' screen over the moderation log, locked to whoever placed it. */
 	public static final DeferredHolder<Block, ModerationComputerBlock> MODERATION_COMPUTER = BLOCKS.register("moderation_computer",
 			() -> new ModerationComputerBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
+	/** The radio computer (1.12): the PC cabinet with the disk and floppy drive; its monitor goes on top, the scanner beside. */
+	public static final DeferredHolder<Block, RadioComputerBlock> RADIO_COMPUTER = BLOCKS.register("radio_computer",
+			() -> new RadioComputerBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
+	public static final DeferredHolder<Block, ComputerMonitorBlock> COMPUTER_MONITOR = BLOCKS.register("computer_monitor",
+			() -> new ComputerMonitorBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
+	public static final DeferredHolder<Block, ScannerBlock> SCANNER = BLOCKS.register("scanner",
+			() -> new ScannerBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
+	/** ADS-B (1.12 step 9): the 1090 MHz beacon for craft, the receiver with its radar screen, and its antenna. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.adsb.AdsbBeaconBlock> ADSB_BEACON = BLOCKS.register("adsb_beacon",
+			() -> new com.arrl.radiocraft.common.blocks.adsb.AdsbBeaconBlock(PROPERTIES_RADIO));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.adsb.AdsbReceiverBlock> ADSB_RECEIVER = BLOCKS.register("adsb_receiver",
+			() -> new com.arrl.radiocraft.common.blocks.adsb.AdsbReceiverBlock(PROPERTIES_RADIO));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.adsb.AdsbAntennaBlock> ADSB_ANTENNA = BLOCKS.register("adsb_antenna",
+			() -> new com.arrl.radiocraft.common.blocks.adsb.AdsbAntennaBlock(PROPERTIES_RADIO));
+	/** The Real-World Interface (1.12 step 11): links the game's radios to a real radio on the server's sound card. Off by default. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.RealWorldInterfaceBlock> REAL_WORLD_INTERFACE = BLOCKS.register("real_world_interface",
+			() -> new com.arrl.radiocraft.common.blocks.radios.RealWorldInterfaceBlock(PROPERTIES_RADIO));
 
 	public static final CrystalVariants<Block, HFRadio10mBlock> HF_RADIO_10M_VARIANTS = CrystalVariants.register(BLOCKS, "hf_radio_10m", crystal -> new HFRadio10mBlock(PROPERTIES_RADIO, crystal));
 	public static final DeferredHolder<Block, HFRadio10mBlock> HF_RADIO_10M = HF_RADIO_10M_VARIANTS.good();

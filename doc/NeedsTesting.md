@@ -8,6 +8,520 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 playtest fixes 2: MARS recipe hidden, Radio Cloner, CPS by hand, unit IDs, ADS-B display (added 2026-11-05)
+
+Data already regenerated (`runData`); restart the client (new item, packet, lang, recipe, models).
+
+- [ ] Recipe book: the MARS Mod recipe never appears (search "mars", even holding wire and crystals); the install
+  recipe neither. JEI: the item is in the list, but "R"/"U" on it shows no crafting recipe for it, and U on an HF radio
+  does not list the MARS install. The Handbook's MARS Mod page still shows the recipe.
+- [ ] Radio Cloner: in the creative tab after the upgraded handheld; placeholder sprite; it glints once loaded. The
+  tooltip says empty, or what it holds (model, source radio, channels and contacts, keys left behind), and how to use it.
+- [ ] Cloner on a placed commercial mobile (right click): reads it (green action bar line, a high beep), the mobile's
+  screen does not open. Right click a second mobile: "Cloned into ...", its display shows the new channels. Sneak +
+  right click a mobile: reads that one instead. Sneak + use in the air: "Cloner cleared".
+- [ ] Cloner with a handheld in the off hand (cloner in the main hand, use in the air): reads it; then swap in other
+  handhelds and use again: each is written. An upgraded handheld's channels into a basic brick with a digital channel:
+  red "cannot take this clone: CH n: ...", low beep, nothing changed.
+- [ ] Cloner on a VHF ham handheld and a VHF base station: the dial (frequency, tone, offset) copies; handheld to
+  handheld also the memory channels (check the handheld screen's memory mode). A ham clone into a commercial radio
+  and the other way round are refused; a marine radio says its channels are fixed.
+- [ ] CPS: F9 turns on "Program radios": a red banner line under the list with a `[ Close ]` button. C or the button
+  closes the screen. Opening the computer again shows CPS still in the mode.
+- [ ] Program radios: holding a commercial handheld, right click the computer (and the monitor): the radio is written,
+  action bar "Programmed ...", a beep, and no screen opens. Sneak + right click: the radio is read into CPS (the
+  channels show next time the screen opens), no screen opens. Works with the radio in the off hand and an empty main
+  hand. A mobile radio held as an item is written, not placed (watch for a ghost block flicker).
+- [ ] Program radios ends: Esc out of CPS, or start another program from the shell: right clicking with a radio opens
+  the screen again. Cut the computer's power (`radios_need_power` on): yellow "stopped programming" message. Leave it 5
+  minutes: same, "5 minutes unused".
+- [ ] CPS F4 (unit ID) and F7 (contacts: pick a line, edit ID and alias, blank alias deletes, "(add a contact)"): the
+  status line shows the unit ID and contact count. With a unit ID set, programming radios by hand goes 1200, 1201, ...
+  (CPS's F4 value follows). Save and reopen a .CPG: ID and contacts kept.
+- [ ] Unit IDs on the air: two upgraded handhelds (or mobiles) on an analog channel: keying up starts with a short
+  data "brrrp" (about 0.15 s, replacing the first of the voice) heard on the other radio. The receiver's display shows
+  "ID 1234", or the alias from its contact list, while the other talks and about 4 s after. On a digital channel no
+  burst, the ID still shows; on an encrypted channel a radio without the key shows the ID over the scrambled audio.
+  The basic brick shows nothing (no display) but its ID shows on others. Is the burst too loud or too harsh?
+- [ ] Moderation computer: a commercial radio's transmission shows its mode as "FM ID 1205" (or "DIG ENC ID ...").
+- [ ] Tooltip of a programmed commercial handheld: "Unit ID n".
+- [ ] FREQMAN F5 now only lists wired mobiles; the scanner glass no longer takes radios (shift-click a handheld into
+  the scanner: it stays in the inventory).
+- [ ] ADS-B receiver: now a full block whose whole front is the display, edge to edge, square (dark green with a
+  ring when off). Switched on with power: the live picture fills the face, square, with rings clipped at the edges and
+  targets out to the corners; not mirrored, right way for all four facings, no z-fighting with the dark face.
+
+## 1.12 playtest fixes 1: music, solar radio, 40 channels, ADS-B tube (added 2026-11-05)
+
+Run `./gradlew runData` first (new lang lines), then restart the client.
+
+- [ ] MUSIC: play a tune, press Esc: back at the shell, the tune plays on and a yellow note shows at the right of the
+  top bar (also inside other programs). Click the note: the music page comes back, on the track playing.
+- [ ] MUSIC: open another program (EDIT, say) while it plays: the music carries on, the note shows in its title bar,
+  and Esc from the music page opened by the note goes back to that program.
+- [ ] MUSIC: press C or click `[ Close ]` (top right of the "Now playing" box): the screen closes and the music keeps
+  playing. Open the computer again: the music page is in front, on the track playing.
+- [ ] MUSIC with the screen closed: walk away; it gets quieter from about 6 blocks and stops at about 24 (coming back
+  does not restart it). Changing dimension, logging out, breaking the computer, or cutting its power (with
+  `radios_need_power` on) stops it. It plays down the list while closed. The computer draws power while it plays.
+- [ ] MUSIC: the volume fade applies note by note, so a long held note keeps its loudness until the next one starts.
+- [ ] SOLAR: the maintainer's setup (computer, radio interface, VHF radio on with an antenna, APRS working): the solar
+  page and forecast now come up. Switch the radio off: "The radio is switched off...". Take the antenna off: "The
+  radio has no antenna...". Remove the radio: "No radio found...".
+- [ ] Upgraded commercial handheld (sneak + use): a "Zone A" button under the knob; clicking it goes A, B, C, A. The
+  knob shows 1-16 within the zone; the display shows the name, "ZA CH1" style zone and channel, and the mode on the
+  right. Zone C knob 9-16 shows "-- NO CH --" and will not transmit. The basic handheld has no zone button.
+- [ ] CPS with an upgraded handheld read by hand (F9, then sneak + right click the computer holding it; the glass is gone since playtest fixes 2): 40 rows (the list scrolls, A/B/C marks at channels 1, 17, 33),
+  status "x of 40 channels", the line under the list says the zone and knob. Write channel 40 and select it on the
+  radio (zone C, knob 8). A basic handheld or a mobile still shows 16 rows.
+- [ ] CPS: open a 40-channel .CPG with a 16-channel radio read: a red message says how many channels were left out.
+- [ ] FREQMAN: send 20 channels to a wired mobile: "This radio holds 16 channels: mark fewer". (Handhelds are no
+  longer reachable from FREQMAN since playtest fixes 2: open the list's channels in CPS and program by hand.)
+- [ ] Tooltips: the upgraded handheld says "x of 40 channels programmed"; the channel line shows 17-40 in zones B/C.
+- [ ] ADS-B receiver, switched on with power and an antenna, screen closed, standing within 32 blocks: its tube shows
+  the live green scope (rings, steady targets, trails, tags; no sweep). It
+  faces the right way for each facing, is not mirrored (east on the right, north up), and sits on the face without
+  flicker. Switch it off or cut the power: the tube goes dark (the model's own). Walk past 32 blocks: no scope. Tags
+  legible up close? (96 x 96 texture, the computer program's pixel font.)
+- [ ] ADS-B tube with its own screen open by another player: both see the scope; no stutter with several receivers.
+
+## 1.12 step 1: bands, band plan, MARS mod, Handbook (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first. Take the Band Plan Sheet and the MARS Mod from the creative tab (after the APRS module).
+
+- [ ] Band Plan Sheet: the item shows its placeholder texture (paper with coloured stripes) and the tooltip "Right click
+  to read...". Right click opens a paper-coloured sheet: title, hint, then seven bands lowest first (80m, 40m, 20m,
+  10m, Low Band, 2m, VHF Comm) each as a bar of coloured segments with black marker ticks and the marker labels
+  wrapped underneath, the band edges in small print, and a two-column legend at the end. The wheel, arrows, Page
+  Up/Down, Home and End scroll it; nothing draws outside the sheet. Hovering a bar shows the frequency, its use and
+  any marker there. Try GUI scales 2-4 and a small window.
+- [ ] Edit `band_plan_markers` in radiocraft-server.toml (add "7.200|Test"), save, reopen the sheet: the marker shows.
+  A bad line (e.g. "abc") is corrected by the config loader (check the log for what it did) rather than crashing.
+- [ ] MARS Mod: its tooltip has the grey line and the red "Contraband" line. Craft it with an HF radio (any crystal),
+  the all-band, a QRP rig, the VHF base station, a VHF handheld and the manpack: the result keeps its settings,
+  charge and memory channels and has a red "MARS mod fitted" tooltip line. A receiver or repeater does not craft.
+  JEI/EMI may not show the shapeless install recipe (it is a special recipe, like the APRS module's).
+- [ ] Place a modded HF radio, break it: it drops with the mod (tooltip still red). A plain one drops plain.
+- [ ] HF radio: tune below the band bottom with the dial (20m stops at 13.913, 40m at 6.925): the screen's frequency
+  shows, with an orange "OOB" in the top right. Press PTT: the frequency turns into a red "OUT OF BAND", no TX lamp,
+  nobody hears you. The world display's status line also reads OUT OF BAND. With a MARS mod: TX works there and the
+  corner says "MARS" instead. CW keying out of band without the mod does nothing.
+- [ ] VHF base station and handheld: the dial goes from 143.000 to 174.000. On the handheld LCD, PTT out of band shows
+  "OOB" in the status box instead of TX, and the radio is not heard. DTMF out of band sends nothing. With a MARS mod
+  155.000 works and a second handheld on 155.000 hears it.
+- [ ] HF manpack: the FREQ knob tunes past the band edges; out of band the window shows OOB, and holding the screen PTT
+  shows OUT OF BAND in red. With a MARS mod it transmits there.
+- [ ] Splatter: a MARS-modded radio talking 13.950 MHz is heard as splatter (no voice) on a radio 15 kHz away, which
+  an in-band signal would not reach.
+- [ ] The Patchouli book is called "ARRL Radiocraft Handbook" (item name, title page, landing text). New pages: Band
+  Plan (Propagation) and MARS Mod (Radios); Bands & Range has a Commercial bands page with a working link.
+- [ ] The mod list's Config screen names the new settings: the two commercial band sections, "Band Plan" (Band Plan
+  Segments / Markers) and "MARS Mod" (MARS Mod Splatter).
+
+## 1.12 step 2: commercial radios (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first. The four radios are in the creative tab after the VHF handhelds. Two players (or two
+clients) with Simple Voice Chat for the audio checks.
+
+- [ ] Basic Commercial Handheld: placeholder item (grey brick, antenna, two knobs, LEDs). Tooltip: charge, "Channel 1:
+  MURS 1", "5 of 16 channels programmed", the grey description line. Sneak and use opens the top panel: CHANNEL knob
+  with < and > (and the mouse wheel), PWR, VOL - and +, RX and TX lights, a PTT bar. No display on this one.
+- [ ] Upgraded Commercial Handheld: the same with a green display showing the channel name and "CH1 FM" (or DIG / DIG
+  ENC). It shows "-- NO CH --" on an unprogrammed position.
+- [ ] Two players on MURS 1 with commercial handhelds hear each other (hold right click to talk; the PTT bar works too);
+  a ham VHF handheld on 151.820 hears them too. The TX light is red while talking, RX green while hearing.
+- [ ] Turn the knob to 7 (unprogrammed): nothing heard, PTT does nothing.
+- [ ] `/rcdebug commercial hand set 2 TAC|155.5|=|DIG|0|42|H` on the upgraded handheld (held). Another upgraded handheld
+  with the same line hears clean voice with no static at all, even at the edge of range, then it drops out with a
+  short robotic warble (walk away slowly). One with key 43 hears garbled digital noise that follows the syllables. A
+  ham handheld or base station on 155.500 hears a harsh buzz. Is the buzz too loud / too soft? Is the scramble
+  convincing?
+- [ ] `/rcdebug commercial hand` lists the channels; the key on channel 2 reads -1 (hidden).
+- [ ] Commercial Mobile Radio and Low Band Mobile Radio: placeholder model (tinted box with a front panel, display,
+  knob). The display shows the channel name (low band: "CH 1") and "1 FM 151.8200" when on; the TX/RX lamps light
+  left of the display (lamp positions are guesses: say if they float). Right click opens the panel (PWR, CH -/+, VOL,
+  PTT, display, lamps). Sneak and use takes the hand mic; the cord draws. Sneak and scroll steps channels.
+- [ ] Mobiles talk to the handhelds on a VHF antenna (J-pole) with power; the low band mobile on a dipole with long
+  arms (30-50 MHz) to another low band mobile.
+- [ ] Dye: craft each radio with red dye: the handheld item, the mobile item, and the placed mobile turn red (the
+  placed block re-tints at once). Break and place a dyed, reprogrammed mobile: it keeps the colour and its channels.
+- [ ] A commercial handheld in a desk charger charges; the charger shows its own placeholder radio (not the handheld's
+  model), and with power on it hears its channel.
+- [ ] The moderation computer's recording of an encrypted call plays the clear voice.
+- [ ] Handbook: the new "Commercial Radios" page in Radios reads well, and its spotlights show the items.
+
+## 1.12 step 3: marine radios (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first. The Marine Handheld and Marine Radio are in the creative tab after the commercial
+radios. Two players (or two clients) with Simple Voice Chat for the audio checks.
+
+- [ ] Marine Handheld: placeholder item (dark grey, yellow collar, blue-grey display). Tooltip: charge, "Channel 16:
+  Distress, safety and calling", "High power (5 W)", the grey description line. Sneak and use opens its front: a big
+  "16", "HI USA DISTRESS", 156.800, CH -/+ (and the mouse wheel), 16/9, H/L, DW, PWR, VOL -/+, TX/RX lamps, PTT bar.
+- [ ] The 16/9 key: from 68 it goes 16, then 9, then back to 68. H/L shows LO; DW adds "DW" to the display.
+- [ ] Two players on channel 68 with marine handhelds hear each other (hold right click to talk). A ham VHF handheld
+  on 156.425 hears them. No "OUT OF BAND" anywhere. On WX1 the radio will not key (TX lamp stays dark).
+- [ ] 1 W versus 5 W: walk apart until 5 W gets noisy, switch the talker to LO: it should be clearly weaker (shorter
+  range). Is the step right (1 W is set to 0.45 of 5 W strength on the handheld, 0.2 of 25 W on the base)?
+- [ ] Dual watch: listener on 72 with DW on, one talker on 72 and one on 16. While 16 talks, the listener hears 16
+  only; about a second and a half after 16 stops, 72 comes back.
+- [ ] Marine Radio: placeholder block (white box, dark front, display, knob, mic hook). Right click opens the panel
+  (PWR, CH -/+, 16/9, H/L, DW, VOL, PTT, display with channel, status line, frequency; "16" in the corner on dual
+  watch). The display on the block shows the channel big and "HI USA ..." small; TX/RX lamps light right of the
+  display (positions are guesses: say if they float). Sneak and use takes the hand mic; sneak and scroll steps channels.
+- [ ] Marine Radio on a J-pole with power talks to the handhelds. Put one on a Sable ship (`-PwithSable`): the hand
+  mic and the radio work while the ship moves.
+- [ ] Channel 26 (duplex): a marine radio transmits on 157.300 and listens on 161.900; a second ship on 26 does not
+  hear it. `/rcdebug marine <pos>` shows rx/tx.
+- [ ] Break a marine radio set to 22A on LO and place it again: still 22A, LO.
+- [ ] Server config `marine_channel_plan = INTERNATIONAL`: channels lose the "A", WX channels disappear, more duplex.
+- [ ] A marine handheld in a desk charger charges, and with power on it hears its channel.
+- [ ] Handbook: the new "Marine Radios" page in Radios reads well, and its spotlights show the items.
+
+## 1.12 step 4: camera and photo paper (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first (recipes, lang). Camera, Photo Paper and Color Photo Paper are in the creative tab after
+the Band Plan sheet. A second player helps for the shutter sound and the fax check.
+
+- [ ] Placeholder textures: camera (black body, chrome top, big blue lens, red button), photo paper (sheets with a
+  grey picture corner), color photo paper (a coloured corner). Tooltips read well.
+- [ ] Hold right click with the camera (color paper in the inventory): the hand disappears, the outside of the middle
+  square darkens, white corner marks, a centre cross, "1.0x" bottom left, "COLOR" bottom right, the hint on top. In
+  third person (F5) the player holds it up like a spyglass.
+- [ ] Scroll while aiming: 1.0x, 1.5x ... 3.0x and back; the hotbar does not change. The view narrows smoothly enough?
+- [ ] Let go: a click, and within a moment a "Photo" map shows exactly what the viewfinder framed, at that zoom. No
+  hand, hotbar or viewfinder marks in it. Right way up, not mirrored, colours right?
+- [ ] With B&W photo paper: the viewfinder says "B&W" and the photo is greys only. With both kinds, paper in the off
+  hand is used first.
+- [ ] Try day, night, under water, the Nether, F1, a GUI-scale change and an odd-shaped window: always the middle
+  square, never stretched. Fabulous graphics: water, stained glass and clouds still in the photo.
+- [ ] No paper: "No photo paper" and the camera does not come up. Straight after a photo: nothing until the cooldown
+  (3 s, the cooldown sweep on the item) is over.
+- [ ] The photo in an item frame, held (map view), copied at a cartography table (still "Photo", "Taken by ...").
+- [ ] Radio fax: the new PHOTO slot (right of MAP; its frame is drawn by code, does it line up with the panel art?)
+  takes either photo paper by hand, shift click and hopper. Send a color photo: the LCDs say PHOTO; with color paper
+  loaded the far end prints the same photo on it; with B&W paper a grey print; with no photo paper an empty map.
+- [ ] Photo cap: set `camera_photo_cap = 2` on a server, take two photos as a non-op survival player; the third is
+  refused with a gold chat line and a [Choose photos to delete] link. The link lists the photos oldest first (map
+  number, day, date) with [Delete]; Delete asks again, [Yes, delete it] deletes: that photo (and its copies, in frames
+  too) goes blank and says "Photo deleted" in red; the next photo works. Creative players and ops are not limited.
+- [ ] Multiplayer (dedicated server, `runServer`): another player hears the shutter click; the photo arrives for the
+  photographer only. Watch the server log while taking photos quickly: no errors, no kicks.
+- [ ] Server config `camera_enabled = false`: "Cameras are switched off on this server", nothing sent.
+- [ ] Handbook: Digital > "Camera and Photos" reads well (three text pages, two crafting pages).
+- [ ] Shader packs (Iris/Oculus, if installed): does the photo still capture something sensible? (Not required.)
+
+## 1.12 step 5: radio computer, monitor, scanner, floppy disks (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first (blockstates and block item models, lang, recipes, loot tables, tags). The computer,
+monitor, scanner, blank floppy and every program's floppy are in the creative tab after the photo paper.
+
+- [ ] Placeholder models: monitor (putty CRT with a blue DOS screen and a keyboard), computer (putty tower with drive
+  bays), scanner (flatbed with a paper tray), floppy disks (black disk, label coloured per program, blank one white).
+  All turn with the placer, no missing textures, no z-fighting; the monitor sits flush on the computer.
+- [ ] Right click the monitor on a computer: the screen opens with a BIOS count, RC-DOS loading, then the shell. Any
+  key skips the boot. The fan whirrs. Reopened within ten minutes: no boot, same program and text as left.
+- [ ] Text mode looks right: 80 x 25 cells, letters centred in their cells (monospaced), box lines join up at the
+  corners (single and double), shading and the scroll bar thumb, the blinking cursor, faint scan lines. Try GUI
+  scales 1-4 and a small window: it scales in half steps and never runs off the window.
+- [ ] The E key types an "e" (does not close the screen); Escape leaves programs and dialogs, and in the shell closes
+  the screen. Ctrl+Y deletes a line in EDIT. Tab moves between the shell's lists. Mouse clicks select, a second
+  click opens, the wheel scrolls.
+- [ ] EDIT: type, save (Ctrl+S; F2 is the screenshot key, step 6 moved it; asks for a name, adds .TXT), reopen (F3 shows a file list), new (F4), unsaved-changes
+  question on Escape and F3/F4. A 30K document saves and reads back whole (it goes up in two parts).
+- [ ] SYSINFO shows the serial, disk use bar, floppy, scanner and paper counts, callsign and the devices wired by
+  data wire (put a radio and a radio interface on the wire).
+- [ ] BANDPLAN: seven bars in the plan's colours, markers under them, the cursor reading out frequency and use,
+  legend at the bottom. Compare with the Band Plan sheet.
+- [ ] INSTALL: lists the floppies in your inventory; picking one puts it in the drive (it leaves the inventory);
+  "Install" shows the copying bar, then the program is in the shell. A programmed-but-unwritten program (any floppy
+  for now) opens a "not ready in this version" box. Del removes it. Eject gives the disk back. Using a floppy on the
+  monitor or computer also inserts it; sneak-right-click the computer ejects. Breaking the computer drops the disk.
+- [ ] Break the computer and place it again (survival, needs the loot table): files and installed programs are back.
+- [ ] Scanner: right click opens the lid (glass, paper, out slots, inventory below lines up with the slots). In the
+  shell's Files list, F6 with a map on the glass makes a .IMG; Enter opens it in the viewer (right way up, right
+  colours); F5 prints it on color photo paper (a "Photo"), on an empty map (a "Printout"), on photo paper (B&W).
+  A book on the glass scans to a .TXT; EDIT's F5 prints a document as a written book, one paper per page. A print
+  left in the output tray jams the next ("Paper jam").
+- [ ] The monitor in the world shows the screen you left on it (stretched over the glass), lit in the dark; another
+  player's monitor shows the model's own blue screen.
+- [ ] Two players at one computer at once: both work; files saved by one show in the other's list after a refresh.
+- [ ] Handbook: the new "The Radio Computer" category (three pages) reads well; icons and crafting pages show.
+- [ ] JEI does not draw its item list over the computer screen.
+- [ ] Power (added at the first build): with `radios_need_power` on, a computer with no power wire opens to a dark
+  screen reading "No power: run a power wire to the computer" and only Escape works. Wire it to a charged battery:
+  it boots again and works. Pull the battery while at it: the screen goes dark; put it back: it boots.
+
+## 1.12 step 6: office programs on the radio computer (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first (lang). Craft or take from the creative tab the Book Editor, Logbook, Frequency
+Manager, Radio Programmer and Solar Weather floppies and install them with INSTALL. Have a scanner beside the
+computer, a commercial handheld or two, a commercial mobile, and a VHF or HF radio with an antenna.
+
+- [ ] F2 no longer does anything on the computer but take a screenshot (Minecraft's key): EDIT, BOOKEDIT and CPS save
+  with Ctrl+S, the shell renames with F7. F11 is never used.
+- [ ] Every program's key bar fits on row 24 at 80 columns, and the column headings line up over their lists.
+- [ ] Forms (logbook contact, frequency, CPS channel, book title): Up/Down/Tab move between fields with the cursor
+  showing in the field, a click on a field moves there, Enter is OK, a wrong value shows in red under the fields
+  and the form stays up. The "pick one" lists (stations heard, which radio) scroll and pick with Enter or a double
+  click.
+- [ ] BOOKEDIT: write a few pages (F9 adds, F7/F8 turn, F10 deletes), set the title (F12), save (Ctrl+S, .BOK),
+  reopen (F3). The side panel's line count goes red past 14 lines; compare with the printed book (does a page that
+  says 14 lines really fit?). F5 with 70 pages asks for volume 1 or 2; volume 1 needs a full stack of 64 paper.
+  F6 reads a written book from the glass. Opening a .BOK from the shell's file list opens BOOKEDIT.
+- [ ] LOGBOOK: Ins adds a contact with today's UTC date and time filled in; Enter edits; Del deletes; the list stays
+  in time order; a second contact with the same call says "worked 1 times before". Talk on a handheld near a base
+  station wired to the computer, then F6: the station is listed with your callsign, frequency, FM and a report;
+  picking it fills the form. F7 writes LOGBOOK.ADI; open it in EDIT and check it reads as ADIF.
+- [ ] FREQMAN: add a repeater (TX 146.34 for 146.94, tone 100.0), a simplex channel and a receive-only one (TX "RX");
+  the line under the list names the band plan segment. Space marks, Ctrl+Up/Down moves, F8 sorts. F5 with a
+  commercial mobile wired to the computer sends the marked channels from the position you type; the mobile's knob then
+  finds them. A USB entry is refused with a message. F6 reads the mobile's channels into the list.
+- [ ] CPS: a handheld read by hand (F9 Program radios, sneak + right click the computer; was the glass before playtest fixes 2), 16 rows (factory MURS channels). Edit a channel to DIG with key 321 and
+  readable N, F6 writes; F5 again shows ****. Change the name and write: the radio still talks encrypted with radios
+  keyed 321 (test with a second handheld programmed with key 321 readable). Ctrl+S saves a .CPG; load it and
+  program a different blank handheld by hand: refused for the hidden key. A frequency outside the model is
+  refused in the form. A mobile wired by data wire is found (with two radios, a "which radio" list). F8 resets.
+- [ ] (Changed in playtest fixes 2.) The scanner lid no longer takes commercial radios on the glass.
+- [ ] SOLAR: with nothing wired, "No Receiver"; wire a powered radio with an antenna (or an Ionospheric Processor):
+  the solar page shows the event, noise bar, band table in colour (now/day/night), VHF, aurora, sporadic E and the
+  next event near the end of a spell (`/solarweather forecast blackout` for the red warning). Tab shows the forecast
+  (with Another Weather Mod: outlook and storms). Up/Down scroll, F6 prints, F7 saves SOLAR.TXT / FORECAST.TXT. It
+  refreshes on its own every 20 seconds.
+- [ ] Handbook: the four new pages in "The Radio Computer" (book editor and logbook, programming commercial radios,
+  frequency manager, solar weather) and the link from "Commercial Radios" to the programmer page.
+
+## 1.12 step 7: radio programs on the radio computer (added 2026-11-04, UNBUILT when written)
+
+Run `./gradlew runData` first (lang). Install APRS, WEFAX, Radio Fax, SSTV and Direction Finding from their floppies.
+Build two stations a little apart: each a radio computer (monitor on top) touching a radio interface (callsign set),
+the interface touching a VHF base station with an antenna, both on the same frequency. Have a scanner beside one
+computer, a radio fax machine and a WEFAX receiver for the far end, and a direction finder with modules.
+
+- [ ] Each program's station line (row 1 or 2) is green with the callsign and frequency when the interface and a radio
+  are there, yellow naming what is missing otherwise (no interface, no radio on, APRS: no VHF radio).
+- [ ] APRS: F5 beacons and the other computer (and an H19 on its station) lists this station with distance and
+  bearing; N writes a message (to a call, or ALL), it shows SENDING then SENT when acked; with the far radio off it
+  goes RETRY 1, 2... then FAILED. A message in shows NEW and a count on the MESSAGES tab, beeps the PC speaker and
+  flashes on the status line. MAP draws the stations; F6 sets comment, symbol, auto (beacons on the server's timer
+  with nobody at the computer); F7 sets the interface's callsign; F8 clears. Column headings line up.
+- [ ] FAX: F3, pick a picture, type the far machine's callsign: the LCD goes CALLING, SENDING PACKET n/30, SENT; the
+  machine prints it on a blank map (or photo paper). A text file and a .BOK print there as written books. From the
+  machine fax the computer: it answers (auto answer on), the inbox lists FAX00001.IMG/.TXT; Enter opens a picture
+  (F5 prints it) or the text in EDIT; Del deletes. F7 off: calls go unanswered. With a fax machine on the same
+  station the computer leaves calls to it ("Fax machine answers"). F4 hangs up. F6 scans the glass and faxes it.
+- [ ] SSTV: F3 sends the picture picked to all; the other computer shows it COMING IN line by line (half a minute) and
+  keeps it as SSTV0001.IMG. Weaken the signal (move apart, turn an antenna) and lines come out as noise. F4 caption:
+  top and bottom text in big outlined capitals (small for long captions), saved as a new file; send it. F6 scans a
+  map or photo from the glass; F5 prints. L goes back to the live picture. The picture does not cover a dialog.
+- [ ] WEFAX: with a radio with a real antenna on the interface, F4 (WX REPT) brings in the radar chart and then the
+  forecast, line by line, with the coast station's tones from the radio; both keep as WFX files. An Ionospheric
+  Processor's bulletin and an alert come in too. F7 draws a radar or forecast chart of here into WXRADAR/WXFCST.IMG;
+  F3 sends a picture as a grey chart; a WEFAX receiver with AUTO on and paper prints it (line by line, about 20
+  seconds), and the other computer's WEFAX keeps it.
+- [ ] DFIND: with the direction finder touching the computer (or on its data wire): F5 switches it on, Left/Right
+  tune, PgUp/PgDn change band, F7 types a frequency. Key a radio on the frequency: the meter moves, modules lock,
+  the bearing shows. F6 types a bearing from elsewhere (F8 removes the last): the fix shows on the left. MAP: the
+  terrain with the bearings (solid, dashed spread), our station yellow, typed cyan, microwave green, the fix a red
+  cross in its circle. 3D: the scene turns slowly and smoothly; a tight fix is a tall spike, a poor one a low mound;
+  with one bearing only the wedge. F3 saves the search; SEARCHES lists it; Enter shows it on the map, Esc returns.
+- [ ] Monitor mirror, scaling and the image layout (pictures inside their boxes) at a couple of GUI scales.
+- [ ] Handbook: five new pages in "The Radio Computer" (APRS, radio fax, SSTV, WEFAX, direction finding) and the AUTO
+  line in the WEFAX receiver page.
+
+## 1.12 step 8: secret programs, loot, the ham shack (added 2026-11-05, UNBUILT when written)
+
+Run `./gradlew runData` first (lang). Take the four secret floppies (Snake, Pileup, Music Player, Bible) from the
+creative tab and install them on a radio computer.
+
+- [ ] Floppies: each secret disk's tooltip has its file (SNAKE.EXE, PILEUP.EXE, MUSIC.EXE, BIBLE.EXE), its line and a
+  gold "A rare disk" line. The Pileup disk is named "Pileup Floppy Disk" (no "Falling Blocks" left anywhere).
+- [ ] SNAKE: Enter starts; the board is 36 x 20 square cells inside a green double frame, the snake green with a
+  yellow head, the food blinking red. Arrows and WASD steer (two quick turns between steps both happen; a turn back on
+  itself is ignored), typing WASD does not leak anywhere, it speeds up as it eats, the wall and its own body end it.
+  GAME OVER shows the score and the high score table; a top-ten score is red in it. P pauses; closing the screen
+  pauses. Exit and run it again: the table is still there (SNAKE.DAT in the shell's files). Two players at one
+  computer share the table.
+- [ ] PILEUP: the band (12 x 20) on a black spectrum display with faint dots, pieces drawn as `[]` in their colours
+  and a grey `::` ghost where the piece will land. Left/Right move, Up or X turn clockwise, Z back, Down drops a row,
+  Space slams. A full row disappears with a yellow flash of the frame and counts a QSO; 8 QSOs move up a band
+  (the frame's title and the log: 160m, 80m, 40m...) and it falls faster. The next caller shows at the top right.
+  The pile reaching the top ends it with GAME OVER and the high score table (PILEUP.DAT). Does it look and play like
+  its own game, not like Tetris? (Ten pieces of 3 to 5 cells, 12 wide.)
+- [ ] MUSIC: twelve tunes listed with composer and time. Enter plays the one picked (a short pause the first time while
+  the synthesizer opens); the bar and the time move, the green arrow marks it, the 16 meters jump with the notes.
+  Space pauses and carries on, S stops, N and B skip, R repeats one; at the end of a tune the next one plays. The
+  loudness follows Options > Music & Sounds: Master and Jukebox/Note Blocks (0 is silent; a change takes effect on the
+  next notes). Closing the screen or Esc stops it. Each tune sounds right (instruments, tempo): Entertainer, Maple
+  Leaf Rag, Fur Elise, Rondo alla Turca, Mountain King, Arabesques, Greensleeves, the Bach pieces, Belle qui tiens.
+  If the computer has no sound device, the "Now playing" box says the sound card does not work (no crash).
+- [ ] MUSIC on Linux and macOS (Java's software synthesizer opens its own audio line beside OpenAL): it plays, and
+  game sound still works while it does.
+- [ ] BIBLE: opens at Matthew 1 under "THE GOSPEL ACCORDING TO MATTHEW, CHAPTER 1", verse numbers yellow in the
+  margin, long verses wrapped under their text. Up/Down/PgUp/PgDn/wheel scroll; Left/Right turn chapters, on from
+  Matthew 28 to Mark 1 and back. F3 "John 3:16" opens John 3 with verse 16 highlighted near the top; "Mk 4", "luke",
+  "jn 1:1" work; "Revelation 1" says there is no such place. F4 picks a book then a chapter. F5 "mustard seed" lists the
+  verses (Matthew 13:31...), Enter opens one in its chapter, Esc goes back to reading, F6 shows the list again.
+- [ ] Loot: in a new world, open ancient city, stronghold library, mansion, trial chamber vault, end city, igloo,
+  shipwreck, dungeon, outpost, desert and jungle temple, mineshaft, buried treasure and village house chests: now and
+  then one has a secret disk (about 1 in 8 for the first group, 1 in 20 for the second, 1 in 33 for village houses).
+  Holding one unlocks the hidden Handbook page "Disks Never Sold" (Radio Computer category).
+- [ ] Ham shack, standalone: `/locate structure radiocraft:ham_shack`, go there. A timber house (cobblestone footing,
+  log corners, flat spruce roof) with a J-pole on the roof, a lightning rod, glass windows, a door on the south. Inside:
+  battery, VHF base station on 146.520 MHz (on, powered, its coax up the north wall to the J-pole), a radio computer
+  with monitor (Logbook and Frequency Manager installed), a bookshelf, a chest of radio parts (sometimes a secret
+  disk), a chair, a bed and a pot plant. It sits on the ground, not floating or buried, on flat land in plains, forest,
+  taiga, snowy, savanna, meadow and cherry biomes.
+- [ ] Ham shack in villages: find villages (plains, taiga, snowy, savanna, desert) until one has the shack (about
+  one village in six or seven): the house is in that village's wood (desert in sandstone), its door on a street with a
+  doorstep, a villager in it, and whichever way it is turned the radio faces into the room, the coax reaches the J-pole
+  (the radio shows an antenna and plays on 146.520) and the wire reaches the battery.
+- [ ] Handbook: the Programs page's rumour line mentions old chests and the shack; "Disks Never Sold" is hidden until
+  a secret disk is in the inventory, then shows a spotlight page for each disk.
+
+## 1.12 step 9: ADS-B beacon, receiver, antenna and the ADS-B program (added 2026-11-05, UNBUILT when written)
+
+Run `./gradlew runData` first (lang, recipes, tags: the beacon and receiver take power wire, the receiver and antenna
+coax, the receiver data wire). Take the ADS-B Beacon, Receiver and Antenna from the creative tab (after the floppy
+disks). For the craft tests run `./gradlew runClient -PwithSable` (add `-PwithCreate` and Create Aeronautics if you
+have it).
+
+- [ ] Models (placeholders): the beacon is a small grey box with an amber code window and a white blade on top, its
+  front the way you looked when placing it; its lamp glows amber while it transmits. The receiver is a dark cabinet
+  with a round green CRT; the CRT glows (rings and three dots) while it is on. The antenna is a thin black stub with a
+  white tip on a metal plate. All three break with a pickaxe and drop themselves; breaking particles are not purple.
+- [ ] Beacon screen: Flight ID box (letters and digits, Enter sets it), Squawk box (only 0-7 typed, Enter sets it;
+  7700 shows EMRG in red), Turn on/Turn off, the state (OFF / ON, NO POWER / TRANSMITTING 1090 MHz in amber), the ICAO
+  address, and once a second its position, ALT ft and V/S, GS kt and TRK. Typing E in a box does not close it.
+- [ ] Receiver screen, on the ground with a beacon nearby: On; NO ANTENNA until an antenna is on top of it (or coaxed
+  to it), then RECEIVING 1090. The scope: a dark green disc in a black bezel, four rings with their distances along
+  the north line, a dotted cross, an "N", and no sweep (ADS-B is not a radar). The beacon shows as a steady
+  green block with its tag (flight ID; FL and knots below it).
+  - and + (and the wheel) step the range 250 m - 20 km. Click the target (or its row in the list): it gets a box and
+  its details show below the list. Does it fit the window at GUI scales 2-4? Is the half-size text readable?
+- [ ] Moving craft (Sable): assemble a ship with a beacon (placed facing the bow) and a large battery wired to it,
+  switch it on, fly it around a receiver on the ground. The target moves, leaves a dotted trail, its track line points
+  where it is going, the speed in knots is about right (one block a second is about 2 kt), altitude rises as you climb
+  (^ in the tag) and V/S on the beacon screen follows. Parked, the beacon reports the bow's heading as TRK, and turning
+  the ship turns it. Higher is further: at low altitude it drops off at a few hundred blocks, near the build limit it
+  carries on past 1,500. A ship with no name and no flight ID shows its ICAO address; a named one shows its name.
+- [ ] Receiver on a ship: put a receiver and antenna on the same ship as its beacon: its own beacon is not shown; a
+  second ship's is, placed right as the ship turns and moves (the scope stays north up).
+- [ ] Squawk 7700 on a beacon: the target and its tag go red with EMRG, on the receiver and in the ADS-B program.
+- [ ] A beacon switched off or broken disappears from the receiver within about 10 s (it shows LOST n S AGO first).
+- [ ] Lightning storm and a solar event (`/rcdebug` solar): ADS-B carries on the same.
+- [ ] Computer: install the ADS-B floppy (blank floppy + feather) on a radio computer touching the receiver (or on its
+  data wire): ADSB.EXE shows the scope as a picture on the left (rings, trails, targets, tags in the little pixel font,
+  emergency in red, a yellow box round the picked one), the traffic table on the right (FLIGHT FL KT TRK KM SQWK),
+  details of the picked one at the bottom. F5 switches the receiver on and off (the receiver's lamp follows), +/-
+  /PgUp/PgDn and the wheel on the scope change its own range, Up/Down pick, T hides the tags. With no receiver cabled
+  it says so. The picture updates once a second without flicker.
+- [ ] Handbook: the new "Aviation & ADS-B" category (beacon, receiver) and "ADS-B on the Computer" in the Radio
+  Computer category; links work.
+- [ ] Busy server: with a dozen beacons flying and a few receivers on, `/forge tps` (or spark) shows no cost worth
+  seeing; a receiver switched off costs nothing.
+
+## 1.12 step 10: FCC field gear (added 2026-11-05, UNBUILT when written)
+
+Run `./gradlew runData` first (lang, three recipes). Take the FCC hat, jacket, banner pattern and the ready-made FCC
+banner from the creative tab (after the ADS-B blocks). The badge is not in the tab: run `/radiocraft fcc badge @s` as
+an operator. Test once with Curios (the dev runtime has it) and once in a pack without it (or `prodLaunchTest`).
+
+- [ ] Item sprites (placeholders): a brown felt fedora with a black band, a mustard jacket with a white shirt V and a
+  maroon tie, a paper pattern with a blue ring and "FC", a gold shield badge with a blue centre on a chain loop.
+- [ ] Worn: the hat covers the top half of the head (brown, black band, a darker brim line round it); the face shows
+  below. The jacket covers body and arms (mustard, shirt V and tie at the front, white cuffs, a gold lapel pin). No
+  purple-black missing texture, in first person (arm) too. The armour bar shows 1 for the hat and 3 for the jacket;
+  equipping sounds like leather; an anvil mends them with brown wool; they take Protection, Unbreaking, Mending.
+- [ ] Loom: a banner plus the FCC Banner Pattern shows "FCC Seal" in the pattern list; the preview and the placed
+  banner show a ring with a bolt over the letters FCC and an underline, in the chosen dye; the back of the banner shows
+  it mirrored. On a shield (banner on a shield at a crafting table) the small seal and FCC show. The banner's tooltip
+  lists "White FCC Seal" (or the colour used).
+- [ ] The ready-made FCC Banner in the creative tab: blue with a yellow border and the white seal, named "FCC Banner".
+- [ ] `/radiocraft fcc badge <player>`: a non-operator is not offered `fcc` after `/radiocraft` and gets an error
+  typing it; an operator gets "Issued an FCC badge to ...", the player gets the badge and "You have been issued an
+  FCC badge". Tooltip: "Field Agent <name>", "Badge No. nnnn" (the same number every time for the same player), in
+  epic purple. A selector (`@a`) issues one each and says how many.
+- [ ] Right click the badge: you and players within 8 blocks read "<you> shows FCC badge No. nnnn: Field Agent,
+  Federal Communications Commission" (gold) and hear a soft chain clink; a player 20 blocks away reads nothing. Give
+  the badge to another player: when they show it, it reads in red "... shows an FCC badge issued to <you>". Two
+  seconds between shows. The badge survives lava.
+- [ ] Curios: the badge goes in the body (chest) slot (and only there among Curios slots); the hat and jacket do not go in
+  Curios slots. Without Curios: the badge works from the main hand and off hand, no errors in the log.
+- [ ] Handbook: "FCC Field Gear" in the Server Admins category (badge spotlight, the hat and jacket recipes, the
+  pattern recipe); the category description mentions it.
+
+## 1.12 step 11: Real-World Interface (added 2026-11-05, UNBUILT when written; needs real hardware)
+
+Run `./gradlew runData` first (lang, the recipe, blockstate and item model, tags, loot). Then **check the shipped jar**
+before anything else: `./gradlew build` (verifyModJar now fails if jSerialComm is not a nested jar, or if its classes
+were unpacked or relocated into the mod jar), and `./gradlew prodLaunchTest`, which must start with the feature off and
+log no jSerialComm or native-library line at all. You need a server PC with a sound card (a USB rig interface such as a
+SignaLink, DigiRig or a CM108 dongle is ideal), a real radio on a dummy load or a frequency you are licensed for, and
+for the PTT tests a USB serial adapter (DigiRig, FTDI) or the interface's own serial port. **Hold the licence and
+identify**: this transmits for real.
+
+- [ ] With `real_world_interface_enabled = false` (default): the block places, its screen shows the red licence
+  warning and "Turned off in the server config", the interface arrows are greyed; nothing in the log about sound or
+  serial ports; `/radiocraft realworld devices` says it is off. The Config screen in the mod list shows no
+  `real_world_interface*` settings (the section may show empty).
+- [ ] Turn it on in `radiocraft-server.toml` (dedicated server, or the world's serverconfig in single player), restart.
+  `/radiocraft realworld devices` (op level 3) lists the sound card inputs, outputs and serial ports. The first serial
+  listing unpacks jSerialComm's native library (to the temp folder): no error, and the server keeps ticking.
+- [ ] Add an interface, e.g. `"name=Shack 2m;input=USB Audio;output=USB Audio;serial=COM3;ptt=RTS"`, restart (or let
+  the file watcher reload). `/radiocraft realworld status` lists it; a deliberately bad line is logged and listed in red.
+- [ ] Place the block, power it, pick "Shack 2m" with the arrows, tune 146.520 FM. The status reads "Linked to the real
+  radio"; In, Out and PTT each read FOUND. Unplug the USB interface: it reads NOT FOUND or WON'T OPEN within a few
+  seconds; plug it back: FOUND again within about ten seconds (the retry), without breaking the block.
+- [ ] Opening the serial port does **not** key the radio (the PTT line is set unkeyed at once). `ptt_invert=true`
+  inverts it. `ptt=DTR` keys on DTR instead. `ptt=NONE` with the radio's own VOX works too.
+- [ ] Downlink: a player with a VHF base station or handheld on 146.520 talks. The real radio keys (RTS) within about
+  0.2 s, transmits the voice clearly (listen on a second radio: no clicks, not too fast or slow, no hum), with the TX
+  delay (`ptt_delay`) before it, and unkeys about `ptt_hang` after the player stops. The Out level bar moves; the red
+  PTT lamp lights. Try `rate=44100` and `rate=8000` on a card that takes them: the pitch must stay right.
+- [ ] Time-out: hold PTT in game for longer than `timeout` (set `timeout=20` to test): the real radio unkeys at 20 s,
+  TOT lights, and keys again only after the player lets go for a second and talks again.
+- [ ] Uplink (VOX): someone talks to the real radio from another radio. The block's green TX lamp lights, the In level
+  bar moves, and players near radios on 146.520 hear them clearly (at the right pitch), for `vox_hang` after they stop.
+  Raise `vox_threshold` until band noise alone does not open it. `input_gain` and `output_gain` change the levels.
+- [ ] Uplink (COS): `trigger=COS;cos=CTS` with the radio's squelch/busy line on CTS (or DSR): audio goes in only
+  while the radio's squelch is open, whatever the level; `cos_invert` flips it.
+- [ ] Simplex: while the real radio is transmitting game audio nothing goes back in (no echo loop), and while the real
+  radio's audio is going out in game the block does not key the real radio.
+- [ ] Linked to an antenna instead: coax and a J-pole; a station 100 blocks away is heard and hears it, as a normal
+  radio would. With nothing on the coax only a few blocks away hear it (the bare connector).
+- [ ] Everywhere: press Antenna/Everywhere. A station 2,000 blocks away hears it at full strength and is heard (one in
+  another dimension is not); HF on 7.200 LSB works the same with no antenna at all.
+- [ ] One block per interface: a second block picking "Shack 2m" is refused ("in use by the interface at ...").
+  Breaking the first frees it. A non-op cannot pick an interface, tune or change the mode while
+  `real_world_interface_op_only` is true (message over the hotbar), and can with it false.
+- [ ] Stop the server while the radio is keyed: it unkeys, and the sound card and serial port are released (another
+  program can open them at once). Same when the block is broken, the chunk unloads, or the interface is renamed in the
+  config.
+- [ ] Moderation: with `moderation_record_radio` on, the real radio's audio is logged as "Real radio" from the
+  `real_world_interface` block, with its hearers; in-game players heard by the block list it as a hearer.
+- [ ] Handbook: "Real-World Interface" in Server Admins, with the licence warning and the recipe.
+- [ ] Busy server: with the feature on and a link running, the server's tick time does not change (all audio is on
+  the interface's own threads).
+
+## 1.12 step 12: modding API (added 2026-11-05, UNBUILT when written)
+
+Dev client only (the example blocks are in the GameTest source set, which every dev run includes). They have no item,
+model or name, so use `/setblock ~ ~ ~ radiocraft_example:low_band_radio` and `radiocraft_example:ground_plane`.
+
+- [ ] The game starts with the example registered: no registry or "unknown namespace" error for `radiocraft_example`
+  in the log, and joining a world syncs (client and server both have the blocks).
+- [ ] An example low band radio (missing-texture cube) next to a Low Band Mobile on the same channel: hold the PTT on
+  the mobile and talk; nothing is heard yet from the example (it has no screen), but `/rcdebug radio <pos>` on it shows
+  it heard the signal. Static: the example is FM, so no background hiss.
+- [ ] Coax and power wire join the example radio and the example ground plane without any tag (the wire draws its
+  link to both); the antenna analyzer on the ground plane reads SWR 1.2 on low band.
+- [ ] Stock radios still behave: coax to a J-pole, CW between two HF radios, APRS/data bursts, a handheld on 2m
+  (the antenna's voice, CW and data now reach radios through the new API interfaces).
+- [ ] Website: `wiki/modding.html` in the website repo reads well, the code blocks scroll sideways on a phone and are
+  readable in the site's colours.
+
+
 ## Radio Moderation Computer (added 2026-11-04)
 
 Turn on `moderation_record_radio` (and `moderation_record_proximity` for the Proximity tab) in radiocraft-server.toml

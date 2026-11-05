@@ -15,6 +15,11 @@
     },
     {
       "type": "patchouli:text",
+      "title": "Commercial bands",
+      "text": "Besides the ham bands there are two commercial ones. $(thing)Low band$() (30-50 MHz) sits between 10 m and VHF: by line of sight it reaches further than 2 m but not quite as far as 10 m, and like 10 m it only skips by day when the sun is lively, never at night. $(thing)Commercial VHF$() (150-174 MHz, with the marine channels) travels like 2 m. See the $(l:radiocraft:propagation/band_plan)Band Plan$() for who uses what."
+    },
+    {
+      "type": "patchouli:text",
       "text": "Being a few kHz off still lets you hear SSB, sounding higher or lower and thinner; 11 kHz off, nothing. FM is heard up to 2 kHz off.",
       "title": "Off frequency"
     },

@@ -1,6 +1,9 @@
 {
   "replace": false,
   "entries": [
-    "radiocraft:crystals_from_sand"
+    "radiocraft:crystals_from_sand",
+    "radiocraft:secret_floppies_rare",
+    "radiocraft:secret_floppies_uncommon",
+    "radiocraft:secret_floppies_villages"
   ]
 }

@@ -1,0 +1,266 @@
+{
+  "credit": "Placeholder from tools/marine_radio_assets.py (see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "textures": {
+    "case": "radiocraft:block/marine_radio_case",
+    "front": "radiocraft:block/marine_radio_front",
+    "particle": "radiocraft:block/marine_radio_case"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        2,
+        0,
+        4
+      ],
+      "to": [
+        14,
+        5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "front",
+      "from": [
+        2.5,
+        0.5,
+        3.75
+      ],
+      "to": [
+        13.5,
+        4.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "DISPLAY",
+      "from": [
+        5.5,
+        1.75,
+        3.6
+      ],
+      "to": [
+        11.5,
+        4.0,
+        3.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            3,
+            12,
+            10
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "knob",
+      "from": [
+        12,
+        2,
+        3.25
+      ],
+      "to": [
+        13,
+        3,
+        3.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "down": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "mic_hook",
+      "from": [
+        14,
+        1,
+        6
+      ],
+      "to": [
+        15,
+        4,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        },
+        "down": {
+          "uv": [
+            12,
+            4,
+            15,
+            7
+          ],
+          "texture": "#front"
+        }
+      }
+    }
+  ]
+}

@@ -25,7 +25,7 @@ View details about the project, and read the wiki: [https://radiocraft.bigtimera
 - Weather reports and WEFAX charts, with live storms when [Another Weather Mod](https://github.com/RadiocraftARRL/AnotherWeatherMod)
   is installed
 
-The in-game guide book (given on first join, or `/radio guide`) covers every block and how to build each station.
+The in-game guide book, the *ARRL Radiocraft Handbook* (given on first join, or `/radio guide`), covers every block and how to build each station.
 
 ![Inside the shack: an HF transceiver, the antenna tuner and a desk microphone](doc/screenshots/shack_desk.jpg)
 

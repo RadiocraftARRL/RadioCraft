@@ -11,6 +11,7 @@ public record DayOutlook(Type type, boolean tornadoWatch) {
 	/** For sources that cannot say. */
 	public static final DayOutlook UNKNOWN = new DayOutlook(Type.UNKNOWN, false);
 
+	/** What kind of day it will be. */
 	public enum Type {
 		/** The source does not forecast days. */
 		UNKNOWN,

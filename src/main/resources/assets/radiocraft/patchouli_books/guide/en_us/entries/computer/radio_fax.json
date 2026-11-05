@@ -1,0 +1,21 @@
+{
+  "name": "Radio Fax on the Computer",
+  "icon": "radiocraft:floppy_radiofax",
+  "category": "radiocraft:computer",
+  "sortnum": 8,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Radio Fax$() program makes the computer a $(l:radiocraft:digital/radio_fax)radio fax$() with no paper, through a radio interface cabled to it. It faxes fax machines and other computers, and they fax it, with the same calls, packets and acks.$(br2)F3 faxes a file: a picture ($(thing).IMG$()), which the far machine prints on a blank map, or text and books ($(thing).TXT$(), $(thing).BOK$()), which print as a written book. F6 scans the scanner's glass and faxes that."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "What comes in is kept on the disk ($(thing)FAX00001.IMG$() or $(thing).TXT$()) and listed in the inbox: digital until you print it (F5) on the $(l:radiocraft:computer/scanner)scanner$(). Enter opens it.$(br2)The computer answers calls for its station's callsign unless auto answer is off (F7), or a fax machine is on the same station: then the machine answers. It cannot take an enchanted book."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_radiofax",
+      "text": "A blank floppy and a sheet of paper."
+    }
+  ]
+}

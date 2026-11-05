@@ -44,7 +44,8 @@ public class FiveBtvAntennaType extends NonDirectionalAntennaType<EmptyAntennaDa
 
     @Override
     public double getSWR(EmptyAntennaData data, float frequencyHertz) {
-        return Band.getBand(frequencyHertz) != null ? SWR : 10.0D;
+        Band band = Band.getBand(frequencyHertz); // A ham trap vertical: matched on (and around) the ham bands only.
+        return band != null && band.isAmateur() ? SWR : 10.0D;
     }
 
     @Override

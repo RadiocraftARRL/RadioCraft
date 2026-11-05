@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "minecraft:buttons"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "H": {
+      "item": "radiocraft:basic_commercial_handheld"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "pattern": [
+    " G ",
+    "BHB",
+    "RCR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:upgraded_commercial_handheld"
+  }
+}

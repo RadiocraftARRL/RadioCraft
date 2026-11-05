@@ -33,6 +33,20 @@ public final class Sublevels {
 		return at(level, pos) != null;
 	}
 
+	/** The id of the sub-level {@code pos} is on, or null for an ordinary block (and always without Sable). */
+	@Nullable
+	public static java.util.UUID id(@Nullable Level level, BlockPos pos) {
+		SubLevelAccess sub = at(level, pos);
+		return sub == null ? null : sub.getUniqueId();
+	}
+
+	/** The name of the sub-level {@code pos} is on (its ship's name), or "" for an ordinary block or a ship with none. */
+	public static String name(@Nullable Level level, BlockPos pos) {
+		SubLevelAccess sub = at(level, pos);
+		String name = sub == null ? null : sub.getName();
+		return name == null ? "" : name;
+	}
+
 	/** Where the block at {@code pos} really is in the world: {@code pos} itself unless it is on a sub-level. */
 	public static BlockPos world(@Nullable Level level, BlockPos pos) {
 		SubLevelAccess sub = at(level, pos);

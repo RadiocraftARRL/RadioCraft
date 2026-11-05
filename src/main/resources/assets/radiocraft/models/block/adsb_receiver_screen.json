@@ -1,0 +1,44 @@
+{
+  "credit": "RadioCraft placeholder, made by tools/adsb_models.py (see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "texture_size": [
+    32,
+    32
+  ],
+  "textures": {
+    "0": "radiocraft:block/adsb_receiver",
+    "particle": "radiocraft:block/adsb_receiver"
+  },
+  "elements": [
+    {
+      "name": "scope",
+      "from": [
+        0,
+        0,
+        -0.02
+      ],
+      "to": [
+        16,
+        16,
+        0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      },
+      "neoforge_data": {
+        "block_light": 15,
+        "sky_light": 15,
+        "ambient_occlusion": false
+      }
+    }
+  ],
+  "render_type": "minecraft:cutout"
+}

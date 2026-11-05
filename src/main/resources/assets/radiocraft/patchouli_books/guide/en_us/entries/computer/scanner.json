@@ -1,0 +1,21 @@
+{
+  "name": "The Scanner",
+  "icon": "radiocraft:scanner",
+  "category": "radiocraft:computer",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Set a $(item)Scanner$() beside the computer (or on its data wire). Right click it to lift the lid: a map, a photo or a book goes on the glass, paper in the tray, and prints come out in the output tray.$(br2)In the shell's Files list, F6 scans what is on the glass into a file: a picture into an .IMG, a book into a .TXT. F5 prints the selected file."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Pictures print on $(item)Color Photo Paper$() as a color photo, on an empty map as a plain color $(item)Printout$(), or on $(item)Photo Paper$() in black and white. Text prints as a written book, a sheet of paper a page.$(br2)Take each print out before the next, or the scanner jams. Without a scanner the computer does everything else."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:scanner",
+      "text": "Flatbed glass on top, ink underneath."
+    }
+  ]
+}

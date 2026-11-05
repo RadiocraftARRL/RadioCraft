@@ -22,6 +22,17 @@ class ConfigNamesTest {
 		assertEquals("Line of Sight Range", ConfigNames.name("10mm_los"));
 		assertEquals("Shortest Skip (Night)", ConfigNames.name("80mm_minSkipNight"));
 		assertEquals("Highest Frequency (Hz)", ConfigNames.name("2mm_maxFrequency"));
+		assertEquals("Line of Sight Range", ConfigNames.name("low_band_los"));
+		assertEquals("Lowest Frequency (Hz)", ConfigNames.name("vhf_commercial_minFrequency"));
+		assertEquals("Band Plan Segments", ConfigNames.name("band_plan_segments"));
+		assertEquals("Marine Channel Plan", ConfigNames.name("marine_channel_plan"));
+		assertEquals("Camera Cooldown Seconds", ConfigNames.name("camera_cooldown_seconds"));
+		assertEquals("Camera Photo Cap", ConfigNames.name("camera_photo_cap"));
+		assertEquals("Computer Storage KB", ConfigNames.name("computer_storage_kb"));
+		assertEquals("Computer Max Files", ConfigNames.name("computer_max_files"));
+		assertEquals("ADS-B Full Range Y", ConfigNames.name("adsb_full_range_y"));
+		assertEquals("ADS-B Receiver Power Use", ConfigNames.name("adsb_receiver_power_use"));
+		assertEquals("Real World Interface Enabled", ConfigNames.name("real_world_interface_enabled"));
 	}
 
 	@Test

@@ -26,6 +26,8 @@ public class ItemTooltipEvents {
 		ResourceLocation id = BuiltInRegistries.ITEM.getKey(event.getItemStack().getItem());
 		if(!Radiocraft.MOD_ID.equals(id.getNamespace()))
 			return;
+		if(event.getItemStack().has(com.arrl.radiocraft.common.init.RadiocraftDataComponent.MARS_MOD.value())) // A MARS-modded radio says so.
+			event.getToolTip().add(Component.translatable(Radiocraft.translationKey("tooltip", "mars_mod.fitted")).withStyle(ChatFormatting.RED));
 		if(event.getEntity() == null) // The creative search indexes tooltips with no player: give it the numbers as words too.
 			for(String alias : SearchAliases.of(event.getItemStack().getHoverName().getString()))
 				event.getToolTip().add(Component.literal(alias));

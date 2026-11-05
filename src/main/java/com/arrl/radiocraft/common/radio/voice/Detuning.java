@@ -63,16 +63,32 @@ public final class Detuning {
 	 *                      lowers it on USB.
 	 */
 	public static Effect ssb(double rxHz, double txHz, boolean lowerSideband) {
+		return ssb(rxHz, txHz, lowerSideband, 1.0D);
+	}
+
+	/**
+	 * {@link #ssb(double, double, boolean)} for a transmitter whose splatter reaches {@code splatterReach} times as far
+	 * as usual (an out-of-band transmission, {@link com.arrl.radiocraft.common.radio.BandEdges#OUT_OF_BAND_SPLATTER}):
+	 * past the 10 kHz window it is no longer heard but still puts splatter on whatever the receiver hears, out to
+	 * {@code splatterReach} times the window, and inside the window the splatter starts nearer the centre.
+	 */
+	public static Effect ssb(double rxHz, double txHz, boolean lowerSideband, double splatterReach) {
 		double offset = rxHz - txHz;
 		double off = Math.abs(offset);
 		if(off < ON_FREQUENCY_HZ)
 			return ON_FREQUENCY;
-		if(off > SSB_WINDOW_HZ + ON_FREQUENCY_HZ)
-			return NONE;
+		if(off > SSB_WINDOW_HZ + ON_FREQUENCY_HZ) {
+			double reach = SSB_WINDOW_HZ * Math.max(1.0D, splatterReach);
+			if(splatterReach <= 1.0D || off > reach + ON_FREQUENCY_HZ)
+				return NONE;
+			double t = (off - SSB_WINDOW_HZ) / (reach - SSB_WINDOW_HZ);
+			return new Effect(false, 0.0D, 0.0D, 0.0D, SSB_EDGE_SPLATTER * (1.0D - Math.min(1.0D, Math.max(0.0D, t))));
+		}
 		double t = Math.min(1.0D, off / SSB_WINDOW_HZ);
 		double strength = 1.0D - (1.0D - SSB_EDGE_STRENGTH) * t;
 		double shift = (lowerSideband ? offset : -offset) * SSB_SHIFT_PER_HZ;
-		double splatter = t <= SSB_SPLATTER_START ? 0.0D : (t - SSB_SPLATTER_START) / (1.0D - SSB_SPLATTER_START) * SSB_EDGE_SPLATTER;
+		double start = SSB_SPLATTER_START / Math.max(1.0D, splatterReach);
+		double splatter = t <= start ? 0.0D : (t - start) / (1.0D - start) * SSB_EDGE_SPLATTER;
 		return new Effect(true, strength, shift, splatter, 0.0D);
 	}
 
@@ -82,16 +98,26 @@ public final class Detuning {
 	 * @param channelStepHz The receiver's channel step (VHF), 0 if it has none: a signal one step off still splatters.
 	 */
 	public static Effect fm(double rxHz, double txHz, double channelStepHz) {
+		return fm(rxHz, txHz, channelStepHz, 1.0D);
+	}
+
+	/**
+	 * {@link #fm(double, double, double)} for a transmitter whose splatter reaches {@code splatterReach} times as far as
+	 * usual (out of band): the splatter zone and the channel-step splatter both stretch by that much.
+	 */
+	public static Effect fm(double rxHz, double txHz, double channelStepHz, double splatterReach) {
+		double reach = Math.max(1.0D, splatterReach);
 		double off = Math.abs(rxHz - txHz);
 		if(off < ON_FREQUENCY_HZ)
 			return ON_FREQUENCY;
 		if(off <= FM_CLEAR_HZ + ON_FREQUENCY_HZ)
 			return new Effect(true, 1.0D - FM_LOSS_PER_KHZ * off / 1000.0D, 0.0D, 0.0D, 0.0D);
-		if(off <= FM_SPLATTER_HZ + ON_FREQUENCY_HZ) {
-			double t = Math.min(1.0D, (off - 3000.0D) / (FM_SPLATTER_HZ - 3000.0D));
+		double splatterHz = FM_SPLATTER_HZ * reach;
+		if(off <= splatterHz + ON_FREQUENCY_HZ) {
+			double t = Math.min(1.0D, (off - 3000.0D) / (splatterHz - 3000.0D));
 			return new Effect(false, 0.0D, 0.0D, 0.0D, FM_NEAR_SPLATTER - (FM_NEAR_SPLATTER - FM_FAR_SPLATTER) * Math.max(0.0D, t));
 		}
-		if(channelStepHz > 0.0D && off <= channelStepHz + ON_FREQUENCY_HZ)
+		if(channelStepHz > 0.0D && off <= channelStepHz * reach + ON_FREQUENCY_HZ)
 			return new Effect(false, 0.0D, 0.0D, 0.0D, FM_STEP_SPLATTER);
 		return NONE;
 	}

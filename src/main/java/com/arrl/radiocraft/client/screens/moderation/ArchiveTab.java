@@ -28,7 +28,7 @@ class ArchiveTab extends ComputerTab {
 	private static final int PAGE = com.arrl.radiocraft.common.moderation.ComputerRequests.MAX_PAGE;
 	/** The kind dropdown's groups. */
 	private static final List<Set<TransmissionKind>> KIND_GROUPS = List.of(Set.of(),
-			EnumSet.of(TransmissionKind.PLAYER_VOICE, TransmissionKind.AUTOPATCH, TransmissionKind.BLOCK_AUDIO),
+			EnumSet.of(TransmissionKind.PLAYER_VOICE, TransmissionKind.AUTOPATCH, TransmissionKind.BLOCK_AUDIO, TransmissionKind.REAL_WORLD),
 			EnumSet.of(TransmissionKind.TAPE, TransmissionKind.SERVER_TAPE, TransmissionKind.TAPE_RECORDING),
 			EnumSet.of(TransmissionKind.DATA), EnumSet.of(TransmissionKind.CW),
 			EnumSet.of(TransmissionKind.COMMERCIAL, TransmissionKind.REPEATED, TransmissionKind.PARROT, TransmissionKind.DTMF));
@@ -306,7 +306,8 @@ class ArchiveTab extends ComputerTab {
 	}
 
 	private static boolean voiceKind(String kind) {
-		return kind.equals(TransmissionKind.PLAYER_VOICE.id()) || kind.equals(TransmissionKind.AUTOPATCH.id()) || kind.equals(TransmissionKind.BLOCK_AUDIO.id());
+		return kind.equals(TransmissionKind.PLAYER_VOICE.id()) || kind.equals(TransmissionKind.AUTOPATCH.id()) || kind.equals(TransmissionKind.BLOCK_AUDIO.id())
+				|| kind.equals(TransmissionKind.REAL_WORLD.id());
 	}
 
 	@Override
