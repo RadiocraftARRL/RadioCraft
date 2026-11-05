@@ -46,6 +46,8 @@ public class RealWorldInterfaceGameTests {
 	private static final String BATCH = "real_world_interface";
 	private static final UUID OPERATOR = UUID.nameUUIDFromBytes("gametest-rwi-operator".getBytes());
 	private static final FakeBackend FAKE = new FakeBackend();
+	/** A player (for the licence check) who has not clicked "I hold a licence" until the licence test does it. */
+	private static final UUID LICENSEE = UUID.randomUUID();
 	private static boolean savedEnabled;
 	private static List<? extends String> savedInterfaces = List.of();
 
@@ -64,7 +66,10 @@ public class RealWorldInterfaceGameTests {
 				"name=GT Shared;input=fakeC;output=fakeC",
 				"name=GT Everywhere;input=fakeD;output=fakeD;serial=PORTD;vox_threshold=-30;vox_hang=200;ptt_hang=200",
 				"name=GT Gone;input=fakeE;output=fakeE;serial=PORTE",
-				"name=GT Claim;input=fakeF;output=fakeF"));
+				"name=GT Claim;input=fakeF;output=fakeF",
+				"name=GT Licence;input=fakeG;output=fakeG;serial=PORTG;ptt=RTS;ptt_hang=200;ptt_delay=0"));
+		// One made-up player for the licence test; every other voice id in these tests is no player's.
+		com.arrl.radiocraft.common.realworld.RealWorldLicences.setPlayerCheckForTesting(LICENSEE::equals);
 	}
 
 	@AfterBatch(batch = BATCH)
@@ -72,6 +77,7 @@ public class RealWorldInterfaceGameTests {
 		RadiocraftServerConfig.REAL_WORLD_INTERFACE_ENABLED.set(savedEnabled);
 		RadiocraftServerConfig.REAL_WORLD_INTERFACES.set(List.copyOf(savedInterfaces));
 		Bridges.setBackendForTesting(null);
+		com.arrl.radiocraft.common.realworld.RealWorldLicences.setPlayerCheckForTesting(null);
 	}
 
 	// -------------------- HELPERS --------------------
@@ -118,8 +124,13 @@ public class RealWorldInterfaceGameTests {
 
 	/** One frame said into the station's microphone. */
 	private static void speak(GameTestHelper helper, VHFRadioBlockEntity radio) {
+		speak(helper, radio, OPERATOR);
+	}
+
+	/** One frame said by {@code who} into the station's microphone. */
+	private static void speak(GameTestHelper helper, VHFRadioBlockEntity radio, UUID who) {
 		radio.setPTTDown(true);
-		radio.acceptVoicePacket(() -> helper.getLevel(), tone(8000), OPERATOR);
+		radio.acceptVoicePacket(() -> helper.getLevel(), tone(8000), who);
 		radio.setPTTDown(false);
 	}
 
@@ -228,6 +239,64 @@ public class RealWorldInterfaceGameTests {
 					helper.assertTrue(device.playedSamples() < 3 * 8000, "more than 8 kHz audio for the time: " + device.playedSamples());
 				})
 				.thenSucceed();
+	}
+
+	/**
+	 * A player who has not clicked "I hold a licence" is not bridged out: their frames never reach the sound card (or the
+	 * monitor speaker). Once they click, they are; the monitor speaker gets what goes out.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 10_000, batch = BATCH) // Waits on the bridge threads (wall time).
+	public static void onlyLicensedPlayersGoOut(GameTestHelper helper) {
+		BlockPos rwi = RWI.north(2);
+		BlockPos station = STATION.north(2);
+		helper.setBlock(rwi, RadiocraftBlocks.REAL_WORLD_INTERFACE.get());
+		helper.setBlock(station, RadiocraftBlocks.VHF_BASE_STATION.get());
+		FakeDevice device = FAKE.device("fakeG");
+		FakePort port = FAKE.port("PORTG");
+		helper.startSequence()
+				.thenExecute(() -> {
+					setUp(helper, rwi, "GT Licence", 147_540);
+					station(helper, station, 147_540);
+				})
+				.thenWaitUntil(() -> linked(helper, rwi))
+				.thenExecute(() -> {
+					helper.assertFalse(com.arrl.radiocraft.common.realworld.RealWorldLicences.mayBridge(LICENSEE), "a player went out before clicking");
+					for(int i = 0; i < 3; i++)
+						speak(helper, GameTestUtil.blockEntity(helper, station, VHFRadioBlockEntity.class), LICENSEE);
+				})
+				.thenIdle(20)
+				.thenExecute(() -> {
+					helper.assertFalse(port.ever(AudioBackend.Line.RTS, true), "PTT keyed for a player with no licence");
+					helper.assertTrue(device.loudest() < -40.0D, "an unlicensed player's voice reached the sound card: " + device.loudest());
+					helper.assertTrue(rwi(helper, rwi).getMonitor().frames() == 0L, "the monitor speaker played an unlicensed player");
+					com.arrl.radiocraft.common.realworld.RealWorldLicences.acknowledge(helper.getLevel().getServer(), LICENSEE);
+					helper.assertTrue(com.arrl.radiocraft.common.realworld.RealWorldLicences.hasAcknowledged(helper.getLevel().getServer(), LICENSEE), "the click was not kept");
+					for(int i = 0; i < 3; i++)
+						speak(helper, GameTestUtil.blockEntity(helper, station, VHFRadioBlockEntity.class), LICENSEE);
+				})
+				.thenWaitUntil(() -> helper.assertTrue(device.loudest() > -40.0D, "a licensed player's voice did not reach the sound card: " + device.loudest()))
+				.thenExecute(() -> helper.assertTrue(rwi(helper, rwi).getMonitor().frames() > 0L, "the monitor speaker got nothing of what went out"))
+				.thenSucceed();
+	}
+
+	/** With real_world_interface_op_only on, only an operator may switch the block on or off; off, anyone may. */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20, batch = BATCH)
+	public static void powerSwitchIsOpOnly(GameTestHelper helper) {
+		helper.setBlock(RWI, RadiocraftBlocks.REAL_WORLD_INTERFACE.get());
+		net.neoforged.neoforge.common.util.FakePlayer player = net.neoforged.neoforge.common.util.FakePlayerFactory.get(helper.getLevel(),
+				new com.mojang.authlib.GameProfile(UUID.nameUUIDFromBytes("gametest-rwi-guest".getBytes()), "rwi-guest"));
+		boolean was = RadiocraftServerConfig.REAL_WORLD_INTERFACE_OP_ONLY.get();
+		try {
+			helper.assertFalse(player.hasPermissions(2), "the fake player is an operator: the test cannot check");
+			RadiocraftServerConfig.REAL_WORLD_INTERFACE_OP_ONLY.set(true);
+			helper.assertFalse(rwi(helper, RWI).mayTogglePower(player), "a player switched an op-only interface");
+			RadiocraftServerConfig.REAL_WORLD_INTERFACE_OP_ONLY.set(false);
+			helper.assertTrue(rwi(helper, RWI).mayTogglePower(player), "op_only off, a player still cannot switch it");
+		}
+		finally {
+			RadiocraftServerConfig.REAL_WORLD_INTERFACE_OP_ONLY.set(was);
+		}
+		helper.succeed();
 	}
 
 	/** A second block cannot take an interface another is using; the first letting go frees it. */

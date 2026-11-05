@@ -39,13 +39,13 @@ public class RealWorldInterfaceScreen extends AbstractContainerScreen<RealWorldI
 	private static BlockPos statusPos = null;
 	private static CompoundTag status = new CompoundTag();
 
-	private Button previous, next, tune, mode, where;
+	private Button previous, next, tune, mode, where, power, licence;
 	private EditBox frequency;
 
 	public RealWorldInterfaceScreen(RealWorldInterfaceMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
 		imageWidth = 256;
-		imageHeight = 226;
+		imageHeight = 246;
 	}
 
 	private static Component tr(String key, Object... args) {
@@ -86,8 +86,13 @@ public class RealWorldInterfaceScreen extends AbstractContainerScreen<RealWorldI
 		y += 20;
 		where = addRenderableWidget(Button.builder(tr("antenna"), b -> SRealWorldInterfacePacket.send(block().getBlockPos(),
 				SRealWorldInterfacePacket.Action.EVERYWHERE, block().isEverywhere() ? "0" : "1")).bounds(leftPos + 70, y, 90, 16).build());
-		addRenderableWidget(Button.builder(tr("power"), b -> SBlockRadioControlPacket.updateServer(block().getBlockPos(),
+		power = addRenderableWidget(Button.builder(tr("power"), b -> SBlockRadioControlPacket.updateServer(block().getBlockPos(),
 				SBlockRadioControlPacket.Action.TOGGLE_POWER, true)).bounds(leftPos + 188, y, 60, 16).build());
+		y += 20;
+		// Each player's own "I hold a licence", once: until then their voice does not go out through any interface.
+		licence = addRenderableWidget(Button.builder(tr("licence"), b -> SRealWorldInterfacePacket.send(block().getBlockPos(),
+				SRealWorldInterfacePacket.Action.LICENCE, "")).bounds(leftPos + 8, y, imageWidth - 16, 16).build());
+		licence.setTooltip(net.minecraft.client.gui.components.Tooltip.create(tr("licence.tooltip")));
 		refresh();
 	}
 
@@ -129,7 +134,10 @@ public class RealWorldInterfaceScreen extends AbstractContainerScreen<RealWorldI
 		boolean edit = !tag.contains("mayEdit") || tag.getBoolean("mayEdit");
 		boolean enabled = tag.getBoolean("enabled");
 		previous.active = next.active = edit && enabled;
-		tune.active = mode.active = where.active = frequency.active = edit;
+		tune.active = mode.active = where.active = frequency.active = power.active = edit;
+		boolean licensed = tag.getBoolean("licensed");
+		licence.active = !licensed;
+		licence.setMessage(tr(licensed ? "licence.done" : "licence"));
 		frequency.setEditable(edit);
 		mode.setMessage(Component.literal(block().isFM() ? "FM" : block().isLowerSideband() ? "LSB" : "USB"));
 		where.setMessage(tr(block().isEverywhere() ? "everywhere" : "antenna"));
@@ -171,15 +179,15 @@ public class RealWorldInterfaceScreen extends AbstractContainerScreen<RealWorldI
 		// The licence warning, always on screen.
 		graphics.fill(leftPos + 6, topPos + 17, leftPos + imageWidth - 6, topPos + 70, WARN_EDGE);
 		graphics.fill(leftPos + 7, topPos + 18, leftPos + imageWidth - 7, topPos + 69, WARN_BG);
-		graphics.fill(leftPos + 6, topPos + 138, leftPos + imageWidth - 6, topPos + imageHeight - 6, PANEL);
+		graphics.fill(leftPos + 6, topPos + 158, leftPos + imageWidth - 6, topPos + imageHeight - 6, PANEL);
 		CompoundTag tag = status();
 		boolean on = block().wasPowered();
-		lamp(graphics, leftPos + 12, topPos + 201, block().isPttLamp(), BAD);
-		lamp(graphics, leftPos + 72, topPos + 201, block().isTxActive(), GOOD);
-		lamp(graphics, leftPos + 132, topPos + 201, tag.getBoolean("txTimedOut") || tag.getBoolean("rxTimedOut"), AMBER);
-		lamp(graphics, leftPos + 192, topPos + 201, on, GOOD);
-		meter(graphics, leftPos + 40, topPos + 213, tag.contains("inDb") ? tag.getFloat("inDb") : -100.0F);
-		meter(graphics, leftPos + 160, topPos + 213, tag.contains("outDb") ? tag.getFloat("outDb") : -100.0F);
+		lamp(graphics, leftPos + 12, topPos + 221, block().isPttLamp(), BAD);
+		lamp(graphics, leftPos + 72, topPos + 221, block().isTxActive(), GOOD);
+		lamp(graphics, leftPos + 132, topPos + 221, tag.getBoolean("txTimedOut") || tag.getBoolean("rxTimedOut"), AMBER);
+		lamp(graphics, leftPos + 192, topPos + 221, on, GOOD);
+		meter(graphics, leftPos + 40, topPos + 233, tag.contains("inDb") ? tag.getFloat("inDb") : -100.0F);
+		meter(graphics, leftPos + 160, topPos + 233, tag.contains("outDb") ? tag.getFloat("outDb") : -100.0F);
 	}
 
 	private static void lamp(GuiGraphics graphics, int x, int y, boolean lit, int colour) {
@@ -213,8 +221,8 @@ public class RealWorldInterfaceScreen extends AbstractContainerScreen<RealWorldI
 			case "starting", "off", "none" -> AMBER;
 			default -> BAD;
 		};
-		graphics.drawString(font, tr("state." + state, tag.getString("inUseAt")), 10, 142, colour, false);
-		int y = 152;
+		graphics.drawString(font, tr("state." + state, tag.getString("inUseAt")), 10, 162, colour, false);
+		int y = 172;
 		if(tag.contains("input")) {
 			device(graphics, y, tr("input", tag.getString("input"), tag.getInt("rate")), tag.getString("inputState"));
 			device(graphics, y + 10, tr("output", tag.getString("output")), tag.getString("outputState"));
@@ -223,13 +231,13 @@ public class RealWorldInterfaceScreen extends AbstractContainerScreen<RealWorldI
 		}
 		String error = tag.getString("error");
 		if(!error.isEmpty())
-			graphics.drawString(font, font.plainSubstrByWidth(error, imageWidth - 20), 10, 191, BAD, false);
-		graphics.drawString(font, tr("lamp.ptt"), 22, 201, LABEL, false);
-		graphics.drawString(font, tr("lamp.tx"), 82, 201, LABEL, false);
-		graphics.drawString(font, tr("lamp.tot"), 142, 201, LABEL, false);
-		graphics.drawString(font, tr("lamp.power"), 202, 201, LABEL, false);
-		graphics.drawString(font, tr("level.in"), 10, 212, DIM, false);
-		graphics.drawString(font, tr("level.out"), 130, 212, DIM, false);
+			graphics.drawString(font, font.plainSubstrByWidth(error, imageWidth - 20), 10, 211, BAD, false);
+		graphics.drawString(font, tr("lamp.ptt"), 22, 221, LABEL, false);
+		graphics.drawString(font, tr("lamp.tx"), 82, 221, LABEL, false);
+		graphics.drawString(font, tr("lamp.tot"), 142, 221, LABEL, false);
+		graphics.drawString(font, tr("lamp.power"), 202, 221, LABEL, false);
+		graphics.drawString(font, tr("level.in"), 10, 232, DIM, false);
+		graphics.drawString(font, tr("level.out"), 130, 232, DIM, false);
 	}
 
 	/** One device line: what it is, then FOUND / NOT FOUND / ... in colour. */

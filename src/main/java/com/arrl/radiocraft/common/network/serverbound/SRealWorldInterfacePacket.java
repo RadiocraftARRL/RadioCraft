@@ -18,12 +18,12 @@ import java.util.Locale;
 
 /**
  * A change on a Real-World Interface's screen (its menu open): pick an interface by name (empty for none), tune to a
- * frequency typed in MHz, FM or SSB, Everywhere on or off. The block checks {@code real_world_interface_op_only}; a
+ * frequency typed in MHz, FM or SSB, Everywhere on or off, or "I hold a licence" (the player's own, for every interface). The block checks {@code real_world_interface_op_only}; a
  * refusal comes back to the player over the hotbar.
  */
 public record SRealWorldInterfacePacket(long pos, int action, String text) implements CustomPacketPayload {
 
-	public enum Action { SELECT, FREQUENCY, MODE, EVERYWHERE }
+	public enum Action { SELECT, FREQUENCY, MODE, EVERYWHERE, LICENCE }
 
 	public static final Type<SRealWorldInterfacePacket> TYPE = new Type<>(Radiocraft.id("s_real_world_interface"));
 
@@ -69,6 +69,7 @@ public record SRealWorldInterfacePacket(long pos, int action, String text) imple
 					if(!block.setEverywhere(text.trim().equals("1"), player))
 						refused = noRight;
 				}
+				case LICENCE -> RealWorldInterfaceBlockEntity.acknowledgeLicence(player); // "I hold a licence", once per player.
 			}
 			if(refused != null)
 				player.displayClientMessage(refused, true);

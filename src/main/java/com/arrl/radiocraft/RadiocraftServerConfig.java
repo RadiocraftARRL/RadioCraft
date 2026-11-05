@@ -336,7 +336,7 @@ public class RadiocraftServerConfig {
 		REAL_WORLD_INTERFACE_ENABLED = BUILDER.comment(" Turn the Real-World Interface on. Off by default: no sound card or serial port is touched, and",
 				" the serial library is not even loaded, while this is false").define("real_world_interface_enabled", false);
 		REAL_WORLD_INTERFACE_OP_ONLY = BUILDER.comment(" Only operators (permission level 2) may pick an interface or change a Real-World Interface",
-				" block's frequency, mode or Everywhere setting").define("real_world_interface_op_only", true);
+				" block's frequency, mode or Everywhere setting, or switch it on and off").define("real_world_interface_op_only", true);
 		REAL_WORLD_INTERFACES = BUILDER.comment(" The interfaces, one string each: key=value pairs separated by ;. Only name is needed:",
 				"   name=Shack 2m;input=USB Audio CODEC;output=USB Audio CODEC;rate=48000;serial=COM3;ptt=RTS;trigger=VOX",
 				" Keys (defaults in brackets): name (up to 24 characters, shown on the block's screen); input and output, part of",

@@ -20,6 +20,8 @@ import com.arrl.radiocraft.common.realworld.Bridge;
 import com.arrl.radiocraft.common.realworld.Bridges;
 import com.arrl.radiocraft.common.realworld.Everywhere;
 import com.arrl.radiocraft.common.realworld.InterfaceSpec;
+import com.arrl.radiocraft.common.realworld.MonitorSpeaker;
+import com.arrl.radiocraft.common.realworld.RealWorldLicences;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -79,12 +81,15 @@ public class RealWorldInterfaceBlockEntity extends RadioBlockEntity {
 	/** The real radio's PTT is keyed (synced: the RX-to-radio lamp). */
 	private boolean pttLamp = false;
 	private final UUID voiceId;
+	/** Plays what goes out to the real radio, quietly, at the block (1.12 open-question fixes). */
+	private final MonitorSpeaker monitor;
 
 	public RealWorldInterfaceBlockEntity(BlockPos pos, BlockState state) {
 		super(RadiocraftBlockEntities.REAL_WORLD_INTERFACE.get(), pos, state, Band.getBand("2m"));
 		ssbEnabled = true; // Voice only: FM or SSB.
 		frequency = 146_520_000.0F; // 2m FM simplex calling.
 		voiceId = UUID.nameUUIDFromBytes(("radiocraft:real_world_interface@" + pos.asLong()).getBytes(StandardCharsets.UTF_8));
+		monitor = new MonitorSpeaker(pos);
 	}
 
 	// -------------------- SETTINGS --------------------
@@ -115,6 +120,22 @@ public class RealWorldInterfaceBlockEntity extends RadioBlockEntity {
 	/** True if {@code player} may change it ({@code real_world_interface_op_only}). */
 	public static boolean mayEdit(Player player) {
 		return !RadiocraftServerConfig.REAL_WORLD_INTERFACE_OP_ONLY.get() || player.hasPermissions(2);
+	}
+
+	/** Its power switch is op only too, with {@code real_world_interface_op_only} (maintainer, 2026-11-05). */
+	@Override
+	public boolean mayTogglePower(Player player) {
+		return mayEdit(player);
+	}
+
+	/** {@code player} clicked "I hold a licence": from now on their voice may go out through any interface. Server. */
+	public static void acknowledgeLicence(ServerPlayer player) {
+		RealWorldLicences.acknowledge(player.server, player.getUUID());
+	}
+
+	/** Its monitor speaker, for tests. */
+	public MonitorSpeaker getMonitor() {
+		return monitor;
 	}
 
 	private static Component message(String key, Object... args) {
@@ -258,12 +279,18 @@ public class RealWorldInterfaceBlockEntity extends RadioBlockEntity {
 		return everywhere ? 1.0D : super.desense(packet);
 	}
 
-	/** In Everywhere mode it hears only what reaches it at the source ({@link #hearEverywhere}); else only its antenna. */
+	/**
+	 * In Everywhere mode it hears only what reaches it at the source ({@link #hearEverywhere}); else only its antenna.
+	 * A frame from a player who has not clicked "I hold a licence" is dropped here, before the receiver mixes it, so it
+	 * never reaches the real radio ({@link RealWorldLicences}: the mixed audio no longer says who spoke).
+	 */
 	@Override
 	public boolean receiveVoice(AntennaVoicePacket packet) {
 		EverywhereAntenna own = everywhereAntenna;
 		boolean atSource = own != null && packet.getDestination() == own;
 		if(everywhere != atSource)
+			return false;
+		if(!RealWorldLicences.mayBridge(packet.getSourcePlayer()))
 			return false;
 		return super.receiveVoice(packet);
 	}
@@ -278,11 +305,14 @@ public class RealWorldInterfaceBlockEntity extends RadioBlockEntity {
 		receiveVoice(packet);
 	}
 
-	/** What its receiver plays: out to the real radio (voice chat thread). */
+	/** What its receiver plays: out to the real radio, and quietly on its monitor speaker (voice chat thread). */
 	private void downlinkFrame(short[] pcm) {
 		Bridge link = bridge;
-		if(link != null && live)
+		if(link != null && live) {
 			link.offerDownlink(pcm);
+			if(level instanceof ServerLevel serverLevel)
+				monitor.play(serverLevel, pcm);
+		}
 	}
 
 	/** A frame from the real radio, its VOX or COS open (the bridge's link thread): on the air from here. */
@@ -393,13 +423,16 @@ public class RealWorldInterfaceBlockEntity extends RadioBlockEntity {
 		if(own != null)
 			own.unregister();
 		txActive = false;
+		monitor.close();
 	}
 
 	@Override
 	public void onLoad() {
 		super.onLoad();
 		if(level != null && !level.isClientSide) {
-			voiceReceiver.setTap(this::downlinkFrame); // Its "speaker" is the sound card.
+			if(level instanceof ServerLevel serverLevel)
+				RealWorldLicences.of(serverLevel.getServer()); // Loaded for the voice thread's licence check.
+			voiceReceiver.setTap(this::downlinkFrame); // Its "speaker" is the sound card (and the monitor speaker).
 			bridgeDirty = true;
 		}
 	}
@@ -437,6 +470,8 @@ public class RealWorldInterfaceBlockEntity extends RadioBlockEntity {
 		boolean enabled = Bridges.enabled();
 		tag.putBoolean("enabled", enabled);
 		tag.putBoolean("mayEdit", viewer == null || mayEdit(viewer));
+		if(viewer instanceof ServerPlayer player)
+			tag.putBoolean("licensed", RealWorldLicences.hasAcknowledged(player.server, player.getUUID()));
 		ListTag names = new ListTag();
 		if(enabled)
 			for(InterfaceSpec spec : Bridges.specs())

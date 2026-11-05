@@ -69,6 +69,11 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
                         context.player().containerMenu instanceof com.arrl.radiocraft.common.menus.RadioMenu<?> m && m.blockEntity == radio);
             if(!canControl(context, radio, targetPos, action))
                 return;
+            if(action == Action.TOGGLE_POWER && !radio.mayTogglePower(context.player())) {
+                context.player().displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                        com.arrl.radiocraft.Radiocraft.translationKey("message", "real_world_interface.op_only")), true);
+                return;
+            }
 
             switch(action) {
                 case TOGGLE_POWER -> radio.toggle();

@@ -26,6 +26,11 @@
       "text": "In game it is a radio: an antenna on its coax (any band), its frequency, $(thing)FM$() or $(thing)SSB$(), power from the wire. Only operators may change it unless the server allows otherwise.$(br2)$(thing)Everywhere$() needs no antenna and ignores distance: it hears every transmission on its frequency in its dimension, and every station there hears it at full strength. Its traffic is in the moderation log like any other."
     },
     {
+      "type": "patchouli:text",
+      "title": "Your Licence",
+      "text": "Before your voice goes out through it, click $(thing)I hold an amateur licence$() on its screen. Once is enough, for every interface on the server. Until you do, what you say on the air never reaches the real radio, even through a repeater or in Everywhere mode.$(br2)A quiet $(thing)monitor speaker$() on the block lets those standing by hear what goes out. With the server's op-only setting on (the default), only operators can switch it on or off."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "radiocraft:real_world_interface",
       "text": "Remember: real licence, real callsign, and identify as the rules require."

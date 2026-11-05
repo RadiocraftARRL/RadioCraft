@@ -1097,6 +1097,11 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     // -------------------- POWER IMPLEMENTATION --------------------
 
+    /** True if {@code player} may switch it on or off from its screen (every radio but an op-only Real-World Interface). */
+    public boolean mayTogglePower(net.minecraft.world.entity.player.Player player) {
+        return true;
+    }
+
     @Override
     public void toggle() {
         if(!level.isClientSide()) {
