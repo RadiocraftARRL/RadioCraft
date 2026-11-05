@@ -24,7 +24,7 @@ class AccessTab extends ComputerTab {
 
 	AccessTab(ModerationDesk screen) {
 		super(screen);
-		admins = add(new W98ListView<CompoundTag>(row -> new String[] { row.getString("name") }, new int[] { 1 }, ModerationComputerScreen.columns("col.admins")))
+		admins = add(new W98ListView<CompoundTag>(row -> new String[] { com.arrl.radiocraft.common.moderation.ModerationFormat.fccName(row.getString("name"), row.getBoolean("fcc")) }, new int[] { 1 }, ModerationComputerScreen.columns("col.admins")))
 				.empty(() -> ModerationComputerScreen.tr("access.no_admins"))
 				.sortedBy(row -> new Object[] { row.getString("name") });
 		addName = add(new W98TextBox().maxLength(16).hint(() -> ModerationComputerScreen.tr("access.name_hint")).onKey(screen::keyClick).onEnter(this::addAdmin));

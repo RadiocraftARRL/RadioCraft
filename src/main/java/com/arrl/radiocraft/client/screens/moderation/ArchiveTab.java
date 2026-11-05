@@ -300,7 +300,7 @@ class ArchiveTab extends ComputerTab {
 		if(detail == null || proximity || !voiceKind(detail.getString("kind")))
 			return out;
 		for(CompoundTag hearer : rows(detail, "hearerList"))
-			out.add(tr("archive.heard_by", hearer.getString("name").isEmpty() ? ModerationComputerScreen.radioName(hearer.getString("radio")) : hearer.getString("name"),
+			out.add(tr("archive.heard_by", hearer.getString("name").isEmpty() ? ModerationComputerScreen.radioName(hearer.getString("radio")) : ModerationFormat.fccName(hearer.getString("name"), hearer.getBoolean("fcc")),
 					Math.round(hearer.getFloat("strength") * 100.0F)));
 		return out;
 	}
@@ -376,7 +376,7 @@ class ArchiveTab extends ComputerTab {
 		lines.add(tr("detail.kind", tr("kind." + d.getString("kind"))) + (d.getBoolean("flagged") ? "  " + tr("detail.flagged") : ""));
 		List<String> names = new ArrayList<>();
 		for(CompoundTag talker : rows(d, "talkerList"))
-			names.add(talker.getString("name") + (talker.getString("call").isEmpty() ? "" : " (" + talker.getString("call") + ")"));
+			names.add(ModerationFormat.fccName(talker.getString("name"), talker.getBoolean("fcc")) + (talker.getString("call").isEmpty() ? "" : " (" + talker.getString("call") + ")"));
 		lines.add(tr("detail.talkers", names.isEmpty() ? "-" : String.join(", ", names)));
 		if(!proximity)
 			lines.add(tr("detail.frequency", ModerationFormat.mhz(d.getFloat("hz")), d.getString("mode"), d.getString("band").isEmpty() ? "-" : d.getString("band"))
@@ -386,7 +386,7 @@ class ArchiveTab extends ComputerTab {
 			lines.add(tr("detail.antenna", LiveTab.pos(d.getLong("antenna"))));
 		lines.add(tr("detail.hearers", d.getInt("hearerCount")));
 		for(CompoundTag hearer : rows(d, "hearerList"))
-			lines.add("  " + (hearer.getString("name").isEmpty() ? "" : hearer.getString("name") + " - ") + ModerationComputerScreen.radioName(hearer.getString("radio"))
+			lines.add("  " + (hearer.getString("name").isEmpty() ? "" : ModerationFormat.fccName(hearer.getString("name"), hearer.getBoolean("fcc")) + " - ") + ModerationComputerScreen.radioName(hearer.getString("radio"))
 					+ (hearer.contains("pos") ? " " + LiveTab.pos(hearer.getLong("pos")) : "") + ", " + Math.round(hearer.getFloat("strength") * 100.0F) + "%");
 		if(d.getInt("hearerCount") > rows(d, "hearerList").size())
 			lines.add("  " + tr("detail.more", d.getInt("hearerCount") - rows(d, "hearerList").size()));

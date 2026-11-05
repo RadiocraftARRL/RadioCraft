@@ -17,6 +17,14 @@ public final class ModerationFormat {
 
 	private ModerationFormat() {}
 
+	/** Put after the name of an FCC badge holder on the moderation computer's screen. */
+	public static final String FCC_MARK = " [FCC]";
+
+	/** {@code name}, marked when {@code fcc} (an FCC badge holder). */
+	public static String fccName(String name, boolean fcc) {
+		return fcc ? name + FCC_MARK : name;
+	}
+
 	private static final long HOUR_MS = 3_600_000L;
 	private static final long DAY_MS = 24L * HOUR_MS;
 

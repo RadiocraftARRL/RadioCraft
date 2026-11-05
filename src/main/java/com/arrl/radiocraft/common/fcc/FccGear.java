@@ -58,8 +58,13 @@ public final class FccGear {
 		return badge;
 	}
 
-	/** Gives {@code agent} a badge, into their inventory or dropped at their feet when it is full. */
+	/**
+	 * Gives {@code agent} a badge, into their inventory or dropped at their feet when it is full, and notes them as a
+	 * badge holder for the moderation computer ({@link FccBadgeHolders}).
+	 */
 	public static void issueBadge(Player agent) {
+		if(agent.getServer() != null)
+			FccBadgeHolders.issued(agent.getServer(), agent.getUUID());
 		ItemStack badge = badgeFor(agent);
 		if(!agent.getInventory().add(badge))
 			agent.drop(badge, false);

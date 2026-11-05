@@ -7,7 +7,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "radiocraft:fcc_badge",
-      "text": "Marks a server's radio police. Not craftable: an operator issues it with $(thing)/radiocraft fcc badge <player>$(), stamped with that player's name and badge number.$(br2)$(thing)Right click$() shows it to everyone within eight blocks; shown by anyone else, it says whose it is."
+      "text": "Marks a server's radio police. Not craftable: an operator issues it with $(thing)/radiocraft fcc badge <player>$(), stamped with that player's name and badge number.$(br2)$(thing)Right click$() shows it to everyone within eight blocks; shown by anyone else, it says whose it is.$(br2)It gives no powers. On the $(l:radiocraft:admin/moderation_computer)Radio Moderation Computer$(/l), badge holders have $(thing)[FCC]$() after their name."
     },
     {
       "type": "patchouli:text",

@@ -217,6 +217,8 @@ public final class ComputerRequests {
 			CompoundTag entry = new CompoundTag();
 			entry.putString("uuid", admin.getKey().toString());
 			entry.putString("name", admin.getValue());
+			if(com.arrl.radiocraft.common.fcc.FccBadgeHolders.holds(admin.getKey()))
+				entry.putBoolean("fcc", true);
 			admins.add(entry);
 		}
 		tag.put("admins", admins);
@@ -326,6 +328,8 @@ public final class ComputerRequests {
 			entry.putString("uuid", talker.uuid().toString());
 			entry.putString("name", talker.name());
 			entry.putString("call", talker.callsign());
+			if(com.arrl.radiocraft.common.fcc.FccBadgeHolders.holds(talker.uuid()))
+				entry.putBoolean("fcc", true); // An FCC badge holder: marked on the screen.
 			list.add(entry);
 		}
 		return list;
@@ -470,7 +474,8 @@ public final class ComputerRequests {
 		row.putLong("length", record.durationMs());
 		StringBuilder names = new StringBuilder();
 		for(TransmissionRecord.Talker talker : record.talkers())
-			names.append(names.isEmpty() ? "" : ", ").append(talker.name().isEmpty() ? talker.uuid().toString().substring(0, 8) : talker.name());
+			names.append(names.isEmpty() ? "" : ", ").append(talker.name().isEmpty() ? talker.uuid().toString().substring(0, 8) : talker.name())
+					.append(com.arrl.radiocraft.common.fcc.FccBadgeHolders.holds(talker.uuid()) ? ModerationFormat.FCC_MARK : "");
 		row.putString("talkers", ModerationFormat.clip(names.toString(), 60));
 		row.putString("radio", record.radioKind());
 		row.putString("dim", record.dimension());
@@ -495,6 +500,8 @@ public final class ComputerRequests {
 				break;
 			CompoundTag entry = new CompoundTag();
 			entry.putString("name", hearer.playerName());
+			if(com.arrl.radiocraft.common.fcc.FccBadgeHolders.holds(hearer.player()))
+				entry.putBoolean("fcc", true);
 			entry.putString("radio", hearer.radioKind());
 			entry.putString("dim", hearer.dimension());
 			if(hearer.pos() != null)

@@ -96,7 +96,8 @@ class LiveTab extends ComputerTab {
 
 	private String[] cells(CompoundTag row) {
 		List<CompoundTag> talkers = rows(row, "talkers");
-		String talker = talkers.isEmpty() ? "-" : talkers.getFirst().getString("name") + (talkers.getFirst().getString("call").isEmpty() ? "" : " (" + talkers.getFirst().getString("call") + ")")
+		String talker = talkers.isEmpty() ? "-" : ModerationFormat.fccName(talkers.getFirst().getString("name"), talkers.getFirst().getBoolean("fcc"))
+				+ (talkers.getFirst().getString("call").isEmpty() ? "" : " (" + talkers.getFirst().getString("call") + ")")
 				+ (talkers.size() > 1 ? " +" + (talkers.size() - 1) : "");
 		String where = row.contains("pos") ? pos(row.getLong("pos")) : "-";
 		return new String[] { talker, ModerationComputerScreen.tr("kind." + row.getString("kind")), ModerationFormat.mhz(row.getFloat("hz")) + " " + row.getString("mode"),

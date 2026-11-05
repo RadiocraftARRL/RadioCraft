@@ -125,6 +125,31 @@ public class FccGameTests {
 		helper.succeed();
 	}
 
+	/**
+	 * Badge holders are marked on the moderation computer (maintainer, 2026-11-05): a player issued a badge is a holder
+	 * from then on; one carrying or wearing their own badge is too; someone else's badge does not count.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 40)
+	public static void badgeHoldersAreKnown(GameTestHelper helper) {
+		FakePlayer issued = FakePlayerFactory.get(helper.getLevel(), new GameProfile(UUID.nameUUIDFromBytes("fcc-holder".getBytes()), "fcc-holder"));
+		FakePlayer carrier = FakePlayerFactory.get(helper.getLevel(), new GameProfile(UUID.nameUUIDFromBytes("fcc-carrier".getBytes()), "fcc-carrier"));
+		FakePlayer stranger = FakePlayerFactory.get(helper.getLevel(), new GameProfile(UUID.nameUUIDFromBytes("fcc-stranger".getBytes()), "fcc-stranger"));
+		issued.getInventory().clearContent();
+		carrier.getInventory().clearContent();
+		stranger.getInventory().clearContent();
+		FccGear.issueBadge(issued);
+		helper.assertTrue(com.arrl.radiocraft.common.fcc.FccBadgeHolders.holds(issued.getUUID()), "An agent issued a badge is not a holder");
+		helper.assertFalse(com.arrl.radiocraft.common.fcc.FccBadgeHolders.holds(stranger.getUUID()), "A player never issued a badge is a holder");
+		carrier.getInventory().add(FccGear.badgeFor(carrier));
+		helper.assertTrue(com.arrl.radiocraft.common.fcc.FccBadgeHolders.carriesOwnBadge(carrier), "A player carrying their own badge does not hold it");
+		stranger.getInventory().add(FccGear.badgeFor(carrier));
+		helper.assertFalse(com.arrl.radiocraft.common.fcc.FccBadgeHolders.carriesOwnBadge(stranger), "Someone else's badge made a holder");
+		issued.getInventory().clearContent();
+		carrier.getInventory().clearContent();
+		stranger.getInventory().clearContent();
+		helper.succeed();
+	}
+
 	private static String key(Component message) {
 		return message.getContents() instanceof TranslatableContents t ? t.getKey() : "";
 	}
