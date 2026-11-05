@@ -31,9 +31,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 
 - Channel-only radios with a **16-position knob** (16 channels; the upgraded handheld 40), set up by a radio shop: each channel has its receive and transmit
   frequency, analog FM or digital, a CTCSS tone and an encryption key. They need no ham callsign and always transmit
-  inside their own band. Program them with the radio computer's **Radio Programmer** (below). Out of the box the VHF
-  radios have the five licence-free MURS channels (the upgraded handheld adds 146.520) and the low band mobile four
-  simplex channels.
+  inside their own band. Program them with the radio computer's **Radio Programmer** (below). They come **blank**, with no
+  channels: nothing works until they are programmed.
   - **Basic Commercial Handheld**: a 1990s brick for 150-174 MHz, analog FM, RX and TX lights, no display.
   - **Upgraded Commercial Handheld**: the fire-service radio, crafted from the brick: **40 channels**, digital voice
     and encryption, and the 2m ham band too. Like 1990s fire radios it keeps the 16-position knob and adds a **zone
@@ -95,6 +94,9 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - Files (documents, pictures, logbooks, frequency lists, codeplugs) live on the computer, 1 MB by default
     (`computer_storage_kb`, `computer_max_files`), and go with it when it is broken and placed again. The monitor in
     the world shows the screen you left on it, and programs carry on for ten minutes after you get up.
+  - **Password**: whoever places the computer owns it and can set a password from the shell (**F8**; empty removes
+    it). Everyone who sits at it is then asked for it, owner included; server operators are never asked. The password
+    goes with the computer when it is broken and placed again.
 - **Scanner**: set it beside the computer. It scans maps, photos and books into files, and prints pictures (on color
   photo paper, an empty map or photo paper) and documents (as a written book, a sheet of paper a page).
 - **Office programs**:
@@ -122,7 +124,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     acks and retries, a map, beacons by hand or on the timer. Needs a VHF radio.
   - **Radio Fax** (FAX): faxes pictures, text files and books to fax machines and other computers; what comes in is
     kept on the disk until you print it. A fax machine on the same station answers calls instead.
-  - **SSTV**: colour pictures to everyone or one callsign, about half a minute each, coming in line by line and torn by
+  - **SSTV**: colour pictures to everyone in range (no addressing, as on the air), about half a minute each, coming in line by line and torn by
     noise where the signal fades. Send them again, caption them, or print them.
   - **WEFAX**: weather charts in greys: the coast station's radar chart and forecast, the Ionospheric Processors'
     bulletins and alerts, and charts other stations send. Draws a chart of the local weather to send as your own.
@@ -142,8 +144,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     player open for next time; only you hear it, fading as you walk away, and it stops past 24 blocks, in another
     dimension, or when the computer is broken or loses power.
   - **Bible**: the four gospels of the World English Bible (public domain): read by chapter, go to a verse, search.
-- **Ham shacks**: a little timber house with a J-pole on the roof, a VHF base station on 146.520 MHz running on its
-  battery, a radio computer and a chest of radio parts, out in the country, and now and then in a plains, taiga,
+- **Ham shacks**: a little timber house with a J-pole on the roof, found dark: a VHF base station on 146.520 MHz,
+  switched off, its battery flat (charge it or run a new power line), a radio computer and a chest of radio parts, out in the country, and now and then in a plains, taiga,
   snowy, savanna or desert village (in that village's wood, with a villager living in it).
 
 #### ADS-B
@@ -169,7 +171,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   ready-made blue FCC banner is in the creative menu.
 - The **FCC Badge** cannot be crafted: an operator issues it with `/radiocraft fcc badge <player>`, stamped with the
   player's name and a badge number. Right click shows it to the players around you. With Curios it is worn in the
-  chest (body) slot.
+  chest (body) slot. It gives no powers, but the **Radio Moderation Computer marks badge holders** with `[FCC]` after
+  their name (talkers, hearers and admins).
 
 #### Real-World Interface
 
@@ -181,7 +184,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - Set up **only in the server config file** (`real_world_interface_enabled`, `real_world_interfaces`): sound card input
   and output, sample rate, serial port and lines, VOX or COS, gains, hang and time-out. The block's screen only picks
   one interface by name and shows whether each device was found, PTT, VOX/COS and the audio levels. One block per
-  interface; by default only operators may change it (`real_world_interface_op_only`).
+  interface; by default only operators may change it or switch it on and off (`real_world_interface_op_only`).
   `/radiocraft realworld devices` lists the sound cards and serial ports; `/radiocraft realworld status` shows each
   interface.
 - In game it is a radio on any band, FM or SSB, with an antenna on its coax. **Everywhere** mode needs no antenna and
@@ -189,7 +192,10 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   there. Its transmissions are in the moderation log ("Real radio").
 - **Licence warning**: everything said through it goes out on a real transmitter. Every player who talks through it
   must hold a real amateur licence and use their own callsign; the server operator is the control operator and is
-  responsible for the station.
+  responsible for the station. Each player clicks **"I hold an amateur licence"** on its screen once (kept for every
+  interface on the server); until they do, nothing they say on the air goes out through any interface (their voice is
+  dropped as it reaches the interface, however it got there: direct, through a repeater or Everywhere).
+- A quiet **monitor speaker** on the block plays what goes out to the real radio for players standing by it (6 blocks).
 
 ### Changes
 

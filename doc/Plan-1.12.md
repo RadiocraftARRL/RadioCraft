@@ -1825,3 +1825,87 @@ entry rewritten for the square face).
 any more. A hand-mode click on the client is cancelled from `clientComputer` alone, so if the server ended the mode
 and the CPS missed the event, the first click just opens the screen (self-correcting). Handheld caller IDs are keyed
 by receive frequency, not by which handheld heard them.
+
+### Open-question fixes (2026-11-05)
+The nine changes in "Answers (maintainer, 2026-11-05, round 2)". Built: `compileJava compileTestJava compileGametestJava`
+clean (no new warning), `runData` (lang only), `test`, `runGameTestServer` and `build` (results at the end). Committed
+locally in six commits (below); nothing pushed. Website: one commit in `Radiocraft-Website`.
+
+1. **Commercial radios ship blank**: `CommercialRadioModel.factoryProgram()` is now `CommercialProgram.EMPTY` (the MURS,
+   2M CALL and LB 1-4 channels are gone). Everything that used it (new items, placed mobiles, `factoryReset`, CPS F8,
+   `/rcdebug commercial ... factory`) now gives a blank radio; CPS F8's words say "erase ... back to factory blank".
+   Tests that read "MURS 1" off a new radio now expect a blank channel; `commercialHandheldIsChannelized` programs two
+   channels first.
+2. **7.060 "Server-wide net" removed** from `BandPlan.DEFAULT_MARKERS`. `BandPlan.parse` also skips that exact line
+   (`PLACEHOLDER_MARKER`), so server configs written by the 1.12 dev builds drop it without editing; any other marker an
+   admin adds at 7.060 still shows. APRS and the rest stay.
+3. **Computer password**: `common/computer/ComputerLock` (pure: salted SHA-256, the computer id is the salt; at most 16
+   printable ASCII characters; unit test `ComputerLockTest`). Owner and hash live in the computer's disk,
+   `ComputerFileStore` (`owner`, `password` tags), so they follow the item like the files. `RadioComputerBlock.setPlacedBy`
+   -> `RadioComputerBlockEntity.claim` (only if the disk has no owner yet). `isLockedFor(player)`: password set, not
+   unlocked since opening, and not an op (permission 2). `ComputerServer.handle` refuses every request but `sys.unlock`
+   with `locked` while locked; `sys.unlock` {password} (`wrong_password`), `sys.password` {password, "" clears} (owner,
+   op, or anyone while the disk has no owner: computers placed before this, and GameTest ones, are claimed by the first
+   to set a password; `not_owner`, `bad_password`); `open` answers `password` and `owner` too. `ComputerServer.closed`
+   relocks. Client: `RadioComputerMenu` has a second data slot, `isLocked()` (per player, server side); while it is set
+   `RadioComputerScreen` draws a password box after the boot (masked `DosInput`, new `masked()`), Enter sends
+   `sys.unlock`, Escape closes, and the session does not tick; on unlock it refreshes. Shell **F8** sets/clears it
+   (`shell.keys_programs` shows F8). **Decision**: the owner is asked too (it is a password); ops bypass, and an op can
+   clear a forgotten one with F8. GameTest `RadioComputerGameTests.passwordLocksTheComputer`.
+4. **Solar/Forecast**: already tried every radio (Playtest fixes 1) and took a processor on the computer's data wire
+   or touching it. Added: `missing()` says `solar_processor_offline` when a processor is linked but has no Ionosonde
+   (new lang `err.solar_processor_offline`); Javadoc spells out the rules. GameTests `solarReadsAProcessorWithNoRadio`
+   (processor touching the computer, no radio: offline, then `source` processor) and `solarTriesEveryRadio` (a radio
+   with no antenna touching the computer does not hide the J-pole station behind the radio interface).
+5. **SSTV/WEFAX to everyone**: `PictureHandler.send(context, name)` always sends with an empty `to`, and every station
+   that hears a picture header copies it (`forUs` removed, so an addressed picture from an old build is received by
+   all too). `PictureApp.send` is a Yes/No confirm ("Everyone in range receives it"). APRS and FAX keep addressing.
+6. **Ham shacks found dark**: `tools/ham_shack_templates.py` writes the radio with `wasPowered` 0 and the large battery
+   with `energy` 0; all six templates regenerated (site and five villages). `SiteProcessor` only scales a charge above 0,
+   so they stay flat. `SiteGameTests.hamShackIsFoundDark` (was `hamShackWorks`: wired up, every radio off, every battery
+   empty) and the turned village test now check `powered=false`; `HamShackTemplatesTest` checks the NBT.
+7. **FCC badge holders marked**: `common/fcc/FccBadgeHolders` (SavedData `radiocraft_fcc_badges`): `issued` is recorded
+   by `FccGear.issueBadge` (the command); `holds(uuid)` = issued, or online and carrying/wearing (Curios,
+   `CuriosCompat.wornFccBadges`) a badge issued to them. `ComputerRequests` puts `fcc` on talker, hearer and admin
+   entries and appends `ModerationFormat.FCC_MARK` (" [FCC]") to the archive row's talker names; Live, Archive (detail
+   talkers and hearers, heard-by line) and Access show `[FCC]` after the name (`ModerationFormat.fccName`). No powers.
+   GameTest `FccGameTests.badgeHoldersAreKnown`. Gotcha: an issued badge is never "un-issued" (no revoke command); a
+   player who throws theirs away stays marked. Say if a revoke (`/radiocraft fcc revoke`) is wanted.
+8. **Real-World Interface**:
+   - Power switch: new `RadioBlockEntity.mayTogglePower(player)` (true), overridden by the interface as `mayEdit`;
+     `SBlockRadioControlPacket` refuses TOGGLE_POWER with the `op_only` message. The screen greys Power for non-ops.
+     Config comment updated.
+   - Licence click: `common/realworld/RealWorldLicences` (SavedData `radiocraft_real_world_licences`, a concurrent set;
+     the loaded instance is cached in a static for the voice thread, loaded in the block's `onLoad`). New
+     `SRealWorldInterfacePacket.Action.LICENCE`; status tag `licensed`; a full-width button under the Power row (the
+     status panel moved down 20 px, `imageHeight` 246). **Who is talking**: the sound card gets the mixed receiver
+     audio, so the check is made per frame *before* the mix: `RealWorldInterfaceBlockEntity.receiveVoice` drops an
+     `AntennaVoicePacket` whose `getSourcePlayer()` is a player who has not clicked (`RealWorldLicences.mayBridge`).
+     Every voice frame carries its speaker, and repeaters, parrots and the Everywhere path pass the original speaker on,
+     so relaying does not launder it. "A player" = online, or known to the server's profile cache; block voice ids
+     (tapes, the world's stations) are not players and pass. GameTests swap that check
+     (`setPlayerCheckForTesting`), since a FakePlayer is in neither list.
+   - Monitor speaker: `common/realworld/MonitorSpeaker`, a Simple Voice Chat locational channel at the block, 6 blocks,
+     gain 0.35, fed from `downlinkFrame` (only frames that actually go to the bridge while it is live); closed on
+     shutdown. No voice chat server: it only counts frames (`frames()`, for tests).
+   - GameTests `onlyLicensedPlayersGoOut` (new interface `GT Licence`, 147.540: nothing keys or reaches the card or the
+     monitor before the click; after it, audio reaches both) and `powerSwitchIsOpOnly`.
+9. **Website**: `tools/build_wiki.py` `sidebar()` lists `DEVELOPER_PAGES` ("modding") under a new **FOR DEVELOPERS**
+   heading (between HANDBOOK and REFERENCE) instead of BEFORE YOU PLAY; the wiki was rebuilt from this Handbook.
+
+Docs: Handbook (commercial radios, radio programmer, band plan, radio computer "Password" page, SSTV, ham shacks, FCC
+gear, Real-World Interface "Your Licence" page), release notes, NeedsTesting "1.12 open-question fixes".
+
+**Left undone / for the playtest**: everything in NeedsTesting "1.12 open-question fixes" (the password box, the RWI
+screen layout and button, `[FCC]` on the moderation screens, the monitor speaker by ear, found shacks in a new world).
+The monitor speaker and the licence gate are untested against real hardware.
+
+**Results**: `test` 582, all pass. `runGameTestServer`: first run 4 failures, all in the known timing-flaky
+`IonosphericProcessorGameTests` batch (teletype/WEFAX asks over the air, bulletin, speckle); the rerun passed all 493
+(the new and changed tests included). `build` successful. The first full run before the processor/shack/RWI tests also
+failed only `cosKeysInAndTimeoutDropsPtt` (wall-clock, known).
+
+**Commits** (RadioCraft, local only): blank commercial radios + 7.060 marker (with this plan's answers); computer
+password; solar processor / pictures to everyone / dark shacks; FCC marks; Real-World Interface; lang, generated
+lang, release notes, NeedsTesting and this handoff. Shared files (the language provider, `src/generated`, release notes,
+NeedsTesting) are all in the last commit, and `OfficeAppsGameTests` (MURS fix and solar tests) is in the third.

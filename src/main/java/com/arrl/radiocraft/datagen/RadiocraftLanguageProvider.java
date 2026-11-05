@@ -841,6 +841,18 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("err.disk_full", "Disk full: delete some files first");
 		s.accept("err.too_many_files", "Too many files on the disk: delete some first");
 		s.accept("err.not_found", "File not found");
+		s.accept("err.locked", "Type the computer's password first");
+		s.accept("err.wrong_password", "Wrong password");
+		s.accept("err.not_owner", "Only the computer's owner (who placed it) or an operator can change its password");
+		s.accept("err.bad_password", "A password is at most %s letters, digits or symbols");
+		s.accept("lock.title", "RC-DOS");
+		s.accept("lock.keys", "Enter=OK  Esc=Leave");
+		s.accept("lock.box", "Password");
+		s.accept("lock.prompt", "This computer has a password:");
+		s.accept("shell.password_title", "Password");
+		s.accept("shell.password", "New password for this computer (empty for none):");
+		s.accept("shell.password_set", "Password set: everyone is asked for it when they open the computer");
+		s.accept("shell.password_cleared", "Password removed: anyone can use the computer");
 		s.accept("err.exists", "A file with that name already exists");
 		s.accept("err.bad_contents", "That file's contents do not suit its type");
 		s.accept("err.unknown_request", "The computer does not know %s");
@@ -877,7 +889,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("shell.programs", "Programs");
 		s.accept("shell.files", "Files on C:");
 		s.accept("shell.no_files", "No files yet.");
-		s.accept("shell.keys_programs", "Enter=Run  Tab=Files  F6=Scan  Esc=Leave");
+		s.accept("shell.keys_programs", "Enter=Run  Tab=Files  F6=Scan  F8=Password  Esc=Leave");
 		s.accept("shell.keys_files", "Enter=Open  Del=Delete  F7=Rename  F5=Print  F6=Scan  Tab=Programs");
 		s.accept("shell.file_info", "%s  %s");
 		s.accept("shell.disk", "C: %s used of %s, %s files");
@@ -982,6 +994,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("err.no_radio", "No radio chosen");
 		s.accept("err.radio_gone", "That radio is no longer on the scanner's glass or wired to the computer");
 		s.accept("err.solar_no_radio", "No radio found: wire a radio to the computer or to a radio interface at it, or an Ionospheric Processor");
+		s.accept("err.solar_processor_offline", "The Ionospheric Processor is offline: put an Ionosonde Antenna on its coax");
 		s.accept("err.solar_radio_off", "The radio is switched off: turn it on to hear the solar and weather broadcasts");
 		s.accept("err.solar_no_antenna", "The radio has no antenna: connect a real antenna to its coax (a dummy load hears nothing)");
 		s.accept("err.no_such_volume", "This book has no volume %s");
@@ -1192,8 +1205,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("cps.refused_title", "Not Written");
 		s.accept("cps.refused", "The radio cannot take these channels; nothing was written:");
 		s.accept("cps.factory_title", "Factory Reset");
-		s.accept("cps.factory", "Put the %s back to its factory channels? Every channel and key on it is lost.");
-		s.accept("cps.factory_done", "The %s is back to its factory channels");
+		s.accept("cps.factory", "Erase the %s back to factory blank? Every channel and key on it is lost.");
+		s.accept("cps.factory_done", "The %s is erased, blank as from the factory");
 		s.accept("cps.read_first", "Read a radio first (F5)");
 		s.accept("cps.copied", "Channel %s copied");
 		s.accept("cps.hidden_no_copy", "A hidden key stays with its own channel: it cannot be copied");
@@ -1376,7 +1389,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("sstv.keys", "F3=Send  F4=Caption  F5=Print  F6=Scan  Del=Delete  L=Live  Esc=Exit");
 		s.accept("sstv.listening", "Listening for pictures to all or to us.");
 		s.accept("sstv.send_title", "Send by SSTV");
-		s.accept("sstv.send_hint", "Send %s to which callsign? Leave it empty for everyone.");
+		s.accept("sstv.send_hint", "Send %s on the air? Everyone in range receives it.");
 		s.accept("sstv.sending", "Sending %s: about half a minute on the air");
 		s.accept("sstv.caption_title", "Caption");
 		s.accept("sstv.caption_hint", "Text along the top and the bottom, in capitals. The captioned picture is saved as a new file.");
@@ -1389,7 +1402,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("wefax.keys", "F3=Send  F4=WX REPT  F5=Print  F7=Chart  Del=Delete  L=Live  Esc=Exit");
 		s.accept("wefax.listening", "Listening for charts and solar bulletins.");
 		s.accept("wefax.send_title", "Send as WEFAX");
-		s.accept("wefax.send_hint", "Send %s as a weather chart to which callsign? Leave it empty for everyone.");
+		s.accept("wefax.send_hint", "Send %s on the air as a weather chart? Everyone in range receives it.");
 		s.accept("wefax.sending", "Sending %s as a chart: it takes as long as a fax sheet");
 		s.accept("wefax.wxrept_started", "Coast station: the radar chart, then the forecast");
 		s.accept("wefax.chart_title", "Chart");
@@ -1680,8 +1693,11 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("lamp.power", "ON");
 		s.accept("level.in", "In");
 		s.accept("level.out", "Out");
+		s.accept("licence", "I hold an amateur licence and will give my own callsign");
+		s.accept("licence.done", "Licence acknowledged: your voice can go out");
+		s.accept("licence.tooltip", "Click once (for every interface on this server). Until you do, nothing you say on the air goes out through a Real-World Interface.");
 		java.util.function.BiConsumer<String, String> m = (key, text) -> provider.add(Radiocraft.translationKey("message", "real_world_interface." + key), text);
-		m.accept("op_only", "Only an operator can change a Real-World Interface");
+		m.accept("op_only", "Only an operator can change or switch a Real-World Interface");
 		m.accept("disabled", "The Real-World Interface is turned off in the server config");
 		m.accept("unknown", "No interface named %s in the server config");
 		m.accept("in_use", "%s is in use by the interface at %s");

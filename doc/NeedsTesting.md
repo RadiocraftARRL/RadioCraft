@@ -8,6 +8,38 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 open-question fixes (added 2026-11-05)
+
+Data already regenerated (`runData`); restart the client (lang, packets, screen layout, structure templates).
+
+- [ ] Commercial radios ship blank: a new Basic/Upgraded handheld, Commercial Mobile and Low Band Mobile from the
+  creative tab have no channels (the display and handheld screen show a blank/dead position, no receive, no TX).
+  Program one with CPS and it works. CPS F8 asks to "erase ... back to factory blank" and leaves it empty.
+- [ ] Band Plan Sheet and BANDPLAN: no "Server-wide net" tick at 7.060 any more (an old server config that still has
+  the line drops it too); APRS 144.390 and the other markers are still there.
+- [ ] Radio computer password: in the shell the key bar shows `F8=Password`; F8 asks for a new password (typed as
+  stars). Close and reopen the computer: after the boot it shows a "Password" box; a wrong one says "Wrong password"
+  and clears the field; the right one opens the shell where you left it. Escape on the box closes the screen. The
+  monitor in the world shows the password box while someone is at it. An operator is never asked. A second
+  (non-op) player who did not place it gets "Only the computer's owner ..." when they press F8. F8 with an empty
+  field removes the password. Break and replace the computer: still asks.
+- [ ] Solar Weather with an Ionospheric Processor touching the computer (Ionosonde on its coax) and no radio: works,
+  source "processor". With no Ionosonde yet it says the processor is offline.
+- [ ] SSTV and WEFAX: F-key send asks "Send NAME on the air? Everyone in range receives it." (Yes/No), no callsign box;
+  a second computer in range receives it.
+- [ ] Find a new ham shack (`/locate structure radiocraft:ham_shack`, and a village one): the radio is off and the
+  large battery empty; charging the battery (or a new power line) and switching on brings it up on 146.520.
+- [ ] Moderation computer: a player issued a badge (`/radiocraft fcc badge <player>`) shows `[FCC]` after their name in
+  Live (talker), Archive (talkers column, detail talkers and hearers) and Access (admins).
+- [ ] Real-World Interface screen: a full-width "I hold an amateur licence and will give my own callsign" button
+  under the Power row (tooltip explains); after a click it greys out as "Licence acknowledged: your voice can go out"
+  and stays so after reopening and relogging. The status panel, lamps and meters moved down a row and still line up.
+- [ ] Real-World Interface, op only (default): a non-op's Power button is greyed, and a forced press says "Only an
+  operator can change or switch a Real-World Interface". An op can switch it.
+- [ ] Real-World Interface audio (real hardware): a player who has not clicked the licence button talks on a station in
+  range: nothing keys the real radio. After the click it does. Standing within 6 blocks of the block you hear what goes
+  out to the real radio quietly from the block (the monitor speaker); further away nothing.
+
 ## 1.12 playtest fixes 2: MARS recipe hidden, Radio Cloner, CPS by hand, unit IDs, ADS-B display (added 2026-11-05)
 
 Data already regenerated (`runData`); restart the client (new item, packet, lang, recipe, models).
