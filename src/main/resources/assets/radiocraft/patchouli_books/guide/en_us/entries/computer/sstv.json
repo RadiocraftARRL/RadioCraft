@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "$(thing)Slow-scan television$() sends a picture, in colour, to everyone listening (or to one callsign) in about half a minute. The $(item)SSTV$() program does it through a radio interface cabled to the computer, on any band.$(br2)A picture coming in builds up line by line on the left. Lines that arrive while the radio cannot copy the signal come out as noise, so a weak or fading signal gives a torn picture, as on the air."
+      "text": "$(thing)Slow-scan television$() sends a picture, in colour, to everyone listening in about half a minute: there is no addressing, every station in range gets it. The $(item)SSTV$() program does it through a radio interface cabled to the computer, on any band.$(br2)A picture coming in builds up line by line on the left. Lines that arrive while the radio cannot copy the signal come out as noise, so a weak or fading signal gives a torn picture, as on the air."
     },
     {
       "type": "patchouli:text",

@@ -29,8 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The server side the SSTV and WEFAX programs share (1.12 step 7): pictures broadcast over the radio, to everyone (or
- * one callsign), through the radio interfaces on the computer's bus. A picture goes out as a file packet
+ * The server side the SSTV and WEFAX programs share (1.12 step 7): pictures broadcast over the radio to everyone in
+ * range (no callsign addressing, as real SSTV and weather fax), through the radio interfaces on the computer's bus. A picture goes out as a file packet
  * ({@link TncPacket#file}) carrying a radio computer's picture ({@link FileTransfer#image}): the radio sends its header
  * as the tones start, the tones (SSTV or weather fax), then the packet. A computer that hears the header shows the
  * picture coming in line by line ({@link PictureReception}: noise where its radios stop copying the signal) and keeps it
@@ -39,7 +39,7 @@ import java.util.List;
  * <li>{@code status}: the station ({@link RadioStation#status}), {@code receiving} (with {@code from}, {@code label},
  * {@code rows}, {@code lost}, {@code pixels} while a picture comes in) and {@code received} (each {@code name},
  * {@code from}, {@code label}, {@code utc}, {@code lost}), plus what the program adds ({@link #addStatus}).</li>
- * <li>{@code send} ({@code name} of an {@code .IMG}, {@code to}: a callsign, or empty for everyone).</li>
+ * <li>{@code send} ({@code name} of an {@code .IMG}): to everyone in range.</li>
  * <li>{@code forget} ({@code name}: off the list of pictures received).</li>
  * </ul>
  * Events to the screens: {@code rx} (a picture coming in, now and then while it does: {@code from}, {@code label},
@@ -176,7 +176,7 @@ public abstract class PictureHandler implements ComputerAppHandler {
 				reply.ok(out);
 			}
 			case "send" -> {
-				String problem = send(context, data.getString("name"), data.getString("to"));
+				String problem = send(context, data.getString("name"));
 				if(problem == null)
 					reply.ok();
 				else
@@ -202,9 +202,9 @@ public abstract class PictureHandler implements ComputerAppHandler {
 		out.putByteArray("pixels", reception.shown());
 	}
 
-	/** Sends the picture {@code name} to {@code to} (empty for everyone); null if it went, else an error key. */
+	/** Sends the picture {@code name} to everyone in range; null if it went, else an error key. */
 	@Nullable
-	protected String send(ComputerContext context, String name, String to) {
+	protected String send(ComputerContext context, String name) {
 		String file = ComputerStorage.normalise(name);
 		byte[] pixels = file == null ? null : context.files().read(file);
 		if(pixels == null || !ComputerFileFormats.isImage(pixels))
@@ -213,8 +213,7 @@ public abstract class PictureHandler implements ComputerAppHandler {
 		String problem = RadioStation.cannotSend(bus);
 		if(problem != null)
 			return problem;
-		String target = TncPacket.sanitizeCallsign(to);
-		TncPacket packet = TncPacket.file(RadioStation.newId(context.level()), bus.callsign(), TncPacket.isForEveryone(target) ? "" : target,
+		TncPacket packet = TncPacket.file(RadioStation.newId(context.level()), bus.callsign(), "",
 				FileTransfer.image(outgoing(pixels), file.substring(0, file.indexOf('.')), mode()));
 		return RadioStation.transmit(context.computer(), bus, packet) ? null : "station_no_radio";
 	}
@@ -226,7 +225,7 @@ public abstract class PictureHandler implements ComputerAppHandler {
 		if(!(computer.getLevel() instanceof ServerLevel level))
 			return;
 		State state = state(computer);
-		if(packet.kind() == TncPacket.Kind.FILE_HEADER && wants(packet) && forUs(computer, packet)) {
+		if(packet.kind() == TncPacket.Kind.FILE_HEADER && wants(packet)) { // Every station in range copies a picture.
 			byte[] pixels = FileTransfer.imagePixels(packet.item(), level);
 			if(pixels != null)
 				start(computer, state, packet.id(), packet.from(), packet.text(), outgoing(pixels), level.getGameTime(), airTicks(), false);
@@ -237,10 +236,6 @@ public abstract class PictureHandler implements ComputerAppHandler {
 		}
 		else
 			receiveMore(computer, state, packet);
-	}
-
-	private static boolean forUs(RadioComputerBlockEntity computer, TncPacket packet) {
-		return TncPacket.isForEveryone(packet.to()) || RadioStation.bus(computer).isFor(packet.to());
 	}
 
 	/**

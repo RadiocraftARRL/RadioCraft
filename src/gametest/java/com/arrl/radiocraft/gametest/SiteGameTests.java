@@ -71,6 +71,11 @@ public class SiteGameTests {
 
 	/** Puts site {@code name} down with all its parts and waits for every station in it to be working. */
 	private static void siteWorks(GameTestHelper helper, String name, boolean powered) {
+		siteWorks(helper, name, powered, false);
+	}
+
+	/** {@link #siteWorks}, and with {@code dark} every radio in it off and every battery flat as well. */
+	private static void siteWorks(GameTestHelper helper, String name, boolean powered, boolean dark) {
 		ServerLevel level = helper.getLevel();
 		level.setDayTime(6000L); // Noon.
 		BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
@@ -81,6 +86,8 @@ public class SiteGameTests {
 		helper.succeedWhen(() -> {
 			SiteCheck.Report report = SiteCheck.check(level, origin, far, powered);
 			helper.assertTrue(report.problems().isEmpty(), name + ": " + String.join("; ", report.problems()));
+			if(dark)
+				assertDark(helper, origin, size);
 		});
 	}
 
@@ -114,9 +121,21 @@ public class SiteGameTests {
 		siteWorks(helper, "long_lines", true);
 	}
 
+	/** Found dark (maintainer, 2026-11-05): wired up, but the battery flat and the radio off, like the buried site. */
 	@GameTest(template = SITE, batch = SITES_BATCH, timeoutTicks = 200)
-	public static void hamShackWorks(GameTestHelper helper) {
-		siteWorks(helper, "ham_shack", true);
+	public static void hamShackIsFoundDark(GameTestHelper helper) {
+		siteWorks(helper, "ham_shack", false, true);
+	}
+
+	/** Every radio in the box from {@code origin} of {@code size} is off and every battery empty. */
+	private static void assertDark(GameTestHelper helper, BlockPos origin, Vec3i size) {
+		for(BlockPos at : BlockPos.betweenClosed(origin, origin.offset(size.getX() - 1, size.getY() - 1, size.getZ() - 1))) {
+			net.minecraft.world.level.block.entity.BlockEntity be = helper.getLevel().getBlockEntity(at);
+			if(be instanceof com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity radio)
+				helper.assertFalse(radio.isPowered(), "a radio was found on at " + at.toShortString());
+			if(com.arrl.radiocraft.api.capabilities.IBENetworks.getObject(helper.getLevel(), at) instanceof com.arrl.radiocraft.common.be_networks.network_objects.BatteryNetworkObject battery)
+				helper.assertTrue(battery.getStorage().getEnergyStored() == 0, "a battery was found charged at " + at.toShortString());
+		}
 	}
 
 	/**
@@ -147,7 +166,7 @@ public class SiteGameTests {
 		helper.succeedWhen(() -> {
 			for(int i = 0; i < boxes.size(); i++) {
 				BoundingBox box = boxes.get(i);
-				SiteCheck.Report report = SiteCheck.check(level, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), true);
+				SiteCheck.Report report = SiteCheck.check(level, new BlockPos(box.minX(), box.minY(), box.minZ()), new BlockPos(box.maxX(), box.maxY(), box.maxZ()), false);
 				helper.assertTrue(report.problems().isEmpty(), turns[i] + ": " + String.join("; ", report.problems()));
 			}
 		});

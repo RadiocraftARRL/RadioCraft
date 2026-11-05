@@ -14,11 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * The ham shack templates (1.12 step 8, written by {@code tools/ham_shack_templates.py}): the standalone site and the
- * five village houses each have the station (radio on 146.520 MHz, its J-pole, battery, computer and monitor) and the
+ * five village houses each have the station (radio on 146.520 MHz but off, its J-pole, a flat battery, computer and monitor) and the
  * chest with the shack's loot; the village ones join a street by a doorstep jigsaw on their south edge, the site has
  * none. Reads the files as NBT; nothing of the game is started.
  */
@@ -53,9 +54,11 @@ class HamShackTemplatesTest {
 		List<Block> radios = named(blocks, "radiocraft:vhf_base_station");
 		assertEquals(1, radios.size(), name + " radios");
 		assertEquals(146.52e6F, radios.getFirst().nbt().getFloat("frequency"), 1.0F, name);
-		assertTrue(radios.getFirst().nbt().getBoolean("wasPowered"), name + ": the radio is off");
+		assertFalse(radios.getFirst().nbt().getBoolean("wasPowered"), name + ": a found shack's radio is on");
 		assertEquals(2, named(blocks, "radiocraft:j_pole_antenna").size(), name + ": J-pole halves");
-		assertEquals(1, named(blocks, "radiocraft:large_battery").size(), name);
+		List<Block> batteries = named(blocks, "radiocraft:large_battery");
+		assertEquals(1, batteries.size(), name);
+		assertEquals(0, batteries.getFirst().nbt().getInt("energy"), name + ": a found shack's battery is charged");
 		Block computer = named(blocks, "radiocraft:radio_computer").getFirst();
 		Block monitor = named(blocks, "radiocraft:computer_monitor").getFirst();
 		assertTrue(monitor.x() == computer.x() && monitor.z() == computer.z() && monitor.y() == computer.y() + 1, name + ": the monitor is not on the computer");

@@ -6,13 +6,11 @@ import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
-import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerFileFormats;
 import com.arrl.radiocraft.common.photo.PhotoImage;
-import com.arrl.radiocraft.common.radio.data.TncPacket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -194,16 +192,14 @@ public abstract class PictureApp extends DosApp {
 
 	// -------------------- ACTIONS --------------------
 
-	/** Sends the picture picked, to a callsign or (empty) everyone. */
+	/** Sends the picture picked, to everyone in range (after a yes). */
 	protected void send() {
 		String name = selectedName();
 		if(name == null)
 			return;
-		DosInput to = new DosInput("", TncPacket.CALLSIGN_MAX, c -> Character.isLetterOrDigit(c) && c < 128 || c == '-' || c == '/');
-		showDialog(DosDialog.ask(Dos.tr(words() + ".send_title"), Dos.tr(words() + ".send_hint", name), to, value -> {
+		showDialog(DosDialog.confirm(Dos.tr(words() + ".send_title"), Dos.tr(words() + ".send_hint", name), () -> {
 			CompoundTag data = new CompoundTag();
 			data.putString("name", name);
-			data.putString("to", value);
 			session.app(app, "send", data, response -> {
 				if(response.ok())
 					session.message(Dos.tr(words() + ".sending", name), false);

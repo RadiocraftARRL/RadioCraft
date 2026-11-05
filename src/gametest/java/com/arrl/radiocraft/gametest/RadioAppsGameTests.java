@@ -272,7 +272,6 @@ public class RadioAppsGameTests {
 				.thenExecute(() -> {
 					CompoundTag send = new CompoundTag();
 					send.putString("name", "PIC.IMG");
-					send.putString("to", "");
 					CompoundTag reply = app(a, player, ComputerApps.SSTV, "send", send);
 					helper.assertFalse(reply.contains("error"), "A could not send: " + reply);
 				})

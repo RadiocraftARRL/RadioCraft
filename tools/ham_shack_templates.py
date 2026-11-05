@@ -2,8 +2,8 @@
 
     python tools/ham_shack_templates.py
 
-A small timber house: a VHF base station on 146.520 MHz with a J-pole on the roof (coax straight up the north wall),
-a large battery on wire, a radio computer with its monitor, a chest of radio parts (radiocraft:chests/ham_shack, with
+A small timber house, found dark like the buried site: a VHF base station on 146.520 MHz, switched off, with a J-pole
+on the roof (coax straight up the north wall), a flat large battery on wire, a radio computer with its monitor, a chest of radio parts (radiocraft:chests/ham_shack, with
 a chance of a secret floppy disk), a bed and a chair. Two kinds of template come out:
 
 * data/radiocraft/structure/sites/ham_shack.nbt: the standalone radio site (SiteStructure, never rotated), with a
@@ -130,7 +130,7 @@ def wire_props(north=False, east=False, south=False, west=False, up=False, down=
 
 def radio_nbt(hz):
     return {'id': 'radiocraft:vhf_base_station', 'antennaSWR': double(0.0), 'ctcssTone': flt(0.0), 'ssbEnabled': byte(1),
-            'wasPowered': byte(1), 'micGain': flt(1.0), 'frequency': flt(hz), 'speakerGain': flt(1.0), 'coaxShared': byte(0),
+            'wasPowered': byte(0), 'micGain': flt(1.0), 'frequency': flt(hz), 'speakerGain': flt(1.0), 'coaxShared': byte(0),
             'offsetHz': 0, 'band': '2m'}
 
 
@@ -175,7 +175,8 @@ def house(t, ox, oz, biome):
     t.set(X(5), 3, Z(3), 'minecraft:lantern', {'hanging': True, 'waterlogged': False})
 
     # The station along the north wall: battery, radio, computer and monitor, chest.
-    t.set(X(1), 1, Z(1), 'radiocraft:large_battery', {'facing': 'south'}, {'id': 'radiocraft:large_battery', 'energy': 120000})
+    # Found dark (maintainer, 2026-11-05): the battery flat and the radio off, as at the buried site.
+    t.set(X(1), 1, Z(1), 'radiocraft:large_battery', {'facing': 'south'}, {'id': 'radiocraft:large_battery', 'energy': 0})
     t.set(X(2), 1, Z(1), 'radiocraft:vhf_base_station', {'facing': 'south', 'ceiling': False, 'blown': False}, radio_nbt(146520000.0))
     # Power: a wire along the front of the desk, from the battery to the radio.
     t.set(X(1), 1, Z(2), 'radiocraft:wire', wire_props(north=True, east=True))

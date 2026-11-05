@@ -35,10 +35,11 @@ import java.util.List;
 /**
  * The solar weather program's server side (1.12 step 6): the solar weather and band conditions, and the weather
  * forecast, read where the computer is. Like the Teletype's SOLAR WX it needs a way to hear them (unless the server's
- * {@code solar_weather_station_needs_radio} is off): an online Ionospheric Processor wired to the computer or beside
- * one of its radios, or else a powered radio with a real antenna, copying the WWV-style geophysical alert and weather
- * broadcasts. Radios count wired to the computer or on a radio interface of its station ({@link #radios}). Without
- * either it answers an error saying what is missing ({@link #missing}).
+ * {@code solar_weather_station_needs_radio} is off): an online Ionospheric Processor touching the computer or on its
+ * data wire (no radio needed), or beside one of its radios; or else a powered radio with a real antenna, copying the
+ * WWV-style geophysical alert and weather broadcasts. Every radio it reaches is tried in turn, not just the first:
+ * those touching it or on its data wire, and those on a radio interface of its station ({@link #radios}). Without any
+ * it answers an error saying what is missing ({@link #missing}).
  * <ul>
  * <li>{@code solar}: {@code source} (direct, processor or radio) and {@code via}; {@code event} (the event's id path,
  * "" for none), {@code level} (1 blackout to 6 great), {@code noise} (percent), {@code day}, {@code minutesLeft};
@@ -111,13 +112,14 @@ public final class SolarWeatherHandler implements ComputerAppHandler {
 
 	/**
 	 * Why {@link #receiver} found nothing, as an error key: {@code solar_no_radio} (no radio and no online processor
-	 * reachable), {@code solar_radio_off} (radios, none switched on) or {@code solar_no_antenna} (a radio on, but only
+	 * reachable), {@code solar_processor_offline} (a processor wired to the computer but no Ionosonde on its coax, and
+	 * no radio), {@code solar_radio_off} (radios, none switched on) or {@code solar_no_antenna} (a radio on, but only
 	 * a dummy load or nothing on its coax).
 	 */
 	public static String missing(ComputerContext context) {
 		List<RadioBlockEntity> radios = radios(context);
 		if(radios.isEmpty())
-			return "solar_no_radio";
+			return context.linked(IonosphericProcessorBlockEntity.class).isEmpty() ? "solar_no_radio" : "solar_processor_offline";
 		for(RadioBlockEntity radio : radios)
 			if(radio.isPowered())
 				return "solar_no_antenna";

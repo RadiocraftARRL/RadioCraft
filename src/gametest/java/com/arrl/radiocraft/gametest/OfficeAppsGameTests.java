@@ -264,7 +264,7 @@ public class OfficeAppsGameTests {
 		helper.assertTrue(mobile.program().channel(1).isBlank(), "the rest was not cleared");
 
 		app(computer, player, ComputerApps.PROGRAMMER, "factory", radio(id));
-		helper.assertTrue(mobile.program().channel(0).name().equals("MURS 1"), "factory reset left " + mobile.program().channel(0));
+		helper.assertTrue(mobile.program().channel(0).isBlank(), "factory reset left " + mobile.program().channel(0));
 		helper.assertTrue(error(app(computer, player, ComputerApps.PROGRAMMER, "read", radio("pos:12345"))).equals("radio_gone"), "read a radio the computer does not reach");
 		helper.succeed();
 	}
@@ -372,6 +372,65 @@ public class OfficeAppsGameTests {
 	@AfterBatch(batch = SOLAR_RADIO_BATCH)
 	public static void restoreSolarNeedsRadio(ServerLevel level) {
 		RadiocraftServerConfig.TELETYPE_NEEDS_RADIO.set(solarNeededRadio);
+	}
+
+	/**
+	 * An Ionospheric Processor touching the computer is enough, with no radio at all (maintainer, 2026-11-05): offline
+	 * (no Ionosonde yet) it says so; once its Ionosonde is up the program reads the sky through it.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = SOLAR_RADIO_BATCH)
+	public static void solarReadsAProcessorWithNoRadio(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper, ComputerApps.SOLAR_WEATHER);
+		FakePlayer player = player(helper, "solarproc");
+		BlockPos lower = COMPUTER.west();
+		helper.setBlock(lower, RadiocraftBlocks.IONOSPHERIC_PROCESSOR.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.IonosphericProcessorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+		helper.setBlock(lower.above(), RadiocraftBlocks.IONOSPHERIC_PROCESSOR.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.IonosphericProcessorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+		String offline = error(app(computer, player, ComputerApps.SOLAR_WEATHER, "solar", new CompoundTag()));
+		helper.assertTrue(offline.equals("solar_processor_offline"), "a processor with no Ionosonde should say so, got '" + offline + "'");
+		GameTestUtil.placeWire(helper, lower.west(), RadiocraftBlocks.COAX_WIRE.get());
+		BlockPos mast = lower.west(2);
+		helper.setBlock(mast, RadiocraftBlocks.IONOSONDE.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.antennas.DoubleVHFAntennaBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+		helper.setBlock(mast.above(), RadiocraftBlocks.IONOSONDE.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.antennas.DoubleVHFAntennaBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+		helper.succeedWhen(() -> {
+			CompoundTag solar = app(computer, player, ComputerApps.SOLAR_WEATHER, "solar", new CompoundTag());
+			helper.assertFalse(solar.contains("error"), "the processor was not used: " + solar);
+			helper.assertTrue(solar.getCompound("data").getString("source").equals("processor"), "source " + solar.getCompound("data").getString("source"));
+		});
+	}
+
+	/**
+	 * Every radio the computer reaches is tried, not just the nearest: a radio touching the computer with no antenna
+	 * does not hide the station's VHF radio with a J-pole behind the radio interface.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 60, batch = SOLAR_RADIO_BATCH)
+	public static void solarTriesEveryRadio(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper, ComputerApps.SOLAR_WEATHER);
+		FakePlayer player = player(helper, "solarall");
+		BlockPos bare = COMPUTER.west();
+		BlockPos radioInterface = COMPUTER.east();
+		BlockPos radio = radioInterface.east();
+		helper.setBlock(bare, RadiocraftBlocks.VHF_BASE_STATION.get());
+		helper.setBlock(radioInterface, RadiocraftBlocks.RADIO_INTERFACE.get());
+		GameTestUtil.radioWithJPole(helper, radio);
+		helper.startSequence()
+				.thenIdle(3)
+				.thenExecute(() -> {
+					GameTestUtil.blockEntity(helper, radioInterface, RadioInterfaceBlockEntity.class).setCallsign("W1ALL", "gametest");
+					for(BlockPos at : List.of(bare, radio))
+						if(!GameTestUtil.networkObject(helper, at, RadioNetworkObject.class).isPowered)
+							GameTestUtil.blockEntity(helper, at, RadioBlockEntity.class).toggle();
+				})
+				.thenIdle(4)
+				.thenExecute(() -> {
+					CompoundTag solar = app(computer, player, ComputerApps.SOLAR_WEATHER, "solar", new CompoundTag());
+					helper.assertFalse(solar.contains("error"), "only the first radio was tried: " + solar);
+					helper.assertTrue(solar.getCompound("data").getString("source").equals("radio"), "source " + solar.getCompound("data").getString("source"));
+				})
+				.thenSucceed();
 	}
 
 	/**
