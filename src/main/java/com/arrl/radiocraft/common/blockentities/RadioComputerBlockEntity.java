@@ -128,6 +128,41 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		return ComputerFileStore.of(server.getServer(), getComputerId());
 	}
 
+	// -------------------- OWNER AND PASSWORD --------------------
+
+	/** Players who typed the password since they opened the screen (server; forgotten when they close it). */
+	private final Set<UUID> unlocked = new HashSet<>();
+
+	/** {@code player} placed it: they own it, unless its disk already has an owner (placed again after breaking). */
+	public void claim(Player player) {
+		if(level instanceof ServerLevel && files().owner() == null)
+			files().setOwner(player.getUUID());
+	}
+
+	/** True if {@code player} may set or clear the password: its owner, an operator, or anyone while it has no owner. */
+	public boolean mayChangePassword(ServerPlayer player) {
+		UUID owner = files().owner();
+		return owner == null || owner.equals(player.getUUID()) || player.hasPermissions(2);
+	}
+
+	/** True if {@code player} must type the password before using it (operators never do). Server. */
+	public boolean isLockedFor(ServerPlayer player) {
+		return level instanceof ServerLevel && !unlocked.contains(player.getUUID()) && !player.hasPermissions(2) && files().hasPassword();
+	}
+
+	/** {@code player} types {@code password}: true (and unlocked until they close the screen) if it is right. */
+	public boolean unlock(ServerPlayer player, String password) {
+		if(!files().checkPassword(getComputerId(), password))
+			return false;
+		unlocked.add(player.getUUID());
+		return true;
+	}
+
+	/** {@code player} left the screen: they are asked again next time. */
+	public void relock(UUID player) {
+		unlocked.remove(player);
+	}
+
 	// -------------------- POWER --------------------
 
 	@Override
@@ -475,7 +510,7 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	@Override
 	public @Nullable AbstractContainerMenu createMenu(int id, @NotNull Inventory inventory, @NotNull Player player) {
-		return new RadioComputerMenu(id, this, monitorPos());
+		return new RadioComputerMenu(id, this, monitorPos(), player);
 	}
 
 	// -------------------- SAVE AND ITEM --------------------

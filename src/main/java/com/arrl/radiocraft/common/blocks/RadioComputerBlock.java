@@ -62,6 +62,14 @@ public class RadioComputerBlock extends BaseEntityBlock {
 		return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
 	}
 
+	/** Whoever places it first owns it: they may set its password from the shell. */
+	@Override
+	public void setPlacedBy(@NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState state, @Nullable net.minecraft.world.entity.LivingEntity placer, @NotNull ItemStack stack) {
+		super.setPlacedBy(level, pos, state, placer, stack);
+		if(!level.isClientSide && placer instanceof Player player && level.getBlockEntity(pos) instanceof RadioComputerBlockEntity computer)
+			computer.claim(player);
+	}
+
 	/** {@code message.radiocraft.computer.<key>}. */
 	static MutableComponent message(String key, Object... args) {
 		return Component.translatable(Radiocraft.translationKey("message", "computer." + key), args);

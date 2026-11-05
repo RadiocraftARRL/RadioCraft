@@ -15,6 +15,7 @@ public final class DosInput {
 	private final Predicate<Character> allowed;
 	private int cursor = 0;
 	private int scroll = 0;
+	private boolean masked = false;
 
 	/** A field taking up to {@code maxLength} characters that {@code allowed} lets through (and {@link Dos#typeable}). */
 	public DosInput(String initial, int maxLength, Predicate<Character> allowed) {
@@ -30,6 +31,12 @@ public final class DosInput {
 	/** A field for a DOS file name: letters, digits, {@code _ - .}, upper case. */
 	public static DosInput fileName(String initial) {
 		return new DosInput(initial, 12, c -> Character.isLetterOrDigit(c) && c < 128 || c == '_' || c == '-' || c == '.');
+	}
+
+	/** Shows stars instead of the text (a password). */
+	public DosInput masked() {
+		masked = true;
+		return this;
 	}
 
 	public String text() {
@@ -81,7 +88,8 @@ public final class DosInput {
 			scroll = cursor;
 		if(cursor - scroll >= width)
 			scroll = cursor - width + 1;
-		g.putField(col, row, text.substring(Math.min(scroll, text.length())), width, DosColours.FIELD_FG, DosColours.FIELD_BG);
+		String shown = masked ? "*".repeat(text.length()) : text.toString();
+		g.putField(col, row, shown.substring(Math.min(scroll, shown.length())), width, DosColours.FIELD_FG, DosColours.FIELD_BG);
 		if(focused)
 			g.cursor(col + cursor - scroll, row);
 	}

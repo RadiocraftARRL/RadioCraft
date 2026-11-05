@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The radio computer's screen (1.12 step 5). No slots: the screen asks for everything with
@@ -29,8 +30,14 @@ public final class RadioComputerMenu extends AbstractContainerMenu implements St
 
 	/** 1 while the computer has no power (0, the client's start value, shows it powered until told otherwise). */
 	private final DataSlot starved;
+	/** 1 while this player must type the computer's password (1.12 open-question fixes). */
+	private final DataSlot locked;
 
 	public RadioComputerMenu(int id, RadioComputerBlockEntity computer, BlockPos monitor) {
+		this(id, computer, monitor, null);
+	}
+
+	public RadioComputerMenu(int id, RadioComputerBlockEntity computer, BlockPos monitor, @Nullable Player player) {
 		super(RadiocraftMenuTypes.RADIO_COMPUTER.get(), id);
 		this.computer = computer;
 		this.monitor = monitor.immutable();
@@ -46,6 +53,23 @@ public final class RadioComputerMenu extends AbstractContainerMenu implements St
 			});
 		else
 			starved = addDataSlot(DataSlot.standalone());
+		if(player instanceof ServerPlayer serverPlayer)
+			locked = addDataSlot(new DataSlot() {
+				@Override
+				public int get() {
+					return computer.isLockedFor(serverPlayer) ? 1 : 0;
+				}
+
+				@Override
+				public void set(int value) {}
+			});
+		else
+			locked = addDataSlot(DataSlot.standalone());
+	}
+
+	/** True while the player at it must type its password first (both sides; the client's copy comes from the server). */
+	public boolean isLocked() {
+		return locked.get() != 0;
 	}
 
 	/** True while the computer runs (both sides; the client's copy comes from the server). */

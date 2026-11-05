@@ -18,6 +18,11 @@
       "text": "Run a $(l:radiocraft:power/wire)power wire$() to the computer from a battery or solar panel. It draws 8 FE/t while it is in use, about what an HF radio draws listening: while someone sits at it, and all the time when a program that works in the background is installed (APRS, fax, pictures).$(br2)With no power the screen goes dark, those programs stop and it hears nothing. When power comes back it boots again."
     },
     {
+      "type": "patchouli:text",
+      "title": "Password",
+      "text": "Whoever places the computer owns it. In the shell, $(thing)F8$() sets a password (up to 16 characters; leave it empty to remove it). From then on everyone who sits at the computer types it first, you too, and nothing on it can be read until they do. Server operators are never asked.$(br2)The password stays with the computer when it is broken and placed again, like its files."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "radiocraft:radio_computer",
       "recipe2": "radiocraft:computer_monitor"

@@ -194,6 +194,36 @@ public class RadioComputerGameTests {
 		helper.succeed();
 	}
 
+	/**
+	 * The owner (who placed it) sets a password; anyone else is then refused everything until they type it, and asked
+	 * again after closing the screen. Only the owner can change it; "" removes it.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void passwordLocksTheComputer(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper);
+		FakePlayer owner = player(helper, "owner"), guest = player(helper, "guest");
+		helper.assertFalse(guest.hasPermissions(2), "the guest is an operator: the test cannot check the lock");
+		computer.claim(owner);
+		helper.assertTrue(error(call(computer, guest, "sys.password", with("password", "x"))).equals("not_owner"), "a guest set the password");
+		helper.assertTrue(error(call(computer, owner, "sys.password", with("password", "x".repeat(17)))).equals("bad_password"), "a 17-character password");
+		helper.assertFalse(call(computer, owner, "sys.password", with("password", "hunter2")).contains("error"), "the owner could not set it");
+
+		helper.assertTrue(computer.isLockedFor(guest) && computer.isLockedFor(owner), "a password asks everyone, owner too");
+		helper.assertTrue(error(call(computer, guest, "open", new CompoundTag())).equals("locked"), "opened without the password");
+		helper.assertTrue(error(call(computer, guest, "fs.list", with("ext", ""))).equals("locked"), "listed files without the password");
+		helper.assertTrue(error(call(computer, guest, "sys.unlock", with("password", "hunter3"))).equals("wrong_password"), "a wrong password opened it");
+		helper.assertFalse(call(computer, guest, "sys.unlock", with("password", "hunter2")).contains("error"), "the right password did not open it");
+		helper.assertFalse(call(computer, guest, "open", new CompoundTag()).contains("error"), "still locked after the password");
+		ComputerServer.closed(computer, guest);
+		helper.assertTrue(computer.isLockedFor(guest), "closing the screen did not lock it again");
+
+		helper.assertFalse(call(computer, owner, "sys.unlock", with("password", "hunter2")).contains("error"), "the owner's password");
+		CompoundTag cleared = call(computer, owner, "sys.password", with("password", ""));
+		helper.assertTrue(!cleared.contains("error") && !cleared.getCompound("data").getBoolean("password"), "cleared: " + cleared);
+		helper.assertFalse(computer.isLockedFor(guest), "no password, still locked");
+		helper.succeed();
+	}
+
 	private static CompoundTag inSlot(int slot) {
 		CompoundTag tag = new CompoundTag();
 		tag.putInt("slot", slot);

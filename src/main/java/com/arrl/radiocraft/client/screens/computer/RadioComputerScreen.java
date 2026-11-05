@@ -39,6 +39,10 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 	private boolean started = false;
 	/** Whether the computer had power last tick: when it comes back the computer boots again. */
 	private boolean wasPowered = true;
+	/** The password prompt's field, while the computer asks this player for its password ({@link RadioComputerMenu#isLocked}). */
+	private final DosInput passwordField = new DosInput("", com.arrl.radiocraft.common.computer.ComputerLock.MAX_LENGTH).masked();
+	private String lockMessage = "";
+	private boolean wasLocked = false;
 
 	public RadioComputerScreen(RadioComputerMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
@@ -95,6 +99,12 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		wasPowered = powered;
 		if(!powered)
 			return;
+		boolean locked = menu.isLocked();
+		if(wasLocked && !locked) // Password typed: the programs carry on.
+			session.refresh();
+		wasLocked = locked;
+		if(locked)
+			return;
 		if(boot == null || !boot.running())
 			session.tick();
 	}
@@ -117,6 +127,8 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		}
 		else if(boot != null && boot.running())
 			boot.render(grid, session.serial(), Dos.drive(session));
+		else if(menu.isLocked())
+			renderLock(now);
 		else {
 			boot = null;
 			session.current().draw(grid, now);
@@ -126,6 +138,29 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		DosRenderer.render(g, font, grid, gridX, gridY, now / 400L % 2L == 0L);
 		g.pose().popPose();
 		session.capture(g, gridX * scale, gridY * scale, TextGrid.WIDTH * scale, TextGrid.HEIGHT * scale);
+	}
+
+	/** The password prompt: nothing else shows until it is typed. */
+	private void renderLock(long now) {
+		Dos.frame(grid, Dos.tr("lock.title"), Dos.tr("lock.keys"));
+		int w = 40, h = 7, col = (TextGrid.COLS - w) / 2, row = (TextGrid.ROWS - h) / 2;
+		grid.box(col, row, w, h, true, Dos.tr("lock.box"), DosColours.TEXT_FG, DosColours.BODY_BG);
+		grid.put(col + 2, row + 2, Dos.tr("lock.prompt"), DosColours.TEXT_FG, DosColours.BODY_BG);
+		passwordField.render(grid, col + 2, row + 3, w - 4, now / 400L % 2L == 0L);
+		if(!lockMessage.isEmpty())
+			grid.put(col + 2, row + 5, Dos.fit(lockMessage, w - 4), DosColours.YELLOW, DosColours.BODY_BG);
+	}
+
+	/** Sends the typed password; a wrong one clears the field and says so. */
+	private void submitPassword() {
+		CompoundTag data = new CompoundTag();
+		data.putString("password", passwordField.text());
+		passwordField.set("");
+		lockMessage = "";
+		session.request("sys.unlock", data, response -> {
+			if(!response.ok())
+				lockMessage = response.errorText();
+		});
 	}
 
 	@Override
@@ -162,6 +197,15 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		}
 		if(skipBoot())
 			return true;
+		if(menu.isLocked()) {
+			if(key == GLFW.GLFW_KEY_ESCAPE)
+				onClose();
+			else if(key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER)
+				submitPassword();
+			else
+				passwordField.keyPressed(key);
+			return true;
+		}
 		boolean used = session.current().key(key, scanCode, modifiers);
 		if(!used && key == GLFW.GLFW_KEY_ESCAPE && session.current() instanceof ShellApp) {
 			onClose();
@@ -174,6 +218,10 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 	public boolean charTyped(char c, int modifiers) {
 		if(!menu.isPowered() || boot != null && boot.running())
 			return true;
+		if(menu.isLocked()) {
+			passwordField.charTyped(c);
+			return true;
+		}
 		session.current().typed(c);
 		return true;
 	}
@@ -185,7 +233,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseClicked(double rawX, double rawY, int button) {
-		if(!menu.isPowered() || skipBoot())
+		if(!menu.isPowered() || skipBoot() || menu.isLocked())
 			return true;
 		int c = col(rawX), r = row(rawY);
 		if(r == 0 && c >= MUSIC_COL && c < MUSIC_COL + MUSIC_W && showsMusicNote()) {
@@ -210,7 +258,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseScrolled(double rawX, double rawY, double scrollX, double scrollY) {
-		if(!menu.isPowered())
+		if(!menu.isPowered() || menu.isLocked())
 			return true;
 		int c = col(rawX), r = row(rawY);
 		if(TextGrid.inside(c, r))

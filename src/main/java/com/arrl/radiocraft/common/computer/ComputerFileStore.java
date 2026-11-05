@@ -28,6 +28,11 @@ public final class ComputerFileStore extends SavedData {
 	private static final int DEFAULT_STORAGE_KB = 1024, DEFAULT_MAX_FILES = 256;
 
 	private final ComputerStorage storage = new ComputerStorage();
+	/** Who placed the computer first (may set its password), or null if nobody is known yet. */
+	@Nullable
+	private UUID owner;
+	/** The password's hash ({@link ComputerLock#hash}), or "" for none. */
+	private String passwordHash = "";
 
 	public static SavedData.Factory<ComputerFileStore> factory() {
 		return new SavedData.Factory<>(ComputerFileStore::new, ComputerFileStore::load, null);
@@ -129,6 +134,33 @@ public final class ComputerFileStore extends SavedData {
 		return storage.list(extension);
 	}
 
+	// -------------------- OWNER AND PASSWORD --------------------
+
+	@Nullable
+	public UUID owner() {
+		return owner;
+	}
+
+	public void setOwner(@Nullable UUID owner) {
+		this.owner = owner;
+		setDirty();
+	}
+
+	public boolean hasPassword() {
+		return !passwordHash.isEmpty();
+	}
+
+	/** True if {@code password} opens computer {@code id} (always, with no password set). */
+	public boolean checkPassword(UUID id, String password) {
+		return ComputerLock.matches(id, passwordHash, password);
+	}
+
+	/** Sets the password of computer {@code id}; "" removes it. */
+	public void setPassword(UUID id, String password) {
+		passwordHash = ComputerLock.hash(id, password);
+		setDirty();
+	}
+
 	@Override
 	public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
 		ListTag files = new ListTag();
@@ -140,6 +172,10 @@ public final class ComputerFileStore extends SavedData {
 			files.add(file);
 		}
 		tag.put("files", files);
+		if(owner != null)
+			tag.putUUID("owner", owner);
+		if(!passwordHash.isEmpty())
+			tag.putString("password", passwordHash);
 		return tag;
 	}
 
@@ -149,6 +185,8 @@ public final class ComputerFileStore extends SavedData {
 			CompoundTag file = (CompoundTag)element;
 			store.storage.restore(file.getString("name"), file.getByteArray("data"), file.getLong("modified"));
 		}
+		store.owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
+		store.passwordHash = tag.getString("password");
 		return store;
 	}
 }

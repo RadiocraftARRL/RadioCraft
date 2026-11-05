@@ -15,7 +15,8 @@ import java.util.List;
  * the disk on the right, the disk's use and the floppy drive below. Tab moves between the two lists. Enter runs a
  * program, or opens a file in the program registered for its extension ({@link ComputerAppScreens#registerOpener});
  * pictures ({@code .IMG}) open in a viewer here. On a file: Del deletes, F7 (or F2) renames, F5 prints, and F6 scans what is on
- * the scanner's glass into a new file. Escape here closes the screen.
+ * the scanner's glass into a new file. F8 sets the computer's password (its owner or an operator; empty removes it).
+ * Escape here closes the screen.
  */
 final class ShellApp extends DosApp {
 
@@ -187,6 +188,10 @@ final class ShellApp extends DosApp {
 			scan();
 			return true;
 		}
+		if(key == GLFW.GLFW_KEY_F8) {
+			password();
+			return true;
+		}
 		if(!filesFocused)
 			return programs.keyPressed(key);
 		ComputerFiles.Info file = selectedFile();
@@ -225,6 +230,21 @@ final class ShellApp extends DosApp {
 	private void scan() {
 		showDialog(DosDialog.ask(Dos.tr("shell.scan_title"), Dos.tr("shell.scan"), DosInput.fileName("SCAN"),
 				name -> session.scanner().save(name, response -> done(response, Dos.tr("shell.scanned", response.data().getString("name"))))));
+	}
+
+	/** Asks for a new password (empty removes it); the server refuses anyone but the owner or an operator. */
+	private void password() {
+		showDialog(DosDialog.ask(Dos.tr("shell.password_title"), Dos.tr("shell.password"),
+				new DosInput("", com.arrl.radiocraft.common.computer.ComputerLock.MAX_LENGTH).masked(), typed -> {
+			net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+			data.putString("password", typed);
+			session.request("sys.password", data, response -> {
+				if(response.ok())
+					session.message(Dos.tr(response.data().getBoolean("password") ? "shell.password_set" : "shell.password_cleared"), false);
+				else
+					session.message(response.errorText(), true);
+			});
+		}));
 	}
 
 	/** After a change to the files: the message, or the error, and the list read again. */

@@ -28,7 +28,11 @@ import java.util.UUID;
  * <p>
  * The platform's requests, open to every program:
  * <ul>
- * <li>{@code open}: the installed programs ({@code apps}), the floppy in the drive and the computer's id.</li>
+ * <li>{@code open}: the installed programs ({@code apps}), the floppy in the drive, the computer's id, whether it has a
+ * password ({@code password}) and whether this player may change it ({@code owner}).</li>
+ * <li>{@code sys.unlock} ({@code password}): unlocks a computer with a password for this player until they close the
+ * screen; every other request is refused with {@code locked} until then (operators are never asked).
+ * {@code sys.password} ({@code password}, "" for none): its owner or an operator sets it.</li>
  * <li>{@code sys.info}: storage, the drive, the scanner and its paper, the linked devices and the station callsign.</li>
  * <li>{@code sys.floppies} (the floppies in the player's inventory), {@code sys.insert} ({@code slot}),
  * {@code sys.eject}, {@code sys.install} / {@code sys.uninstall} ({@code app}).</li>
@@ -61,8 +65,24 @@ public final class ComputerServer {
 	/** Carries out {@code action} for {@code player}, answering {@code reply}. */
 	public static void handle(RadioComputerBlockEntity computer, ServerPlayer player, String action, CompoundTag data, ComputerReply reply) {
 		ComputerContext context = new ComputerContext(computer, player);
+		if(!"sys.unlock".equals(action) && computer.isLockedFor(player)) { // A password is set: nothing until it is typed.
+			reply.error("locked");
+			return;
+		}
 		switch(action) {
-			case "open" -> reply.ok(hello(computer));
+			case "open" -> {
+				CompoundTag out = hello(computer);
+				out.putBoolean("password", computer.files().hasPassword());
+				out.putBoolean("owner", computer.mayChangePassword(player));
+				reply.ok(out);
+			}
+			case "sys.unlock" -> {
+				if(computer.unlock(player, data.getString("password")))
+					reply.ok();
+				else
+					reply.error("wrong_password");
+			}
+			case "sys.password" -> password(computer, player, data.getString("password"), reply);
 			case "sys.info" -> reply.ok(info(context));
 			case "sys.floppies" -> reply.ok(floppies(player));
 			case "sys.insert" -> insert(computer, player, data.getInt("slot"), reply);
@@ -88,9 +108,10 @@ public final class ComputerServer {
 		}
 	}
 
-	/** {@code player} closed the computer's screen: a half-written file is dropped, and each program is told. */
+	/** {@code player} closed the computer's screen: a half-written file is dropped, each program is told, and it locks again. */
 	public static void closed(RadioComputerBlockEntity computer, ServerPlayer player) {
 		UPLOADS.cancel(player.getUUID());
+		computer.relock(player.getUUID());
 		ComputerContext context = new ComputerContext(computer, player);
 		for(ComputerApp app : computer.availableApps()) {
 			ComputerAppHandler handler = ComputerAppHandlers.get(app);
@@ -242,6 +263,23 @@ public final class ComputerServer {
 		else {
 			CompoundTag out = new CompoundTag();
 			out.put("apps", appIds(computer));
+			reply.ok(out);
+		}
+	}
+
+	/** Sets (or with "" clears) the password: only its owner or an operator. */
+	private static void password(RadioComputerBlockEntity computer, ServerPlayer player, String password, ComputerReply reply) {
+		if(!computer.mayChangePassword(player))
+			reply.error("not_owner");
+		else if(!ComputerLock.valid(password))
+			reply.error("bad_password", String.valueOf(ComputerLock.MAX_LENGTH));
+		else {
+			ComputerFileStore files = computer.files();
+			if(files.owner() == null)
+				files.setOwner(player.getUUID()); // Placed before computers had owners: the first to lock it owns it.
+			files.setPassword(computer.getComputerId(), password);
+			CompoundTag out = new CompoundTag();
+			out.putBoolean("password", files.hasPassword());
 			reply.ok(out);
 		}
 	}
