@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Out of the box",
-      "text": "A new radio comes with the five license-free $(thing)MURS$() channels: 151.820, 151.880, 151.940, 154.570 and 154.600 MHz. The dual-band handheld adds 146.520, the 2 m calling frequency. The low band mobile comes with four simplex channels around 33-39 MHz.$(br2)A knob position with no channel is dead: no receive, no transmit. Commercial radios always transmit inside their own band, and take no MARS mod."
+      "text": "A new radio comes $(thing)blank$(), with no channels, as from a real dealer: program it with the $(l:radiocraft:computer/radio_programmer)radio programmer$(/l) before it does anything. The license-free $(thing)MURS$() channels (151.820, 151.880, 151.940, 154.570, 154.600 MHz) are a good start.$(br2)A knob position with no channel is dead: no receive, no transmit. Commercial radios always transmit inside their own band, and take no MARS mod."
     },
     {
       "type": "patchouli:spotlight",
@@ -50,7 +50,7 @@
       "type": "patchouli:crafting",
       "recipe": "radiocraft:basic_commercial_handheld",
       "recipe2": "radiocraft:upgraded_commercial_handheld",
-      "text": "Upgrading a brick does not keep its channels: the new radio starts on its factory channels."
+      "text": "Upgrading a brick does not keep its channels: the new radio starts blank."
     },
     {
       "type": "patchouli:crafting",

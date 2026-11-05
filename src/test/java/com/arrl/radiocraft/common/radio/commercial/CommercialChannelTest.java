@@ -175,8 +175,7 @@ class CommercialChannelTest {
 		assertNull(CommercialRadioModel.LOW_BAND_MOBILE.check(CommercialChannel.simplex("LB", 39_460_000.0F)));
 		assertEquals("tx_out_of_range", CommercialRadioModel.VHF_MOBILE.check(CommercialChannel.parse("X|155.0|146.0")));
 		for(CommercialRadioModel model : CommercialRadioModel.values())
-			for(CommercialChannel channel : model.factoryProgram().channels())
-				assertNull(model.check(channel), model + " factory channel " + channel.format());
+			assertEquals(0, model.factoryProgram().channels().size(), model + " ships blank");
 	}
 
 	/** A radio for the programming API with nothing of Minecraft in it. */
@@ -220,7 +219,7 @@ class CommercialChannelTest {
 		CommercialProgramming.Result result = CommercialProgramming.write(radio, bad);
 		assertFalse(result.ok());
 		assertEquals(0, result.problems().getFirst().position());
-		assertEquals("MURS 1", radio.program().channel(0).name(), "nothing was written");
+		assertTrue(radio.program().channel(0).isBlank(), "nothing was written");
 
 		assertFalse(CommercialProgramming.writeChannel(radio, 5, CommercialChannel.parse("NEW|155.6|=|DIG|0|-1")).ok(), "a hidden key with nothing to keep");
 		assertFalse(CommercialProgramming.writeChannel(radio, 16, CommercialChannel.BLANK).ok());

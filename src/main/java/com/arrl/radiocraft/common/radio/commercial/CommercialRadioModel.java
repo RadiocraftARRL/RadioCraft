@@ -142,27 +142,11 @@ public enum CommercialRadioModel {
 	}
 
 	/**
-	 * The radio as it leaves the factory, so it works before anyone programs it: on VHF the five license-free MURS
-	 * channels (and 146.520, the 2m calling frequency, on the dual-band handheld); on low band four simplex channels.
+	 * The radio as it leaves the factory: blank, with no channels. It does nothing until someone programs it with the
+	 * radio computer's programmer (as a real commercial radio comes from the dealer).
 	 */
 	public CommercialProgram factoryProgram() {
-		List<CommercialChannel> channels = new ArrayList<>();
-		if(bands.getFirst().equals(Band.LOW_BAND)) {
-			channels.add(CommercialChannel.simplex("LB 1", 33_120_000.0F));
-			channels.add(CommercialChannel.simplex("LB 2", 33_900_000.0F));
-			channels.add(CommercialChannel.simplex("LB 3", 37_980_000.0F));
-			channels.add(CommercialChannel.simplex("LB 4", 39_460_000.0F));
-		}
-		else {
-			channels.add(CommercialChannel.simplex("MURS 1", 151_820_000.0F));
-			channels.add(CommercialChannel.simplex("MURS 2", 151_880_000.0F));
-			channels.add(CommercialChannel.simplex("MURS 3", 151_940_000.0F));
-			channels.add(CommercialChannel.simplex("MURS 4", 154_570_000.0F));
-			channels.add(CommercialChannel.simplex("MURS 5", 154_600_000.0F));
-			if(bands.contains("2m"))
-				channels.add(CommercialChannel.simplex("2M CALL", 146_520_000.0F));
-		}
-		return new CommercialProgram(channels, 0);
+		return CommercialProgram.EMPTY;
 	}
 
 	/** {@code id} as a model, or null. */

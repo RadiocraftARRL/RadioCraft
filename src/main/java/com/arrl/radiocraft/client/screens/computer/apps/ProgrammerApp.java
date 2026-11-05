@@ -50,7 +50,7 @@ import java.util.Map;
  * and aliases (F7).
  * <p>
  * F5 reads the radio, F6 writes it, Enter edits a channel, Del clears one, Ctrl+C / Ctrl+V copy a channel to another,
- * F3 opens a codeplug, Ctrl+S saves one, F8 resets the radio to its factory channels, F9 programs radios by hand.
+ * F3 opens a codeplug, Ctrl+S saves one, F8 erases the radio back to factory blank, F9 programs radios by hand.
  */
 public final class ProgrammerApp extends DosApp {
 

@@ -23,7 +23,7 @@
     {
       "type": "patchouli:text",
       "title": "Server markers",
-      "text": "Black ticks mark single frequencies, listed under each bar: APRS, calling frequencies, the marine distress channel, or a $(thing)server-wide net$() on 7.060. Server admins can change all of it in the server config ($(thing)band_plan_segments$() and $(thing)band_plan_markers$()), and everyone's sheet follows."
+      "text": "Black ticks mark single frequencies, listed under each bar: APRS, calling frequencies or the marine distress channel. Server admins can change all of it, and add their own markers (a server net, say) in the server config ($(thing)band_plan_segments$() and $(thing)band_plan_markers$()), and everyone's sheet follows."
     },
     {
       "type": "patchouli:crafting",

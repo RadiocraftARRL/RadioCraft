@@ -146,7 +146,7 @@ class CodeplugTest {
 		CommercialProgramming.Result result = CommercialProgramming.write(brick, plug.channels());
 		assertFalse(result.ok());
 		assertEquals("no_digital", result.problems().getFirst().key());
-		assertEquals("MURS 1", brick.program().channel(0).name(), "nothing was written");
+		assertTrue(brick.program().channel(0).isBlank(), "nothing was written");
 	}
 
 	@Test

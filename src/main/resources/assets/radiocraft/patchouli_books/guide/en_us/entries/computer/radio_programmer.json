@@ -26,7 +26,7 @@
     {
       "type": "patchouli:text",
       "title": "Hidden keys",
-      "text": "A key set as not readable shows as $(thing)****$(): it never comes off the radio. Write the channels back and the radio keeps its own key; type a new key over it to change it. A hidden key cannot be copied to another radio.$(br2)Ctrl+S saves the channels as a $(thing)codeplug$() (.CPG) to load into other radios of the fleet; a 40-channel codeplug loaded for a 16-channel radio leaves out what does not fit. F8 puts a wired radio back to its factory channels."
+      "text": "A key set as not readable shows as $(thing)****$(): it never comes off the radio. Write the channels back and the radio keeps its own key; type a new key over it to change it. A hidden key cannot be copied to another radio.$(br2)Ctrl+S saves the channels as a $(thing)codeplug$() (.CPG) to load into other radios of the fleet; a 40-channel codeplug loaded for a 16-channel radio leaves out what does not fit. F8 erases a wired radio back to factory blank."
     },
     {
       "type": "patchouli:crafting",

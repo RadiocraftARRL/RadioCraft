@@ -44,7 +44,7 @@ class BandPlanTest {
 	void theUsualFrequenciesAreWhereTheyShouldBe() {
 		assertEquals("Data (APRS, packet)", PLAN.useAt(144_390_000));
 		assertFalse(PLAN.markersNear(144_390_000, 1).isEmpty(), "144.390 APRS marker");
-		assertFalse(PLAN.markersNear(7_060_000, 1).isEmpty(), "7.060 server-wide net marker");
+		assertTrue(PLAN.markersNear(7_060_000, 1).isEmpty(), "no 7.060 placeholder net marker");
 		assertEquals("FM simplex", PLAN.useAt(146_520_000));
 		assertEquals("MURS (licence free)", PLAN.useAt(151_880_000));
 		assertEquals("Military / federal", PLAN.useAt(165_000_000));

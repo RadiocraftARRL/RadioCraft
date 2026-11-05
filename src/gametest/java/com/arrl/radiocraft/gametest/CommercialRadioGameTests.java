@@ -218,14 +218,18 @@ public class CommercialRadioGameTests {
 		helper.succeed();
 	}
 
-	/** A commercial handheld: factory channels, transmits only on its channel, no MARS mod, and it dyes like leather. */
+	/** A commercial handheld: ships blank, transmits only on its channel, no MARS mod, and it dyes like leather. */
 	@GameTest(template = GameTestUtil.EMPTY, batch = BATCH)
 	public static void commercialHandheldIsChannelized(GameTestHelper helper) {
 		ItemStack handheld = new ItemStack(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
 		IVHFHandheldCapability cap = handheld.getCapability(RadiocraftCapabilities.VHF_HANDHELDS);
 		helper.assertTrue(cap != null, "A commercial handheld is a handheld underneath");
+		helper.assertTrue(CommercialHandheldItem.activeChannel(handheld) == null, "A new radio ships blank");
+		helper.assertFalse(PlayerRadio.handheldMayTransmit(handheld, 0.0F), "A blank radio does not transmit");
+		helper.assertTrue(CommercialProgramming.writeChannel(CommercialProgramming.of(handheld), 0, CommercialChannel.simplex("MURS 1", 151_820_000.0F)).ok(), "programmed");
+		helper.assertTrue(CommercialProgramming.writeChannel(CommercialProgramming.of(handheld), 1, CommercialChannel.simplex("MURS 2", 151_880_000.0F)).ok(), "programmed");
 		CommercialChannel murs = CommercialHandheldItem.activeChannel(handheld);
-		helper.assertTrue(murs != null && murs.name().equals("MURS 1"), "Factory channel 1 is MURS 1, was " + murs);
+		helper.assertTrue(murs != null && murs.name().equals("MURS 1"), "Channel 1 is MURS 1, was " + murs);
 		helper.assertTrue(PlayerRadio.handheldMayTransmit(handheld, 0.0F), "It transmits on its channel");
 		helper.assertTrue(CommercialHandheldItem.transmitBand(handheld).name().equals(Band.VHF_COMMERCIAL), "In band on commercial VHF");
 		CommercialHandheldItem.selectChannel(handheld, 12);

@@ -158,7 +158,7 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 
 	/** The default markers. 144.390 is the APRS frequency the mod uses ({@code handheld_aprs_frequency_mhz}). */
 	public static final List<String> DEFAULT_MARKERS = List.of(
-			"3.845|SSTV", "7.060|Server-wide net", "7.171|SSTV", "14.070|PSK31", "14.230|SSTV calling",
+			"3.845|SSTV", "7.171|SSTV", "14.070|PSK31", "14.230|SSTV calling",
 			"14.300|Emergency / maritime net", "28.680|SSTV", "29.600|10m FM simplex calling",
 			"144.200|SSB calling", "144.390|APRS", "146.520|National simplex calling",
 			"151.820|MURS 1", "151.880|MURS 2", "151.940|MURS 3", "154.570|MURS 4", "154.600|MURS 5",
@@ -171,6 +171,12 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 
 	// -------------------- PARSING --------------------
 
+	/**
+	 * A placeholder marker the 1.12 development builds wrote into server configs; left out so those configs drop it
+	 * without hand editing.
+	 */
+	private static final String PLACEHOLDER_MARKER = "7.060|Server-wide net";
+
 	/** Parses the config lists; entries that cannot be read are left out. Segments and markers come out sorted. */
 	public static BandPlan parse(Collection<? extends String> segments, Collection<? extends String> markers) {
 		List<Segment> outSegments = new ArrayList<>();
@@ -181,6 +187,8 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 		}
 		List<Marker> outMarkers = new ArrayList<>();
 		for(String line : markers) {
+			if(PLACEHOLDER_MARKER.equals(line))
+				continue;
 			Marker marker = parseMarker(line);
 			if(marker != null)
 				outMarkers.add(marker);

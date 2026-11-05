@@ -191,6 +191,37 @@ Order matters: later steps build on earlier ones.
   interface between radio and computer (as built). Recipes: to be reviewed together next.
 
 
+- **Answers (maintainer, 2026-11-05, round 2)**: these answer every open question below. **Keep as built:**
+  - marine plan US by default;
+  - digital channels stay mixed mode on receive;
+  - WEFAX prints when AUTO is on;
+  - everything received is saved;
+  - the game name Pileup;
+  - loot chances;
+  - gospels only;
+  - no ADS-B terrain, the beacon needs power, distances in m/km;
+  - own ship hidden, and the ship name is used as the flight ID;
+  - the badge stays in JEI and drops on death;
+  - Everywhere keeps fading;
+  - Modrinth Maven only, and the API version stays a separate 1.0;
+  - scanner printing uses paper only;
+  - the Radio Cloner recipe is approved.
+
+  **Change** (Open-question fixes, below):
+  1. Commercial radios ship **blank**, with no factory channels.
+  2. **Remove the 7.060 "Server-wide net" marker**: it was a placeholder.
+  3. The radio computer gets an **optional password**, set by its owner from the DOS shell.
+  4. Solar/Forecast still need a receiver, but **try any connected radio** (wired, touching or through a radio
+     interface), **or use an Ionospheric Processor connected straight to the computer**, with no radio needed.
+  5. **Remove callsign addressing** from SSTV/WEFAX pictures.
+  6. Found ham shacks are **dark**, with a dead or flat battery.
+  7. The FCC badge stays decorative, but badge holders are **marked in the moderation computer**.
+  8. Real-World Interface:
+     - the **power switch is ops-only** too;
+     - each player **clicks "I hold a licence" once** before their voice goes out through it;
+     - add a **monitor speaker**.
+  9. Website: the Modding API page goes under a new **"FOR DEVELOPERS"** sidebar heading.
+
 (Agents: add questions here instead of stopping.)
 
 - (Step 1) **Out-of-band receive without the mod.** Read "without it, radios still receive out of band" as: every ham
@@ -1689,6 +1720,7 @@ Approved and applied in `RadiocraftRecipesProvider` (needs `runData`):
 - ADS-B Beacon: ` L / ICI / IRI` (C = encased VHF crystal, replacing the HF board). ADS-B Receiver: `IGI / RCR / III` (C = comparator, replacing the HF board). ADS-B Antenna: as built.
 - FCC hat, jacket and banner pattern: as built. Real-World Interface: `ICI / #R# / IBI` (iron, comparator, wire, radio interface, HF board; speaker and hand mic dropped). AWM siren controller and data wire: as built.
 - Radio Computer made late game: `GXG / QDQ / ITI` (gold ingot, any encased crystal, nether quartz block, diamond, iron, iron trapdoor), replacing `III / PCP / ITI`.
+- Radio Cloner: ` W / IDI / ICI` (wire, iron, diamond, comparator): approved as built.
 - **Recipe review complete (2026-11-05).**
 
 ### Playtest fixes 2 (2026-11-05)

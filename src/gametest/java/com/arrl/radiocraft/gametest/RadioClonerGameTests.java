@@ -98,7 +98,7 @@ public class RadioClonerGameTests {
 		ItemStack brick = new ItemStack(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
 		RadioClonerItem.Outcome refused = RadioClonerItem.useOn(cloner, brick, false);
 		helper.assertFalse(refused.ok(), "the brick took a digital channel");
-		helper.assertTrue(CommercialHandheldItem.program(brick).channel(0).name().equals("MURS 1"), "a refused clone changed the brick");
+		helper.assertTrue(CommercialHandheldItem.program(brick).channel(0).isBlank(), "a refused clone changed the brick");
 
 		helper.setBlock(MOBILE, RadiocraftBlocks.COMMERCIAL_MOBILE.get());
 		CommercialMobileBlockEntity mobile = GameTestUtil.blockEntity(helper, MOBILE, CommercialMobileBlockEntity.class);
