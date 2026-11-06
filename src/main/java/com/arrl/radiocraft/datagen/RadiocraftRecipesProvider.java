@@ -1409,8 +1409,9 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
      * (a blank disk and something that stands for the program). The secret programs have no recipe: they are found.
      */
     private static void radioComputer(RecipeOutput recipeOutput) {
-        // The computer is late game (maintainer, 2026-11-05): gold edge connectors and a crystal clock oscillator, a diamond
-        // processor between nether quartz blocks, and a floppy drive door in an iron case.
+        // The computer is late game (maintainer, 2026-11-05): gold edge connectors and a crystal clock oscillator, a
+        // processor between nether quartz blocks, and a floppy drive door in an iron case. The processor is a diamond
+        // block (maintainer, 2026-11-06: something players really have to strive for).
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.RADIO_COMPUTER.get())
                 .pattern("GXG")
                 .pattern("QDQ")
@@ -1418,7 +1419,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('G', Items.GOLD_INGOT)
                 .define('X', anyEncasedCrystal())
                 .define('Q', Items.QUARTZ_BLOCK)
-                .define('D', Items.DIAMOND)
+                .define('D', Items.DIAMOND_BLOCK)
                 .define('I', Items.IRON_INGOT)
                 .define('T', Items.IRON_TRAPDOOR)
                 .unlockedBy("has_diamond", has(Items.DIAMOND))
@@ -1469,7 +1470,6 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.BBS, Items.CHEST); // The mailbox.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.PROPAGATION, Items.CLOCK); // The hours ahead.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.REPEATERS, Items.REPEATER);
-        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.LICENSE, Items.LECTERN); // Study.
         programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())
                 .requires(ingredient)

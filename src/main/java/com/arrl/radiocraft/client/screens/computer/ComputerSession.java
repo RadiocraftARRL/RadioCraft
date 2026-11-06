@@ -72,6 +72,14 @@ public final class ComputerSession {
 	private String floppy = "";
 	private String serial = "";
 	private boolean helloReceived = false;
+	/** SETUP's settings (launcher view, scheme, name, clock), as the server last sent them. */
+	private com.arrl.radiocraft.common.computer.ComputerSettings settings = com.arrl.radiocraft.common.computer.ComputerSettings.DEFAULT;
+	/** Whether this player may change the settings and the password (the owner, an operator, or anyone if unowned). */
+	private boolean mayConfigure = false;
+	private boolean hasPassword = false;
+	/** A scheme SETUP is showing before it is kept, or null. */
+	@Nullable
+	private DosScheme preview;
 
 	// The status line's message.
 	private String message = "";
@@ -141,8 +149,10 @@ public final class ComputerSession {
 				it.remove();
 			}
 		}
-		if(SESSIONS.isEmpty())
+		if(SESSIONS.isEmpty()) {
 			DosImage.releaseAll();
+			DosIcons.releaseAll();
+		}
 	}
 
 	private void release() {
@@ -218,6 +228,8 @@ public final class ComputerSession {
 		}
 		else if("event".equals(kind)) {
 			String app = data.getString("app");
+			if(ComputerApps.SETUP.id().equals(app) && "settings".equals(data.getString("kind")))
+				session.learn(data.getCompound("data")); // Someone changed SETUP: every screen at the computer follows.
 			for(DosApp running : new ArrayList<>(session.stack))
 				if(running.app() != null && running.app().id().equals(app))
 					running.event(data.getString("kind"), data.getCompound("data"));
@@ -237,6 +249,12 @@ public final class ComputerSession {
 			floppy = answer.getString("floppy");
 		if(answer.contains("serial", Tag.TAG_STRING))
 			serial = answer.getString("serial");
+		if(answer.contains("settings", Tag.TAG_COMPOUND))
+			settings = com.arrl.radiocraft.common.computer.ComputerSettings.fromTag(answer.getCompound("settings"));
+		if(answer.contains("owner", Tag.TAG_BYTE))
+			mayConfigure = answer.getBoolean("owner");
+		if(answer.contains("password", Tag.TAG_BYTE))
+			hasPassword = answer.getBoolean("password");
 	}
 
 	// -------------------- WHAT IT KNOWS --------------------
@@ -264,6 +282,40 @@ public final class ComputerSession {
 	/** The computer's serial number (the start of its id). */
 	public String serial() {
 		return serial;
+	}
+
+	/** SETUP's settings for this computer. */
+	public com.arrl.radiocraft.common.computer.ComputerSettings settings() {
+		return settings;
+	}
+
+	/** True if this player may change the settings and the password. */
+	public boolean mayConfigure() {
+		return mayConfigure;
+	}
+
+	/** True if the computer has a password. */
+	public boolean hasPassword() {
+		return hasPassword;
+	}
+
+	/** The colour scheme the screen is drawn in: SETUP's preview while it shows one, else the computer's. */
+	public DosScheme scheme() {
+		return preview != null ? preview : DosScheme.byId(settings.scheme());
+	}
+
+	/** Shows the screen in {@code scheme} until {@link #endPreview} (SETUP's colour list); null ends it. */
+	public void preview(@Nullable DosScheme scheme) {
+		preview = scheme;
+	}
+
+	public void endPreview() {
+		preview = null;
+	}
+
+	/** Takes {@code settings} as kept (SETUP, after the server agreed). */
+	public void learnSettings(com.arrl.radiocraft.common.computer.ComputerSettings settings) {
+		this.settings = settings;
 	}
 
 	boolean helloReceived() {

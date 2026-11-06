@@ -44,6 +44,8 @@ public final class ComputerAppScreens {
 		register(ComputerApps.SYSINFO, SysInfoApp::new);
 		register(ComputerApps.BAND_PLAN, BandPlanApp::new);
 		register(ComputerApps.INSTALL, InstallApp::new);
+		register(ComputerApps.SETUP, com.arrl.radiocraft.client.screens.computer.apps.SetupApp::new); // Launcher and SETUP (2026-11-06).
+		register(ComputerApps.ABOUT, com.arrl.radiocraft.client.screens.computer.apps.AboutApp::new);
 		registerOpener(ComputerFileFormats.TEXT, ComputerApps.EDITOR);
 
 		// Office programs (step 6).
@@ -98,7 +100,6 @@ public final class ComputerAppScreens {
 		label(ComputerApps.BBS, 0xA03070);
 		label(ComputerApps.PROPAGATION, 0xF0D040);
 		label(ComputerApps.REPEATERS, 0x7A1E1E);
-		label(ComputerApps.LICENSE, 0x6A8FE8);
 	}
 
 	private ComputerAppScreens() {}

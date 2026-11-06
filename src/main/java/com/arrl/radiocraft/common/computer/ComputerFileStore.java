@@ -33,6 +33,8 @@ public final class ComputerFileStore extends SavedData {
 	private UUID owner;
 	/** The password's hash ({@link ComputerLock#hash}), or "" for none. */
 	private String passwordHash = "";
+	/** SETUP's settings (launcher view, colour scheme, name, clock): they follow the disk like the password. */
+	private ComputerSettings settings = ComputerSettings.DEFAULT;
 
 	public static SavedData.Factory<ComputerFileStore> factory() {
 		return new SavedData.Factory<>(ComputerFileStore::new, ComputerFileStore::load, null);
@@ -161,6 +163,17 @@ public final class ComputerFileStore extends SavedData {
 		setDirty();
 	}
 
+	// -------------------- SETUP --------------------
+
+	public ComputerSettings settings() {
+		return settings;
+	}
+
+	public void setSettings(ComputerSettings settings) {
+		this.settings = settings == null ? ComputerSettings.DEFAULT : settings;
+		setDirty();
+	}
+
 	@Override
 	public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
 		ListTag files = new ListTag();
@@ -176,6 +189,8 @@ public final class ComputerFileStore extends SavedData {
 			tag.putUUID("owner", owner);
 		if(!passwordHash.isEmpty())
 			tag.putString("password", passwordHash);
+		if(!settings.equals(ComputerSettings.DEFAULT))
+			tag.put("settings", settings.toTag());
 		return tag;
 	}
 
@@ -187,6 +202,7 @@ public final class ComputerFileStore extends SavedData {
 		}
 		store.owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
 		store.passwordHash = tag.getString("password");
+		store.settings = ComputerSettings.fromTag(tag.getCompound("settings"));
 		return store;
 	}
 }

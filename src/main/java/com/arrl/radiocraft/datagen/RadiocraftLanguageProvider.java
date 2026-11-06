@@ -616,6 +616,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			addSecretApps(provider);
 			// Computer apps 2 (2026-11-06): each program's words in its own class under datagen/lang.
 			com.arrl.radiocraft.datagen.lang.RttyLang.add(provider);
+			com.arrl.radiocraft.datagen.lang.SetupLang.add(provider); // Launcher views, SETUP and ABOUT (2026-11-06).
 			com.arrl.radiocraft.datagen.lang.BbsLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.PropagationLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.RepeaterLang.add(provider);
@@ -860,10 +861,6 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("lock.keys", "Enter=OK  Esc=Leave");
 		s.accept("lock.box", "Password");
 		s.accept("lock.prompt", "This computer has a password:");
-		s.accept("shell.password_title", "Password");
-		s.accept("shell.password", "New password for this computer (empty for none):");
-		s.accept("shell.password_set", "Password set: everyone is asked for it when they open the computer");
-		s.accept("shell.password_cleared", "Password removed: anyone can use the computer");
 		s.accept("err.exists", "A file with that name already exists");
 		s.accept("err.bad_contents", "That file's contents do not suit its type");
 		s.accept("err.unknown_request", "The computer does not know %s");
@@ -900,7 +897,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("shell.programs", "Programs");
 		s.accept("shell.files", "Files on C:");
 		s.accept("shell.no_files", "No files yet.");
-		s.accept("shell.keys_programs", "Enter=Run  Tab=Files  F6=Scan  F8=Password  Esc=Leave");
+		s.accept("shell.keys_programs", "Enter=Run  Tab=Files  F6=Scan  Esc=Leave");
 		s.accept("shell.keys_files", "Enter=Open  Del=Delete  F7=Rename  F5=Print  F6=Scan  Tab=Programs");
 		s.accept("shell.file_info", "%s  %s");
 		s.accept("shell.disk", "C: %s used of %s, %s files");
@@ -1643,7 +1640,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			Map.entry("df", "Direction Finding"), Map.entry("snake", "Snake"), Map.entry("falling_blocks", "Pileup"),
 			Map.entry("music", "Music Player"), Map.entry("bible", "Bible"), Map.entry("adsb", "ADS-B"),
 			Map.entry("rtty", "RTTY"), Map.entry("bbs", "Packet BBS"), Map.entry("propagation", "Propagation Predictor"),
-			Map.entry("repeaters", "Repeater Directory"), Map.entry("license", "License Study"));
+			Map.entry("repeaters", "Repeater Directory"));
 
 	/** FCC field gear (1.12 step 10): the hat, jacket, seal banner pattern and banner names, the badge, its tooltips, messages and command. */
 	private static void addFccGear(LanguageProvider provider) {

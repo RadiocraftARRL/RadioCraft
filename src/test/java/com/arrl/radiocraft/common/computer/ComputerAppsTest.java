@@ -12,13 +12,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** The radio computer's program registry (1.12 step 5): four built in, the rest on floppies, names that fit DOS. */
+/** The radio computer's program registry (1.12 step 5): seven built in, the rest on floppies, names that fit DOS. */
 class ComputerAppsTest {
 
 	@Test
-	void fourBuiltInProgramsWithNoFloppy() {
+	void sevenBuiltInProgramsWithNoFloppy() {
 		List<ComputerApp> builtIn = ComputerApps.builtIn();
-		assertEquals(List.of(ComputerApps.EDITOR, ComputerApps.SYSINFO, ComputerApps.BAND_PLAN, ComputerApps.INSTALL), builtIn);
+		assertEquals(List.of(ComputerApps.EDITOR, ComputerApps.SYSINFO, ComputerApps.BAND_PLAN, ComputerApps.INSTALL,
+				ComputerApps.SETUP, ComputerApps.ABOUT, ComputerApps.LICENSE), builtIn);
 		for(ComputerApp app : builtIn) {
 			assertFalse(app.hasFloppy());
 			assertNull(app.floppyItemId());
@@ -33,7 +34,7 @@ class ComputerAppsTest {
 			if(app.hasFloppy())
 				assertTrue(items.add(app.floppyItemId()), "two programs on " + app.floppyItemId());
 		}
-		assertEquals(ComputerApps.all().size() - 4, ComputerApps.onFloppies().size());
+		assertEquals(ComputerApps.all().size() - 7, ComputerApps.onFloppies().size());
 		assertEquals("floppy_logbook", ComputerApps.LOGBOOK.floppyItemId());
 		assertEquals(ComputerApp.Kind.SECRET, ComputerApps.SNAKE.kind());
 		assertEquals("CPS.EXE", ComputerApps.PROGRAMMER.fileName());
@@ -44,7 +45,7 @@ class ComputerAppsTest {
 	void availableIsBuiltInPlusInstalledInShellOrder() {
 		List<ComputerApp> apps = ComputerApps.available(List.of("sstv", "logbook", "edit", "nonsense"));
 		assertEquals(List.of(ComputerApps.EDITOR, ComputerApps.SYSINFO, ComputerApps.BAND_PLAN, ComputerApps.INSTALL,
-				ComputerApps.LOGBOOK, ComputerApps.SSTV), apps);
+				ComputerApps.SETUP, ComputerApps.ABOUT, ComputerApps.LICENSE, ComputerApps.LOGBOOK, ComputerApps.SSTV), apps);
 		assertNull(ComputerApps.get("nonsense"));
 		assertNull(ComputerApps.get(null));
 	}

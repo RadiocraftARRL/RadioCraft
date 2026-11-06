@@ -13,7 +13,9 @@ import org.joml.Matrix4f;
  * Draws a {@link TextGrid} as a VGA text screen: cell backgrounds, then the pictures, then the characters (the vanilla
  * font's glyphs, each centred in its 6 x 10 cell so the text is monospaced) with box-drawing and shading characters as
  * lines and fills, the blinking cursor, and faint CRT scan lines. Everything of a kind goes into one batch (one
- * flush), so the 2000 cells cost a few draw calls, not 2000.
+ * flush), so the 2000 cells cost a few draw calls, not 2000. Every colour goes through the computer's
+ * {@link DosScheme} on its way to the glass, so programs draw in the logical colours ({@link DosColours}) and SETUP's
+ * scheme decides how they look. Icons ({@link TextGrid#icon}) are drawn in the scheme too ({@link DosIcons}).
  */
 public final class DosRenderer {
 
@@ -23,8 +25,8 @@ public final class DosRenderer {
 
 	private DosRenderer() {}
 
-	/** Draws {@code grid} with its top left at {@code x, y} (screen pixels before scaling). */
-	public static void render(GuiGraphics g, Font font, TextGrid grid, int x, int y, boolean blinkOn) {
+	/** Draws {@code grid} with its top left at {@code x, y} (screen pixels before scaling), in {@code scheme}'s colours. */
+	public static void render(GuiGraphics g, Font font, TextGrid grid, int x, int y, boolean blinkOn, DosScheme scheme) {
 		Matrix4f pose = g.pose().last().pose();
 		MultiBufferSource.BufferSource buffers = g.bufferSource();
 		g.flush();
@@ -35,7 +37,7 @@ public final class DosRenderer {
 			int start = 0;
 			for(int col = 1; col <= TextGrid.COLS; col++)
 				if(col == TextGrid.COLS || grid.backgroundAt(col, row) != grid.backgroundAt(start, row)) {
-					quad(fills, pose, x + start * TextGrid.CELL_W, y + row * TextGrid.CELL_H, x + col * TextGrid.CELL_W, y + (row + 1) * TextGrid.CELL_H, 0xFF000000 | grid.backgroundAt(start, row));
+					quad(fills, pose, x + start * TextGrid.CELL_W, y + row * TextGrid.CELL_H, x + col * TextGrid.CELL_W, y + (row + 1) * TextGrid.CELL_H, 0xFF000000 | scheme.display(grid.backgroundAt(start, row)));
 					start = col;
 				}
 		}
@@ -46,6 +48,11 @@ public final class DosRenderer {
 			ResourceLocation texture = DosImage.texture(image.key(), image.pixels(), image.width(), image.height());
 			g.blit(texture, x + image.x(), y + image.y(), image.w(), image.h(), 0.0F, 0.0F, image.width(), image.height(), image.width(), image.height());
 		}
+		for(TextGrid.Icon icon : grid.icons()) {
+			DosIcons.Sprite sprite = DosIcons.sprite(icon.texture(), scheme);
+			if(sprite != null)
+				g.blit(sprite.id(), x + icon.x(), y + icon.y(), icon.w(), icon.h(), 0.0F, 0.0F, sprite.width(), sprite.height(), sprite.width(), sprite.height());
+		}
 
 		// Lines, blocks and shapes.
 		fills = buffers.getBuffer(RenderType.gui());
@@ -53,11 +60,11 @@ public final class DosRenderer {
 			for(int col = 0; col < TextGrid.COLS; col++) {
 				char c = grid.charAt(col, row);
 				if(c > 0x2000)
-					shape(fills, pose, c, x + col * TextGrid.CELL_W, y + row * TextGrid.CELL_H, 0xFF000000 | grid.foregroundAt(col, row));
+					shape(fills, pose, c, x + col * TextGrid.CELL_W, y + row * TextGrid.CELL_H, 0xFF000000 | scheme.display(grid.foregroundAt(col, row)));
 			}
 		if(blinkOn && grid.cursorVisible()) {
 			int cx = x + grid.cursorCol() * TextGrid.CELL_W, cy = y + (grid.cursorRow() + 1) * TextGrid.CELL_H;
-			quad(fills, pose, cx, cy - 2, cx + TextGrid.CELL_W, cy, 0xFF000000 | grid.foregroundAt(grid.cursorCol(), grid.cursorRow()));
+			quad(fills, pose, cx, cy - 2, cx + TextGrid.CELL_W, cy, 0xFF000000 | scheme.display(grid.foregroundAt(grid.cursorCol(), grid.cursorRow())));
 		}
 		g.flush();
 
@@ -70,7 +77,7 @@ public final class DosRenderer {
 				String glyph = glyph(c);
 				int width = c < 256 ? glyphWidth(font, c) : font.width(glyph);
 				float gx = x + col * TextGrid.CELL_W + (TextGrid.CELL_W - (width - 1)) / 2.0F;
-				font.drawInBatch(glyph, (float)Math.floor(gx), y + row * TextGrid.CELL_H + 1, 0xFF000000 | grid.foregroundAt(col, row), false, pose, buffers,
+				font.drawInBatch(glyph, (float)Math.floor(gx), y + row * TextGrid.CELL_H + 1, 0xFF000000 | scheme.display(grid.foregroundAt(col, row)), false, pose, buffers,
 						Font.DisplayMode.NORMAL, 0, LightTexture.FULL_BRIGHT);
 			}
 		g.flush();

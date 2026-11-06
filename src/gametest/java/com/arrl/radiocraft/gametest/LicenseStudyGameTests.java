@@ -45,7 +45,7 @@ public class LicenseStudyGameTests {
 		helper.setBlock(AT, RadiocraftBlocks.RADIO_COMPUTER.get());
 		helper.setBlock(AT.above(), RadiocraftBlocks.COMPUTER_MONITOR.get());
 		RadioComputerBlockEntity computer = GameTestUtil.blockEntity(helper, AT, RadioComputerBlockEntity.class);
-		computer.install(ComputerApps.LICENSE);
+		// License Study is built in (1.12 launcher work): nothing to install.
 		return computer;
 	}
 

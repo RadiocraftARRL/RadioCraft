@@ -36,10 +36,17 @@ public final class TextGrid {
 	/** A picture over the screen: map colour ids ({@code width} x {@code height}) drawn at a pixel rectangle. */
 	public record Image(int x, int y, int w, int h, String key, byte[] pixels, int width, int height) {}
 
+	/**
+	 * An icon over the screen: a 16-colour picture from the mod's textures ({@code texture}, a path under
+	 * {@code assets/radiocraft/textures/}), drawn in the computer's colour scheme at the pixel rectangle.
+	 */
+	public record Icon(int x, int y, int w, int h, String texture) {}
+
 	private final char[] chars = new char[COLS * ROWS];
 	private final int[] fg = new int[COLS * ROWS];
 	private final int[] bg = new int[COLS * ROWS];
 	private final List<Image> images = new ArrayList<>();
+	private final List<Icon> icons = new ArrayList<>();
 	private int cursorCol = -1, cursorRow = -1;
 
 	public TextGrid() {
@@ -52,6 +59,7 @@ public final class TextGrid {
 		Arrays.fill(fg, foreground);
 		Arrays.fill(bg, background);
 		images.clear();
+		icons.clear();
 		cursorCol = cursorRow = -1;
 	}
 
@@ -197,6 +205,16 @@ public final class TextGrid {
 
 	public List<Image> images() {
 		return images;
+	}
+
+	/** An icon ({@code texture} under {@code assets/radiocraft/textures/}, a PNG) at the pixel rectangle {@code x, y, w, h}. */
+	public void icon(int x, int y, int w, int h, String texture) {
+		if(w > 0 && h > 0 && texture != null && !texture.isEmpty())
+			icons.add(new Icon(x, y, w, h, texture));
+	}
+
+	public List<Icon> icons() {
+		return icons;
 	}
 
 	/** True for the characters {@link DosRenderer} draws as lines rather than glyphs. */

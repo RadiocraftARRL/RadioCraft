@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Every program the radio computer knows (1.12 step 5), in the order the shell lists them: the four built in, then the
+ * Every program the radio computer knows (1.12 step 5), in the order the shell lists them: the ones built in, then the
  * ones on floppy disks. All of them are registered here at once, including those written by later steps, so the floppy
  * disk items ({@code RadiocraftItems.FLOPPIES}), their recipes, lang and models exist from the start and the registry
  * never changes shape. A program whose client screen is not written yet opens as a "not available in this version"
@@ -30,6 +30,15 @@ public final class ComputerApps {
 	public static final ComputerApp SYSINFO = add("sysinfo", "SYSINFO", ComputerApp.Kind.BUILT_IN);
 	public static final ComputerApp BAND_PLAN = add("bandplan", "BANDPLAN", ComputerApp.Kind.BUILT_IN);
 	public static final ComputerApp INSTALL = add("install", "INSTALL", ComputerApp.Kind.BUILT_IN);
+	/** The computer's settings: launcher view, colour scheme, password, name and clock (1.12, launcher and SETUP). */
+	public static final ComputerApp SETUP = add("setup", "SETUP", ComputerApp.Kind.BUILT_IN);
+	/** About RadioCraft: the mod, its story, version, credits and website (1.12, launcher and SETUP). */
+	public static final ComputerApp ABOUT = add("about", "ABOUT", ComputerApp.Kind.BUILT_IN);
+	/**
+	 * Licence exam study: flash cards and practice exams from the question pools. Built in since 1.12's launcher work
+	 * (it was a floppy program, {@code floppy_license}, in the unreleased 1.12 builds before; that item is gone).
+	 */
+	public static final ComputerApp LICENSE = add("license", "STUDY", ComputerApp.Kind.BUILT_IN);
 
 	// Office programs (step 6).
 	public static final ComputerApp BOOK_EDITOR = add("bookedit", "BOOKEDIT", ComputerApp.Kind.CRAFTED);
@@ -68,8 +77,6 @@ public final class ComputerApps {
 	public static final ComputerApp PROPAGATION = add("propagation", "PREDICT", ComputerApp.Kind.CRAFTED);
 	/** A directory of repeaters heard and typed in, exported to the frequency manager. */
 	public static final ComputerApp REPEATERS = add("repeaters", "REPEATER", ComputerApp.Kind.CRAFTED);
-	/** Licence exam study: flash cards and practice exams from the question pools. */
-	public static final ComputerApp LICENSE = add("license", "STUDY", ComputerApp.Kind.CRAFTED);
 
 	private ComputerApps() {}
 

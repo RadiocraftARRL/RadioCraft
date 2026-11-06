@@ -29,10 +29,15 @@ import java.util.UUID;
  * The platform's requests, open to every program:
  * <ul>
  * <li>{@code open}: the installed programs ({@code apps}), the floppy in the drive, the computer's id, whether it has a
- * password ({@code password}) and whether this player may change it ({@code owner}).</li>
+ * password ({@code password}), whether this player may change it and the settings ({@code owner}), and SETUP's
+ * {@code settings}.</li>
  * <li>{@code sys.unlock} ({@code password}): unlocks a computer with a password for this player until they close the
  * screen; every other request is refused with {@code locked} until then (operators are never asked).
- * {@code sys.password} ({@code password}, "" for none): its owner or an operator sets it.</li>
+ * {@code sys.password} ({@code password}, "" for none): its owner or an operator sets it (SETUP's Password page).</li>
+ * <li>{@code sys.settings} ({@code settings}, a {@link ComputerSettings} tag): SETUP's launcher view, colour scheme, name
+ * and clock; the same people as the password may change them ({@code not_owner_settings}). Answers and pushes (to
+ * everyone at the computer, as a {@link ComputerApps#SETUP} event {@code settings}) the settings kept. {@code open}
+ * answers them too.</li>
  * <li>{@code sys.info}: storage, the drive, the scanner and its paper, the linked devices and the station callsign.</li>
  * <li>{@code sys.floppies} (the floppies in the player's inventory), {@code sys.insert} ({@code slot}),
  * {@code sys.eject}, {@code sys.install} / {@code sys.uninstall} ({@code app}).</li>
@@ -74,6 +79,7 @@ public final class ComputerServer {
 				CompoundTag out = hello(computer);
 				out.putBoolean("password", computer.files().hasPassword());
 				out.putBoolean("owner", computer.mayChangePassword(player));
+				out.put("settings", computer.files().settings().toTag());
 				reply.ok(out);
 			}
 			case "sys.unlock" -> {
@@ -83,6 +89,7 @@ public final class ComputerServer {
 					reply.error("wrong_password");
 			}
 			case "sys.password" -> password(computer, player, data.getString("password"), reply);
+			case "sys.settings" -> settings(computer, player, data.getCompound("settings"), reply);
 			case "sys.info" -> reply.ok(info(context));
 			case "sys.floppies" -> reply.ok(floppies(player));
 			case "sys.insert" -> insert(computer, player, data.getInt("slot"), reply);
@@ -282,6 +289,23 @@ public final class ComputerServer {
 			out.putBoolean("password", files.hasPassword());
 			reply.ok(out);
 		}
+	}
+
+	/**
+	 * SETUP's settings: kept on the disk if this player may change them (the password's rule), then sent to everyone at
+	 * the computer so their screens change at once.
+	 */
+	private static void settings(RadioComputerBlockEntity computer, ServerPlayer player, CompoundTag settings, ComputerReply reply) {
+		if(!computer.mayChangePassword(player)) {
+			reply.error("not_owner_settings");
+			return;
+		}
+		ComputerSettings kept = ComputerSettings.fromTag(settings);
+		computer.files().setSettings(kept);
+		CompoundTag out = new CompoundTag();
+		out.put("settings", kept.toTag());
+		reply.ok(out);
+		computer.push(ComputerApps.SETUP, "settings", out.copy());
 	}
 
 	// -------------------- FILES --------------------

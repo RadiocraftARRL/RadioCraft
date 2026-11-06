@@ -215,7 +215,7 @@ public final class FaxApp extends DosApp {
 		if(status != null) {
 			String phase = status.getString("phase");
 			boolean busy = !phase.equals("IDLE");
-			g.putField(3, 3, " " + status.getString("status") + " ", 50, DosColours.BLACK, busy ? DosColours.LIGHT_GREEN : 0x88AA88);
+			g.putField(3, 3, " " + status.getString("status") + " ", 50, DosColours.BLACK, busy ? DosColours.LIGHT_GREEN : DosColours.LIGHT_GREY);
 			if(busy) {
 				g.put(3, 4, Dos.fit(Dos.tr(phase.equals("RECEIVING") ? "fax.from" : "fax.to", status.getString("peer"), status.getString("label")), 50), DosColours.TEXT_FG, bg);
 				g.bar(3, 5, 50, status.getInt("packets") / (double)Math.max(1, status.getInt("of")), DosColours.LIGHT_CYAN, bg);

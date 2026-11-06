@@ -20,7 +20,31 @@ public final class Dos {
 	/** The rows a program has between its title bar (row 0) and its key bar (row 24). */
 	public static final int BODY_TOP = 1, BODY_BOTTOM = TextGrid.ROWS - 2;
 
+	/** What the top bar shows at its right (SETUP's computer name and clock), set by the screen each frame. */
+	private static String status = "";
+	/** The column after the status's last character. */
+	private static int statusEnd = TextGrid.COLS - 1;
+
 	private Dos() {}
+
+	/**
+	 * Sets the top bar's right-hand text (the computer's name and clock) for the frames drawn from now, ending before
+	 * column {@code end}. The radio computer's screen calls this every frame.
+	 */
+	public static void setStatus(String text, int end) {
+		status = text == null ? "" : text;
+		statusEnd = end;
+	}
+
+	/** The top bar's right-hand text (name and clock), "" for none. */
+	public static String status() {
+		return status;
+	}
+
+	/** The first column of the status in the top bar ({@link TextGrid#COLS} with none): draw your own words left of it. */
+	public static int statusStart() {
+		return status.isEmpty() ? TextGrid.COLS : statusEnd - status.length();
+	}
 
 	/** {@code screen.radiocraft.computer.<key>}, formatted with {@code args}. */
 	public static String tr(String key, Object... args) {
@@ -52,13 +76,16 @@ public final class Dos {
 	}
 
 	/**
-	 * The standard program frame: {@code title} in the grey bar on row 0, the blue body, and {@code keys} (a key hint
-	 * line such as "F2=Save  Esc=Exit") in the cyan bar on row 24.
+	 * The standard program frame: {@code title} in the grey bar on row 0 (with the computer's name and clock at its
+	 * right, {@link #status()}), the blue body, and {@code keys} (a key hint line such as "F2=Save  Esc=Exit") in the
+	 * cyan bar on row 24.
 	 */
 	public static void frame(TextGrid g, String title, String keys) {
 		g.clear(DosColours.BODY_FG, DosColours.BODY_BG);
 		g.hline(0, 0, TextGrid.COLS, ' ', DosColours.TITLE_FG, DosColours.TITLE_BG);
 		g.put(1, 0, title, DosColours.TITLE_FG, DosColours.TITLE_BG);
+		if(!status.isEmpty())
+			g.put(statusStart(), 0, status, DosColours.TITLE_FG, DosColours.TITLE_BG);
 		keyBar(g, keys);
 	}
 
