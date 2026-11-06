@@ -25,7 +25,6 @@ public final class PropagationLang {
 		s.accept("prop.bad_call", "Type a callsign");
 		s.accept("prop.bad_bearing", "Type the distance in blocks and the bearing in degrees (0 north, 90 east)");
 		s.accept("prop.no_targets", "No callsigns known: no players with a callsign online, no APRS stations heard");
-		s.accept("prop.kind_player", "player");
 		s.accept("prop.kind_aprs", "APRS");
 		s.accept("prop.pick_title", "Callsigns");
 		s.accept("prop.pick_message", "Call, how it is known, blocks and bearing:");

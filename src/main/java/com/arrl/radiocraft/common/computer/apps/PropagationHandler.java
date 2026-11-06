@@ -11,7 +11,6 @@ import com.arrl.radiocraft.common.computer.ComputerReply;
 import com.arrl.radiocraft.common.computer.PropagationForecast;
 import com.arrl.radiocraft.common.init.RadiocraftData;
 import com.arrl.radiocraft.common.radio.Band;
-import com.arrl.radiocraft.common.radio.Callsigns;
 import com.arrl.radiocraft.common.radio.DirectionFinding;
 import com.arrl.radiocraft.common.radio.data.TncPacket;
 import com.arrl.radiocraft.common.radio.solar.Aurora;
@@ -24,7 +23,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -45,7 +43,7 @@ import java.util.List;
  * {@code grades} and {@code cw} (a {@link PropagationForecast.Grade} letter an hour), {@code paths} (a
  * {@link PropagationForecast.Path} letter an hour), {@code best} (hour index, -1 none)) and {@code bestNow} (a band
  * name, "" for none).</li>
- * <li>{@code targets}: {@code targets}, callsigns it can aim at (each {@code call}, {@code kind} player or aprs,
+ * <li>{@code targets}: {@code targets}, callsigns it can aim at (each {@code call}, {@code kind} aprs,
  * {@code distance}, {@code bearing}).</li>
  * </ul>
  */
@@ -128,16 +126,12 @@ public final class PropagationHandler implements ComputerAppHandler {
 	/** A station it knows where to find: {@code level} false for a player in another dimension. */
 	record Located(String call, String kind, double x, double z, boolean level) {}
 
-	/** Online players with a callsign, then the stations the computer's APRS program heard with a position. */
+	/**
+	 * The stations the computer's APRS program heard with a position: only positions a station put on the air itself.
+	 * Online players are deliberately not looked up, so a callsign cannot be used to find where a player is.
+	 */
 	static List<Located> located(ComputerContext context) {
 		List<Located> out = new ArrayList<>();
-		ServerLevel level = context.level();
-		for(ServerPlayer player : context.server().getPlayerList().getPlayers()) {
-			String call = Callsigns.playerCallsign(context.server(), player.getUUID());
-			if(call == null || call.isBlank())
-				continue;
-			out.add(new Located(TncPacket.sanitizeCallsign(call), "player", player.getX(), player.getZ(), player.level() == level));
-		}
 		ComputerAppState aprs = context.computer().existingState(ComputerApps.APRS);
 		if(aprs instanceof AprsHandler.State state)
 			for(Heard heard : state.stations()) {

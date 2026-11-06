@@ -142,8 +142,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     commands (L, R, SP, SB, K, B; /EX ends a message). The mailbox is kept on the computer's disk (BBS.DAT). The
     owner, as sysop, watches the traffic, posts, deletes and sets the SSID; a terminal page calls other mailboxes.
   - **Propagation Predictor** (PREDICT): which HF bands should open to a place over the next 24 in-game hours, a
-    band-by-hour grid like VOACAP. Aim it at coordinates, a callsign (players online, or APRS stations the computer
-    heard) or a distance and bearing. It uses the same skip ranges, solar conditions and noise floor as your radios,
+    band-by-hour grid like VOACAP. Aim it at coordinates, a callsign (an APRS station the computer heard with a
+    position; online players are not looked up, so it cannot find a player) or a distance and bearing. It uses the same skip ranges, solar conditions and noise floor as your radios,
     hears the sky as the Solar Weather program does, and dims the hours past what the solar forecast knows. Line of
     sight and CW-only openings are marked; print it or save it as PREDICT.TXT.
   - **Repeater Directory** (REPEATER): the repeaters you know, with output, offset, tone, distance and bearing, when

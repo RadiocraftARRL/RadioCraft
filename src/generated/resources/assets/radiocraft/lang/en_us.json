@@ -1574,7 +1574,6 @@
   "screen.radiocraft.computer.prop.hint2": "F5 lists the callsigns the computer can find (players online, APRS stations heard).",
   "screen.radiocraft.computer.prop.keys": "Tab=Target  Enter=Predict  F5=Callsigns  F6=Print  F7=Save  Esc=Exit",
   "screen.radiocraft.computer.prop.kind_aprs": "APRS",
-  "screen.radiocraft.computer.prop.kind_player": "player",
   "screen.radiocraft.computer.prop.legend": "G good  F fair  P poor (data and CW)  - closed  c CW only  L line of sight",
   "screen.radiocraft.computer.prop.legend2": "lower case: sky not known yet  ** day  .. night  dipoles, full power, no hills",
   "screen.radiocraft.computer.prop.low_band": "Low bnd",

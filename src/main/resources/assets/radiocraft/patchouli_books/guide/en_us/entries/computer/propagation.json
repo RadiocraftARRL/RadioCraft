@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "PREDICT",
-      "text": "The $(item)Propagation Predictor$() says which HF bands should be open to a place over the next 24 in-game hours: a band by hour grid like the real VOACAP's.$(br2)Tab picks the target: $(thing)coordinates$() (X and Z), a $(thing)callsign$() (a player online, or an APRS station this computer heard; F5 lists them), or a $(thing)distance and bearing$() (4000 90 is 4000 blocks east). Enter predicts."
+      "text": "The $(item)Propagation Predictor$() says which HF bands should be open to a place over the next 24 in-game hours: a band by hour grid like the real VOACAP's.$(br2)Tab picks the target: $(thing)coordinates$() (X and Z), a $(thing)callsign$() (an APRS station this computer heard with a position; F5 lists them), or a $(thing)distance and bearing$() (4000 90 is 4000 blocks east). Enter predicts."
     },
     {
       "type": "patchouli:text",
