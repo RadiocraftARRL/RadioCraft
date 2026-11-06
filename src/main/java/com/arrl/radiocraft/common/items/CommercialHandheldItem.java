@@ -178,15 +178,14 @@ public class CommercialHandheldItem extends VHFHandheldItem {
 	}
 
 	/**
-	 * The upgraded handheld's B and C keys: {@code delta} -1 is the zone before (B), +1 the zone after (C), stopping at
-	 * zone A and the last zone; the knob keeps its position. Nothing on a radio without zones.
+	 * The upgraded handheld's A, B, C and D keys: zone {@code zone} (0 = A), clamped to the radio's zones; the knob keeps
+	 * its position. Nothing on a radio without zones.
 	 */
-	public static void stepZone(ItemStack stack, int delta) {
+	public static void selectZone(ItemStack stack, int zone) {
 		CommercialRadioModel model = modelOf(stack);
 		if(model == null || !model.hasZones())
 			return;
-		CommercialProgram program = program(stack);
-		setProgram(stack, program.zone(program.zone() + Integer.signum(delta), model.zones()));
+		setProgram(stack, program(stack).zone(zone, model.zones()));
 	}
 
 	/** Sneak and use opens the radio's top panel (knob, volume, LEDs); use without sneaking talks, as on the ham handheld. */

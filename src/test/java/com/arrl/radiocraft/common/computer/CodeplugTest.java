@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The radio programmer's codeplug (1.12 step 6): 40 positions (16 on most radios), its file and request layout, and that a key a radio
+ * The radio programmer's codeplug (1.12 step 6): 64 positions (16 on most radios), its file and request layout, and that a key a radio
  * will not show never comes out of it, through a read, a save, a write back or a clone to another radio.
  */
 class CodeplugTest {
@@ -48,14 +48,14 @@ class CodeplugTest {
 	}
 
 	@Test
-	void alwaysFortyPositions() {
+	void alwaysSixtyFourPositions() {
 		Codeplug plug = new Codeplug("vhf_mobile", List.of(CommercialChannel.simplex("ONE", 155_000_000.0F)));
 		assertEquals(CommercialProgram.MAX_CHANNELS, plug.channels().size());
-		assertEquals(40, plug.channels().size());
-		assertTrue(plug.channel(39).isBlank());
+		assertEquals(64, plug.channels().size());
+		assertTrue(plug.channel(63).isBlank());
 		assertEquals(16, plug.capacity(), "the mobile holds 16");
-		assertEquals(40, Codeplug.blank("upgraded_handheld").capacity());
-		assertEquals(40, Codeplug.blank("").capacity(), "no model: room for the largest");
+		assertEquals(64, Codeplug.blank("upgraded_handheld").capacity());
+		assertEquals(64, Codeplug.blank("").capacity(), "no model: room for the largest");
 		assertEquals(1, plug.programmedCount());
 		assertEquals("TWO", plug.with(3, CommercialChannel.simplex("TWO", 155_100_000.0F)).channel(3).name());
 	}
@@ -106,7 +106,7 @@ class CodeplugTest {
 
 	@Test
 	void aSixteenChannelFileLoads() {
-		// A .CPG saved before 40-channel radios: a list of 16.
+		// A .CPG saved before zoned radios: a list of 16.
 		List<CommercialChannel> sixteen = new ArrayList<>();
 		for(int i = 0; i < 16; i++)
 			sixteen.add(CommercialChannel.simplex("CH" + (i + 1), 155_000_000.0F + i * 12_500.0F));
@@ -123,20 +123,39 @@ class CodeplugTest {
 	}
 
 	@Test
-	void fortyChannelsForTheUpgradedHandheldOnly() {
+	void sixtyFourChannelsForTheUpgradedHandheldOnly() {
 		Codeplug plug = Codeplug.blank("upgraded_handheld");
-		for(int i = 0; i < 40; i++)
+		for(int i = 0; i < 64; i++)
 			plug = plug.with(i, CommercialChannel.simplex("CH" + (i + 1), 155_000_000.0F + i * 12_500.0F));
-		assertEquals(40, plug.programmedCount());
+		assertEquals(64, plug.programmedCount());
 		Codeplug back = Codeplug.fromTag(ComputerFileFormats.nbt(ComputerFileFormats.nbt(plug.toTag())));
-		assertEquals("CH40", back.channel(39).name(), "all 40 saved");
+		assertEquals("CH64", back.channel(63).name(), "all 64 saved");
 		Bench upgraded = new Bench(CommercialRadioModel.UPGRADED_HANDHELD);
 		assertTrue(CommercialProgramming.write(upgraded, back.channels()).ok());
-		assertEquals("CH40", upgraded.program().channel(39).name());
+		assertEquals("CH64", upgraded.program().channel(63).name());
 
 		Codeplug forBrick = new Codeplug("basic_handheld", back.channels());
-		assertEquals(24, forBrick.beyondCapacity(), "24 channels do not fit a 16-channel radio");
+		assertEquals(48, forBrick.beyondCapacity(), "48 channels do not fit a 16-channel radio");
 		assertFalse(CommercialProgramming.write(new Bench(CommercialRadioModel.BASIC_HANDHELD), forBrick.channels()).ok());
+	}
+
+	@Test
+	void aFortyChannelFileStillLoads() {
+		// A .CPG saved while the upgraded handheld held 40 (zones A-C): 40 positions, loaded into 64.
+		List<CommercialChannel> forty = new ArrayList<>();
+		for(int i = 0; i < 40; i++)
+			forty.add(CommercialChannel.simplex("CH" + (i + 1), 155_000_000.0F + i * 12_500.0F));
+		CompoundTag old = new CompoundTag();
+		old.putString("model", "upgraded_handheld");
+		old.put("channels", Codeplug.channelsTag(forty));
+		Codeplug loaded = Codeplug.fromTag(ComputerFileFormats.nbt(ComputerFileFormats.nbt(old)));
+		assertEquals(40, loaded.programmedCount());
+		assertEquals(64, loaded.channels().size(), "padded to the new size");
+		assertTrue(loaded.channel(40).isBlank() && loaded.channel(63).isBlank(), "zone D and the rest of C blank");
+		assertEquals(0, loaded.beyondCapacity());
+		Bench upgraded = new Bench(CommercialRadioModel.UPGRADED_HANDHELD);
+		assertTrue(CommercialProgramming.write(upgraded, loaded.channels()).ok(), "it writes into the upgraded handheld");
+		assertEquals("CH40", upgraded.program().channel(39).name());
 	}
 
 	@Test

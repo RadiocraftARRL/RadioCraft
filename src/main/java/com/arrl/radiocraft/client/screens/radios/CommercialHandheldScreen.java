@@ -26,10 +26,10 @@ import java.util.Locale;
  * turning it to OFF switches the radio off, up from OFF switches it on). Click turns a knob one step, right click one
  * back, the wheel or a drag around it turns it too. The RX and TX lamps light as on the radio.
  * <p>
- * The upgraded radio also has its LCD (channel name, or who is talking; zone, channel and mode) and its keypad: <b>B</b>
- * goes one zone down and <b>C</b> one zone up (A = channels 1-16, B 17-32, C 33-40; they stop at A and C), <b>A</b>
- * shows the radio's unit ID and <b>D</b> the channel's frequency for a few seconds. The number keys beep and do
- * nothing more. There is nothing to program here: a radio shop does that (CPS or the Radio Cloner). Hold right click
+ * The upgraded radio also has its LCD (channel name, or who is talking; zone, channel and mode) and its keypad: <b>A</b>,
+ * <b>B</b>, <b>C</b> and <b>D</b> pick that zone (A = channels 1-16, B 17-32, C 33-48, D 49-64; 2026-11-06, they stepped
+ * down and up through three zones before), <b>*</b> shows the radio's unit ID and <b>#</b> the channel's frequency for
+ * a few seconds (they were on A and D). The number keys beep and do nothing more. There is nothing to program here: a radio shop does that (CPS or the Radio Cloner). Hold right click
  * with the radio in hand to talk, as always.
  * <p>
  * The texture regions are those of tools/commercial_handheld_models.py.
@@ -42,7 +42,7 @@ public class CommercialHandheldScreen extends Screen {
 	private static final ResourceLocation UPGRADED = Radiocraft.id("textures/item/upgraded_commercial_handheld.png");
 	/** The upgraded radio's keypad, as printed on its keys. */
 	private static final String[] KEYS = {"123A", "456B", "789C", "*0#D"};
-	/** How long (ticks) A or D keeps its line on the LCD. */
+	/** How long (ticks) * or # keeps its line on the LCD. */
 	private static final int INFO_TICKS = 60;
 
 	private final int index;
@@ -121,13 +121,13 @@ public class CommercialHandheldScreen extends Screen {
 		char label = KEYS[key / 4].charAt(key % 4);
 		CommercialProgram program = CommercialHandheldItem.program(stack);
 		switch(label) {
-			case 'B', 'C' -> {
-				int delta = label == 'B' ? -1 : 1;
-				CommercialHandheldItem.stepZone(stack, delta);
-				SCommercialRadioPacket.zone(index, delta);
+			case 'A', 'B', 'C', 'D' -> { // Straight to that zone.
+				int zone = label - 'A';
+				CommercialHandheldItem.selectZone(stack, zone);
+				SCommercialRadioPacket.zone(index, zone);
 			}
-			case 'A' -> showInfo(program.unitId() > 0 ? CommercialProgram.unitText(program.unitId()) : "NO ID");
-			case 'D' -> {
+			case '*' -> showInfo(program.unitId() > 0 ? CommercialProgram.unitText(program.unitId()) : "NO ID");
+			case '#' -> {
 				CommercialChannel channel = program.active();
 				showInfo(channel == null ? "NO CH" : String.format(Locale.ROOT, "%.4f", channel.rxHz() / 1e6));
 			}
@@ -281,8 +281,9 @@ public class CommercialHandheldScreen extends Screen {
 		else {
 			int key = keyAt(mouseX, mouseY);
 			char label = key < 0 ? ' ' : KEYS[key / 4].charAt(key % 4);
-			if(label == 'A' || label == 'B' || label == 'C' || label == 'D')
-				graphics.renderTooltip(font, Component.translatable(Radiocraft.translationKey("screen", "commercial.key_" + Character.toLowerCase(label))), mouseX, mouseY);
+			String help = label >= 'A' && label <= 'D' ? "commercial.key_" + Character.toLowerCase(label) : label == '*' ? "commercial.key_star" : label == '#' ? "commercial.key_hash" : null;
+			if(help != null)
+				graphics.renderTooltip(font, Component.translatable(Radiocraft.translationKey("screen", help)), mouseX, mouseY);
 		}
 	}
 

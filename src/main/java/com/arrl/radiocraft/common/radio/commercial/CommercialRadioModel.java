@@ -17,10 +17,10 @@ public enum CommercialRadioModel {
 	BASIC_HANDHELD("basic_handheld", 16, false, false, false, Band.VHF_COMMERCIAL),
 	/**
 	 * 1990s fire-service handheld: VHF high band and the 2m ham band, digital and encryption, a small display with
-	 * the channel name and zone. 40 channels: its 16-position knob plus a zone switch (A = 1-16, B = 17-32,
-	 * C = 33-40).
+	 * the channel name and zone. 64 channels: its 16-position knob in four zones picked with its A-D keys (A = 1-16,
+	 * B = 17-32, C = 33-48, D = 49-64).
 	 */
-	UPGRADED_HANDHELD("upgraded_handheld", 40, true, true, true, Band.VHF_COMMERCIAL, "2m"),
+	UPGRADED_HANDHELD("upgraded_handheld", 64, true, true, true, Band.VHF_COMMERCIAL, "2m"),
 	/**
 	 * VHF high band mobile, in a dash or on a desk with its hand mic: analog and digital, encryption, a display.
 	 * 16 channels.
@@ -56,7 +56,7 @@ public enum CommercialRadioModel {
 
 	/**
 	 * How many zones of {@link CommercialProgram#KNOB_POSITIONS} channels its zone switch has: 1 (no zone switch) for a
-	 * 16-channel radio, 3 (A, B, C) for 40.
+	 * 16-channel radio, 4 (A, B, C, D) for 64.
 	 */
 	public int zones() {
 		return CommercialProgram.zonesFor(channels);

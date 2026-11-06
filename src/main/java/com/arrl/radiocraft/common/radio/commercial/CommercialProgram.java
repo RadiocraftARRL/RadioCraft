@@ -13,8 +13,8 @@ import java.util.List;
 /**
  * A commercial radio's programming: its channel list (position 0 is channel 1) and the channel position selected.
  * Every radio has a {@link #KNOB_POSITIONS}-position channel knob; a radio holding more channels than that (the upgraded
- * handheld, 40) also has a zone switch, each zone {@link #KNOB_POSITIONS} channels: zone A is channels 1-16, B 17-32,
- * C 33-48 (of which a 40-channel radio has 33-40; the knob's other positions in zone C are unprogrammed). So
+ * handheld, 64) also has a zone switch, each zone {@link #KNOB_POSITIONS} channels: zone A is channels 1-16, B 17-32,
+ * C 33-48, D 49-64 (2026-11-06; it held 40 in zones A-C before, and such programs load unchanged, zone D blank). So
  * {@code selected} is {@code zone * 16 + knob}. Positions past the end of the list, or holding
  * {@link CommercialChannel#BLANK}, are unprogrammed. How many channels a radio holds is its model's
  * ({@link CommercialRadioModel#channelCount}, {@link CommercialRadioModel#fit}); this record only enforces the largest. Stored as the {@code radiocraft:commercial_program} data component on handhelds and on the mobile's
@@ -40,7 +40,7 @@ public record CommercialProgram(List<CommercialChannel> channels, int selected, 
 	/** Positions of the channel knob on every commercial radio here: a 16-position rotary switch. */
 	public static final int KNOB_POSITIONS = 16;
 	/** The most channels any model holds (the upgraded handheld). */
-	public static final int MAX_CHANNELS = 40;
+	public static final int MAX_CHANNELS = 64;
 	/** Zones on the largest zone switch. */
 	public static final int MAX_ZONES = zonesFor(MAX_CHANNELS);
 	/** Selectable positions on the largest radio: every zone's every knob position. */
@@ -86,7 +86,7 @@ public record CommercialProgram(List<CommercialChannel> channels, int selected, 
 		return channel.isBlank() ? null : channel;
 	}
 
-	/** The zone switch positions a radio holding {@code channels} channels needs: 1 for 16 or fewer, 3 for 40. */
+	/** The zone switch positions a radio holding {@code channels} channels needs: 1 for 16 or fewer, 4 for 64. */
 	public static int zonesFor(int channels) {
 		return Math.max(1, (channels + KNOB_POSITIONS - 1) / KNOB_POSITIONS);
 	}

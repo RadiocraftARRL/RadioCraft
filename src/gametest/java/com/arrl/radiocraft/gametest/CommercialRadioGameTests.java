@@ -302,9 +302,9 @@ public class CommercialRadioGameTests {
 		ItemStack radio = new ItemStack(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());
 		player.getInventory().setItem(0, radio);
 		List<CommercialChannel> channels = new ArrayList<>();
-		for(int i = 0; i < 40; i++)
+		for(int i = 0; i < 64; i++)
 			channels.add(CommercialChannel.simplex("CH" + (i + 1), 155_300_000.0F + i * 12_500.0F));
-		helper.assertTrue(CommercialProgramming.write(CommercialProgramming.of(radio), channels).ok(), "40 channels did not fit");
+		helper.assertTrue(CommercialProgramming.write(CommercialProgramming.of(radio), channels).ok(), "64 channels did not fit");
 		ItemStack held = player.getInventory().getItem(0);
 		IVHFHandheldCapability cap = held.getCapability(RadiocraftCapabilities.VHF_HANDHELDS);
 
@@ -333,15 +333,18 @@ public class CommercialRadioGameTests {
 		helper.assertTrue(CommercialHandheldItem.program(held).knob() == 0, "The knob stops at 1, was " + (CommercialHandheldItem.program(held).knob() + 1));
 		CommercialHandheldItem.turnChannelKnob(held, 3);
 
-		// B and C: zone down and up, the knob kept, stopping at A and C.
+		// A, B, C and D pick their zone, the knob kept; anything past D is D.
 		int[] zones = new int[6];
-		int[] deltas = {1, 1, 1, -1, -1, -1};
-		for(int i = 0; i < deltas.length; i++) {
-			new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.ZONE, deltas[i]).apply(player);
+		int[] keys = {3, 0, 2, 1, 9, -2};
+		for(int i = 0; i < keys.length; i++) {
+			new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.ZONE, keys[i]).apply(player);
 			zones[i] = CommercialHandheldItem.program(held).zone();
 			helper.assertTrue(CommercialHandheldItem.program(held).knob() == 3, "A zone key keeps the knob on 4");
 		}
-		helper.assertTrue(java.util.Arrays.equals(zones, new int[] {1, 2, 2, 1, 0, 0}), "C, C, C, B, B, B should give zones B C C B A A, was " + java.util.Arrays.toString(zones));
+		helper.assertTrue(java.util.Arrays.equals(zones, new int[] {3, 0, 2, 1, 3, 0}), "D, A, C, B and two out of range should give zones D A C B D A, was " + java.util.Arrays.toString(zones));
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.ZONE, 3).apply(player);
+		CommercialChannel inD = CommercialHandheldItem.activeChannel(held);
+		helper.assertTrue(inD != null && inD.name().equals("CH52"), "Zone D, knob 4 is channel 52, was " + inD);
 		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.ZONE, 1).apply(player);
 		CommercialChannel on = CommercialHandheldItem.activeChannel(held);
 		helper.assertTrue(on != null && on.name().equals("CH20") && Math.abs(cap.getFrequencyHertz() - (155_300_000.0F + 19 * 12_500.0F)) < 1.0F,
@@ -352,7 +355,7 @@ public class CommercialRadioGameTests {
 		player.getInventory().setItem(1, basic);
 		new SCommercialRadioPacket(1, 0L, SCommercialRadioPacket.CHANNEL, 5).apply(player);
 		new SCommercialRadioPacket(1, 0L, SCommercialRadioPacket.ZONE, 1).apply(player);
-		helper.assertTrue(CommercialHandheldItem.program(player.getInventory().getItem(1)).selected() == 5, "B and C do nothing on the basic radio");
+		helper.assertTrue(CommercialHandheldItem.program(player.getInventory().getItem(1)).selected() == 5, "Zone keys do nothing on the basic radio");
 		new SCommercialRadioPacket(1, 0L, SCommercialRadioPacket.VOLUME, 7).apply(player);
 		helper.assertTrue(CommercialHandheldItem.volumeKnob(player.getInventory().getItem(1)) == 7, "The basic radio's volume knob");
 		helper.succeed();

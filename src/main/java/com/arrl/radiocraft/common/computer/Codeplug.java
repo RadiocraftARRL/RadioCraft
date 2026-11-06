@@ -13,15 +13,15 @@ import java.util.List;
 
 /**
  * A commercial radio's programming as the radio programmer (CPS, 1.12 step 6) handles it: the model it was read from
- * and its channel positions, blanks included: always {@link CommercialProgram#MAX_CHANNELS} (40) here, of which the
+ * and its channel positions, blanks included: always {@link CommercialProgram#MAX_CHANNELS} (64) here, of which the
  * radio holds {@link #capacity} (16 on every model but the upgraded handheld). A {@code .CPG} saved with 16 positions
- * (before 40-channel radios) loads with the rest blank. A key the radio would not let the programmer read is
+ * (before zoned radios; and one of 40 from before the upgraded handheld held 64) loads with the rest blank. A key the radio would not let the programmer read is
  * {@link CommercialChannel#KEY_HIDDEN} here, as {@code CommercialProgramming.read} gave it: written back to the same
  * radio it keeps that radio's key; written to another it is refused. So a codeplug never holds a key that was not
  * readable. Saved as a {@code .CPG} file ({@link ComputerFileFormats#CODEPLUG}) and sent between the screen and the
  * server in the same layout ({@link #channelTag}). Pure (only NBT), so it is unit tested.
  * <p>
- * Layout: {@code model} (the model id, may be ""), {@code channels} (a list of up to 40 compounds: {@code name}, {@code rx},
+ * Layout: {@code model} (the model id, may be ""), {@code channels} (a list of up to 64 compounds: {@code name}, {@code rx},
  * {@code tx} (floats, Hz), {@code dig}, {@code tone}, {@code key} (int), {@code readable}), {@code unit} (the unit ID,
  * 0 for none) and {@code contacts} (a list of {@code id} and {@code alias}), both 1.12 playtest fixes 2 (older files
  * have neither: no ID, no contacts).

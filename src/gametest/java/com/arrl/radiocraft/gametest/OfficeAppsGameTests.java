@@ -185,7 +185,7 @@ public class OfficeAppsGameTests {
 		// Sneak: read the radio into the CPS.
 		helper.assertTrue(HandProgramming.use(computer, player, handheld, true), "the read was not taken");
 		Codeplug read = computer.handSession(player.getUUID()).plug;
-		helper.assertTrue(read.model().equals("upgraded_handheld") && read.capacity() == 40, "read " + read.model());
+		helper.assertTrue(read.model().equals("upgraded_handheld") && read.capacity() == 64, "read " + read.model());
 		helper.assertTrue(read.channel(2).keyId() == CommercialChannel.KEY_HIDDEN, "the hidden key read out as " + read.channel(2).keyId());
 		helper.assertFalse(read.toTag().toString().contains(":321"), "the key is in the codeplug: " + read.toTag());
 

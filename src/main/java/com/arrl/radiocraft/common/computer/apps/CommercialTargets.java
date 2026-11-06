@@ -81,7 +81,7 @@ public final class CommercialTargets {
 
 	/**
 	 * What the screen shows of a radio: its names, where it is, and what its model can be programmed with
-	 * ({@code capacity}: how many channels it holds, 16 or 40).
+	 * ({@code capacity}: how many channels it holds, 16 or 64).
 	 */
 	public static CompoundTag describe(Found found) {
 		CompoundTag out = new CompoundTag();

@@ -39,7 +39,7 @@ import java.util.Map;
 
 /**
  * CPS, the commercial radio programmer (1.12 step 6; "customer programming software", as the radio shops call it):
- * reads a commercial radio's channels (16, or 40 on the upgraded handheld in zones A-C; the list scrolls), lets them be edited, and writes them back, all or nothing, refusing what the
+ * reads a commercial radio's channels (16, or 64 on the upgraded handheld in zones A-D; the list scrolls), lets them be edited, and writes them back, all or nothing, refusing what the
  * model cannot do. A placed mobile wired to the computer is read and written through the cable (F5, F6). A handheld or
  * a mobile in item form is read or written by hand: F5 or F6 (with no radio wired, or "a radio in your hand" picked)
  * asks the player to press Continue, the screen closes, and right clicking the computer holding the radio reads or
@@ -96,7 +96,7 @@ public final class ProgrammerApp extends DosApp {
 		return CommercialRadioModel.byId(plug.model());
 	}
 
-	/** How many channel positions the codeplug's radio holds (all 40 with no model). */
+	/** How many channel positions the codeplug's radio holds (all 64 with no model). */
 	private int capacity() {
 		return plug.capacity();
 	}
@@ -178,7 +178,7 @@ public final class ProgrammerApp extends DosApp {
 			// The codeplug is meant for the radio connected, if there is one: its model checks the channels.
 			plug = radio == null ? loaded : loaded.forModel(radio.getString("model"));
 			int dropped = plug.beyondCapacity();
-			if(dropped > 0) // A 40-channel codeplug in a 16-channel radio: what does not fit is left out, and said so.
+			if(dropped > 0) // A 64-channel codeplug in a 16-channel radio: what does not fit is left out, and said so.
 				plug = new Codeplug(plug.model(), plug.channels().subList(0, plug.capacity()), plug.unitId(), plug.contacts());
 			fileName = ComputerStorage.normalise(name);
 			problems.clear();
@@ -630,7 +630,7 @@ public final class ProgrammerApp extends DosApp {
 		g.put(1, 3, String.format(Locale.ROOT, " %2s  %-8s %10s %10s %-4s %5s  %-6s %s", Dos.tr("cps.col.ch"), Dos.tr("cps.col.name"), Dos.tr("cps.col.rx"),
 				Dos.tr("cps.col.tx"), Dos.tr("cps.col.mode"), Dos.tr("cps.col.tone"), Dos.tr("cps.col.key"), Dos.tr("cps.col.readable")), DosColours.TEXT_FG, bg);
 		g.hline(1, 4, TextGrid.COLS - 2, TextGrid.H, fg, bg);
-		list.render(g, 1, LIST_ROW, TextGrid.COLS - 2, CommercialProgram.KNOB_POSITIONS, DosColours.TEXT_FG, bg, !hasDialog()); // 16 rows; 40 scroll.
+		list.render(g, 1, LIST_ROW, TextGrid.COLS - 2, CommercialProgram.KNOB_POSITIONS, DosColours.TEXT_FG, bg, !hasDialog()); // 16 rows; 64 scroll.
 
 		int selected = list.selected();
 		String problem = problems.get(selected);

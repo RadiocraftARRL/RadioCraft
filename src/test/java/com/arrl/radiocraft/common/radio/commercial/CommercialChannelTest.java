@@ -67,53 +67,64 @@ class CommercialChannelTest {
 		assertEquals(1, written.with(5, CommercialChannel.BLANK).channels().size(), "trailing blanks are trimmed");
 	}
 
-	private static List<CommercialChannel> forty() {
-		List<CommercialChannel> forty = new ArrayList<>();
-		for(int i = 0; i < 40; i++)
-			forty.add(CommercialChannel.simplex("CH" + (i + 1), 151_000_000.0F + i * 12_500.0F));
-		return forty;
+	private static List<CommercialChannel> channels(int count) {
+		List<CommercialChannel> out = new ArrayList<>();
+		for(int i = 0; i < count; i++)
+			out.add(CommercialChannel.simplex("CH" + (i + 1), 151_000_000.0F + i * 12_500.0F));
+		return out;
+	}
+
+	/** A full upgraded handheld: 64 channels, four zones of 16. */
+	private static List<CommercialChannel> full() {
+		return channels(64);
 	}
 
 	@Test
 	void capacityIsPerModel() {
 		assertEquals(16, CommercialRadioModel.BASIC_HANDHELD.channelCount());
-		assertEquals(40, CommercialRadioModel.UPGRADED_HANDHELD.channelCount());
+		assertEquals(64, CommercialRadioModel.UPGRADED_HANDHELD.channelCount());
 		assertEquals(16, CommercialRadioModel.VHF_MOBILE.channelCount());
 		assertEquals(16, CommercialRadioModel.LOW_BAND_MOBILE.channelCount());
 		assertFalse(CommercialRadioModel.BASIC_HANDHELD.hasZones());
-		assertEquals(3, CommercialRadioModel.UPGRADED_HANDHELD.zones(), "zones A, B and C");
-		assertEquals(40, CommercialProgram.MAX_CHANNELS);
+		assertEquals(4, CommercialRadioModel.UPGRADED_HANDHELD.zones(), "zones A, B, C and D");
+		assertEquals(64, CommercialProgram.MAX_CHANNELS);
+		assertEquals(64, CommercialProgram.MAX_POSITIONS, "every position of four full zones");
 	}
 
 	@Test
 	void theZoneSwitchKeepsTheKnob() {
-		CommercialProgram program = new CommercialProgram(forty(), 3); // Zone A, knob 4.
-		assertEquals(40, program.channels().size());
-		CommercialProgram zoneB = program.zone(1, 3);
+		CommercialProgram program = new CommercialProgram(full(), 3); // Zone A, knob 4.
+		assertEquals(64, program.channels().size());
+		CommercialProgram zoneB = program.zone(1, 4);
 		assertEquals(19, zoneB.selected(), "zone B, knob 4 is channel 20");
 		assertEquals("CH20", zoneB.active().name());
 		assertEquals('B', CommercialProgram.zoneLetter(zoneB.zone()));
 		assertEquals(3, zoneB.knob());
 		assertEquals(31, zoneB.turn(40).selected(), "the knob stops at 16 inside its zone");
 		assertEquals(16, zoneB.turn(-40).selected(), "and at 1");
-		CommercialProgram zoneC = zoneB.turn(40).zone(2, 3);
+		CommercialProgram zoneC = zoneB.turn(40).zone(2, 4);
 		assertEquals(47, zoneC.selected(), "zone C, knob 16");
-		assertNull(zoneC.active(), "zone C has only channels 33-40");
-		assertEquals("CH40", zoneC.turn(-8).active().name());
-		assertEquals(2, program.zone(9, 3).zone(), "the zone switch has three positions");
+		assertEquals("CH48", zoneC.active().name());
+		CommercialProgram zoneD = zoneC.zone(3, 4);
+		assertEquals(63, zoneD.selected(), "zone D, knob 16");
+		assertEquals("CH64", zoneD.active().name());
+		assertEquals(3, program.zone(9, 4).zone(), "the zone switch has four positions");
+		CommercialProgram old = new CommercialProgram(channels(40), 0).zone(3, 4);
+		assertNull(old.active(), "a 40-channel program has nothing in zone D");
+		assertEquals("CH40", old.zone(2, 4).turn(-8).active().name());
 		assertEquals(0, program.zone(2, 1).zone(), "a radio with no zone switch stays in A");
 	}
 
 	@Test
 	void fittingToASmallerRadio() {
-		CommercialProgram program = new CommercialProgram(forty(), 37); // Zone C, knob 6.
+		CommercialProgram program = new CommercialProgram(full(), 53); // Zone D, knob 6.
 		assertSame(program, CommercialRadioModel.UPGRADED_HANDHELD.fit(program));
 		CommercialProgram small = CommercialRadioModel.VHF_MOBILE.fit(program);
 		assertEquals(16, small.channels().size(), "channels past 16 dropped");
 		assertEquals(5, small.selected(), "the knob kept, in zone A");
-		List<CommercialChannel> tooMany = new ArrayList<>(forty());
+		List<CommercialChannel> tooMany = new ArrayList<>(full());
 		tooMany.add(CommercialChannel.simplex("X", 152_000_000.0F));
-		assertEquals(40, new CommercialProgram(tooMany, 0).channels().size(), "never more than 40 stored");
+		assertEquals(64, new CommercialProgram(tooMany, 0).channels().size(), "never more than 64 stored");
 	}
 
 	@Test
@@ -130,35 +141,37 @@ class CommercialChannelTest {
 		assertEquals(5, loaded.selected());
 		assertEquals(0, loaded.zone());
 		assertEquals("CH6", loaded.active().name());
-		assertSame(loaded, CommercialRadioModel.UPGRADED_HANDHELD.fit(loaded), "unchanged on the 40-channel handheld");
+		assertSame(loaded, CommercialRadioModel.UPGRADED_HANDHELD.fit(loaded), "unchanged on the 64-channel handheld");
 		assertSame(loaded, CommercialRadioModel.BASIC_HANDHELD.fit(loaded), "and on the 16-channel one");
 		CommercialProgram again = CommercialProgram.CODEC.parse(JsonOps.INSTANCE, CommercialProgram.CODEC.encodeStart(JsonOps.INSTANCE, loaded).getOrThrow()).getOrThrow();
 		assertEquals(loaded, again);
 	}
 
 	@Test
-	void theUpgradedHandheldTakesFortyAndTheBrickSixteen() {
+	void theUpgradedHandheldTakesSixtyFourAndTheBrickSixteen() {
 		Bench upgraded = new Bench(CommercialRadioModel.UPGRADED_HANDHELD);
-		assertTrue(CommercialProgramming.write(upgraded, forty()).ok());
-		assertEquals(40, CommercialProgramming.read(upgraded).size());
-		assertEquals("CH40", CommercialProgramming.read(upgraded).get(39).name());
-		assertTrue(CommercialProgramming.writeChannel(upgraded, 39, CommercialChannel.simplex("LAST", 152_000_000.0F)).ok());
-		assertFalse(CommercialProgramming.writeChannel(upgraded, 40, CommercialChannel.BLANK).ok(), "no 41st channel");
-		CommercialProgramming.select(upgraded, 33);
-		assertEquals("CH34", upgraded.program().active().name());
-		assertEquals(2, upgraded.program().zone());
+		assertTrue(CommercialProgramming.write(upgraded, full()).ok());
+		assertEquals(64, CommercialProgramming.read(upgraded).size());
+		assertEquals("CH64", CommercialProgramming.read(upgraded).get(63).name());
+		assertTrue(CommercialProgramming.writeChannel(upgraded, 63, CommercialChannel.simplex("LAST", 152_000_000.0F)).ok());
+		assertFalse(CommercialProgramming.writeChannel(upgraded, 64, CommercialChannel.BLANK).ok(), "no 65th channel");
+		CommercialProgramming.select(upgraded, 49);
+		assertEquals("CH50", upgraded.program().active().name());
+		assertEquals(3, upgraded.program().zone());
+		assertTrue(CommercialProgramming.write(upgraded, channels(40)).ok(), "a 40-channel codeplug still goes in");
+		assertEquals(40, upgraded.program().programmedCount());
 
 		Bench brick = new Bench(CommercialRadioModel.BASIC_HANDHELD);
-		CommercialProgramming.Result refused = CommercialProgramming.write(brick, forty());
-		assertFalse(refused.ok(), "40 channels do not fit a 16-channel radio");
+		CommercialProgramming.Result refused = CommercialProgramming.write(brick, full());
+		assertFalse(refused.ok(), "64 channels do not fit a 16-channel radio");
 		assertEquals("too_many_channels", refused.problems().getFirst().key());
 		assertEquals(16, refused.problems().getFirst().position(), "the first channel that does not fit");
-		List<CommercialChannel> padded = new ArrayList<>(forty().subList(0, 16));
-		while(padded.size() < 40)
+		List<CommercialChannel> padded = new ArrayList<>(full().subList(0, 16));
+		while(padded.size() < 64)
 			padded.add(CommercialChannel.BLANK);
 		assertTrue(CommercialProgramming.write(brick, padded).ok(), "blanks past 16 are fine");
 		assertEquals(16, CommercialProgramming.read(brick).size());
-		CommercialProgramming.select(brick, 33);
+		CommercialProgramming.select(brick, 49);
 		assertEquals(0, brick.program().zone(), "no zone switch");
 		assertEquals(1, brick.program().selected(), "the knob position kept");
 	}

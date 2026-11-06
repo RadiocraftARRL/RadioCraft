@@ -20,8 +20,8 @@ import org.jetbrains.annotations.NotNull;
  * The user worked a commercial radio's controls: the handheld in inventory slot {@code slot}, or (with {@code slot} -1)
  * the mobile at {@code pos} whose screen they have open. {@code action} {@link #CHANNEL}: the channel knob to
  * {@code value} (a 0-based position); {@link #VOLUME} (handhelds): the power/volume knob to {@code value} (0 = off,
- * see {@link CommercialHandheldItem#setVolumeKnob}); {@link #ZONE} (the upgraded handheld's B and C keys): one zone
- * down ({@code value} -1) or up (+1). Turning knobs is all a user can do to a commercial radio's channels; programming
+ * see {@link CommercialHandheldItem#setVolumeKnob}); {@link #ZONE} (the upgraded handheld's A-D keys): zone
+ * {@code value} (0 = A). Turning knobs is all a user can do to a commercial radio's channels; programming
  * goes through {@link com.arrl.radiocraft.common.radio.commercial.CommercialProgramming}.
  */
 public record SCommercialRadioPacket(int slot, long pos, int action, int value) implements CustomPacketPayload {
@@ -60,7 +60,7 @@ public record SCommercialRadioPacket(int slot, long pos, int action, int value) 
 						CommercialHandheldItem.selectChannel(stack, value);
 				}
 				case VOLUME -> CommercialHandheldItem.setVolumeKnob(stack, value);
-				case ZONE -> CommercialHandheldItem.stepZone(stack, value);
+				case ZONE -> CommercialHandheldItem.selectZone(stack, value);
 				default -> {}
 			}
 		}
@@ -81,9 +81,9 @@ public record SCommercialRadioPacket(int slot, long pos, int action, int value) 
 		PacketDistributor.sendToServer(new SCommercialRadioPacket(slot, 0L, VOLUME, position));
 	}
 
-	/** The handheld in {@code slot} one zone down ({@code delta} -1, its B key) or up (+1, its C key). */
-	public static void zone(int slot, int delta) {
-		PacketDistributor.sendToServer(new SCommercialRadioPacket(slot, 0L, ZONE, delta));
+	/** The handheld in {@code slot} on zone {@code zone} (0 = A: its A to D keys). */
+	public static void zone(int slot, int zone) {
+		PacketDistributor.sendToServer(new SCommercialRadioPacket(slot, 0L, ZONE, zone));
 	}
 
 	/** The mobile at {@code pos} (its screen open) on knob position {@code position}. */

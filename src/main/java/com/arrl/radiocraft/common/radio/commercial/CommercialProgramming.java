@@ -20,7 +20,7 @@ import java.util.List;
  * <ul>
  *     <li>Find the radio with {@link #of(ItemStack)} (a handheld, or a mobile's item before it is placed) or
  *     {@link #of(Level, BlockPos)} (a placed mobile).</li>
- *     <li>{@link #read} gives the radio's channel positions (16, or 40 on the upgraded handheld), with every key the radio marks as not readable hidden
+ *     <li>{@link #read} gives the radio's channel positions (16, or 64 on the upgraded handheld), with every key the radio marks as not readable hidden
  *     ({@link CommercialChannel#KEY_HIDDEN}).</li>
  *     <li>{@link #write} (or {@link #writeChannel} for one position) checks every channel against the radio's model and
  *     writes all or nothing. A channel written back with a hidden key keeps the key the radio has at that position.</li>
@@ -77,7 +77,7 @@ public final class CommercialProgramming {
 	}
 
 	/**
-	 * Every channel position the radio holds ({@link CommercialRadioModel#channelCount}: 16, or 40 on the upgraded
+	 * Every channel position the radio holds ({@link CommercialRadioModel#channelCount}: 16, or 64 on the upgraded
 	 * handheld), blanks included, keys hidden where they may not be read.
 	 */
 	public static List<CommercialChannel> read(Target target) {

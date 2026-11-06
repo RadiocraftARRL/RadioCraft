@@ -715,15 +715,17 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("screen", "commercial.off"), "OFF");
 		provider.add(Radiocraft.translationKey("screen", "commercial.channel_knob_help"), "Channel knob, 1-16: click to turn, right click to turn back, or scroll or drag it");
 		provider.add(Radiocraft.translationKey("screen", "commercial.volume_knob_help"), "Power and volume: turn it to OFF to switch the radio off, up from OFF to switch it on");
-		provider.add(Radiocraft.translationKey("screen", "commercial.key_a"), "A: show this radio's unit ID");
-		provider.add(Radiocraft.translationKey("screen", "commercial.key_b"), "B: zone down (C to B to A)");
-		provider.add(Radiocraft.translationKey("screen", "commercial.key_c"), "C: zone up (A to B to C)");
-		provider.add(Radiocraft.translationKey("screen", "commercial.key_d"), "D: show the channel's frequency");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_a"), "Zone A: channels 1-16");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_b"), "Zone B: channels 17-32");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_c"), "Zone C: channels 33-48");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_d"), "Zone D: channels 49-64");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_star"), "*: show this radio's unit ID");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_hash"), "#: show the channel's frequency");
 		provider.add(Radiocraft.translationKey("message", "commercial.rx_out_of_range"), "The receive frequency is outside this radio's bands");
 		provider.add(Radiocraft.translationKey("message", "commercial.tx_out_of_range"), "The transmit frequency is outside this radio's bands");
 		provider.add(Radiocraft.translationKey("message", "commercial.no_digital"), "This radio has no digital voice");
 		provider.add(Radiocraft.translationKey("message", "commercial.no_encryption"), "This radio cannot encrypt");
-		provider.add(Radiocraft.translationKey("message", "commercial.too_many_channels"), "The radio has no room for this channel (16 channels, 40 on the upgraded handheld)");
+		provider.add(Radiocraft.translationKey("message", "commercial.too_many_channels"), "The radio has no room for this channel (16 channels, 64 on the upgraded handheld)");
 		provider.add(Radiocraft.translationKey("message", "commercial.no_such_channel"), "No such channel: 1 to 16");
 		provider.add(Radiocraft.translationKey("message", "commercial.hidden_key_unknown"), "The key is hidden and the radio has none on that channel to keep");
 	}

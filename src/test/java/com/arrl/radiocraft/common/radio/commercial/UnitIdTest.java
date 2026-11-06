@@ -133,7 +133,7 @@ class UnitIdTest {
 		assertTrue(CommercialProgramming.writeChannel(radio, 0, CommercialChannel.parse("SWAT|155.5|=|DIG|0|900|H")).ok());
 		assertTrue(CommercialProgramming.writeChannel(radio, 1, CommercialChannel.parse("OPS|155.7|=|DIG|0|55|R")).ok());
 		List<CommercialChannel> clone = CommercialProgramming.readForClone(radio);
-		assertEquals(40, clone.size());
+		assertEquals(64, clone.size());
 		assertEquals(0, clone.get(0).keyId(), "the hidden key stays on the radio");
 		assertTrue(clone.get(0).digital() && clone.get(0).keyReadable(), "the channel comes out clear digital");
 		assertEquals(55, clone.get(1).keyId(), "a readable key is copied");

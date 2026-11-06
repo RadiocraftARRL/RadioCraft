@@ -46,7 +46,7 @@ public final class FrequencyManagerHandler implements ComputerAppHandler {
 
 	/**
 	 * Writes {@code sent} into {@code radio} from channel position {@code start}, everything else as it was. Channels
-	 * past the radio's last position (16, or 40 on the upgraded handheld) are a problem ("too_many_channels"), as is
+	 * past the radio's last position (16, or 64 on the upgraded handheld) are a problem ("too_many_channels"), as is
 	 * anything the radio's model cannot do.
 	 */
 	public static CompoundTag export(CommercialTargets.Found radio, int start, List<CommercialChannel> sent) {

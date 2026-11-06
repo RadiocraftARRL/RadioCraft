@@ -83,7 +83,7 @@ public class RadioClonerGameTests {
 		helper.succeed();
 	}
 
-	/** The brick takes no digital (refused, nothing written); a 16-channel mobile takes the first 16 of 40. */
+	/** The brick takes no digital (refused, nothing written); a 16-channel mobile takes the first 16 of 20. */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
 	public static void commercialClonesRespectTheModel(GameTestHelper helper) {
 		ItemStack source = new ItemStack(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());

@@ -237,7 +237,7 @@ public final class FrequencyManagerApp extends DosApp {
 		}
 		RadioPicker.pick(this, session, app, radio -> {
 			int capacity = radio.contains("capacity") ? radio.getInt("capacity") : CommercialProgram.KNOB_POSITIONS;
-			if(sent.size() > capacity) { // 16 on most radios, 40 on the upgraded handheld.
+			if(sent.size() > capacity) { // 16 on most radios, 64 on the upgraded handheld.
 				session.message(Dos.tr("freqman.too_many", capacity), true);
 				return;
 			}
