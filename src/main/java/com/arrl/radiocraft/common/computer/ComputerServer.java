@@ -509,7 +509,8 @@ public final class ComputerServer {
 			return;
 		CompoundTag out = new CompoundTag();
 		out.putString("title", scanner.bedTitle());
-		byte[] image = scanner.scanImage();
+		com.arrl.radiocraft.common.qsl.QslCard qsl = scanner.scanQsl(); // A QSL card reads as its front (computer batch 3C).
+		byte[] image = qsl != null ? com.arrl.radiocraft.common.qsl.QslCards.frontPicture(qsl) : scanner.scanImage();
 		List<String> pages = image == null ? scanner.scanPages() : null;
 		if(image != null) {
 			out.putString("kind", "image");
@@ -530,10 +531,15 @@ public final class ComputerServer {
 		ScannerBlockEntity scanner = scanner(context, reply);
 		if(scanner == null)
 			return;
-		byte[] image = scanner.scanImage();
+		com.arrl.radiocraft.common.qsl.QslCard qsl = scanner.scanQsl();
+		byte[] image = qsl != null ? null : scanner.scanImage();
 		String name;
 		byte[] contents;
-		if(image != null) {
+		if(qsl != null) { // A QSL card is kept as a card file, for the QSL Designer, FAX and the BBS (computer batch 3C).
+			name = ComputerStorage.suggest(typed, com.arrl.radiocraft.common.qsl.QslCards.EXTENSION);
+			contents = com.arrl.radiocraft.common.qsl.QslCards.file(qsl);
+		}
+		else if(image != null) {
 			name = ComputerStorage.suggest(typed, ComputerFileFormats.IMAGE);
 			contents = image;
 		}

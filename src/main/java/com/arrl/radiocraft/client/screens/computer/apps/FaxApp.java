@@ -101,7 +101,8 @@ public final class FaxApp extends DosApp {
 	private void send() {
 		showDialog(new DosFilePicker(session, Dos.tr("fax.pick_title"), "", name -> {
 			String extension = ComputerStorage.extension(name);
-			if(!extension.equals(ComputerFileFormats.IMAGE) && !extension.equals(ComputerFileFormats.TEXT) && !extension.equals(ComputerFileFormats.BOOK)) {
+			if(!extension.equals(ComputerFileFormats.IMAGE) && !extension.equals(ComputerFileFormats.TEXT) && !extension.equals(ComputerFileFormats.BOOK)
+					&& !extension.equals(com.arrl.radiocraft.common.qsl.QslCards.EXTENSION)) { // QSL cards too (computer batch 3C).
 				showDialog(DosDialog.message(Dos.tr("error"), Dos.tr("fax.cannot_send_kind", extension)));
 				return;
 			}
@@ -152,6 +153,13 @@ public final class FaxApp extends DosApp {
 		String name = selected();
 		if(name == null)
 			return;
+		if(ComputerStorage.extension(name).equals(com.arrl.radiocraft.common.qsl.QslCards.EXTENSION)) { // A received QSL card: the QSL Designer shows and prints it.
+			if(session.isInstalled(ComputerApps.QSL))
+				session.launch(ComputerApps.QSL, name);
+			else
+				session.message(Dos.tr("qsl.need_designer"), true);
+			return;
+		}
 		if(ComputerStorage.extension(name).equals(ComputerFileFormats.IMAGE))
 			session.files().read(name, response -> {
 				if(!response.ok()) {
@@ -178,7 +186,13 @@ public final class FaxApp extends DosApp {
 			else
 				showError(response);
 		};
-		if(ComputerStorage.extension(name).equals(ComputerFileFormats.IMAGE))
+		if(ComputerStorage.extension(name).equals(com.arrl.radiocraft.common.qsl.QslCards.EXTENSION)) {
+			CompoundTag data = new CompoundTag();
+			data.putString("name", name);
+			data.putInt("count", 1);
+			session.app(ComputerApps.QSL, "print", data, done); // Needs the QSL Designer installed (the platform checks).
+		}
+		else if(ComputerStorage.extension(name).equals(ComputerFileFormats.IMAGE))
 			session.scanner().printImage(name, done);
 		else
 			session.scanner().printTextFile(name, done);

@@ -435,6 +435,9 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 	private int supplySlotFor(ItemStack document) {
 		if(com.arrl.radiocraft.common.photo.PhotoPrints.isPhoto(document) && !supplies.getStackInSlot(SLOT_PHOTO).isEmpty())
 			return SLOT_PHOTO;
+		// A QSL card prints as a card on paper; with no paper but an empty map, as a printout of its front (batch 3C).
+		if(com.arrl.radiocraft.common.qsl.QslCards.is(document) && supplies.getStackInSlot(SLOT_PAPER).isEmpty() && !supplies.getStackInSlot(SLOT_MAP).isEmpty())
+			return SLOT_MAP;
 		ItemStack blank = FileTransfer.blankFor(document);
 		return blank.is(Items.BOOK) ? SLOT_BOOK : blank.is(Items.MAP) ? SLOT_MAP : SLOT_PAPER;
 	}
@@ -501,6 +504,10 @@ public class RadioFaxBlockEntity extends BlockEntity implements MenuProvider, St
 		}
 		int supplySlot = supplySlotFor(document);
 		ItemStack copy = supplySlot == SLOT_PHOTO ? photoCopy(level, document) : FileTransfer.copy(document);
+		com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(document);
+		if(card != null && supplySlot == SLOT_MAP)
+			copy = com.arrl.radiocraft.common.photo.PhotoPrints.print(level, com.arrl.radiocraft.common.qsl.QslCards.frontPicture(card),
+					Component.translatable("item.radiocraft.qsl_card.printout", card.from()), List.of(), ScannerBlockEntity.PRINT_TINT, worldPosition);
 		copy = FileTransfer.materialise(level, copy, worldPosition); // A radio computer's picture has no map: it gets this blank (1.12 step 7).
 		int slot = receivedSlotFor(copy);
 		if(slot < 0) {

@@ -20,7 +20,8 @@ import java.util.Map;
  * Commands (any case): {@code ?} or {@code H} help; {@code L} the newest {@link #LIST_MAX} messages for the caller and the
  * bulletins; {@code LM} the caller's own; {@code LB} the bulletins; {@code R n} reads one; {@code SP call [subject]} and
  * {@code SB topic [subject]} send a personal message or a bulletin (subject asked for if missing, then body lines until
- * {@code /EX}; {@code /AB} gives up); {@code K n} kills one (its sender or addressee); {@code B} or {@code BYE} ends.
+ * {@code /EX}; {@code /AB} gives up); {@code K n} kills one (its sender or addressee); {@code D n} sends a message's
+ * attached QSL card to the caller as a file (computer batch 3C); {@code B} or {@code BYE} ends.
  * Callsigns match on their base (W1ABC-7 is W1ABC). Pure apart from NBT, so it is unit tested.
  */
 public final class PacketBbs {
@@ -40,10 +41,23 @@ public final class PacketBbs {
 	 * One message. A personal message is {@code to} a callsign; a bulletin is to a topic ({@code ALL}, {@code NET}...).
 	 * {@code time} is the game time it was saved; {@code read} is set when its addressee read it.
 	 */
-	public record Message(int number, String from, String to, String subject, String body, long time, boolean bulletin, boolean read) {
+	public record Message(int number, String from, String to, String subject, String body, long time, boolean bulletin, boolean read, CompoundTag attachment) {
+
+		public Message(int number, String from, String to, String subject, String body, long time, boolean bulletin, boolean read) {
+			this(number, from, to, subject, body, time, bulletin, read, new CompoundTag());
+		}
+
+		public Message {
+			attachment = attachment == null ? new CompoundTag() : attachment;
+		}
+
+		/** True if a QSL card is attached (computer batch 3C): {@code D n} sends it to the caller. */
+		public boolean hasCard() {
+			return !attachment.isEmpty();
+		}
 
 		public Message withRead() {
-			return new Message(number, from, to, subject, body, time, bulletin, true);
+			return new Message(number, from, to, subject, body, time, bulletin, true, attachment);
 		}
 
 		public CompoundTag toTag() {
@@ -56,12 +70,14 @@ public final class PacketBbs {
 			tag.putLong("time", time);
 			tag.putBoolean("bulletin", bulletin);
 			tag.putBoolean("read", read);
+			if(!attachment.isEmpty())
+				tag.put("qsl", attachment.copy());
 			return tag;
 		}
 
 		public static Message fromTag(CompoundTag tag) {
 			return new Message(tag.getInt("n"), tag.getString("from"), tag.getString("to"), tag.getString("subject"), tag.getString("body"),
-					tag.getLong("time"), tag.getBoolean("bulletin"), tag.getBoolean("read"));
+					tag.getLong("time"), tag.getBoolean("bulletin"), tag.getBoolean("read"), tag.getCompound("qsl"));
 		}
 	}
 
@@ -91,6 +107,11 @@ public final class PacketBbs {
 	private final List<Message> messages = new ArrayList<>(); // Oldest first.
 	private int nextNumber = 1;
 	private final Map<String, Session> sessions = new LinkedHashMap<>();
+	/** QSL cards callers asked for with {@code D n}, to send as files (computer batch 3C). */
+	private final List<Download> downloads = new ArrayList<>();
+
+	/** A card to send: {@code to} as it called (with its SSID), the message it is attached to. */
+	public record Download(String to, Message message) {}
 	private boolean modified = false;
 
 	// -------------------- THE MAILBOX --------------------
@@ -106,6 +127,27 @@ public final class PacketBbs {
 			if(message.number() == number)
 				return message;
 		return null;
+	}
+
+	/**
+	 * Saves a QSL card that came in as a file (computer batch 3C) as a personal message from {@code from} to {@code to}
+	 * with the card ({@code card}, its NBT) attached; null if the mailbox is full.
+	 */
+	@Nullable
+	public Message postCard(String from, String to, CompoundTag card, String about, long time) {
+		Message made = post(from, to, "QSL CARD DE " + base(from), about, false, time);
+		if(made == null)
+			return null;
+		Message withCard = new Message(made.number(), made.from(), made.to(), made.subject(), made.body(), made.time(), false, false, card.copy());
+		messages.set(messages.size() - 1, withCard);
+		return withCard;
+	}
+
+	/** The cards asked for since the last call, emptied. */
+	public List<Download> takeDownloads() {
+		List<Download> out = List.copyOf(downloads);
+		downloads.clear();
+		return out;
 	}
 
 	/** Saves a message; null if the mailbox is full. */
@@ -205,7 +247,7 @@ public final class PacketBbs {
 		}
 		if(text.isEmpty())
 			return out;
-		command(bbsCall, session, text, now, out);
+		command(bbsCall, from, session, text, now, out);
 		return out;
 	}
 
@@ -235,14 +277,16 @@ public final class PacketBbs {
 		out.add("MSG ABORTED");
 	}
 
-	private void command(String bbsCall, Session session, String text, long now, List<String> out) {
+	private void command(String bbsCall, String from, Session session, String text, long now, List<String> out) {
 		String[] words = text.split("\\s+", 3);
 		String cmd = words[0].toUpperCase(Locale.ROOT);
 		switch(cmd) {
 			case "?", "H", "HELP" -> {
 				out.add("CMDS: L=LIST LM=MINE LB=BULLETINS R n=READ K n=KILL B=BYE");
 				out.add("SP CALL [SUBJ]=SEND MSG  SB TOPIC [SUBJ]=SEND BULLETIN  /EX ENDS, /AB ABORTS");
+				out.add("D n=DOWNLOAD A QSL CARD (SENT AS A FILE TO YOUR STATION)");
 			}
+			case "D" -> download(session.call, from, number(words), out);
 			case "L" -> list(session.call, out, m -> m.bulletin() || mine(m, session.call));
 			case "LM" -> list(session.call, out, m -> !m.bulletin() && mine(m, session.call));
 			case "LB" -> list(session.call, out, Message::bulletin);
@@ -320,8 +364,32 @@ public final class PacketBbs {
 		out.add("MSG " + message.number() + (message.bulletin() ? " BULLETIN " : " ") + "FROM " + message.from() + " TO " + message.to());
 		out.add(cut("SUBJ: " + message.subject()));
 		out.addAll(split(message.body(), LINE_MAX));
+		if(message.hasCard())
+			out.add("[QSL CARD ATTACHED - D " + message.number() + " TO DOWNLOAD]");
 		out.add("END MSG " + message.number());
 		return out;
+	}
+
+	private void download(String caller, String from, int number, List<String> out) {
+		Message message = number < 0 ? null : find(number);
+		if(message == null) {
+			out.add(number < 0 ? "D NEEDS A NUMBER: D 12" : "NO MSG " + number);
+			return;
+		}
+		if(!message.hasCard()) {
+			out.add("MSG " + number + " HAS NO QSL CARD");
+			return;
+		}
+		if(!mine(message, caller)) {
+			out.add("MSG " + number + " IS NOT FOR YOU");
+			return;
+		}
+		downloads.add(new Download(from, message));
+		out.add("SENDING QSL CARD " + number + " TO " + cut(from));
+		if(!message.read() && base(message.to()).equals(caller)) {
+			messages.set(messages.indexOf(message), message.withRead());
+			modified = true;
+		}
 	}
 
 	private void kill(String caller, int number, List<String> out) {

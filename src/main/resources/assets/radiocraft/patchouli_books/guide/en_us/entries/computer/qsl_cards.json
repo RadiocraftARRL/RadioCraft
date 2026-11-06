@@ -1,0 +1,43 @@
+{
+  "name": "QSL Cards",
+  "icon": "radiocraft:qsl_card",
+  "category": "radiocraft:computer",
+  "sortnum": 23,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "QSL Cards",
+      "text": "A $(item)QSL card$() confirms a contact: your callsign on the front, the details of the contact on the back. Design them in the $(item)QSL Designer$() (QSL), print them on the $(l:radiocraft:computer/scanner)scanner$(), fill them in by hand and send them."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Designing",
+      "text": "Ins makes a template. The front: your callsign large (or left blank, so anyone can write theirs: make a stack for a friend with no computer), four lines of text, colours, a border and a picture from an .IMG file (an SSTV picture, a photo, a chart). The back: a heading, the fields as a table or lines, two lines of your own. Tab turns the preview over."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Printing",
+      "text": "F5 on a template prints a run of identical blank cards, one sheet of paper or photo paper each. They stack.$(br2)Right click a blank card in your hand to fill it in: who it is for, band, frequency, mode, report and notes. The date and time go in by themselves. $(thing)Sign$() locks the card for good."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cards in Hand",
+      "text": "A card is held like a map. Right click a signed card (or sneak and right click any) to turn it over. The tooltip says from, to, date and band. An item frame shows the front. A $(item)QSL Album$() keeps up to 48 cards: right click it with cards in your inventory, and right click it in hand to page through them."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Sending Cards",
+      "text": "Hand them over, or fax them: a card in a $(l:radiocraft:digital/radio_fax)radio fax$() prints at the far end as a copy on paper (a printout with only empty maps). From a computer: F6 scans a card into a .QSL file, which FAX sends. F7 sends a signed card to a $(l:radiocraft:computer/packet_bbs)Packet BBS$(); the station it is for reads it there and types D and the number, and their computer keeps it to print."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_qsl",
+      "text": "A blank floppy and an ink sac."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:qsl_album",
+      "text": "The QSL Album: a book, leather and two sheets of paper."
+    }
+  ]
+}

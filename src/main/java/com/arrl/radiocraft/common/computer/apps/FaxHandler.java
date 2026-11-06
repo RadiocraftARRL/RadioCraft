@@ -41,7 +41,8 @@ import java.util.List;
  * The radio fax program's server side (1.12 step 7): the computer as a fax machine with no paper, through the radio
  * interfaces on its station bus ({@link FaxModem}, the machine's own conversation, so it faxes the radio fax machines and
  * they fax it). It sends a picture ({@code .IMG}, which the far machine prints on a blank map) or a text or book file
- * ({@code .TXT}, {@code .BOK}, which prints as a written book); what it receives it keeps as files, {@code FAX00001.IMG}
+ * ({@code .TXT}, {@code .BOK}, which prints as a written book) or a QSL card ({@code .QSL}, computer batch 3C, which
+ * prints as a card); a QSL card received is kept as {@code FAX00001.QSL}; what it receives it keeps as files, {@code FAX00001.IMG}
  * or {@code .TXT}, listed in its inbox ("digital unless printed": print them through the scanner). It answers calls for
  * any callsign on its bus unless a radio fax machine is on the same bus (the machine answers then) or auto answer is
  * off. An enchanted book cannot be taken in ("CANNOT STORE").
@@ -139,7 +140,12 @@ public final class FaxHandler implements ComputerAppHandler {
 				return "CANNOT COPY";
 			byte[] contents;
 			String extension;
-			if(document.is(Items.FILLED_MAP)) {
+			com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(document);
+			if(card != null) { // A QSL card is kept as a card file: the QSL Designer prints it (computer batch 3C).
+				contents = com.arrl.radiocraft.common.qsl.QslCards.file(card.asCopy());
+				extension = com.arrl.radiocraft.common.qsl.QslCards.EXTENSION;
+			}
+			else if(document.is(Items.FILLED_MAP)) {
 				contents = FileTransfer.imagePixels(document, level);
 				extension = ComputerFileFormats.IMAGE;
 				if(contents == null)
@@ -280,6 +286,10 @@ public final class FaxHandler implements ComputerAppHandler {
 			case ComputerFileFormats.IMAGE -> {
 				byte[] pixels = files.read(file);
 				return pixels == null || !ComputerFileFormats.isImage(pixels) ? null : FileTransfer.image(pixels, base, FileTransfer.MODE_PICTURE);
+			}
+			case com.arrl.radiocraft.common.qsl.QslCards.EXTENSION -> { // A QSL card (computer batch 3C).
+				com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.fromFile(files.read(file));
+				return card == null ? null : com.arrl.radiocraft.common.qsl.QslCards.stack(card, 1);
 			}
 			case ComputerFileFormats.TEXT -> {
 				String text = files.readText(file);

@@ -181,4 +181,30 @@ class PacketBbsTest {
 		assertEquals("W1BTR-15", PacketBbs.bbsCall("W1BTR", 99));
 		assertEquals("", PacketBbs.bbsCall("", 1));
 	}
+
+	/** Computer batch 3C: a QSL card sent to the BBS waits for its addressee, who downloads it with D n. */
+	@Test
+	void qslCardsWaitForTheirStationAndGoOutWithD() {
+		PacketBbs bbs = new PacketBbs();
+		net.minecraft.nbt.CompoundTag card = new net.minecraft.nbt.CompoundTag();
+		card.putString("x", "card");
+		PacketBbs.Message saved = bbs.postCard("W1ABC-7", "K2XYZ", card, "QSL card from W1ABC", 10L);
+		assertNotNull(saved);
+		assertTrue(saved.hasCard());
+		PacketBbs back = PacketBbs.fromTag(bbs.toTag());
+		assertTrue(back.find(saved.number()).hasCard(), "the card is kept in BBS.DAT");
+		List<String> read = bbs.handle("W1BTR-1", "K2XYZ-9", "R " + saved.number(), 20L);
+		assertTrue(read.stream().anyMatch(l -> l.contains("D " + saved.number())), read.toString());
+		List<String> other = bbs.handle("W1BTR-1", "N3ZZ", "D " + saved.number(), 21L);
+		assertTrue(other.stream().anyMatch(l -> l.contains("NOT FOR YOU")), other.toString());
+		assertTrue(bbs.takeDownloads().isEmpty());
+		bbs.handle("W1BTR-1", "K2XYZ-9", "D " + saved.number(), 22L);
+		List<PacketBbs.Download> downloads = bbs.takeDownloads();
+		assertEquals(1, downloads.size());
+		assertEquals("K2XYZ-9", downloads.get(0).to(), "sent back to the SSID that asked");
+		assertEquals(card, downloads.get(0).message().attachment());
+		assertTrue(bbs.takeDownloads().isEmpty(), "taken once");
+		List<String> none = bbs.handle("W1BTR-1", "K2XYZ", "D 999", 23L);
+		assertTrue(none.stream().anyMatch(l -> l.contains("NO MSG")), none.toString());
+	}
 }

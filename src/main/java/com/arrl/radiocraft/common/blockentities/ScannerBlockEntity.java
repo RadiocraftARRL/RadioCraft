@@ -93,7 +93,8 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 	 * step 6 to be programmed; since playtest fixes 2 the CPS programs a radio held in the hand instead.)
 	 */
 	public static boolean isScannable(ItemStack stack) {
-		return stack.is(Items.FILLED_MAP) || stack.is(Items.WRITTEN_BOOK) || stack.is(Items.WRITABLE_BOOK);
+		return stack.is(Items.FILLED_MAP) || stack.is(Items.WRITTEN_BOOK) || stack.is(Items.WRITABLE_BOOK)
+				|| com.arrl.radiocraft.common.qsl.QslCards.is(stack); // A QSL card, read into a .QSL file (computer batch 3C).
 	}
 
 	/** Things that go in the paper tray. */
@@ -154,6 +155,15 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 		return written != null ? written.title().raw() : stack.getHoverName().getString();
 	}
 
+	/** The QSL card on the glass (computer batch 3C), or null. */
+	@Nullable
+	public com.arrl.radiocraft.common.qsl.QslCard scanQsl() {
+		com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(bed());
+		if(card != null)
+			scanSound();
+		return card;
+	}
+
 	// -------------------- PRINTING --------------------
 
 	/**
@@ -161,6 +171,14 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 	 * whatever the title) and marked as printed by {@code by}.
 	 */
 	public Result printImage(byte[] pixels, String title, String by) {
+		return printImage(pixels, title, by, false);
+	}
+
+	/**
+	 * As {@link #printImage(byte[], String, String)}; with {@code plainPaper} a sheet of paper takes a plain print too
+	 * (as an empty map does): the Awards program's certificates (computer batch 3C).
+	 */
+	public Result printImage(byte[] pixels, String title, String by, boolean plainPaper) {
 		if(!(level instanceof ServerLevel server))
 			return Result.NO_PAPER;
 		if(pixels == null || pixels.length != PhotoImage.PIXELS)
@@ -171,7 +189,7 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 		ItemStack print;
 		if(paper.is(RadiocraftItems.COLOR_PHOTO_PAPER.get()) || paper.is(RadiocraftItems.PHOTO_PAPER.get()))
 			print = PhotoPrints.photo(server, pixels, new PhotoInfo(by, paper.is(RadiocraftItems.COLOR_PHOTO_PAPER.get()), "scanner"), worldPosition);
-		else if(paper.is(Items.MAP)) {
+		else if(paper.is(Items.MAP) || plainPaper && paper.is(Items.PAPER)) {
 			Component name = title == null || title.isBlank() ? Component.translatable(Radiocraft.translationKey("item", "printout"))
 					: Component.literal(title.length() > 32 ? title.substring(0, 32) : title);
 			print = PhotoPrints.print(server, com.arrl.radiocraft.common.photo.MapPalettes.vanilla().sanitised(pixels), name, List.of(), PRINT_TINT, worldPosition);
@@ -213,6 +231,34 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 		inventory.setStackInSlot(OUTPUT, book);
 		printSound();
 		return Result.OK;
+	}
+
+	/**
+	 * Prints {@code count} blank QSL cards of {@code card}'s design (computer batch 3C), one sheet of paper or photo
+	 * paper each (as many as the tray holds, at most 64); they stack in the output tray. Answers how many were printed
+	 * in {@code printed[0]}.
+	 */
+	public Result printCards(com.arrl.radiocraft.common.qsl.QslCard card, int count, int[] printed) {
+		printed[0] = 0;
+		if(level == null || level.isClientSide)
+			return Result.NO_PAPER;
+		if(!output().isEmpty())
+			return Result.OUTPUT_FULL;
+		ItemStack paper = tray();
+		if(!isCardStock(paper))
+			return Result.NO_PAPER;
+		int n = Math.min(Math.min(64, Math.max(1, count)), paper.getCount());
+		paper.shrink(n);
+		inventory.setStackInSlot(TRAY, paper.isEmpty() ? ItemStack.EMPTY : paper);
+		inventory.setStackInSlot(OUTPUT, com.arrl.radiocraft.common.qsl.QslCards.stack(card, n));
+		printed[0] = n;
+		printSound();
+		return Result.OK;
+	}
+
+	/** What a QSL card prints on: paper, photo paper or color photo paper. */
+	public static boolean isCardStock(ItemStack stack) {
+		return stack.is(Items.PAPER) || stack.is(RadiocraftItems.PHOTO_PAPER.get()) || stack.is(RadiocraftItems.COLOR_PHOTO_PAPER.get());
 	}
 
 	/** How many of the tray's sheets {@code item} there are (0 if the tray holds something else). */

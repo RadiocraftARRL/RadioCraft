@@ -306,7 +306,13 @@ public final class BbsHandler implements ComputerAppHandler {
 
 	@Override
 	public void receive(RadioComputerBlockEntity computer, TncPacket packet) {
-		if(packet.kind() != TncPacket.Kind.MESSAGE || !(computer.getLevel() instanceof ServerLevel level))
+		if(!(computer.getLevel() instanceof ServerLevel level))
+			return;
+		if(packet.kind() == TncPacket.Kind.FILE) {
+			card(computer, packet, level);
+			return;
+		}
+		if(packet.kind() != TncPacket.Kind.MESSAGE)
 			return;
 		State state = state(computer);
 		StationBus bus = RadioStation.bus(computer);
@@ -319,6 +325,29 @@ public final class BbsHandler implements ComputerAppHandler {
 			term(computer, state, packet.messageBody());
 			push(computer, "term");
 		}
+	}
+
+	/**
+	 * A QSL card sent to the mailbox as a file (computer batch 3C): kept as a message to the station the card is for
+	 * (its To), with the card attached, and the sender told its number.
+	 */
+	private static void card(RadioComputerBlockEntity computer, TncPacket packet, ServerLevel level) {
+		com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(packet.item());
+		State state = state(computer);
+		StationBus bus = RadioStation.bus(computer);
+		String bbsCall = PacketBbs.bbsCall(bus.callsign(), state.ssid);
+		if(card == null || !state.online || bbsCall.isEmpty() || !packet.to().equals(bbsCall))
+			return;
+		PacketBbs bbs = mailbox(computer);
+		String to = card.fill().to().isEmpty() ? "ALL" : card.fill().to();
+		String about = "QSL card from " + card.from() + " to " + to + (card.fill().band().isEmpty() ? "" : " " + card.fill().band())
+				+ (card.fill().mode().isEmpty() ? "" : " " + card.fill().mode());
+		PacketBbs.Message saved = bbs.postCard(packet.from(), to, card.toTag(), about, level.getGameTime());
+		String answer = saved == null ? "MAILBOX FULL - QSL CARD NOT SAVED" : "QSL CARD SAVED AS MSG " + saved.number() + " FOR " + to;
+		log(computer, state, packet.from() + ": [QSL CARD] " + answer);
+		RadioStation.transmit(computer, bus, TncPacket.message(RadioStation.newId(level), bbsCall, packet.from(), answer));
+		persist(computer);
+		push(computer, "log");
 	}
 
 	/** A caller's line for the mailbox: ack it if numbered, answer it once. */
@@ -341,6 +370,10 @@ public final class BbsHandler implements ComputerAppHandler {
 		for(String line : bbs.handle(bbsCall, from, text, now)) {
 			RadioStation.transmit(computer, bus, TncPacket.message(RadioStation.newId(level), bbsCall, from, line));
 			log(computer, state, "  " + line);
+		}
+		for(PacketBbs.Download download : bbs.takeDownloads()) { // D n: the attached QSL card goes to the caller as a file.
+			com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCard.fromTag(download.message().attachment());
+			RadioStation.transmit(computer, bus, TncPacket.file(RadioStation.newId(level), bbsCall, download.to(), com.arrl.radiocraft.common.qsl.QslCards.stack(card, 1)));
 		}
 		persist(computer);
 		push(computer, "log");

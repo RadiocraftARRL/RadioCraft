@@ -44,7 +44,8 @@ public final class FileTransfer {
 			WrittenBookContent content = stack.get(DataComponents.WRITTEN_BOOK_CONTENT);
 			return content == null || content.tryCraftCopy() != null;
 		}
-		return stack.is(Items.WRITABLE_BOOK) || stack.is(Items.PAPER) || stack.is(Items.FILLED_MAP) || stack.is(Items.ENCHANTED_BOOK);
+		return stack.is(Items.WRITABLE_BOOK) || stack.is(Items.PAPER) || stack.is(Items.FILLED_MAP) || stack.is(Items.ENCHANTED_BOOK)
+				|| com.arrl.radiocraft.common.qsl.QslCards.is(stack); // A QSL card goes as its picture (computer batch 3C).
 	}
 
 	/** True if sending {@code stack} uses it up: an enchanted book goes, it is not copied. */
@@ -58,7 +59,7 @@ public final class FileTransfer {
 			return new ItemStack(Items.BOOK);
 		if(stack.is(Items.FILLED_MAP))
 			return new ItemStack(Items.MAP);
-		return new ItemStack(Items.PAPER);
+		return new ItemStack(Items.PAPER); // A QSL card prints on paper too (computer batch 3C).
 	}
 
 	/** The copy a receiver prints, or null if it may not be copied. */
@@ -67,6 +68,12 @@ public final class FileTransfer {
 		if(!canSend(stack))
 			return null;
 		ItemStack copy = stack.copyWithCount(1);
+		com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(stack);
+		if(card != null) { // A received QSL card is a copy, front up.
+			copy.remove(com.arrl.radiocraft.common.init.RadiocraftDataComponent.QSL_FLIPPED.get());
+			copy.set(com.arrl.radiocraft.common.init.RadiocraftDataComponent.QSL_CARD.get(), card.asCopy());
+			return copy;
+		}
 		WrittenBookContent content = stack.get(DataComponents.WRITTEN_BOOK_CONTENT);
 		if(content != null)
 			copy.set(DataComponents.WRITTEN_BOOK_CONTENT, content.tryCraftCopy());
@@ -76,6 +83,9 @@ public final class FileTransfer {
 	/** What the screens call the file: its kind and its title or name. */
 	public static String describe(ItemStack stack) {
 		String mode = mode(stack);
+		com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(stack);
+		if(card != null)
+			return "QSL " + card.from() + (card.fill().to().isEmpty() ? "" : ">" + card.fill().to());
 		String kind = mode.equals(MODE_SSTV) ? "SSTV" : mode.equals(MODE_WEFAX) ? "WEFAX"
 				: stack.is(Items.FILLED_MAP) ? (com.arrl.radiocraft.common.photo.PhotoPrints.isPhoto(stack) ? "PHOTO" : "MAP")
 				: stack.is(Items.PAPER) ? "PAPER" : stack.is(Items.ENCHANTED_BOOK) ? "ENCH BOOK" : "BOOK";
@@ -103,7 +113,7 @@ public final class FileTransfer {
 	public static int frameCount(ItemStack stack) {
 		if(mode(stack).equals(MODE_WEFAX))
 			return wefaxTicks() * 5 / 2; // 2.5 frames a tick.
-		if(stack.is(Items.FILLED_MAP))
+		if(stack.is(Items.FILLED_MAP) || com.arrl.radiocraft.common.qsl.QslCards.is(stack))
 			return Sstv.frameCount(MAP_SIZE, MAP_SIZE);
 		return Afsk.frameCount(packetBytes(stack));
 	}
@@ -128,9 +138,10 @@ public final class FileTransfer {
 	 * tones for the rest.
 	 */
 	public static List<short[]> audio(ItemStack stack, @Nullable Level level, long seed) {
-		if(!stack.is(Items.FILLED_MAP))
+		com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCards.card(stack);
+		if(!stack.is(Items.FILLED_MAP) && card == null)
 			return Afsk.burst(packetBytes(stack), seed);
-		byte[] pixels = imagePixels(stack, level);
+		byte[] pixels = card != null ? com.arrl.radiocraft.common.qsl.QslCards.frontPicture(card) : imagePixels(stack, level);
 		if(mode(stack).equals(MODE_WEFAX))
 			return com.arrl.radiocraft.common.radio.voice.WefaxAudio.frames(pixels == null ? new byte[MAP_SIZE * MAP_SIZE] : pixels, MAP_SIZE, wefaxTicks());
 		double[][] rows = new double[MAP_SIZE][MAP_SIZE];
