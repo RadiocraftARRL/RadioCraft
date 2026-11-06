@@ -20,6 +20,8 @@
     "radiocraft:adsb_beacon",
     "radiocraft:adsb_receiver",
     "radiocraft:adsb_antenna",
+    "radiocraft:weather_alert_generator",
+    "radiocraft:weather_alert_receiver",
     "radiocraft:real_world_interface",
     "radiocraft:hf_radio_10m_poor",
     "radiocraft:hf_radio_10m",

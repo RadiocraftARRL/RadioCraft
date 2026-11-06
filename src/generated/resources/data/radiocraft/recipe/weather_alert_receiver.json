@@ -1,0 +1,38 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:lightning_rod"
+    },
+    "S": {
+      "item": "radiocraft:radio_speaker"
+    },
+    "T": {
+      "item": "minecraft:redstone_torch"
+    },
+    "X": [
+      {
+        "item": "radiocraft:encased_crystal_vhf_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ]
+  },
+  "pattern": [
+    " L ",
+    "SXT",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:weather_alert_receiver"
+  }
+}

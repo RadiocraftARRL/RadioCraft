@@ -31,7 +31,9 @@ import java.util.Locale;
  */
 public record TncPacket(long id, Kind kind, String from, String to, String text, @Nullable BlockPos position, String icon, int hops, ItemStack item) {
 
-	public enum Kind { BEACON, MESSAGE, RTTY, FILE_HEADER, FILE, ACK, FAX_CALL, FAX_ANSWER, FAX_PACKET, FAX_ACK, SOLAR, QUERY, ALERT }
+	public enum Kind { BEACON, MESSAGE, RTTY, FILE_HEADER, FILE, ACK, FAX_CALL, FAX_ANSWER, FAX_PACKET, FAX_ACK, SOLAR, QUERY, ALERT,
+		/** A Simple Weather Alert Generator's alerts on 162.500 MHz, a line each (see {@code wxalert.WeatherAlertPacket}). */
+		WX_ALERT }
 
 	/** A message to this callsign is for every station that hears it, as a bulletin. */
 	public static final String EVERYONE = "ALL";
@@ -280,7 +282,7 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 			kind = Kind.BEACON;
 		}
 		return new TncPacket(tag.getLong("id"), kind, sanitizeCallsign(tag.getString("from")), sanitizeCallsign(tag.getString("to")),
-				kind == Kind.RTTY ? Rtty.sanitize(tag.getString("text"), RTTY_TEXT_MAX) : kind == Kind.SOLAR || kind == Kind.ALERT ? sanitizeText(tag.getString("text"), SOLAR_TEXT_MAX) : sanitizeText(tag.getString("text"), MESSAGE_TEXT_MAX + 1 + MESSAGE_NUMBER_MAX), tag.contains("position") ? BlockPos.of(tag.getLong("position")) : null,
+				kind == Kind.RTTY ? Rtty.sanitize(tag.getString("text"), RTTY_TEXT_MAX) : kind == Kind.SOLAR || kind == Kind.ALERT || kind == Kind.WX_ALERT ? sanitizeText(tag.getString("text"), SOLAR_TEXT_MAX) : sanitizeText(tag.getString("text"), MESSAGE_TEXT_MAX + 1 + MESSAGE_NUMBER_MAX), tag.contains("position") ? BlockPos.of(tag.getLong("position")) : null,
 				AprsIcon.byName(tag.getString("icon")).name(), tag.getInt("hops"), ItemStack.EMPTY);
 	}
 }

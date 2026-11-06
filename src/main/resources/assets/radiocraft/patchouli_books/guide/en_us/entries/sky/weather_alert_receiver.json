@@ -1,0 +1,26 @@
+{
+  "name": "Weather Alert Receiver",
+  "icon": "radiocraft:weather_alert_receiver",
+  "category": "radiocraft:sky",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(item)Simple Weather Alert Receiver$() listens on 162.500 MHz to the nearest $(l:radiocraft:sky/weather_alert_generator)weather alert generator$() it hears. Its short built-in antenna works for nearby generators; coax a VHF antenna to it to hear further."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "An alert",
+      "text": "When an alert covers the place it stands, it $(thing)flashes red$(), sounds the alert tone, $(thing)reads the alert out$() (what it is, how far and which way the storm is, where it is heading) and writes it in chat for players near it. It gives $(thing)one redstone pulse$() for each new alert: wire it to a siren or a door. Right click to silence it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Battery",
+      "text": "It runs on a $(item)Small Alkaline Battery$(): shift + right click with one to put it in (or change it), shift + right click with an empty hand to take it out. A full battery lasts about three weeks of game time. When it runs low the red lamp blinks every 10 seconds. Right click it for the battery, the generator it hears and the last alert."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:weather_alert_receiver"
+    }
+  ]
+}

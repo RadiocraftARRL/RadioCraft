@@ -63,6 +63,7 @@
     "radiocraft:dtmf_encoder",
     "radiocraft:radio_computer",
     "radiocraft:scanner",
-    "radiocraft:adsb_receiver"
+    "radiocraft:adsb_receiver",
+    "radiocraft:weather_alert_generator"
   ]
 }

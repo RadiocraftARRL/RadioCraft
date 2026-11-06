@@ -1,0 +1,117 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "ready": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_ready"
+      }
+    },
+    {
+      "when": {
+        "ready": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_ready",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "ready": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_ready",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "ready": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_ready",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "transmitting": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_tx"
+      }
+    },
+    {
+      "when": {
+        "transmitting": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_tx",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "transmitting": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_tx",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "transmitting": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_generator_tx",
+        "y": 270
+      }
+    }
+  ]
+}

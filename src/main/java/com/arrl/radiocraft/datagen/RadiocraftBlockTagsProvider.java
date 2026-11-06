@@ -62,6 +62,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.PABX.get())
                 .add(RadiocraftBlocks.FIELD_PHONE.get()) // Needs none, but is louder and takes more phones with it.
                 .add(RadiocraftBlocks.ADSB_BEACON.get(), RadiocraftBlocks.ADSB_RECEIVER.get()) // ADS-B (1.12 step 9).
+                .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()) // Weather alerts (1.12); the receiver runs on its battery.
                 .add(RadiocraftBlocks.RADIO_COMPUTER.get()); // Draws an HF receiver's power while in use (1.12).
 
         // Data wire (2026-10-30) links these to radios and to each other; power wire no longer does. Radios take it too
@@ -82,7 +83,8 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                         RadiocraftBlocks.TAPE_PLAYER.get(), RadiocraftBlocks.IONOSPHERIC_PROCESSOR.get())
                 .add(RadiocraftBlocks.DTMF_DECODER.get(), RadiocraftBlocks.DTMF_ENCODER.get())
                 .add(RadiocraftBlocks.RADIO_COMPUTER.get(), RadiocraftBlocks.SCANNER.get()) // The computer's line to its radios, scanner and station bus.
-                .add(RadiocraftBlocks.ADSB_RECEIVER.get()); // The computer's ADS-B program reads it.
+                .add(RadiocraftBlocks.ADSB_RECEIVER.get()) // The computer's ADS-B program reads it.
+                .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()); // Its line to the APRS station (weather alerts, 1.12).
 
         // Signal sources that only report a reading: Another Weather Mod's instruments re-read the weather every second, and
         // in a storm each new reading popped a nearby radio with interference (2026-10-30).
@@ -97,6 +99,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
 
         tag(RadiocraftTags.Blocks.QUIET_SIGNAL_SOURCES)
                 .add(RadiocraftBlocks.WEFAX_RECEIVER.get())
+                .add(RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get()) // Its alert pulse, like the WEFAX receiver's.
                 .add(RadiocraftBlocks.DTMF_DECODER.get()) // It sits against its radio: its output must not crackle in it.
                 .addOptional(ResourceLocation.fromNamespaceAndPath("anotherweathermod", "wind_vane"))
                 .addOptional(ResourceLocation.fromNamespaceAndPath("anotherweathermod", "barometer"))
@@ -143,7 +146,8 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.COMMERCIAL_REPEATER.get())
                 .add(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get(), RadiocraftBlocks.MARINE_RADIO.get())
                 .add(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()) // A station on power and coax (1.12 step 11).
-                .add(RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get()); // ADS-B's 1090 MHz antenna to its receiver.
+                .add(RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get()) // ADS-B's 1090 MHz antenna to its receiver.
+                .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get(), RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get()); // Weather alerts (1.12) to a VHF antenna.
 
         // Define the ANTENNA_BLOCKS tag
         tag(RadiocraftTags.Blocks.ANTENNA_BLOCKS)

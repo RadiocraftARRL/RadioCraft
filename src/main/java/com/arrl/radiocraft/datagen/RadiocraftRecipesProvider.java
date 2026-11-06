@@ -1402,6 +1402,31 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('X', RadiocraftItems.COAX_WIRE.get())
                 .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
                 .save(recipeOutput);
+        // Weather alerts (1.12, proposed for the maintainer's review): the generator is an iron cabinet that reads the
+        // sky (daylight detector) and decides (comparators) round a VHF crystal; the receiver a small radio with a whip
+        // (lightning rod), a speaker and a red lamp (redstone torch).
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WEATHER_ALERT_GENERATOR.get())
+                .pattern("IDI")
+                .pattern("CXC")
+                .pattern("IRI")
+                .define('I', Items.IRON_INGOT)
+                .define('D', Items.DAYLIGHT_DETECTOR)
+                .define('C', Items.COMPARATOR)
+                .define('X', encasedCrystal(CrystalBand.VHF))
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_comparator", has(Items.COMPARATOR))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WEATHER_ALERT_RECEIVER.get())
+                .pattern(" L ")
+                .pattern("SXT")
+                .pattern("III")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('X', encasedCrystal(CrystalBand.VHF))
+                .define('T', Items.REDSTONE_TORCH)
+                .define('I', Items.IRON_INGOT)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
     }
 
     /**

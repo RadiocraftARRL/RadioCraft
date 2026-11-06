@@ -221,6 +221,8 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> ADSB_BEACON = simpleBlockItem("adsb_beacon", RadiocraftBlocks.ADSB_BEACON);
 	public static final Supplier<BlockItem> ADSB_RECEIVER = simpleBlockItem("adsb_receiver", RadiocraftBlocks.ADSB_RECEIVER);
 	public static final Supplier<BlockItem> ADSB_ANTENNA = simpleBlockItem("adsb_antenna", RadiocraftBlocks.ADSB_ANTENNA);
+	public static final Supplier<BlockItem> WEATHER_ALERT_GENERATOR = simpleBlockItem("weather_alert_generator", RadiocraftBlocks.WEATHER_ALERT_GENERATOR);
+	public static final Supplier<BlockItem> WEATHER_ALERT_RECEIVER = simpleBlockItem("weather_alert_receiver", RadiocraftBlocks.WEATHER_ALERT_RECEIVER);
 	public static final Supplier<BlockItem> REAL_WORLD_INTERFACE = simpleBlockItem("real_world_interface", RadiocraftBlocks.REAL_WORLD_INTERFACE);
 	public static final Supplier<BlockItem> REPEATER_AUTOPATCH = simpleBlockItem("repeater_autopatch", RadiocraftBlocks.REPEATER_AUTOPATCH);
 	/** A telephone's handset while it is off the hook; never crafted or in a creative tab. */

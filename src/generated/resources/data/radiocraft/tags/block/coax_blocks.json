@@ -68,6 +68,8 @@
     "radiocraft:marine_radio",
     "radiocraft:real_world_interface",
     "radiocraft:adsb_receiver",
-    "radiocraft:adsb_antenna"
+    "radiocraft:adsb_antenna",
+    "radiocraft:weather_alert_generator",
+    "radiocraft:weather_alert_receiver"
   ]
 }

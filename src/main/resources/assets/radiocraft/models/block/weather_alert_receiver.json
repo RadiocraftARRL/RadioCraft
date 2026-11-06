@@ -1,0 +1,203 @@
+{
+  "credit": "RadioCraft placeholder, made by tools/weather_alert_models.py (see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "texture_size": [
+    32,
+    32
+  ],
+  "textures": {
+    "0": "radiocraft:block/weather_alert_receiver",
+    "particle": "radiocraft:block/weather_alert_receiver"
+  },
+  "elements": [
+    {
+      "name": "case",
+      "from": [
+        2,
+        0,
+        4
+      ],
+      "to": [
+        14,
+        6,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            3
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6,
+            0,
+            12,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12,
+            0,
+            16,
+            3
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            12,
+            0,
+            16,
+            3
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            4,
+            6,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            4,
+            6,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "alert_lamp",
+      "from": [
+        6,
+        6,
+        5
+      ],
+      "to": [
+        8,
+        7,
+        7
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            4,
+            7,
+            4.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6,
+            4,
+            7,
+            4.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            4,
+            7,
+            4.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            4,
+            7,
+            4.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            6,
+            4,
+            7,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "whip",
+      "from": [
+        12,
+        6,
+        10.5
+      ],
+      "to": [
+        12.5,
+        13,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            4,
+            8.5,
+            9
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            4,
+            8.5,
+            9
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            4,
+            8.5,
+            9
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            4,
+            8.5,
+            9
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            4,
+            8.5,
+            4.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

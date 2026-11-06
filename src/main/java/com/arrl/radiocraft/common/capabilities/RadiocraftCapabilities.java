@@ -98,6 +98,7 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.FIELD_PHONE.get(),
 				RadiocraftBlocks.MICROWAVE_HORN.get(),
 				RadiocraftBlocks.ADSB_BEACON.get(), RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get(), // ADS-B (1.12 step 9).
+				RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get(), RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get(), // Weather alerts (1.12): power and coax.
 				RadiocraftBlocks.REAL_WORLD_INTERFACE.get(), // A radio station on power and coax (1.12 step 11).
 				RadiocraftBlocks.RADIO_COMPUTER.get(), // On the power wire (1.12).
 				net.minecraft.world.level.block.Blocks.LIGHTNING_ROD); // An antenna when coax runs to it (LightningRodAntennas).

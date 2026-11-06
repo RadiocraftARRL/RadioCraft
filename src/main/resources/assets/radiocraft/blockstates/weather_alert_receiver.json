@@ -1,0 +1,78 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver"
+      }
+    },
+    {
+      "when": {
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "lit": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver_lamp"
+      }
+    },
+    {
+      "when": {
+        "lit": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver_lamp",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "lit": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver_lamp",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "lit": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/weather_alert_receiver_lamp",
+        "y": 270
+      }
+    }
+  ]
+}

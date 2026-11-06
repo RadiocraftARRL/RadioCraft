@@ -384,6 +384,7 @@ public final class RadioModeration {
 			case SOLAR -> "[SOLAR " + mhz + "] " + packet.from() + ": " + String.join(" / ", packet.solarLines());
 			case ALERT -> "[SOLAR ALERT " + mhz + "] " + packet.from() + ": " + String.join(" / ", packet.solarLines());
 			case QUERY -> "[QUERY " + mhz + "] " + packet.from() + ": " + packet.text();
+			case WX_ALERT -> "[WX ALERT " + mhz + "] " + packet.from() + ": " + String.join(" / ", packet.solarLines());
 			case FILE_HEADER, ACK, FAX_ANSWER, FAX_PACKET, FAX_ACK -> null;
 		};
 		if(text == null)

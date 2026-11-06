@@ -101,6 +101,11 @@ public class RadiocraftBlocks {
 			() -> new com.arrl.radiocraft.common.blocks.adsb.AdsbReceiverBlock(PROPERTIES_RADIO));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.adsb.AdsbAntennaBlock> ADSB_ANTENNA = BLOCKS.register("adsb_antenna",
 			() -> new com.arrl.radiocraft.common.blocks.adsb.AdsbAntennaBlock(PROPERTIES_RADIO));
+	/** Weather alerts (1.12): the generator on an APRS station that broadcasts on 162.500 MHz, and the battery receiver. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock> WEATHER_ALERT_GENERATOR = BLOCKS.register("weather_alert_generator",
+			() -> new com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock(PROPERTIES_RADIO));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock> WEATHER_ALERT_RECEIVER = BLOCKS.register("weather_alert_receiver",
+			() -> new com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock(PROPERTIES_RADIO));
 	/** The Real-World Interface (1.12 step 11): links the game's radios to a real radio on the server's sound card. Off by default. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.RealWorldInterfaceBlock> REAL_WORLD_INTERFACE = BLOCKS.register("real_world_interface",
 			() -> new com.arrl.radiocraft.common.blocks.radios.RealWorldInterfaceBlock(PROPERTIES_RADIO));

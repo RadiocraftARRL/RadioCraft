@@ -622,6 +622,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.RepeaterLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.LicenseStudyLang.add(provider);
 			addAdsb(provider);
+			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
 			addFccGear(provider);
 			addRealWorldInterface(provider);
 			provider.add(Radiocraft.translationKey("tooltip", "crystal_pure"), "Pure crystal: a little less noise.");

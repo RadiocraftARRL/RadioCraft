@@ -34,6 +34,8 @@ public class JadeCompat implements IWailaPlugin {
         registration.registerBlockDataProvider(TeletypeProvider.INSTANCE, TeletypeBlock.class);
         registration.registerBlockDataProvider(BatteryProvider.INSTANCE, LargeBatteryBlock.class);
         registration.registerBlockDataProvider(SolarPanelProvider.INSTANCE, SolarPanelBlock.class);
+        registration.registerBlockDataProvider(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock.class);
+        registration.registerBlockDataProvider(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock.class);
     }
 
     @Override
@@ -47,5 +49,7 @@ public class JadeCompat implements IWailaPlugin {
         registration.registerBlockComponent(TeletypeProvider.INSTANCE, TeletypeBlock.class);
         registration.registerBlockComponent(BatteryProvider.INSTANCE, LargeBatteryBlock.class);
         registration.registerBlockComponent(SolarPanelProvider.INSTANCE, SolarPanelBlock.class);
+        registration.registerBlockComponent(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock.class);
+        registration.registerBlockComponent(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock.class);
     }
 }

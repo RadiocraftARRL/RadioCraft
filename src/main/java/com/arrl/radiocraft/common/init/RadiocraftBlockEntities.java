@@ -143,6 +143,10 @@ public class RadiocraftBlockEntities {
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.adsb.AdsbReceiverBlockEntity::new, RadiocraftBlocks.ADSB_RECEIVER.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.adsb.AdsbAntennaBlockEntity>> ADSB_ANTENNA = BLOCK_ENTITY_TYPES.register("adsb_antenna",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.adsb.AdsbAntennaBlockEntity::new, RadiocraftBlocks.ADSB_ANTENNA.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.WeatherAlertGeneratorBlockEntity>> WEATHER_ALERT_GENERATOR = BLOCK_ENTITY_TYPES.register("weather_alert_generator",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WeatherAlertGeneratorBlockEntity::new, RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.WeatherAlertReceiverBlockEntity>> WEATHER_ALERT_RECEIVER = BLOCK_ENTITY_TYPES.register("weather_alert_receiver",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WeatherAlertReceiverBlockEntity::new, RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.RealWorldInterfaceBlockEntity>> REAL_WORLD_INTERFACE = BLOCK_ENTITY_TYPES.register("real_world_interface",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.RealWorldInterfaceBlockEntity::new, RadiocraftBlocks.REAL_WORLD_INTERFACE.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.RepeaterAutopatchBlockEntity>> REPEATER_AUTOPATCH = BLOCK_ENTITY_TYPES.register("repeater_autopatch",

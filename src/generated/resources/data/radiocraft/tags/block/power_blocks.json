@@ -59,6 +59,7 @@
     "radiocraft:field_phone",
     "radiocraft:adsb_beacon",
     "radiocraft:adsb_receiver",
+    "radiocraft:weather_alert_generator",
     "radiocraft:radio_computer"
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "name": "Weather Alert Generator",
+  "icon": "radiocraft:weather_alert_generator",
+  "category": "radiocraft:sky",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "There is no weather service in this world until you build one. The $(item)Simple Weather Alert Generator$() turns a network of $(l:radiocraft:sky/weather_station)weather stations$() into alerts broadcast on $(thing)162.500 MHz$(), for $(l:radiocraft:sky/weather_alert_receiver)weather alert receivers$() to pick up."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What it needs",
+      "text": "Touch it to an APRS station (an $(l:radiocraft:digital/aprs)H19$() or a $(l:radiocraft:computer/radio_computer)radio computer$() with APRS installed), or cable it by data wire. That station must have heard, in the last 30 minutes, weather beacons from $(thing)at least 3 stations$(), each $(thing)150 blocks or more$() from the others. It also needs power (1 FE/t, 12 while sending) and a VHF antenna on its coax."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Its alerts",
+      "text": "It covers the area round its weather stations, 200 blocks past the outer ones. With Another Weather Mod it warns of storms over that area (tornado, severe thunderstorm, hurricane, blizzard, dust storm, high wind, fog, heat, cold) and gives watches for tornadic and severe storms forecast to arrive. A station reporting an inch of rain in an hour gives a flash flood warning, high wind a wind warning."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "On the air",
+      "text": "New alerts go out at once, the rest every minute, and with none a routine broadcast every two minutes. A radio tuned to 162.500 MHz (marine WX6) hears the data burst and, for a new warning, the 1050 Hz tone.$(br2)Right click it (or look at it with Jade) to see why it is not on the air: no APRS station, too few weather beacons, too close together, no antenna or no power."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:weather_alert_generator"
+    }
+  ]
+}
