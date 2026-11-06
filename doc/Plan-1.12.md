@@ -2347,3 +2347,5 @@ channels". **Gotchas**: MUSIC's heard clock can be off by a client tick plus the
 four speakers only the first four play; a resource reload restarts MUSIC from where it was; the live monitor redraws
 only sessions this client has (a computer opened since the game started). The older NeedsTesting items about the
 handheld dials and the B/C zone keys are superseded by the new section.
+
+**Status (wrap-up):** items 1-9 all done and committed (1 live monitor, 2 CPS by hand, 3 MUSIC volume, 4 knobs on the radio, 5 64 channels and A-D keys, 6 rename, 7 MUSIC list scrolling, 8 MUSIC through the sound engine, 9 MUSIC through connected speakers); none left unstarted. compileJava compileTestJava compileGametestJava clean; runData, test and runGameTestServer still to run.
