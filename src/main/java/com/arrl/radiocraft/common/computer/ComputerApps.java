@@ -59,6 +59,18 @@ public final class ComputerApps {
 	// ADS-B (step 9).
 	public static final ComputerApp ADSB = add("adsb", "ADSB", ComputerApp.Kind.CRAFTED);
 
+	// Computer apps 2 (2026-11-06).
+	/** Live RTTY (45.45 baud Baudot) through the radio interface, with a type-ahead buffer and macros. */
+	public static final ComputerApp RTTY = add("rtty", "RTTY", ComputerApp.Kind.CRAFTED);
+	/** A packet mailbox: the computer as a BBS other stations reach by APRS message. */
+	public static final ComputerApp BBS = add("bbs", "BBS", ComputerApp.Kind.CRAFTED);
+	/** HF propagation predictions: which bands open to a target over the next hours, from the live sky. */
+	public static final ComputerApp PROPAGATION = add("propagation", "PREDICT", ComputerApp.Kind.CRAFTED);
+	/** A directory of repeaters heard and typed in, exported to the frequency manager. */
+	public static final ComputerApp REPEATERS = add("repeaters", "REPEATER", ComputerApp.Kind.CRAFTED);
+	/** Licence exam study: flash cards and practice exams from the question pools. */
+	public static final ComputerApp LICENSE = add("license", "STUDY", ComputerApp.Kind.CRAFTED);
+
 	private ComputerApps() {}
 
 	/**

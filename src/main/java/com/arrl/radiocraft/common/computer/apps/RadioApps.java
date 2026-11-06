@@ -19,5 +19,10 @@ public final class RadioApps {
 		ComputerAppHandlers.register(ComputerApps.SSTV, new SstvHandler());
 		ComputerAppHandlers.register(ComputerApps.DIRECTION_FINDING, new DfHandler());
 		ComputerAppHandlers.register(ComputerApps.ADSB, new AdsbHandler()); // 1.12 step 9: reads an ADS-B receiver.
+		// Computer apps 2 (2026-11-06).
+		ComputerAppHandlers.register(ComputerApps.RTTY, new RttyHandler());
+		ComputerAppHandlers.register(ComputerApps.BBS, new BbsHandler());
+		ComputerAppHandlers.register(ComputerApps.PROPAGATION, new PropagationHandler());
+		ComputerAppHandlers.register(ComputerApps.REPEATERS, new RepeaterDirectoryHandler());
 	}
 }

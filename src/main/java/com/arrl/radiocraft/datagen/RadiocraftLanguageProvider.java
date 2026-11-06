@@ -614,6 +614,12 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			addOfficeApps(provider);
 			addRadioApps(provider);
 			addSecretApps(provider);
+			// Computer apps 2 (2026-11-06): each program's words in its own class under datagen/lang.
+			com.arrl.radiocraft.datagen.lang.RttyLang.add(provider);
+			com.arrl.radiocraft.datagen.lang.BbsLang.add(provider);
+			com.arrl.radiocraft.datagen.lang.PropagationLang.add(provider);
+			com.arrl.radiocraft.datagen.lang.RepeaterLang.add(provider);
+			com.arrl.radiocraft.datagen.lang.LicenseStudyLang.add(provider);
 			addAdsb(provider);
 			addFccGear(provider);
 			addRealWorldInterface(provider);
@@ -814,6 +820,11 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		app.accept("music", new String[] { "Music Player", "Old public-domain tunes, played on the computer's sound card." });
 		app.accept("bible", new String[] { "Bible", "The four gospels, World English Bible: read by chapter, go to a verse, search." });
 		app.accept("adsb", new String[] { "ADS-B", "Aircraft on a radar screen, from an ADS-B receiver." });
+		app.accept("rtty", new String[] { "RTTY", "Live radioteletype on HF: type ahead, macros, and a receive window that saves to disk." });
+		app.accept("bbs", new String[] { "Packet BBS", "Run a packet mailbox on VHF, or connect to one: messages and bulletins by APRS." });
+		app.accept("propagation", new String[] { "Propagation Predictor", "Which HF bands open to a place or station over the next hours, from the live sky." });
+		app.accept("repeaters", new String[] { "Repeater Directory", "Repeaters your radios have heard and ones you add, sent on to the frequency manager." });
+		app.accept("license", new String[] { "License Study", "Flash cards and practice exams from the amateur radio question pools." });
 		for(com.arrl.radiocraft.common.computer.ComputerApp program : com.arrl.radiocraft.common.computer.ComputerApps.onFloppies())
 			provider.add(java.util.Objects.requireNonNull(RadiocraftItems.floppy(program)), FLOPPY_NAMES.get(program.id()) + " Floppy Disk");
 
@@ -1629,7 +1640,9 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			Map.entry("programmer", "Radio Programmer"), Map.entry("solar", "Solar Weather"), Map.entry("aprs", "APRS"),
 			Map.entry("wefax", "WEFAX"), Map.entry("radiofax", "Radio Fax"), Map.entry("sstv", "SSTV"),
 			Map.entry("df", "Direction Finding"), Map.entry("snake", "Snake"), Map.entry("falling_blocks", "Pileup"),
-			Map.entry("music", "Music Player"), Map.entry("bible", "Bible"), Map.entry("adsb", "ADS-B"));
+			Map.entry("music", "Music Player"), Map.entry("bible", "Bible"), Map.entry("adsb", "ADS-B"),
+			Map.entry("rtty", "RTTY"), Map.entry("bbs", "Packet BBS"), Map.entry("propagation", "Propagation Predictor"),
+			Map.entry("repeaters", "Repeater Directory"), Map.entry("license", "License Study"));
 
 	/** FCC field gear (1.12 step 10): the hat, jacket, seal banner pattern and banner names, the badge, its tooltips, messages and command. */
 	private static void addFccGear(LanguageProvider provider) {

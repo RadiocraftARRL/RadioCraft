@@ -18,5 +18,6 @@ public final class OfficeApps {
 		ComputerAppHandlers.register(ComputerApps.FREQUENCY_MANAGER, new FrequencyManagerHandler());
 		ComputerAppHandlers.register(ComputerApps.PROGRAMMER, new ProgrammerHandler());
 		ComputerAppHandlers.register(ComputerApps.SOLAR_WEATHER, new SolarWeatherHandler());
+		ComputerAppHandlers.register(ComputerApps.LICENSE, new LicenseStudyHandler()); // Computer apps 2 (2026-11-06).
 	}
 }

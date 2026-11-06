@@ -65,6 +65,12 @@ public final class ComputerAppScreens {
 		register(ComputerApps.SSTV, com.arrl.radiocraft.client.screens.computer.apps.SstvApp::new);
 		register(ComputerApps.DIRECTION_FINDING, com.arrl.radiocraft.client.screens.computer.apps.DfApp::new);
 		register(ComputerApps.ADSB, com.arrl.radiocraft.client.screens.computer.apps.AdsbApp::new); // 1.12 step 9.
+		// Computer apps 2 (2026-11-06).
+		register(ComputerApps.RTTY, com.arrl.radiocraft.client.screens.computer.apps.RttyApp::new);
+		register(ComputerApps.BBS, com.arrl.radiocraft.client.screens.computer.apps.BbsApp::new);
+		register(ComputerApps.PROPAGATION, com.arrl.radiocraft.client.screens.computer.apps.PropagationApp::new);
+		register(ComputerApps.REPEATERS, com.arrl.radiocraft.client.screens.computer.apps.RepeaterDirectoryApp::new);
+		register(ComputerApps.LICENSE, com.arrl.radiocraft.client.screens.computer.apps.LicenseStudyApp::new);
 
 		// Secret programs (step 8), from floppies found in chests.
 		register(ComputerApps.SNAKE, com.arrl.radiocraft.client.screens.computer.apps.SnakeApp::new);
@@ -88,6 +94,11 @@ public final class ComputerAppScreens {
 		label(ComputerApps.MUSIC, 0xD8D050);
 		label(ComputerApps.BIBLE, 0xC8A060);
 		label(ComputerApps.ADSB, 0x30A050);
+		label(ComputerApps.RTTY, 0xE05050);
+		label(ComputerApps.BBS, 0xA03070);
+		label(ComputerApps.PROPAGATION, 0xF0D040);
+		label(ComputerApps.REPEATERS, 0x7A1E1E);
+		label(ComputerApps.LICENSE, 0x6A8FE8);
 	}
 
 	private ComputerAppScreens() {}

@@ -131,6 +131,32 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Direction Finding** (DFIND): the display of a direction finder cabled to the computer: a terrain map with each
     bearing and the fix, a turning 3D view of how good the fix is, saved past searches, and the set's controls.
   - **ADS-B**: a second display for an ADS-B receiver (below).
+  - **RTTY**: live radioteletype at 45.45 baud through the radio interface, the same RTTY as the Teletype Machine
+    and the H19. What you type goes into a type-ahead buffer and out at about six characters a second; the receive
+    window prints a line per station. Weak signals misprint the way a real teleprinter does (a letter one bit away,
+    figures for letters when a shift is lost). Macros for CQ, the exchange and the sign-off ({MYCALL}, {CALL}), send a
+    text file, save what was received to the disk.
+  - **Packet BBS**: run a packet mailbox on VHF. With a radio interface and a VHF radio, the computer answers your
+    callsign with an SSID of its own (W1BTR-1). Stations call in with APRS messages from an H19, the APRS program, an
+    APRS handheld or another computer, and list, read and send personal messages and bulletins with the classic BBS
+    commands (L, R, SP, SB, K, B; /EX ends a message). The mailbox is kept on the computer's disk (BBS.DAT). The
+    owner, as sysop, watches the traffic, posts, deletes and sets the SSID; a terminal page calls other mailboxes.
+  - **Propagation Predictor** (PREDICT): which HF bands should open to a place over the next 24 in-game hours, a
+    band-by-hour grid like VOACAP. Aim it at coordinates, a callsign (players online, or APRS stations the computer
+    heard) or a distance and bearing. It uses the same skip ranges, solar conditions and noise floor as your radios,
+    hears the sky as the Solar Weather program does, and dims the hours past what the solar forecast knows. Line of
+    sight and CW-only openings are marked; print it or save it as PREDICT.TXT.
+  - **Repeater Directory** (REPEATER): the repeaters you know, with output, offset, tone, distance and bearing, when
+    each was last heard, and your notes. Tune a radio wired to the computer to a repeater's output: its hang carrier,
+    courtesy beep and ID tell the radio which repeater it is, and F5 adds it. Add repeaters by hand too. Mark some and
+    F7 adds them to a Frequency Manager list, skipping ones already there. Kept on the disk as REPEATER.DAT.
+  - **License Study** (STUDY): flash cards for the amateur exams, like hamstud.org, with the current US NCVEC
+    Technician (2026-2030), General (2023-2027) and Extra (2024-2028) pools built in. Answer A-D or "I don't know":
+    missed cards come back within a few cards, known ones further and further apart. Progress per subelement, your
+    expected score and pass likelihood, and practice exams drawn one question per group (35/35/50, 74% to pass).
+    Progress is yours on any computer. Admins can add or update pools without a mod update: JSON files in a data pack
+    (`data/<namespace>/license_pools/`) or in `config/radiocraft/license_pools/`, picked up by `/reload`. Questions
+    that need a figure are left out for now.
 
 #### Disks never sold, and ham shacks
 
@@ -204,6 +230,10 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - WEFAX receivers with AUTO on now print the charts other stations send (on paper), as a real recorder starts on the
   start tone.
 - APRS maps draw spaces as spaces and more punctuation (they used to draw a dash).
+- RTTY sends the real ITA2 (Baudot) codes with letters and figures shifts, and a weak signal misprints like a real
+  teleprinter instead of printing random characters.
+- A radio interface no longer digipeats messages addressed to its own callsign under another SSID (W1BTR-1 at a
+  W1BTR station), so a BBS's own station does not repeat its traffic.
 
 ### Not finished yet
 

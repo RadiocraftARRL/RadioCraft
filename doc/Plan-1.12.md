@@ -1909,3 +1909,78 @@ failed only `cosKeysInAndTimeoutDropsPtt` (wall-clock, known).
 password; solar processor / pictures to everyone / dark shacks; FCC marks; Real-World Interface; lang, generated
 lang, release notes, NeedsTesting and this handoff. Shared files (the language provider, `src/generated`, release notes,
 NeedsTesting) are all in the last commit, and `OfficeAppsGameTests` (MURS fix and solar tests) is in the third.
+
+### Computer apps 2 (2026-11-06)
+Five new floppy programs for the radio computer, each its own `ComputerApps` entry (CRAFTED), floppy, recipe, screen,
+server handler, lang class, Handbook entry, unit tests and GameTests. Built: `compileJava compileTestJava
+compileGametestJava` clean (the 32 old warnings only), `runData` (lang + five recipes/advancements), `test` **641/641**,
+`runGameTestServer` **all 504 required passed on the first run**, `build` successful. Committed locally per program;
+nothing pushed. Lang for each program lives in its own class under `datagen/lang/` (`RttyLang`, `BbsLang`,
+`PropagationLang`, `RepeaterLang`, `LicenseStudyLang`), called from `RadiocraftLanguageProvider`. Floppy art is the
+shared tinted label (no bounty). Intermediate commits do not compile on their own: the registration (shared files and
+`src/generated`) is the last commit.
+
+- **RTTY** (`rtty`, RTTY.EXE): `RttyHandler` (ticks; one `TncPacket.rtty` character per `TeletypeBlockEntity.
+  SECONDS_PER_CHAR` through `RadioStation.transmit`, type-ahead up to 4000 characters, half duplex 20 ticks after our last
+  character, moderation lines like the Teletype; state: receive window, macros, DX call), pure `common/computer/RttyCopy`
+  (a line per sender, 300 lines, macros `{MYCALL}`/`{CALL}`/`\n`), `RttyApp`. Reuses the mod's RTTY end to end, so it
+  copies and is copied by the Teletype and the H19. New pure `radio/voice/Baudot` (real ITA2 US-TTY table, LTRS/FIGS,
+  USOS, `encode/decode/misprint`); `Rtty.frames` now sends the real codes and `Rtty.garble` misprints by a lost bit (a
+  letter one bit away, or the other shift) instead of a random character, for every RTTY receiver (length and newlines
+  kept, so the old tests hold). Removed from todo.md. Tests `BaudotTest`, `RttyCopyTest`, `RttyAppGameTests` (145.150,
+  145.170, 145.190 MHz).
+- **Packet BBS** (`bbs`, BBS.EXE): pure `PacketBbs` (mailbox up to 200 messages of 1000 characters, sessions expiring
+  after 10 min, commands `? H L LM LB R n SP SB K n B`, subject prompt, body to `/EX`, `/AB`), `BbsHandler` (ticks;
+  answers APRS messages to the bus callsign's base + `-SSID` (default 1), acks numbered ones and dedupes 16 numbers per
+  caller, replies unnumbered; needs `AprsHandler.cannotSend`), `BbsApp` (SYSOP page and TERMINAL page). Mailbox on the
+  disk as `BBS.DAT`; SSID, online switch, traffic log and terminal in the program state. Sysop =
+  `computer.mayChangePassword(player)` (owner, op, or anyone while unowned) for delete and setup. Shared fix:
+  `RadioInterfaceBlockEntity.shouldDigipeat` skips messages/acks to its callsign under any SSID (the host's interface
+  repeated its own BBS traffic). Tests `PacketBbsTest`, `PacketBbsGameTests` (batch `packet_bbs`, 145.070 MHz).
+- **Propagation Predictor** (`propagation`, PREDICT.EXE): pure `PropagationForecast` (strength =
+  `BandUtils.getBaseStrength` with a dipole at each end and the condition's skip multiplier; threshold =
+  `RadioBlockEntity.copyThreshold` against skip noise or `LOS_SOLAR_NOISE_SHARE` of it, plus aurora static; grades G >= 3,
+  F >= 1.5, P >= 1, CW at distance / 1.5 as "c"; path L/S/Z/B; vanilla `isDay` per hour), `PropagationHandler`
+  (`predict` by coordinates, callsign (online player, then APRS stations heard) or distance + bearing; `targets`; same
+  receiver rules as SOLAR via `SolarWeatherHandler.receiver/missing`; 24 in-game hours: current event, then the
+  forecast's next event, then dimmed "uncertain" hours), `PropagationApp`. Terrain and the real antennas left out (said on
+  screen). Tests `PropagationForecastTest`, `PropagationGameTests` (batches `propagation_direct`,
+  `propagation_needs_radio`).
+- **Repeater Directory** (`repeaters`, REPEATER.EXE): `radio/RepeaterRegistry` (server-wide map voiceId -> repeater info,
+  updated by `VHFRepeaterBlockEntity` on load, settings and every 100 ticks; removed when broken, not on chunk unload;
+  cleared on server stop). `RadioBlockEntity.receiveVoice` records a repeater's own voice id (hang carrier, courtesy beep,
+  ID) in a second `StationsHeard`, `getRepeatersHeard()`. Pure `RepeaterDirectory` (merge by position, manual notes kept,
+  300 entries, sort, export to `FrequencyList` with dedupe), on the disk as `REPEATER.DAT`. `RepeaterDirectoryHandler`
+  (no ticking: collects when the screen asks) and `RepeaterDirectoryApp` (F7 exports to a .FRQ and offers FREQMAN).
+  Tests `RepeaterDirectoryTest`, `RepeaterDirectoryGameTests` (batch `repeater_directory`, 147.240/147.840 MHz).
+- **License Study** (`license`, STUDY.EXE): `common/computer/license/` `LicensePool` (Gson; answer as index or letter;
+  subelement = 2 chars of the id, group = 3), `LicensePools` (reload listener: data packs `data/<ns>/license_pools/*.json`,
+  then `config/radiocraft/license_pools/*.json` replacing by id; `/reload`), `StudyDeck` (levels with intervals 1, 3, 8,
+  20, 50, 120 cards; wrong back in 3, "I don't know" in 2), `LicenseExam` (one non-figure question per group, pass mark
+  rounded up from `pass_percent` 74, aptitude by Poisson-binomial over per-question chances), `LicenseProgress`
+  (**SavedData `radiocraft_license_study`, keyed player -> pool -> question**: follows the player to any computer).
+  Pools in `data/radiocraft/license_pools/` (technician 409, general 423, extra 599 questions; 35/35/50 groups) made by
+  `tools/license_pools.py` from russolsen/ham_radio_question_pool (NCVEC public domain text, Apache-2.0 packaging; see
+  `doc/Credits-QuestionPools.md`). The 45 figure questions keep `figure` but are skipped (no figure drawn). Tests
+  `LicensePoolTest` (also checks the shipped files), `StudyDeckTest`, `LicenseExamTest`, `LicenseStudyGameTests`.
+
+**Proposed floppy recipes (for the maintainer's review)**, shapeless blank floppy + : RTTY **note block** (mark and space
+tones); Packet BBS **chest** (the mailbox); Propagation Predictor **clock** (the hours ahead); Repeater Directory
+**redstone repeater**; License Study **lectern** (study). All five craftable, none loot.
+
+**Gotchas**: BBS replies go out back to back and unnumbered (a lost one is not resent; the caller asks again); a caller's
+APRS program logs BBS replies too. A repeater is recorded only by a radio whose tone squelch opens for its output; radios
+keep the last 8 repeaters heard, collected only while the directory screen asks. PREDICT counts POOR (data/CW only) as
+open for "best band now". STUDY keeps the pools' answer order (no shuffle on exams). The digipeat change means an
+interface no longer relays messages for its own call's other SSIDs (W1BTR-9 near a W1BTR station).
+
+**Open questions for the maintainer (computer apps 2)**:
+- Recipes above.
+- BBS: should posting from the sysop console be owner-only too (now anyone at the computer may post; delete and setup
+  are owner-only)?
+- PREDICT: are the grade thresholds right, should POOR count as open, and should the station's real antenna replace the
+  assumed dipoles?
+- REPEATER: collect in the background (a ticking handler, so the computer stays in use and draws power) instead of only
+  while the screen is open?
+- STUDY: draw the 45 figure questions once the figures can be shown (the PNGs are in the source repo); shuffle answers on
+  practice exams?

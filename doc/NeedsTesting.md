@@ -8,6 +8,37 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 computer apps 2: RTTY, Packet BBS, Propagation Predictor, Repeater Directory, License Study (added 2026-11-06)
+
+- [ ] Craft the five floppies (blank floppy + note block / chest / clock / redstone repeater / lectern); each has its
+  label colour and installs with INSTALL.
+- [ ] RTTY: two computers on HF radios with radio interfaces (14.080 MHz): typing shows in the yellow type-ahead buffer
+  and drains at about six a second while the far end prints it; TX/RX lamp on the station line; Backspace takes back
+  unsent characters; Ctrl+X drops them; Enter ends a line. F3/F4/F5 macros with F10's DX call; F9 edits them (
+ ends
+  a line); F6 sends a .TXT; F7 saves RTTY0001.TXT; F8 clears; PgUp/PgDn and the wheel scroll. A Teletype Machine and
+  an H19 copy the computer and the computer copies them. Weak signals: misprints look like real RTTY (E/A, UE for 73).
+  Listen to the tones: they should still sound like RTTY.
+- [ ] Packet BBS SYSOP page: list columns, unread `*`, traffic log colours, read view scrolling, N/B compose form then
+  editor (^S posts, Esc asks to discard), Del confirm, F7 setup (SSID, online); a non-owner is refused delete/setup.
+- [ ] Packet BBS TERMINAL page: F7 connect dialog, typing and Enter, answers print below, PgUp/PgDn and the wheel,
+  F8 clears. Call a hosted BBS from an H19 and from an APRS handheld: acks stop the retries, answers arrive as messages.
+- [ ] PREDICT: the grid fits 80 columns: colours, lower-case dimmed hours, the day/night row, the legend on rows 22-23;
+  Tab and the tab clicks, the input field and Enter; F5 with a second player online who has a callsign, and with APRS
+  stations heard; F6 print and F7 save; the red error lines (no receiver, unknown callsign, bad input); the 20 s
+  refresh keeps the grid. Compare a prediction with a real 20m skip contact by day and by night.
+- [ ] REPEATER: columns line up at 80 columns, the key bar fits, F3 sort cycle, the Add/Edit form (7 fields) and its
+  errors, the delete confirm, Space marks, the status line. In game: tune a VHF radio on a radio interface (or touching
+  the computer) to a repeater's output, key the repeater, F5: it appears with callsign, offset and tone; distance and
+  bearing match the world. F7 export to CHANNELS.FRQ, then "Open FREQMAN" opens it; F6 prints a readable book.
+- [ ] STUDY menu: the columns (Qs, Seen, Known, Pass) and the detail box (mastered bar, aptitude colour). S picks a
+  subelement. Card page: long questions and answers wrap clear of the key bar; clicking an answer; A-D and I; green for
+  right, red for a wrong pick, the verdict and "comes back after" lines; Enter for the next card; the session counter.
+- [ ] STUDY exam (E): Left/Right/PgUp/PgDn and the wheel move between questions; the answer sheet row; F10 confirms
+  with the unanswered count; the pass/fail box; the review marks and W jumps to the next wrong one; Esc mid-exam asks.
+  Progress (P): the table and bars; R resets after a confirm. Optional: put a custom pool JSON in
+  `config/radiocraft/license_pools/`, `/reload`, and it appears in the menu.
+
 ## 1.12 open-question fixes (added 2026-11-05)
 
 Data already regenerated (`runData`); restart the client (lang, packets, screen layout, structure templates).

@@ -1464,6 +1464,12 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SSTV, Items.PAINTING);
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.DIRECTION_FINDING, Items.SPYGLASS);
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.ADSB, Items.FEATHER);
+        // Computer apps 2 (2026-11-06), for the maintainer's review.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.RTTY, Items.NOTE_BLOCK); // Mark and space tones.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.BBS, Items.CHEST); // The mailbox.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.PROPAGATION, Items.CLOCK); // The hours ahead.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.REPEATERS, Items.REPEATER);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.LICENSE, Items.LECTERN); // Study.
         programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())
                 .requires(ingredient)
