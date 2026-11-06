@@ -818,7 +818,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		app.accept("df", new String[] { "Direction Finding", "Bigger maps for the direction finder, accuracy at a glance, past searches kept." });
 		app.accept("snake", new String[] { "Snake", "The classic. Eat, grow, and do not bite your own tail." });
 		app.accept("falling_blocks", new String[] { "Pileup", "Callers pile into the band: fill a row to work them, before the band fills up." });
-		app.accept("music", new String[] { "Music Player", "Old public-domain tunes, played on the computer's sound card." });
+		app.accept("music", new String[] { "Music Player", "Free classical and modern tunes, played on the computer's sound card." });
 		app.accept("bible", new String[] { "Bible", "The four gospels, World English Bible: read by chapter, go to a verse, search." });
 		app.accept("adsb", new String[] { "ADS-B", "Aircraft on a radar screen, from an ADS-B receiver." });
 		app.accept("rtty", new String[] { "RTTY", "Live radioteletype on HF: type ahead, macros, and a receive window that saves to disk." });
