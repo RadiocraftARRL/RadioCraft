@@ -97,10 +97,17 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	 */
 	private final Map<UUID, HandSession> handSessions = new HashMap<>();
 
-	/** One player's "Program radios" mode: the codeplug loaded in the CPS, and the game time it was last used. */
+	/**
+	 * One player's "Program radios" mode: the codeplug loaded in the CPS, and the game time it was last used. Armed
+	 * (the CPS's Read or Write by hand, 2026-11-06), it waits for one radio: {@code armed} is "read" or "write", and the
+	 * next click does that, whether the player sneaks or not, and ends the mode.
+	 */
 	public static final class HandSession {
 		public com.arrl.radiocraft.common.computer.Codeplug plug;
 		public long lastUse;
+		@Nullable
+		public String armed;
+		public long armedAt;
 
 		HandSession(com.arrl.radiocraft.common.computer.Codeplug plug, long lastUse) {
 			this.plug = plug;
@@ -221,6 +228,23 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		}
 	}
 
+	/** How long an armed read or write waits for the radio, ticks (60 seconds). */
+	public static final long ARM_TIMEOUT_TICKS = 60L * 20L;
+
+	/**
+	 * {@code player} pressed Continue on the CPS's Read or Write by hand: the next radio they right click the computer
+	 * with is read ({@code action} "read") or written with {@code plug} ("write"), within {@link #ARM_TIMEOUT_TICKS}.
+	 * Replaces a "Program radios" mode they had on.
+	 */
+	public void arm(ServerPlayer player, com.arrl.radiocraft.common.computer.Codeplug plug, String action) {
+		startHand(player, plug);
+		HandSession session = handSessions.get(player.getUUID());
+		if(session != null) {
+			session.armed = action;
+			session.armedAt = level == null ? 0L : level.getGameTime();
+		}
+	}
+
 	/** {@code player}'s mode ends (the CPS closed, another program opened, or turned off). */
 	public void stopHand(UUID player) {
 		if(handSessions.remove(player) != null)
@@ -251,8 +275,10 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		long now = server.getGameTime();
 		handSessions.entrySet().removeIf(entry -> {
 			ServerPlayer player = server.getServer().getPlayerList().getPlayer(entry.getKey());
+			HandSession session = entry.getValue();
 			String reason = noPower ? "no_power" : player == null || player.level() != server ? "gone"
-					: now - entry.getValue().lastUse > HAND_TIMEOUT_TICKS ? "timeout" : null;
+					: session.armed != null && now - session.armedAt > ARM_TIMEOUT_TICKS ? "arm_timeout"
+					: now - session.lastUse > HAND_TIMEOUT_TICKS ? "timeout" : null;
 			if(reason == null)
 				return false;
 			if(player != null)

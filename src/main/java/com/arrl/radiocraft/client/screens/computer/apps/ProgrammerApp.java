@@ -40,8 +40,10 @@ import java.util.Map;
 /**
  * CPS, the commercial radio programmer (1.12 step 6; "customer programming software", as the radio shops call it):
  * reads a commercial radio's channels (16, or 40 on the upgraded handheld in zones A-C; the list scrolls), lets them be edited, and writes them back, all or nothing, refusing what the
- * model cannot do. A placed mobile wired to the computer is read and written through the cable (F5, F6); handhelds and
- * mobiles in item form are programmed by hand: F9 turns on the "Program radios" mode, Close leaves the screen with the
+ * model cannot do. A placed mobile wired to the computer is read and written through the cable (F5, F6). A handheld or
+ * a mobile in item form is read or written by hand: F5 or F6 (with no radio wired, or "a radio in your hand" picked)
+ * asks the player to press Continue, the screen closes, and right clicking the computer holding the radio reads or
+ * writes it and opens the CPS again with it (2026-11-06). For a fleet, F9 turns on the "Program radios" mode, Close leaves the screen with the
  * CPS in that mode, and right clicking the computer or its monitor holding a radio writes the codeplug into it (sneak
  * to read the radio instead; {@code HandProgramming} on the server). A key the radio marks as not readable shows as
  * {@code ****}: it never comes off the radio, and written back it stays the radio's own; a new key can be typed over
@@ -49,7 +51,7 @@ import java.util.Map;
  * channel is refused). Each codeplug carries a unit ID (F4; sent with every key-up) and a contact list of unit IDs
  * and aliases (F7).
  * <p>
- * F5 reads the radio, F6 writes it, Enter edits a channel, Del clears one, Ctrl+C / Ctrl+V copy a channel to another,
+ * F5 reads the radio (wired, or by hand), F6 writes it, Enter edits a channel, Del clears one, Ctrl+C / Ctrl+V copy a channel to another,
  * F3 opens a codeplug, Ctrl+S saves one, F8 erases the radio back to factory blank, F9 programs radios by hand.
  */
 public final class ProgrammerApp extends DosApp {
@@ -70,6 +72,9 @@ public final class ProgrammerApp extends DosApp {
 	private final DosList list = new DosList();
 	/** The "Program radios" mode is on (the server agreed). */
 	private boolean handMode = false;
+	/** "read" or "write" while waiting for one radio to be right clicked on the computer (Read or Write by hand), else null. */
+	@Nullable
+	private String armed;
 	/** Where the mode's Close button is drawn (row, first column). */
 	private static final int CLOSE_ROW = 21, CLOSE_COL = 70;
 
@@ -217,7 +222,7 @@ public final class ProgrammerApp extends DosApp {
 	// -------------------- THE RADIO --------------------
 
 	private void readRadio() {
-		whenSafe(() -> RadioPicker.pick(this, session, app, chosen -> {
+		whenSafe(() -> RadioPicker.pickOrHand(this, session, app, chosen -> {
 			CompoundTag data = new CompoundTag();
 			data.putString("radio", chosen.getString("id"));
 			session.app(app, "read", data, response -> {
@@ -228,17 +233,17 @@ public final class ProgrammerApp extends DosApp {
 				took(response);
 				session.message(Dos.tr("cps.read", RadioPicker.name(response.data()), plug.programmedCount()), false);
 			});
-		}));
+		}, () -> promptHand("read")));
 	}
 
 	/** Writes the codeplug into the radio read last (or one picked now). */
 	private void writeRadio() {
-		if(radio != null && radio.getString("id").equals("hand")) { // Read by hand: it is written by hand too.
-			session.message(Dos.tr(handMode ? "cps.hand_write_hint" : "cps.hand_mode_off"), true);
+		if(handMode && radio != null && radio.getString("id").equals("hand")) { // Programming radios by hand already: click with it.
+			session.message(Dos.tr("cps.hand_write_hint"), true);
 			return;
 		}
-		if(radio == null) {
-			RadioPicker.pick(this, session, app, chosen -> confirmWrite(chosen.getString("id"), RadioPicker.name(chosen)));
+		if(radio == null || radio.getString("id").equals("hand")) { // Read by hand (or nothing read): a wired one, or one in the hand.
+			RadioPicker.pickOrHand(this, session, app, chosen -> confirmWrite(chosen.getString("id"), RadioPicker.name(chosen)), () -> promptHand("write"));
 			return;
 		}
 		confirmWrite(radio.getString("id"), RadioPicker.name(radio));
@@ -452,6 +457,44 @@ public final class ProgrammerApp extends DosApp {
 		}).focus(old == null ? 0 : 1));
 	}
 
+	// -------------------- READ OR WRITE ONE RADIO BY HAND --------------------
+
+	/** Asks the player to press Continue, then to right click the computer holding the radio ({@code action} "read" or "write"). */
+	private void promptHand(String action) {
+		String text = action.equals("read") ? Dos.tr("cps.hand_prompt.read") : Dos.tr("cps.hand_prompt.write", plug.programmedCount());
+		showDialog(DosDialog.choice(Dos.tr("cps.hand_prompt_title." + action), text, new String[] { Dos.tr("button.continue"), Dos.tr("button.cancel") }, index -> {
+			if(index == 0)
+				arm(action);
+		}));
+	}
+
+	/** Continue: the server waits for the radio (60 s), and the screen closes so the player can click with it. */
+	private void arm(String action) {
+		CompoundTag data = new CompoundTag();
+		data.putBoolean("on", true);
+		data.put("plug", plug.toTag());
+		data.putString("arm", action);
+		session.app(app, "hand", data, response -> {
+			if(!response.ok()) {
+				showError(response);
+				return;
+			}
+			handMode = false; // Armed for one radio: it replaces the mode, which ends with it.
+			armed = action;
+			HandProgramming.clientComputer = session.pos(); // This client's click on the computer is the programming's, not the screen's.
+			closeScreen();
+		});
+	}
+
+	/** The armed read or write is done or gave up: this client's clicks on the computer open it again. */
+	private void disarm() {
+		if(armed == null)
+			return;
+		armed = null;
+		if(!handMode && session.pos().equals(HandProgramming.clientComputer))
+			HandProgramming.clientComputer = null;
+	}
+
 	// -------------------- PROGRAM RADIOS (BY HAND) --------------------
 
 	/** F9: the "Program radios" mode on or off. */
@@ -486,6 +529,11 @@ public final class ProgrammerApp extends DosApp {
 
 	/** The mode ends here (and, if {@code tell}, on the server). */
 	private void endHand(boolean tell) {
+		if(armed != null) {
+			disarm();
+			if(tell)
+				sendHand(false);
+		}
 		if(!handMode)
 			return;
 		handMode = false;
@@ -506,12 +554,16 @@ public final class ProgrammerApp extends DosApp {
 	public void event(String kind, CompoundTag data) {
 		switch(kind) {
 			case "hand_read" -> {
+				if(data.getBoolean("armed"))
+					disarm();
 				took(data);
 				plug = plug.withUnitId(0); // Each radio keeps its own unit ID: a read one is not written into the next.
 				rebuild();
 				session.message(Dos.tr("cps.hand_read", RadioPicker.name(data), plug.programmedCount(), data.getInt("unit")), false);
 			}
 			case "hand_written" -> {
+				if(data.getBoolean("armed"))
+					disarm();
 				problems.clear();
 				if(plug.unitId() > 0) // The server moved on to the next unit ID.
 					plug = plug.withUnitId(data.getInt("next"));
@@ -519,6 +571,8 @@ public final class ProgrammerApp extends DosApp {
 				session.message(Dos.tr("cps.hand_written", data.getString("name"), data.getInt("unit")), false);
 			}
 			case "hand_refused" -> {
+				if(data.getBoolean("armed"))
+					disarm();
 				ListTag refused = data.getList("problems", Tag.TAG_COMPOUND);
 				problems.clear();
 				for(int i = 0; i < refused.size(); i++)
@@ -527,6 +581,7 @@ public final class ProgrammerApp extends DosApp {
 				session.message(Dos.tr("cps.hand_refused", data.getString("name")), true);
 			}
 			case "hand_end" -> {
+				disarm();
 				endHand(false);
 				session.message(Dos.tr("cps.hand_end." + data.getString("reason")), true);
 			}
@@ -579,7 +634,9 @@ public final class ProgrammerApp extends DosApp {
 
 		int selected = list.selected();
 		String problem = problems.get(selected);
-		if(handMode) {
+		if(armed != null) // Seen on the monitor while the screen is closed: what the computer waits for.
+			g.putField(0, CLOSE_ROW, " " + Dos.fit(Dos.tr("cps.armed_banner." + armed), TextGrid.COLS - 2), TextGrid.COLS, DosColours.WHITE, DosColours.RED);
+		else if(handMode) {
 			g.putField(0, CLOSE_ROW, " " + Dos.fit(Dos.tr("cps.hand_banner"), CLOSE_COL - 2), CLOSE_COL, DosColours.WHITE, DosColours.RED);
 			g.putField(CLOSE_COL, CLOSE_ROW, Dos.tr("cps.close_button"), TextGrid.COLS - CLOSE_COL, DosColours.BLACK, DosColours.LIGHT_GREY);
 		}

@@ -38,6 +38,13 @@ import org.jetbrains.annotations.Nullable;
  * in the codeplug, if set, is written and then advanced by one, so a fleet programmed one radio after another gets
  * IDs in sequence; with none set, each radio keeps its own (or is given one).
  * <p>
+ * Read and Write by hand (2026-11-06): the CPS's F5 and F6 with no wired radio (or the "radio in your hand" line) ask
+ * the player to press Continue, which closes the screen and <em>arms</em> the mode for one radio
+ * ({@link RadioComputerBlockEntity#arm}, {@code hand} with {@code arm} "read" or "write"): the next right click on the
+ * computer holding a radio reads or writes it, sneaking or not, the mode ends and the computer's screen opens again
+ * on the CPS with the radio's channels (or the result) in it. Unused, it gives up after
+ * {@link RadioComputerBlockEntity#ARM_TIMEOUT_TICKS}.
+ * <p>
  * The mode is held on the server per player and computer ({@link RadioComputerBlockEntity#startHand}) and ends when the
  * CPS is closed or another program is opened (the client says so), when the computer loses power, or after
  * {@link RadioComputerBlockEntity#HAND_TIMEOUT_TICKS} unused. Clients mirror it in {@link #clientComputer} so their
@@ -54,8 +61,10 @@ public final class HandProgramming {
 	// -------------------- THE CPS'S REQUEST --------------------
 
 	/**
-	 * {@code hand} ({@code on}, {@code plug}): turns the mode on with the codeplug {@code plug} (also sent again after
-	 * every edit while on) or off. Answers {@code on}; error {@code no_power} if the computer could not run it.
+	 * {@code hand} ({@code on}, {@code plug}, optional {@code arm} "read" or "write"): turns the mode on with the
+	 * codeplug {@code plug} (also sent again after every edit while on) or off; with {@code arm}, for that one radio
+	 * (see the class comment). Answers {@code on} (and {@code arm}); error {@code no_power} if the computer could not
+	 * run it.
 	 */
 	public static void request(ComputerContext context, CompoundTag data, ComputerReply reply) {
 		RadioComputerBlockEntity computer = context.computer();
@@ -67,12 +76,22 @@ public final class HandProgramming {
 			reply.ok(out);
 			return;
 		}
-		computer.startHand(player, Codeplug.fromTag(data.getCompound("plug")));
+		String arm = data.getString("arm");
+		boolean armed = arm.equals("read") || arm.equals("write");
+		Codeplug plug = Codeplug.fromTag(data.getCompound("plug"));
+		if(armed)
+			computer.arm(player, plug, arm);
+		else
+			computer.startHand(player, plug);
 		if(computer.handSession(player.getUUID()) == null) { // The computer could not power the mode.
 			reply.error("no_power");
 			return;
 		}
 		out.putBoolean("on", true);
+		if(armed) {
+			out.putString("arm", arm);
+			player.displayClientMessage(message("armed." + arm).withStyle(ChatFormatting.AQUA), true);
+		}
 		reply.ok(out);
 	}
 
@@ -126,19 +145,34 @@ public final class HandProgramming {
 
 	/**
 	 * Programs ({@code read} false) or reads the radio {@code stack} for {@code player} at {@code computer}. False if
-	 * the mode is not on for them there (the click then does what it always did). Server side.
+	 * the mode is not on for them there (the click then does what it always did). Armed for one radio, the armed
+	 * action is done whatever {@code read} says, the mode ends and the computer's screen opens again. Server side.
 	 */
 	public static boolean use(RadioComputerBlockEntity computer, ServerPlayer player, ItemStack stack, boolean read) {
 		RadioComputerBlockEntity.HandSession session = computer.handSession(player.getUUID());
 		CommercialProgramming.Target target = CommercialProgramming.of(stack);
 		if(session == null || target == null)
 			return false;
+		String armed = session.armed;
+		if(armed == null)
+			return program(computer, player, session, stack, target, read, false);
+		program(computer, player, session, stack, target, armed.equals("read"), true);
+		computer.stopHand(player.getUUID());
+		if(computer.hasMonitor()) // Back to the CPS, the radio's channels (or the result) in it.
+			computer.open(player, computer.monitorPos());
+		return true;
+	}
+
+	/** Reads or writes the radio; the events tell the CPS whether it was an armed one ({@code armed}). */
+	private static boolean program(RadioComputerBlockEntity computer, ServerPlayer player, RadioComputerBlockEntity.HandSession session, ItemStack stack,
+								   CommercialProgramming.Target target, boolean read, boolean armed) {
 		CommercialTargets.Found found = new CommercialTargets.Found("hand", stack.getItem().getDescriptionId(), CommercialTargets.customName(stack), "hand", target, () -> {});
 		Component name = stack.getHoverName();
 		if(read) {
 			CompoundTag radio = CommercialTargets.read(found);
 			session.plug = new Codeplug(target.model().id(), Codeplug.channels(radio.getList("channels", net.minecraft.nbt.Tag.TAG_COMPOUND)),
 					0, target.program().contacts()); // The radio's own unit ID is shown, not written into the next radio.
+			radio.putBoolean("armed", armed);
 			RadioComputerBlockEntity.push(player, ComputerApps.PROGRAMMER, "hand_read", radio);
 			player.displayClientMessage(message("read", name, target.program().programmedCount()).withStyle(ChatFormatting.GREEN), true);
 			sound(player, computer.getBlockPos(), true);
@@ -150,6 +184,7 @@ public final class HandProgramming {
 			CompoundTag refused = new CompoundTag();
 			refused.put("problems", CommercialTargets.problems(result));
 			refused.putString("name", name.getString());
+			refused.putBoolean("armed", armed);
 			RadioComputerBlockEntity.push(player, ComputerApps.PROGRAMMER, "hand_refused", refused);
 			CommercialProgramming.Problem first = result.problems().getFirst();
 			player.displayClientMessage(message("refused", name, first.position() + 1,
@@ -163,13 +198,14 @@ public final class HandProgramming {
 		CompoundTag done = CommercialTargets.read(found);
 		done.putString("name", name.getString());
 		done.putInt("next", session.plug.unitId());
+		done.putBoolean("armed", armed);
 		RadioComputerBlockEntity.push(player, ComputerApps.PROGRAMMER, "hand_written", done);
 		player.displayClientMessage(message("written", name, written.programmedCount(), written.unitId()).withStyle(ChatFormatting.GREEN), true);
 		sound(player, computer.getBlockPos(), true);
 		return true;
 	}
 
-	/** Tells {@code player} their mode ended ({@code reason}: no_power, timeout, gone), on the CPS and the action bar. */
+	/** Tells {@code player} their mode ended ({@code reason}: no_power, timeout, arm_timeout, gone), on the CPS and the action bar. */
 	public static void ended(ServerPlayer player, String reason) {
 		CompoundTag data = new CompoundTag();
 		data.putString("reason", reason);

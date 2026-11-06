@@ -25,6 +25,7 @@ import com.arrl.radiocraft.common.items.CommercialHandheldItem;
 import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket;
 import com.arrl.radiocraft.common.radio.commercial.CommercialChannel;
+import com.arrl.radiocraft.common.radio.commercial.CommercialProgram;
 import com.arrl.radiocraft.common.radio.commercial.CommercialProgramming;
 import com.arrl.radiocraft.common.computer.FrequencyList;
 import com.mojang.authlib.GameProfile;
@@ -230,6 +231,77 @@ public class OfficeAppsGameTests {
 		hand(computer, player, null);
 		helper.assertFalse(computer.hasHandSessions(), "the mode did not turn off");
 		helper.assertFalse(HandProgramming.use(computer, player, handheld, false), "wrote a radio with the mode off");
+		helper.succeed();
+	}
+
+	/** The CPS's Continue on Read or Write by hand: the mode armed for one radio ({@code action} "read" or "write"). */
+	private static CompoundTag arm(RadioComputerBlockEntity computer, FakePlayer player, Codeplug plug, String action) {
+		CompoundTag data = new CompoundTag();
+		data.putBoolean("on", true);
+		data.put("plug", plug.toTag());
+		data.putString("arm", action);
+		return app(computer, player, ComputerApps.PROGRAMMER, "hand", data);
+	}
+
+	/** A right click on the radio computer itself, as a player does it, holding {@code stack}; true if the CPS took it. */
+	private static boolean clickComputer(GameTestHelper helper, FakePlayer player, ItemStack stack) {
+		player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+		BlockPos pos = helper.absolutePos(COMPUTER);
+		PlayerInteractEvent.RightClickBlock click = new PlayerInteractEvent.RightClickBlock(player, InteractionHand.MAIN_HAND, pos,
+				new BlockHitResult(Vec3.atCenterOf(pos), Direction.NORTH, pos, false));
+		HandProgramming.onRightClickBlock(click);
+		return click.isCanceled();
+	}
+
+	/**
+	 * Read and Write by hand (2026-11-06): Continue arms the CPS for one radio; the next right click on the computer
+	 * holding a handheld or a mobile item does the armed action whether the player sneaks or not (a sneak would read
+	 * in the "Program radios" mode), and the mode ends after it, so a second click is the computer's own again.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void programmerReadsAndWritesOneRadioByHand(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper, ComputerApps.PROGRAMMER);
+		FakePlayer player = player(helper, "armed");
+		ItemStack handheld = new ItemStack(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
+		CommercialProgramming.Target target = CommercialProgramming.of(handheld);
+		helper.assertTrue(target != null && CommercialProgramming.writeChannel(target, 0, CommercialChannel.parse("OPS|151.625")).ok(), "could not set up the handheld");
+
+		// Armed read, a plain click: read, not written with the blank codeplug.
+		CompoundTag answer = arm(computer, player, Codeplug.blank(""), "read").getCompound("data");
+		helper.assertTrue(answer.getBoolean("on") && answer.getString("arm").equals("read"), "not armed: " + answer);
+		helper.assertTrue(computer.handSession(player.getUUID()).armed.equals("read"), "the computer is not waiting for a read");
+		player.setShiftKeyDown(false);
+		helper.assertTrue(clickComputer(helper, player, handheld), "the armed read's click was not taken");
+		helper.assertTrue(CommercialHandheldItem.program(player.getMainHandItem()).channel(0).name().equals("OPS"), "the read wrote the radio");
+		helper.assertFalse(computer.hasHandSessions(), "the mode is still on after the armed read");
+		helper.assertFalse(clickComputer(helper, player, player.getMainHandItem()), "a click after the read was taken too");
+
+		// Armed write, sneaking: written all the same.
+		Codeplug plug = Codeplug.blank("").with(0, CommercialChannel.parse("DISP|155.0125")).with(1, CommercialChannel.parse("TAC|155.4"));
+		arm(computer, player, plug, "write");
+		player.setShiftKeyDown(true);
+		helper.assertTrue(clickComputer(helper, player, player.getMainHandItem()), "the armed write's click was not taken");
+		player.setShiftKeyDown(false);
+		CommercialProgram written = CommercialHandheldItem.program(player.getMainHandItem());
+		helper.assertTrue(written.channel(0).name().equals("DISP") && written.channel(1).name().equals("TAC"), "the handheld has " + written);
+		helper.assertFalse(computer.hasHandSessions(), "the mode is still on after the armed write");
+
+		// A mobile in item form: written (the sneak flag ignored), then read without being changed.
+		ItemStack mobileItem = new ItemStack(RadiocraftItems.COMMERCIAL_MOBILE.get());
+		arm(computer, player, Codeplug.blank("").with(0, CommercialChannel.parse("YARD|154.57")), "write");
+		helper.assertTrue(HandProgramming.use(computer, player, mobileItem, true), "the mobile item's armed write was not taken");
+		CommercialProgramming.Target mobile = CommercialProgramming.of(mobileItem);
+		helper.assertTrue(mobile != null && mobile.program().channel(0).name().equals("YARD"), "the mobile item has " + (mobile == null ? null : mobile.program()));
+		arm(computer, player, Codeplug.blank(""), "read");
+		helper.assertTrue(HandProgramming.use(computer, player, mobileItem, false), "the mobile item's armed read was not taken");
+		helper.assertTrue(CommercialProgramming.of(mobileItem).program().channel(0).name().equals("YARD"), "the read changed the mobile item");
+		helper.assertFalse(computer.hasHandSessions(), "the mode is still on after the mobile's read");
+		helper.assertFalse(HandProgramming.use(computer, player, mobileItem, false), "the mobile was programmed with nothing armed");
+
+		// Armed and then turned off (the CPS left): nothing is waiting any more.
+		arm(computer, player, plug, "write");
+		hand(computer, player, null);
+		helper.assertFalse(clickComputer(helper, player, handheld.copy()), "a click was taken after the CPS stopped waiting");
 		helper.succeed();
 	}
 

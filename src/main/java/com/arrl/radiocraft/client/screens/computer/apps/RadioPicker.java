@@ -36,6 +36,34 @@ final class RadioPicker {
 		return where.equals("hand") ? Dos.tr("radio.in_hand") : Dos.tr("radio.wired", where);
 	}
 
+	/**
+	 * As {@link #pick}, with a radio held in the player's hand as one more choice (the CPS, 2026-11-06): with no radio
+	 * wired, {@code hand} runs at once; with some, "a radio in your hand" heads the list.
+	 */
+	static void pickOrHand(DosApp owner, ComputerSession session, ComputerApp app, Consumer<CompoundTag> chosen, Runnable hand) {
+		session.app(app, "radios", new CompoundTag(), response -> {
+			if(!response.ok()) {
+				session.message(response.errorText(), true);
+				return;
+			}
+			ListTag radios = response.data().getList("radios", Tag.TAG_COMPOUND);
+			if(radios.isEmpty()) {
+				hand.run();
+				return;
+			}
+			List<String> lines = new ArrayList<>();
+			lines.add(Dos.tr("radio.hand_choice"));
+			for(int i = 0; i < radios.size(); i++)
+				lines.add(Dos.fit(name(radios.getCompound(i)) + " - " + where(radios.getCompound(i)), 70));
+			owner.showDialog(new DosPickDialog(Dos.tr("radio.pick_title"), Dos.tr("radio.pick_or_hand"), lines, index -> {
+				if(index == 0)
+					hand.run();
+				else
+					chosen.accept(radios.getCompound(index - 1));
+			}));
+		});
+	}
+
 	static void pick(DosApp owner, ComputerSession session, ComputerApp app, Consumer<CompoundTag> chosen) {
 		session.app(app, "radios", new CompoundTag(), response -> {
 			if(!response.ok()) {

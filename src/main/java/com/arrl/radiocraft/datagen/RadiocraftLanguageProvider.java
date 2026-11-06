@@ -798,6 +798,9 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("message", "computer.hand.refused"), "The %s was not programmed: CH %s: %s");
 		provider.add(Radiocraft.translationKey("message", "computer.hand.ended.no_power"), "The CPS stopped programming radios: the computer has no power");
 		provider.add(Radiocraft.translationKey("message", "computer.hand.ended.timeout"), "The CPS stopped programming radios after 5 minutes unused");
+		provider.add(Radiocraft.translationKey("message", "computer.hand.ended.arm_timeout"), "The CPS stopped waiting for a radio: none was clicked on the computer in 60 seconds");
+		provider.add(Radiocraft.translationKey("message", "computer.hand.armed.read"), "Now right click the computer holding the radio (handheld or mobile) to read it");
+		provider.add(Radiocraft.translationKey("message", "computer.hand.armed.write"), "Now right click the computer holding the radio (handheld or mobile) to write it");
 		provider.add(Radiocraft.translationKey("screen", "scanner.glass"), "Glass");
 		provider.add(Radiocraft.translationKey("screen", "scanner.paper"), "Paper");
 		provider.add(Radiocraft.translationKey("screen", "scanner.output"), "Out");
@@ -842,6 +845,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("button.yes", "Yes");
 		s.accept("button.no", "No");
 		s.accept("button.cancel", "Cancel");
+		s.accept("button.continue", "Continue");
 		s.accept("button.open", "Open");
 		s.accept("button.save", "Save");
 		s.accept("button.discard", "Discard");
@@ -1020,6 +1024,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("radio.wired", "wired, at %s");
 		s.accept("radio.pick_title", "Which radio?");
 		s.accept("radio.pick", "The computer reaches more than one commercial radio:");
+		s.accept("radio.pick_or_hand", "Read or write which radio?");
+		s.accept("radio.hand_choice", "A radio in your hand (handheld or mobile)");
 
 		// BOOKEDIT.
 		s.accept("bookedit.title", "BOOKEDIT - %s");
@@ -1149,7 +1155,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		// CPS, the commercial radio programmer.
 		s.accept("cps.title", "CPS - Commercial Radio Programming");
 		s.accept("cps.keys", "F5=Read F6=Write F9=By hand F4=Unit ID F7=Contacts F3=Open ^S=Save F8=Factory");
-		s.accept("cps.no_radio", "No radio read. F5 reads a wired mobile; F9 programs radios held in your hand.");
+		s.accept("cps.no_radio", "No radio read. F5 reads one: wired, or held in your hand. F9 programs a fleet by hand.");
 		s.accept("cps.radio", "Radio: %s, %s");
 		s.accept("cps.model", "%s  %s MHz  Digital: %s  Encryption: %s");
 		s.accept("cps.no_model", "Codeplug for no particular radio");
@@ -1196,9 +1202,15 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("cps.hand_end.no_power", "Stopped programming radios: the computer has no power");
 		s.accept("cps.hand_end.timeout", "Stopped programming radios: 5 minutes unused");
 		s.accept("cps.hand_end.gone", "Stopped programming radios");
+		s.accept("cps.hand_end.arm_timeout", "No radio was clicked on the computer in 60 seconds: nothing read or written");
+		s.accept("cps.hand_prompt_title.read", "Read a Radio by Hand");
+		s.accept("cps.hand_prompt_title.write", "Write a Radio by Hand");
+		s.accept("cps.hand_prompt.read", "Press Continue, then right click the computer with the radio (handheld or mobile) to read it. The CPS waits 60 seconds and opens again with its channels.");
+		s.accept("cps.hand_prompt.write", "Press Continue, then right click the computer with the radio (handheld or mobile) to write these %s channels into it. The CPS waits 60 seconds.");
+		s.accept("cps.armed_banner.read", "WAITING FOR A RADIO: right click the computer holding it to read it");
+		s.accept("cps.armed_banner.write", "WAITING FOR A RADIO: right click the computer holding it to write it");
 		s.accept("cps.hand_write_hint", "A radio read by hand is written by hand: hold it and right click the computer");
-		s.accept("cps.hand_mode_off", "A radio read by hand is written by hand: F9, then right click the computer holding it");
-		s.accept("cps.hand_no_factory", "A radio in your hand is reset by writing it: F9 and right click the computer");
+		s.accept("cps.hand_no_factory", "A radio in your hand is reset by writing it: clear the channels, then F6 by hand");
 		s.accept("cps.problem", "CH %s: %s");
 		s.accept("cps.edit_title", "Channel %s");
 		s.accept("cps.form_hint", "RX blank clears the channel. TX blank for simplex, RX for receive only. Key 0 is clear; **** keeps the radio's.");
