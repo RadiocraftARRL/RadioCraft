@@ -23,7 +23,8 @@ import java.util.Locale;
  * <p>
  * File layout (compressed NBT, {@link ComputerFileFormats#LOG}): {@code qsos}, a list of compounds with {@code utc}
  * (long, ms), {@code game} (string, "D12 1430"), {@code call}, {@code mhz} (double), {@code mode}, {@code sent},
- * {@code rcvd}, {@code notes}.
+ * {@code rcvd}, {@code notes}, and (computer batch 3C) {@code where} when anything is known of where the other station
+ * was ({@link Where}: grid square, dimension, biome, rounded distance; never coordinates). Old files simply have no {@code where}.
  */
 public final class Logbook {
 
@@ -36,6 +37,81 @@ public final class Logbook {
 	private static final DateTimeFormatter SHOWN_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ROOT).withZone(ZoneOffset.UTC);
 
 	/**
+	 * Where the other station was, coarsely (computer batch 3C, for the Awards program): its grid square (FT8 sends it,
+	 * a player can type it, or the server works it out from where the station's antenna was when it was heard), its
+	 * dimension, the biome at the grid square's centre, and the distance to it rounded to {@link #DISTANCE_STEP} blocks.
+	 * <b>Never exact coordinates</b>: a log file is a client-readable file, and another player's position must not leak
+	 * through it. Every part may be empty.
+	 *
+	 * @param grid      four-character locator ({@code Ft8.grid}, squares of 256 blocks), or ""
+	 * @param dimension the dimension's id ("minecraft:the_nether"), or ""
+	 * @param biome     the biome's id ("minecraft:plains") at the grid square's centre, or ""
+	 * @param distance  blocks from the logging station, a multiple of {@link #DISTANCE_STEP}; -1 if unknown
+	 */
+	public record Where(String grid, String dimension, String biome, int distance) {
+
+		public static final Where UNKNOWN = new Where("", "", "", -1);
+		public static final int ID_MAX = 64;
+		/** Distances are kept to the nearest this many blocks. */
+		public static final int DISTANCE_STEP = 100;
+
+		public Where {
+			grid = grid == null ? "" : grid.strip().toUpperCase(Locale.ROOT);
+			if(!com.arrl.radiocraft.common.radio.ft8.Ft8.isGrid(grid))
+				grid = "";
+			dimension = id(dimension);
+			biome = id(biome);
+			distance = distance < 0 ? -1 : coarse(distance);
+		}
+
+		/** Only a grid square (typed, or sent by FT8). */
+		public static Where grid(String grid) {
+			return new Where(grid, "", "", -1);
+		}
+
+		/** {@code blocks} rounded to the nearest {@link #DISTANCE_STEP}. */
+		public static int coarse(double blocks) {
+			return (int)(Math.round(blocks / DISTANCE_STEP) * DISTANCE_STEP);
+		}
+
+		public boolean known() {
+			return !grid.isEmpty() || !dimension.isEmpty() || !biome.isEmpty() || distance >= 0;
+		}
+
+		public CompoundTag toTag() {
+			CompoundTag tag = new CompoundTag();
+			if(!grid.isEmpty())
+				tag.putString("grid", grid);
+			if(!dimension.isEmpty())
+				tag.putString("dim", dimension);
+			if(!biome.isEmpty())
+				tag.putString("biome", biome);
+			if(distance >= 0)
+				tag.putInt("dist", distance);
+			return tag;
+		}
+
+		public static Where fromTag(CompoundTag tag) {
+			return new Where(tag.getString("grid"), tag.getString("dim"), tag.getString("biome"), tag.contains("dist") ? tag.getInt("dist") : -1);
+		}
+
+		/** A resource id as it may be kept: lower case {@code [a-z0-9_.-/:]}, at most {@link #ID_MAX}; else "". */
+		private static String id(String text) {
+			if(text == null)
+				return "";
+			String t = text.strip().toLowerCase(Locale.ROOT);
+			if(t.length() > ID_MAX)
+				return "";
+			for(int i = 0; i < t.length(); i++) {
+				char c = t.charAt(i);
+				if(!(c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' || c == '.' || c == '-' || c == '/' || c == ':'))
+					return "";
+			}
+			return t;
+		}
+	}
+
+	/**
 	 * One contact.
 	 *
 	 * @param utcMillis    When it started, real time (ms since the epoch); logs are kept in UTC.
@@ -46,10 +122,18 @@ public final class Logbook {
 	 * @param rstSent      The report given ("59", "599").
 	 * @param rstReceived  The report received.
 	 * @param notes        Name, place, anything else.
+	 * @param where        Where the other station was, as far as is known (computer batch 3C).
 	 */
-	public record Entry(long utcMillis, String gameTime, String call, double frequencyMhz, String mode, String rstSent, String rstReceived, String notes) {
+	public record Entry(long utcMillis, String gameTime, String call, double frequencyMhz, String mode, String rstSent, String rstReceived, String notes,
+			Where where) {
+
+		/** A contact with nothing known of where the other station was. */
+		public Entry(long utcMillis, String gameTime, String call, double frequencyMhz, String mode, String rstSent, String rstReceived, String notes) {
+			this(utcMillis, gameTime, call, frequencyMhz, mode, rstSent, rstReceived, notes, Where.UNKNOWN);
+		}
 
 		public Entry {
+			where = where == null ? Where.UNKNOWN : where;
 			gameTime = cut(ascii(gameTime), 16);
 			call = cut(ascii(call).toUpperCase(Locale.ROOT).replace(" ", ""), CALL_MAX);
 			frequencyMhz = Double.isFinite(frequencyMhz) && frequencyMhz > 0.0D ? Math.min(frequencyMhz, 300_000.0D) : 0.0D;
@@ -69,12 +153,20 @@ public final class Logbook {
 			tag.putString("sent", rstSent);
 			tag.putString("rcvd", rstReceived);
 			tag.putString("notes", notes);
+			if(where.known())
+				tag.put("where", where.toTag());
 			return tag;
 		}
 
 		public static Entry fromTag(CompoundTag tag) {
 			return new Entry(tag.getLong("utc"), tag.getString("game"), tag.getString("call"), tag.getDouble("mhz"), tag.getString("mode"),
-					tag.getString("sent"), tag.getString("rcvd"), tag.getString("notes"));
+					tag.getString("sent"), tag.getString("rcvd"), tag.getString("notes"),
+					tag.contains("where", Tag.TAG_COMPOUND) ? Where.fromTag(tag.getCompound("where")) : Where.UNKNOWN);
+		}
+
+		/** This contact with {@code where} instead. */
+		public Entry withWhere(Where where) {
+			return new Entry(utcMillis, gameTime, call, frequencyMhz, mode, rstSent, rstReceived, notes, where);
 		}
 
 		/** "2026-11-04". */
@@ -164,7 +256,8 @@ public final class Logbook {
 
 	/**
 	 * The log as an ADIF 3 text file (the format every logging program imports): a header, then one record per contact
-	 * with QSO_DATE, TIME_ON, CALL, FREQ, BAND, MODE (and SUBMODE for USB/LSB), RST_SENT, RST_RCVD and COMMENT.
+	 * with QSO_DATE, TIME_ON, CALL, FREQ, BAND, MODE (and SUBMODE for USB/LSB), RST_SENT, RST_RCVD, GRIDSQUARE and
+	 * COMMENT.
 	 */
 	public String adif(String programVersion) {
 		StringBuilder out = new StringBuilder();
@@ -186,6 +279,7 @@ public final class Logbook {
 			field(out, "SUBMODE", mode[1]);
 			field(out, "RST_SENT", entry.rstSent());
 			field(out, "RST_RCVD", entry.rstReceived());
+			field(out, "GRIDSQUARE", entry.where().grid());
 			String comment = entry.notes() + (entry.gameTime().isEmpty() ? "" : (entry.notes().isEmpty() ? "" : " ") + "(game " + entry.gameTime() + ")");
 			field(out, "COMMENT", comment);
 			out.append("<EOR>\n");

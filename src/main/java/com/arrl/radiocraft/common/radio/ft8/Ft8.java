@@ -156,6 +156,15 @@ public final class Ft8 {
 				&& Character.isDigit(text.charAt(2)) && Character.isDigit(text.charAt(3));
 	}
 
+	/** The block {x, z} at the centre of a locator ({@link #grid} of it is the locator again), or null if it is not one. */
+	@org.jetbrains.annotations.Nullable
+	public static int[] gridCentre(String grid) {
+		if(grid == null || !isGrid(grid))
+			return null;
+		int col = squareCol(grid) - 90, row = squareRow(grid) - 90;
+		return new int[] { col * SQUARE_BLOCKS + SQUARE_BLOCKS / 2, -(row * SQUARE_BLOCKS + SQUARE_BLOCKS / 2) - 1 };
+	}
+
 	/** Blocks between the centres of two locators, or -1 if either is not one. */
 	public static int gridDistance(String a, String b) {
 		if(!isGrid(a) || !isGrid(b))

@@ -115,8 +115,9 @@ public final class LogbookApp extends DosApp {
 
 	/** One contact as a list row: date, UTC, call, MHz, mode, sent, received, notes. */
 	private static String line(Logbook.Entry entry) {
-		return String.format(Locale.ROOT, "%-10s %-4s %-10s %10s %-5s %-4s %-4s %s", entry.date(), entry.time(), entry.call(),
-				entry.frequencyMhz() > 0.0D ? FrequencyList.mhz(entry.frequencyMhz()) : "", entry.mode(), entry.rstSent(), entry.rstReceived(), entry.notes());
+		return String.format(Locale.ROOT, "%-10s %-4s %-10s %10s %-5s %-4s %-4s %-4s %s", entry.date(), entry.time(), entry.call(),
+				entry.frequencyMhz() > 0.0D ? FrequencyList.mhz(entry.frequencyMhz()) : "", entry.mode(), entry.rstSent(), entry.rstReceived(),
+				entry.where().grid(), entry.notes());
 	}
 
 	// -------------------- CONTACTS --------------------
@@ -131,6 +132,7 @@ public final class LogbookApp extends DosApp {
 				new DosFormDialog.Field(Dos.tr("logbook.mode"), new DosInput(entry.mode(), Logbook.MODE_MAX)),
 				new DosFormDialog.Field(Dos.tr("logbook.sent"), new DosInput(entry.rstSent(), Logbook.RST_MAX, c -> c >= '0' && c <= '9')),
 				new DosFormDialog.Field(Dos.tr("logbook.rcvd"), new DosInput(entry.rstReceived(), Logbook.RST_MAX, c -> c >= '0' && c <= '9')),
+				new DosFormDialog.Field(Dos.tr("logbook.grid"), new DosInput(entry.where().grid(), 4, c -> Character.isLetterOrDigit(c) && c < 128)),
 				new DosFormDialog.Field(Dos.tr("logbook.notes"), new DosInput(entry.notes(), Logbook.NOTES_MAX)));
 		showDialog(new DosFormDialog(title, Dos.tr("logbook.form_hint"), fields, values -> {
 			String call = values.get(0).strip();
@@ -142,7 +144,12 @@ public final class LogbookApp extends DosApp {
 			double mhz = FrequencyList.parseMhz(values.get(3));
 			if(mhz < 0.0D)
 				return Dos.tr("logbook.bad_freq");
-			Logbook.Entry made = new Logbook.Entry(utc, entry.gameTime(), call, mhz, values.get(4), values.get(5), values.get(6), values.get(7));
+			String grid = values.get(7).strip().toUpperCase(Locale.ROOT);
+			if(!grid.isEmpty() && !com.arrl.radiocraft.common.radio.ft8.Ft8.isGrid(grid))
+				return Dos.tr("logbook.bad_grid");
+			// A grid typed over the one the station's position gave starts afresh (computer batch 3C: the Awards' biome).
+			Logbook.Where where = grid.equals(entry.where().grid()) ? entry.where() : Logbook.Where.grid(grid);
+			Logbook.Entry made = new Logbook.Entry(utc, entry.gameTime(), call, mhz, values.get(4), values.get(5), values.get(6), values.get(8), where);
 			if(index < 0) {
 				if(!log.add(made))
 					return Dos.tr("logbook.full", Logbook.MAX_ENTRIES);
@@ -211,6 +218,8 @@ public final class LogbookApp extends DosApp {
 				if(!player.isEmpty() && !player.equalsIgnoreCase(s.getString("call")))
 					entry = new Logbook.Entry(entry.utcMillis(), entry.gameTime(), entry.call(), entry.frequencyMhz(), entry.mode(), entry.rstSent(),
 							entry.rstReceived(), Dos.tr("logbook.op", player) + " " + I18n.get(s.getString("radio")));
+				if(s.contains("where", Tag.TAG_COMPOUND))
+					entry = entry.withWhere(Logbook.Where.fromTag(s.getCompound("where")));
 				form(Dos.tr("logbook.add_title"), -1, entry);
 			}));
 		});
@@ -254,9 +263,9 @@ public final class LogbookApp extends DosApp {
 	public void render(TextGrid g, long now) {
 		Dos.frame(g, Dos.tr("logbook.title", fileName), Dos.tr("logbook.keys"));
 		int bg = DosColours.BODY_BG;
-		g.put(1, 1, String.format(Locale.ROOT, "%-10s %-4s %-10s %10s %-5s %-4s %-4s %s", Dos.tr("logbook.col.date"), Dos.tr("logbook.col.utc"),
+		g.put(1, 1, String.format(Locale.ROOT, "%-10s %-4s %-10s %10s %-5s %-4s %-4s %-4s %s", Dos.tr("logbook.col.date"), Dos.tr("logbook.col.utc"),
 				Dos.tr("logbook.col.call"), Dos.tr("logbook.col.mhz"), Dos.tr("logbook.col.mode"), Dos.tr("logbook.col.sent"), Dos.tr("logbook.col.rcvd"),
-				Dos.tr("logbook.col.notes")), DosColours.YELLOW, bg);
+				Dos.tr("logbook.col.grid"), Dos.tr("logbook.col.notes")), DosColours.YELLOW, bg);
 		g.hline(1, 2, TextGrid.COLS - 2, TextGrid.H, DosColours.BODY_FG, bg);
 		if(!loaded)
 			g.put(2, LIST_ROW, Dos.tr("files.reading"), DosColours.TEXT_FG, bg);

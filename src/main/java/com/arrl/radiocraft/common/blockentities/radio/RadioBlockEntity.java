@@ -1295,7 +1295,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         if(reception == com.arrl.radiocraft.common.radio.voice.DigitalVoice.Reception.DROPPED)
             return false;
         if(level != null) // Who was heard, for the radio computer's logbook (fixed slots, no allocation per frame).
-            stationsHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime());
+            stationsHeard(packet, strength);
         if(level != null && com.arrl.radiocraft.common.radio.RepeaterRegistry.isRepeater(packet.getSourcePlayer())) // A repeater's own beep, carrier or ID: for the Repeater Directory.
             repeatersHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime());
         ModerationHooks.heard(packet, this, level, worldPosition, null, strength); // A hearer of the logged transmission.
@@ -1334,6 +1334,23 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      */
     public com.arrl.radiocraft.common.radio.StationsHeard getRepeatersHeard() {
         return repeatersHeard;
+    }
+
+    /**
+     * Notes who was heard, with a snapshot of where the transmitting antenna was at this moment (computer batch 3C).
+     * The snapshot never leaves the server as coordinates: the logbook makes a grid square, biome and rounded
+     * distance of it. No allocation for a station already in a slot (the dimension's id object is kept as it is).
+     */
+    private void stationsHeard(com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket packet, double strength) {
+        com.arrl.radiocraft.api.antenna.IAntenna source = packet.getSource();
+        com.arrl.radiocraft.api.antenna.IAntenna.AntennaPos at = source == null ? null : source.getAntennaPos();
+        if(at == null || at.level() == null)
+            stationsHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime());
+        else {
+            BlockPos pos = at.world();
+            stationsHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime(), true, pos.getX(), pos.getZ(),
+                    at.level().dimension().location());
+        }
     }
 
     /** The stations this radio heard talking lately, server side (the radio computer's logbook reads them). */

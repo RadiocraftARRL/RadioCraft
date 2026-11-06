@@ -93,4 +93,14 @@ class Ft8Test {
 		assertEquals(256, Ft8.gridDistance("JJ00", "JJ10"));
 		assertEquals(-1, Ft8.gridDistance("JJ00", "XX"));
 	}
+
+	/** Computer batch 3C: a grid square's centre is in that square, so the Awards place a station by it. */
+	@Test
+	void gridCentresAreInTheirSquares() {
+		for(String grid : new String[] { "JJ00", "AA00", "RR99", "JK01", "IJ99" }) {
+			int[] centre = Ft8.gridCentre(grid);
+			assertEquals(grid, Ft8.grid(centre[0], centre[1]), grid + " centre " + centre[0] + "," + centre[1]);
+		}
+		assertEquals(null, Ft8.gridCentre("RR73"));
+	}
 }

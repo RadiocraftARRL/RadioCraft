@@ -61,4 +61,19 @@ class StationsHeardTest {
 		heard.clear();
 		assertTrue(heard.recent(101L, 1000L).isEmpty());
 	}
+
+	/** Computer batch 3C: the snapshot of where the transmitting antenna was is taken when the station is heard. */
+	@Test
+	void keepsTheSnapshotOfWhereTheStationWasHeardFrom() {
+		StationsHeard heard = new StationsHeard();
+		java.util.UUID who = java.util.UUID.randomUUID();
+		heard.heard(who, 147_180_000F, 0.5D, 100L, true, 1000, -2000, "minecraft:overworld");
+		StationsHeard.Heard h = heard.recent(100L, 20L).get(0);
+		assertTrue(h.hasPos());
+		assertEquals(1000, h.x());
+		assertEquals(-2000, h.z());
+		assertEquals("minecraft:overworld", h.dimension());
+		heard.heard(who, 147_180_000F, 0.5D, 120L);
+		assertFalse(heard.recent(120L, 20L).get(0).hasPos(), "a frame with no antenna position says so");
+	}
 }

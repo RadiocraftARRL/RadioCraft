@@ -393,10 +393,10 @@ public final class Ft8Handler implements ComputerAppHandler {
 		computer.push(ComputerApps.LOGBOOK, "reload", reload);
 	}
 
-	/** The logbook entry for a contact: mode FT8, the reports as sent, the grid in the notes. */
+	/** The logbook entry for a contact: mode FT8, the reports as sent, the grid in the notes and as where it was. */
 	public static Logbook.Entry entry(long utcMillis, String gameTime, Ft8Sequencer.Qso qso, double mhz) {
 		return new Logbook.Entry(utcMillis, gameTime, qso.call(), mhz, "FT8", Ft8Message.report(qso.reportSent()), Ft8Message.report(qso.reportReceived()),
-				qso.grid().isEmpty() ? "FT8" : "FT8 grid " + qso.grid());
+				qso.grid().isEmpty() ? "FT8" : "FT8 grid " + qso.grid(), Logbook.Where.grid(qso.grid())); // The grid also for the Awards (batch 3C).
 	}
 
 	/** Adds {@code entry} to {@link #LOG_FILE}; null if done, else the error key. */

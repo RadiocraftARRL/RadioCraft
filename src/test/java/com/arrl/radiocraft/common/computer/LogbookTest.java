@@ -79,4 +79,23 @@ class LogbookTest {
 		assertEquals("31", Logbook.rst(0.1D, 0.1D, false), "barely above the noise");
 		assertEquals("15", Logbook.rst(0.55D, 2.0D, false), "strong but buried");
 	}
+
+	/**
+	 * Computer batch 3C: where the other station was is kept coarsely only, never as coordinates (a log is a client
+	 * file): a grid square, dimension, biome and a distance rounded to 100 blocks.
+	 */
+	@Test
+	void whereIsCoarseAndCarriesNoCoordinates() {
+		Logbook.Where where = new Logbook.Where("jj00", "minecraft:overworld", "minecraft:plains", 1234);
+		assertEquals("JJ00", where.grid());
+		assertEquals(1200, where.distance(), "rounded to 100 blocks");
+		net.minecraft.nbt.CompoundTag tag = where.toTag();
+		assertEquals(java.util.Set.of("grid", "dim", "biome", "dist"), tag.getAllKeys(), "no x or z ever");
+		assertEquals(where, Logbook.Where.fromTag(tag));
+		assertEquals("", new Logbook.Where("RR73", "", "", -1).grid(), "RR73 is no grid");
+		assertEquals("", new Logbook.Where("", "Not An Id!", "", -1).dimension());
+		Logbook.Entry entry = new Logbook.Entry(0L, "", "W1AW", 14.2D, "USB", "59", "59", "", where);
+		assertEquals(where, Logbook.Entry.fromTag(entry.toTag()).where());
+		assertEquals(Logbook.Where.UNKNOWN, Logbook.Entry.fromTag(new Logbook.Entry(0L, "", "W1AW", 14.2D, "USB", "59", "59", "").toTag()).where());
+	}
 }

@@ -27,8 +27,10 @@ import java.util.UUID;
  * the frequency, the radio's mode and a signal report worked out from how strong it was against the radio's noise.
  * <ul>
  * <li>{@code heard}: {@code stations}, a list of {@code call}, {@code player} (the name, if known), {@code mhz},
- * {@code mode}, {@code rst}, {@code ago} (seconds since last heard) and {@code radio} (its block's translation key),
- * most recent first; and {@code radios}, how many radios are wired.</li>
+ * {@code mode}, {@code rst}, {@code ago} (seconds since last heard), {@code radio} (its block's translation key) and,
+ * when known, {@code where} ({@link Logbook.Where}, coarse: grid, dimension, biome, rounded distance, from the
+ * snapshot the radio took when it heard them, computer batch 3C; never coordinates), most recent
+ * first; and {@code radios}, how many radios are wired.</li>
  * </ul>
  */
 public final class LogbookHandler implements ComputerAppHandler {
@@ -79,12 +81,74 @@ public final class LogbookHandler implements ComputerAppHandler {
 			entry.putString("rst", Logbook.rst(heard.strength(), row.radio().getNoiseFloor(false), mode.equals("CW")));
 			entry.putLong("ago", Math.max(0L, (now - heard.lastGameTime()) / 20L));
 			entry.putString("radio", row.radio().getBlockState().getBlock().getDescriptionId());
+			Logbook.Where where = where(server, heard, context.pos(), context.level());
+			if(where.known()) // Coarse only (computer batch 3C): grid, dimension, biome at the grid's centre, distance to 100 blocks.
+				entry.put("where", where.toTag());
 			list.add(entry);
 		}
 		CompoundTag out = new CompoundTag();
 		out.put("stations", list);
 		out.putInt("radios", radios.size());
 		return out;
+	}
+
+	/**
+	 * Where a heard station was, coarsely, from the snapshot its radio took when the transmission arrived (never a live
+	 * lookup of the player): the grid square of its antenna, the dimension, the biome at that grid square's centre
+	 * (read from the biome source, no chunk is loaded) and the distance from {@code here} rounded to
+	 * {@link Logbook.Where#DISTANCE_STEP}. No coordinates: this goes to the client.
+	 */
+	public static Logbook.Where where(MinecraftServer server, StationsHeard.Heard heard, net.minecraft.core.BlockPos here, net.minecraft.server.level.ServerLevel hereLevel) {
+		if(!heard.hasPos())
+			return Logbook.Where.UNKNOWN;
+		String grid = com.arrl.radiocraft.common.radio.ft8.Ft8.grid(heard.x(), heard.z());
+		net.minecraft.server.level.ServerLevel level = levelOf(server, heard.dimension());
+		String biome = level == null ? "" : biomeAtGrid(level, grid);
+		int distance = level == hereLevel ? (int)Math.sqrt(Math.pow(heard.x() - here.getX(), 2) + Math.pow(heard.z() - here.getZ(), 2)) : -1;
+		return new Logbook.Where(grid, heard.dimension(), biome, distance);
+	}
+
+	/** The level with dimension id {@code id}, or null. */
+	@org.jetbrains.annotations.Nullable
+	public static net.minecraft.server.level.ServerLevel levelOf(MinecraftServer server, String id) {
+		net.minecraft.resources.ResourceLocation location = net.minecraft.resources.ResourceLocation.tryParse(id);
+		if(location == null)
+			return null;
+		return server.getLevel(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.DIMENSION, location));
+	}
+
+	/** The biome id at the centre of {@code grid} at sea level, from the biome source (no chunk loads); "" if none. */
+	public static String biomeAtGrid(net.minecraft.server.level.ServerLevel level, String grid) {
+		int[] centre = com.arrl.radiocraft.common.radio.ft8.Ft8.gridCentre(grid);
+		if(centre == null)
+			return "";
+		return level.getNoiseBiome(net.minecraft.core.QuartPos.fromBlock(centre[0]), net.minecraft.core.QuartPos.fromBlock(level.getSeaLevel()),
+				net.minecraft.core.QuartPos.fromBlock(centre[1])).unwrapKey().map(key -> key.location().toString()).orElse("");
+	}
+
+	/** The log every program writes contacts to (FT8, the Net Control logger) and the Awards read. */
+	public static final String LOG_FILE = "LOGBOOK.LOG";
+
+	/**
+	 * Adds {@code entries} to the computer's {@link #LOG_FILE} in one write, and tells an open Logbook to read it again
+	 * (computer batch 3C, as FT8 does). Null if done, else the error key ({@code log_full} if it would pass
+	 * {@link Logbook#MAX_ENTRIES}).
+	 */
+	@org.jetbrains.annotations.Nullable
+	public static String append(com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity computer, List<Logbook.Entry> entries) {
+		CompoundTag tag = computer.files().readNbt(LOG_FILE);
+		Logbook book = tag == null ? new Logbook() : Logbook.fromTag(tag);
+		if(book.size() + entries.size() > Logbook.MAX_ENTRIES)
+			return "log_full";
+		for(Logbook.Entry entry : entries)
+			book.add(entry);
+		com.arrl.radiocraft.common.computer.ComputerStorage.Problem problem = computer.files().writeNbt(LOG_FILE, book.toTag());
+		if(problem != null)
+			return problem.key();
+		CompoundTag reload = new CompoundTag();
+		reload.putString("file", LOG_FILE);
+		computer.push(com.arrl.radiocraft.common.computer.ComputerApps.LOGBOOK, "reload", reload);
+		return null;
 	}
 
 	/** The mode the radio is in, as its display shows it: USB, LSB, CW or FM, DIG on a digital commercial channel. */
