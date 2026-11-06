@@ -2,6 +2,7 @@ package com.arrl.radiocraft.client.screens.computer;
 
 import com.arrl.radiocraft.Radiocraft;
 import com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity;
+import com.arrl.radiocraft.common.computer.MusicShuffle;
 import com.arrl.radiocraft.common.computer.MusicTracks;
 import com.arrl.radiocraft.common.network.serverbound.SStationPacket;
 import net.minecraft.client.Minecraft;
@@ -21,11 +22,15 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * The MUSIC program's player (1.12 playtest): what is playing, on which computer, kept apart from the program's page
  * so the tune plays on while the player is in another program, at the shell, or has closed the screen. One tune at a
- * time for the whole client ({@link ComputerMidi}). Client only and heard only by this player.
+ * time for the whole client ({@link ComputerMidi}). Client only and heard only by this player. Repeat and shuffle are
+ * the client's (they last until the game is closed); shuffle plays the tunes in a shuffled order, every one once
+ * before any comes again, never the same twice in a row, and goes on round ({@link MusicShuffle}); without it the
+ * list plays down once.
  * <p>
  * While it plays it is tied to its computer: every client tick it fades with the player's distance from it (full
  * within {@link #FULL_RANGE} blocks, silent at {@link #MAX_RANGE}) and stops when the player goes further than that,
@@ -52,6 +57,8 @@ public final class ComputerMusic {
 	private static int playing = -1;
 	private static boolean paused;
 	private static boolean repeat;
+	private static boolean shuffle;
+	private static final MusicShuffle SHUFFLE = new MusicShuffle();
 	private static String problem = "";
 
 	private ComputerMusic() {}
@@ -80,6 +87,10 @@ public final class ComputerMusic {
 		return repeat;
 	}
 
+	public static boolean shuffle() {
+		return shuffle;
+	}
+
 	/** The file of the last tune that could not be found ("" if it was). */
 	public static String problem() {
 		return problem;
@@ -94,6 +105,42 @@ public final class ComputerMusic {
 
 	/** Plays track {@code index} on the computer at {@code at} (moving the music there if it was on another). */
 	public static void play(BlockPos at, int index) {
+		play(at, index, true);
+	}
+
+	/**
+	 * The next tune on the computer at {@code at}: the next in the shuffle, or down the list (round to the top), or
+	 * {@code fallback} (the tune picked) if nothing is playing there and shuffle is off.
+	 */
+	public static void next(BlockPos at, int fallback) {
+		int current = isPlayingAt(at) ? playing : -1;
+		int size = tracks().size();
+		if(shuffle)
+			play(at, SHUFFLE.next(current, size, ThreadLocalRandom.current()));
+		else
+			play(at, current < 0 ? fallback : (current + 1) % Math.max(1, size));
+	}
+
+	/**
+	 * The tune before on the computer at {@code at}: the one heard before in shuffle (a new shuffled one if there is
+	 * none), or up the list (round to the bottom), or {@code fallback} if nothing is playing there.
+	 */
+	public static void back(BlockPos at, int fallback) {
+		int current = isPlayingAt(at) ? playing : -1;
+		int size = tracks().size();
+		if(shuffle) {
+			int earlier = SHUFFLE.back(current, size);
+			if(earlier >= 0)
+				play(at, earlier, false);
+			else
+				play(at, SHUFFLE.next(current, size, ThreadLocalRandom.current()));
+		}
+		else
+			play(at, current < 0 ? fallback : Math.floorMod(current - 1, Math.max(1, size)));
+	}
+
+	/** Plays track {@code index}; {@code remember} puts the tune it replaces on the shuffle's history (not when going back). */
+	private static void play(BlockPos at, int index, boolean remember) {
 		List<MusicTracks.Track> list = tracks();
 		if(index < 0 || index >= list.size())
 			return;
@@ -106,6 +153,8 @@ public final class ComputerMusic {
 			tellServer(pos, false); // One tune for the whole client: the other computer stops.
 		if(pos == null || !pos.equals(at) || playing < 0)
 			tellServer(at, true);
+		int previous = pos != null && pos.equals(at) ? playing : -1;
+		SHUFFLE.played(remember ? previous : -1, index);
 		pos = at.immutable();
 		level = Minecraft.getInstance().level;
 		problem = "";
@@ -138,6 +187,11 @@ public final class ComputerMusic {
 		repeat = !repeat;
 	}
 
+	public static void toggleShuffle() {
+		shuffle = !shuffle;
+		SHUFFLE.reset();
+	}
+
 	// -------------------- EVERY TICK --------------------
 
 	@SubscribeEvent
@@ -162,6 +216,8 @@ public final class ComputerMusic {
 			List<MusicTracks.Track> list = tracks();
 			if(repeat)
 				play(pos, playing);
+			else if(shuffle)
+				play(pos, SHUFFLE.next(playing, list.size(), ThreadLocalRandom.current()));
 			else if(playing + 1 < list.size())
 				play(pos, playing + 1);
 			else

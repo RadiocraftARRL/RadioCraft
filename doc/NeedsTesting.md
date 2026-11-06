@@ -8,6 +8,36 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 music player fixes: shuffle, arrow keys, visualizer, speaker sound, 20 new tunes (added 2026-11-06)
+
+Run `./gradlew runData` first (new and changed lang lines: the key bar, "(shuffle)"), then restart the client.
+
+- [ ] MUSIC key bar: `Space=Pause  S=Stop  ← →=Back/Next  R=Repeat  H=Shuffle  C=Close  Esc=Leave` fits on the bottom
+  row with room to spare; the two arrows are drawn as thin arrows (shaft and head), not as `?` or boxes, and in red
+  like the other keys. Is "← →=Back/Next" the wording wanted (asked for "Next/Back=← →"; the key goes before `=` in
+  every other program's bar)?
+- [ ] MUSIC: Right arrow (and N) plays the next tune, Left arrow (and B) the one before; with nothing playing they play
+  the tune picked. The Up/Down list keys still move the highlight.
+- [ ] MUSIC shuffle: H shows `(shuffle)` in cyan at the right of the "Now playing" line (with `(repeat)` beside it when
+  both are on). At the end of a tune the next comes from the shuffle, never the same twice in a row, every tune once
+  before any repeats, and it goes on round (without shuffle the list still plays down once and stops). Right skips to
+  a shuffled tune; Left goes back through the tunes heard. It stays on after Esc, Close and reopening the computer,
+  until the game is closed. Repeat (R) still wins over shuffle.
+- [ ] MUSIC visualizer: now 24 bars, a spectrum (bass on the left, treble on the right). With ordinary tunes all the
+  bars move, not just the left two; they jump with the music and fall back smoothly, sink when paused or stopped,
+  and keep up with the sound (about a tenth of a second late at most).
+- [ ] MUSIC sound: it should sound like small cheap PC speakers: no deep bass, no sparkle on top, a little forward in
+  the middle, peaks a touch rounded, but not harsh, crackly or distorted. Compare a bass-heavy tune (Neon Flames,
+  Aftermath) and a piano one (Fur Elise). Is the effect too much or too little? (`SpeakerFilter`: 280 Hz high-pass,
+  4.5 kHz low-pass, +3.5 dB at 1.5 kHz, soft clip.) Loud tunes are no louder than before at full volume.
+- [ ] MUSIC playback rework: the first tune still starts after a short pause, later ones at once; pause/carry on,
+  stop, a new tune while one plays, Esc/Close and walking away all still behave; no clicks between tunes; the time
+  and bar match what is heard; game sounds keep working. The volume sliders (Master, Jukebox/Note Blocks) change
+  the level within a tick, even in the middle of a held note.
+- [ ] MUSIC: the 20 new tunes (Airship to Aftermath, after the classical ones) each sound right on Java's built-in
+  instruments: no tune all on piano that should not be, no missing drums, sensible balance. Drop any that sound bad
+  (remove its line in `tracks.txt`, its file and its credit).
+
 ## 1.12 computer apps 2: RTTY, Packet BBS, Propagation Predictor, Repeater Directory, License Study (added 2026-11-06)
 
 - [ ] Craft the five floppies (blank floppy + note block / chest / clock / redstone repeater / lectern); each has its
@@ -127,7 +157,8 @@ Run `./gradlew runData` first (new lang lines), then restart the client.
 - [ ] MUSIC with the screen closed: walk away; it gets quieter from about 6 blocks and stops at about 24 (coming back
   does not restart it). Changing dimension, logging out, breaking the computer, or cutting its power (with
   `radios_need_power` on) stops it. It plays down the list while closed. The computer draws power while it plays.
-- [ ] MUSIC: the volume fade applies note by note, so a long held note keeps its loudness until the next one starts.
+- [ ] MUSIC: the volume fade (walking away) and the volume sliders now apply smoothly to the sound itself, held notes
+  included (music player fixes, 2026-11-06).
 - [ ] SOLAR: the maintainer's setup (computer, radio interface, VHF radio on with an antenna, APRS working): the solar
   page and forecast now come up. Switch the radio off: "The radio is switched off...". Take the antenna off: "The
   radio has no antenna...". Remove the radio: "No radio found...".

@@ -1984,3 +1984,56 @@ interface no longer relays messages for its own call's other SSIDs (W1BTR-9 near
   while the screen is open?
 - STUDY: draw the 45 figure questions once the figures can be shown (the PNGs are in the source repo); shuffle answers on
   practice exams?
+
+### Music player fixes (2026-11-06)
+The maintainer's playtest of MUSIC asked for five things. **Not built with Gradle** (the dev client was running):
+the new and touched classes were type-checked with plain `javac -Xlint:all` in a clean worktree of HEAD plus these
+changes (0 errors, no new warnings), and the four pure tests (`MusicSpectrumTest`, `SpeakerFilterTest`,
+`MusicShuffleTest`, `MusicTracksTest`, 14 tests) pass in the scratch JUnit runner. Every new tune was rendered through
+Gervill and the analyser outside the game (all load, all light the bars). Still to run: `runData` (lang), `test`,
+`runGameTestServer`, and a playtest (NeedsTesting "1.12 music player fixes").
+
+- **Playback reworked** (`ComputerMidi`): no more `Sequencer` + real-time synth. The tune is rendered to PCM as it
+  plays by `AudioSystem.getAudioInputStream(midiBytes)` (the JDK's `SoftMidiAudioFileReader`: public API, a fresh
+  Gervill per tune that renders far faster than real time; 256 s of The Entertainer in 1.1 s), cut at the sequence's
+  length + 1.5 s of ring-out (the reader adds 4 s), and written on the MIDI thread to a `SourceDataLine` (44.1 kHz
+  16-bit stereo, 4096-frame buffer = 93 ms) in 1024-frame chunks: mixed to mono -> `MusicSpectrum.feed` (clean
+  sound) -> `SpeakerFilter` -> gain (ramped per chunk) -> both channels. Volume is now per sample, so held notes
+  follow the fade and the sliders (the old velocity trick and its gotcha are gone). Pause stops the line and stops
+  reading; stop/close/new play bump `generation` and the loop exits within a chunk. `playing()` is "the generation
+  the thread plays is the current one". The internal `AudioSynthesizer.openStream` would have done the same but
+  `com.sun.media.sound` is not exported from `java.desktop`.
+- **Visualizer**: the 16 bars were MIDI channel meters (most tunes use one or two channels, so only the left bars
+  moved). Now 24 bars from `common/computer/MusicSpectrum` (pure): 2048-point Hann FFT every 1024 samples, bands
+  spaced evenly in log frequency 55-5500 Hz (`bandEdges`: each band at least one bin, top clamped at Nyquist), band
+  power summed, +2 dB/octave tilt, shown over 36 dB below an automatic reference (the loudest band lately, falling 6 dB
+  in 3 s, floored so silence stays dark), bars fall 0.035 a hop; `fall()` while paused/stopped. Tests check the
+  edges, that a tone lights its own bar, and that a spread of notes moves every bar. Measured on the shipped tunes:
+  every bar is used (pieces with no bass, like the Air, leave the left two or three low, which is right).
+- **Speaker sound**: `common/computer/SpeakerFilter` (pure): RBJ biquads, high-pass 280 Hz (Q 0.707), peak +3.5 dB at
+  1.5 kHz (Q 1), low-pass 4.5 kHz (Q 0.75), make-up 1.1, soft clip `tanh(1.4x)/1.4`. A few multiplies a sample. There
+  is no positional / heard-nearby output to filter (MUSIC is client-only, for the player who started it); if that is
+  built, put the same filter on it.
+- **Shuffle**: `common/computer/MusicShuffle` (pure): a shuffled bag (every tune once a round, never the current one
+  next), `played(previous, index)` takes a tune out of the bag and puts the one before on a 64-deep history, `back`
+  pops it. `ComputerMusic` holds it and `shuffle` (client static: lasts until the game closes, survives Esc/Close/
+  reopening), `next(at, fallback)` / `back(at, fallback)` used by the keys, and the end-of-tune advance (repeat first,
+  then shuffle, which goes on round; without shuffle the list still stops at the end). H toggles (resets the bag).
+  The "Now playing" line shows `(repeat)` / `(shuffle)` in cyan at its right.
+- **Keys**: Left/Right arrows go back/next (N/B still work). Key bar `Space=Pause  S=Stop  ← →=Back/Next  R=Repeat
+  H=Shuffle  C=Close  Esc=Leave` = 75 columns (Enter=Play dropped from the bar; the "Stopped" line says to press
+  Enter). The arrows are `TextGrid.KEY_LEFT/KEY_RIGHT` ('←' '→', CP437 0x1B/0x1A) drawn by `DosRenderer` as shapes
+  (shaft + open head), passed into `music.keys` as `%s`. Written "← →=Back/Next" (key before `=`, as every bar) rather
+  than the "Next/Back=← →" asked for: one string to change if the maintainer prefers it. `Dos.keyBar` now packs the
+  hints one space apart when two would run past column 78 (no bar did before).
+- **20 new tunes** (`tracks.txt` after the classical twelve, credits in `doc/Credits-Music.md`, whose intro now
+  allows CC0 and CC BY with credit): all original compositions from OpenGameArt.org, licence read on each
+  submission's own page: 16 CC0 (Aureolus_Omicron, nene, Tozan, Ivan Stanton/northivanastan, Katana, Roppy Chop
+  Studios) and 4 CC BY 4.0 (congusbongus "Headscratcher", Yubatake "Osanpo Rag" and "Roll Up" credited as "Yubatake
+  (OpenGameArt)" as asked, Daniel Michel "Steal the Moon"); the list's composer column carries the credit. 2.5-63 KB
+  each, 528 KB for the folder. CC BY-SA candidates (Fantasy Musica's GM RPG series, Ideka, the Ultimate MIDI Pack)
+  were left out for the maintainer to decide; spares that passed the checks are listed in the session report.
+- Lang (in the provider, needs runData): `music.keys` changed, `music.shuffle` new. Handbook `computer/secret_programs`,
+  release notes and NeedsTesting updated. Website wiki not touched.
+
+**Open questions**: the key-bar wording above; is the speaker effect the right amount; take any CC BY-SA tunes?

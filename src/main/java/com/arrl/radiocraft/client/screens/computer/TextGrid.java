@@ -30,6 +30,8 @@ public final class TextGrid {
 			LOWER_HALF = '▄', UPPER_HALF = '▀';
 	// Arrows and marks drawn as small shapes.
 	public static final char ARROW_UP = '▲', ARROW_DOWN = '▼', ARROW_LEFT = '◄', ARROW_RIGHT = '►';
+	/** Code page 437's thin arrows (0x1B, 0x1A), as on the arrow keys: drawn as shapes too, whatever the font has. */
+	public static final char KEY_LEFT = '←', KEY_RIGHT = '→';
 
 	/** A picture over the screen: map colour ids ({@code width} x {@code height}) drawn at a pixel rectangle. */
 	public record Image(int x, int y, int w, int h, String key, byte[] pixels, int width, int height) {}

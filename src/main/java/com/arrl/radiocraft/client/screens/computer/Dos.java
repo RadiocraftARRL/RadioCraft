@@ -62,12 +62,17 @@ public final class Dos {
 		keyBar(g, keys);
 	}
 
-	/** The cyan key bar on row 24; a key name before "=" shows in red, as EDIT's did. */
+	/**
+	 * The cyan key bar on row 24; a key name before "=" shows in red, as EDIT's did. Hints are two spaces apart, or one
+	 * if that is what it takes to fit them in the row.
+	 */
 	public static void keyBar(TextGrid g, String keys) {
 		int row = TextGrid.ROWS - 1;
 		g.hline(0, row, TextGrid.COLS, ' ', DosColours.KEYS_FG, DosColours.KEYS_BG);
 		int col = 1;
-		for(String part : keys.split("  ")) {
+		String[] parts = keys.split("  ");
+		int gap = 1 + keys.length() <= TextGrid.COLS - 1 ? 2 : 1;
+		for(String part : parts) {
 			int eq = part.indexOf('=');
 			if(eq > 0) {
 				col = g.put(col, row, part.substring(0, eq), DosColours.HOTKEY_FG, DosColours.KEYS_BG);
@@ -75,7 +80,7 @@ public final class Dos {
 			}
 			else
 				col = g.put(col, row, part, DosColours.KEYS_FG, DosColours.KEYS_BG);
-			col += 2;
+			col += gap;
 		}
 	}
 

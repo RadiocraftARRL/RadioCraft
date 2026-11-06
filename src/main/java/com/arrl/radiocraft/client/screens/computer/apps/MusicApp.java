@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * MUSIC, a secret program (1.12 step 8): a jukebox of public-domain tunes ({@link MusicTracks}, MIDI files in
+ * MUSIC, a secret program (1.12 step 8): a jukebox of freely licensed tunes ({@link MusicTracks}, MIDI files in
  * {@code assets/radiocraft/computer/music}) played on this computer's "sound card", Java's software synthesizer
- * ({@link ComputerMidi}), at the game's master and jukebox volume. Enter plays the track picked, Space pauses, S stops,
- * N and B skip, R repeats one, and it plays on down the list. Only this player hears it.
+ * ({@link ComputerMidi}), at the game's master and jukebox volume, through the computer's small speakers. Enter plays
+ * the track picked, Space pauses, S stops, Right and Left (or N and B) go to the next and the last tune, R repeats one,
+ * H shuffles, and it plays on down the list (or round the shuffle). The visualizer is a spectrum analyser on the sound.
+ * Only this player hears it.
  * <p>
  * The tune plays on after this page is left (Esc goes back with the music still on, a note in the top bar comes back
  * here) and after the screen is closed with C (Close), which leaves this page open for when the computer is used
@@ -67,6 +69,18 @@ public final class MusicApp extends DosApp {
 			list.select(index);
 	}
 
+	private void next() {
+		ComputerMusic.next(session.pos(), list.selected());
+		if(ComputerMusic.isPlayingAt(session.pos()))
+			list.select(ComputerMusic.playing());
+	}
+
+	private void back() {
+		ComputerMusic.back(session.pos(), list.selected());
+		if(ComputerMusic.isPlayingAt(session.pos()))
+			list.select(ComputerMusic.playing());
+	}
+
 	private void stop() {
 		if(playing() >= 0)
 			ComputerMusic.stop();
@@ -95,14 +109,14 @@ public final class MusicApp extends DosApp {
 
 	@Override
 	public void render(TextGrid g, long now) {
-		Dos.frame(g, Dos.tr("music.title"), Dos.tr("music.keys"));
+		Dos.frame(g, Dos.tr("music.title"), Dos.tr("music.keys", String.valueOf(TextGrid.KEY_LEFT) + " " + TextGrid.KEY_RIGHT));
 		int fg = DosColours.BODY_FG, bg = DosColours.BODY_BG;
 		g.box(1, 1, 78, LIST_ROWS + 4, false, Dos.tr("music.tracks"), DosColours.TEXT_FG, bg);
 		g.put(3, 2, String.format(Locale.ROOT, "%2s  %-40s %-22s %5s", "#", Dos.tr("music.col_title"), Dos.tr("music.col_composer"), Dos.tr("music.col_time")),
 				DosColours.YELLOW, bg);
 		list.render(g, 3, LIST_ROW, 74, LIST_ROWS, DosColours.TEXT_FG, bg, true);
 		int playing = playing();
-		boolean paused = ComputerMusic.paused(), repeat = ComputerMusic.repeat();
+		boolean paused = ComputerMusic.paused(), repeat = ComputerMusic.repeat(), shuffle = ComputerMusic.shuffle();
 		if(playing >= 0 && playing >= list.top() && playing < list.top() + LIST_ROWS)
 			g.set(2, LIST_ROW + playing - list.top(), paused ? '=' : TextGrid.ARROW_RIGHT, DosColours.LIGHT_GREEN, bg);
 
@@ -123,23 +137,28 @@ public final class MusicApp extends DosApp {
 			line = Dos.tr("music.stopped");
 		else {
 			MusicTracks.Track t = tracks.get(playing);
-			line = (paused ? Dos.tr("music.paused") + " " : "") + t.title() + " - " + t.composer() + (repeat ? "  " + Dos.tr("music.repeat") : "");
+			line = (paused ? Dos.tr("music.paused") + " " : "") + t.title() + " - " + t.composer();
 		}
-		g.put(3, top + 1, Dos.fit(line, 74), DosColours.TEXT_FG, bg);
+		// Repeat and shuffle at the right of the line, whether anything plays or not.
+		String modes = ((repeat ? Dos.tr("music.repeat") + " " : "") + (shuffle ? Dos.tr("music.shuffle") : "")).strip();
+		int modesCol = 77 - modes.length();
+		g.put(3, top + 1, Dos.fit(line, modes.isEmpty() ? 74 : modesCol - 4), DosColours.TEXT_FG, bg);
+		if(!modes.isEmpty())
+			g.put(modesCol, top + 1, modes, DosColours.LIGHT_CYAN, bg);
 		int seconds = playing < 0 ? 0 : ComputerMidi.seconds();
 		String time = String.format(Locale.ROOT, "%d:%02d / %s", seconds / 60, seconds % 60, playing < 0 ? "--:--" : tracks.get(playing).length());
 		g.bar(3, top + 2, 60, playing < 0 ? 0.0D : ComputerMidi.position(), DosColours.LIGHT_CYAN, bg);
 		g.put(65, top + 2, time, fg, bg);
-		// Meters: 16 channels, two columns each, from the bottom row of the box up.
+		// The visualizer: a bar per band of pitch, low on the left, two columns each, from the bottom row of the box up.
 		int meterRow = top + 3, height = 24 - top - 4;
-		for(int channel = 0; channel < 16 && height > 0; channel++) {
-			float level = ComputerMidi.level(channel);
+		for(int bar = 0; bar < ComputerMidi.BARS && height > 0; bar++) {
+			float level = ComputerMidi.level(bar);
 			int lit = Math.round(level * height);
 			for(int h = 0; h < height; h++) {
 				int row = meterRow + height - 1 - h;
 				int colour = h < lit ? h >= height - 1 ? DosColours.LIGHT_RED : h >= height / 2 ? DosColours.YELLOW : DosColours.LIGHT_GREEN : DosColours.DARK_GREY;
-				g.set(3 + channel * 3, row, h < lit ? TextGrid.FULL : TextGrid.SHADE_LIGHT, colour, bg);
-				g.set(4 + channel * 3, row, h < lit ? TextGrid.FULL : TextGrid.SHADE_LIGHT, colour, bg);
+				g.set(3 + bar * 3, row, h < lit ? TextGrid.FULL : TextGrid.SHADE_LIGHT, colour, bg);
+				g.set(4 + bar * 3, row, h < lit ? TextGrid.FULL : TextGrid.SHADE_LIGHT, colour, bg);
 			}
 		}
 	}
@@ -158,18 +177,20 @@ public final class MusicApp extends DosApp {
 				stop();
 				return true;
 			}
-			case GLFW.GLFW_KEY_N -> {
-				int playing = playing();
-				play(playing < 0 ? list.selected() : (playing + 1) % Math.max(1, tracks.size()));
+			case GLFW.GLFW_KEY_RIGHT, GLFW.GLFW_KEY_N -> {
+				next();
 				return true;
 			}
-			case GLFW.GLFW_KEY_B -> {
-				int playing = playing();
-				play(playing < 0 ? list.selected() : Math.floorMod(playing - 1, Math.max(1, tracks.size())));
+			case GLFW.GLFW_KEY_LEFT, GLFW.GLFW_KEY_B -> {
+				back();
 				return true;
 			}
 			case GLFW.GLFW_KEY_R -> {
 				ComputerMusic.toggleRepeat();
+				return true;
+			}
+			case GLFW.GLFW_KEY_H -> {
+				ComputerMusic.toggleShuffle();
 				return true;
 			}
 			case GLFW.GLFW_KEY_C -> {

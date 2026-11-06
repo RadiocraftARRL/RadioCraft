@@ -1532,7 +1532,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("pileup.help.8", "A full band ends it.");
 		// MUSIC.
 		s.accept("music.title", "MUSIC - the computer's sound card");
-		s.accept("music.keys", "Enter=Play  Space=Pause  S=Stop  N=Next  B=Back  R=Repeat  C=Close  Esc=Leave playing");
+		s.accept("music.keys", "Space=Pause  S=Stop  %s=Back/Next  R=Repeat  H=Shuffle  C=Close  Esc=Leave");
 		s.accept("music.close_button", "[ Close ]");
 		s.accept("music.elsewhere", "Music is playing on another computer. Pick a tune to play it here instead.");
 		s.accept("music.tracks", "Tracks");
@@ -1543,6 +1543,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("music.stopped", "Stopped. Pick a tune and press Enter.");
 		s.accept("music.paused", "[paused]");
 		s.accept("music.repeat", "(repeat)");
+		s.accept("music.shuffle", "(shuffle)");
 		s.accept("music.no_tracks", "No tunes found on the disk.");
 		s.accept("music.missing", "Cannot find the tune %s.");
 		s.accept("music.no_sound", "The sound card does not work: %s");

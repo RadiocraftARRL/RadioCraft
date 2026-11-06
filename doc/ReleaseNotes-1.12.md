@@ -165,8 +165,10 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Snake**, with a high score table on each computer.
   - **Pileup**: RadioCraft's own falling-blocks game. Callers pile into the band; fill a row to work them (a QSO).
     Every 8 QSOs you move up a band, 160m to 70cm, and it gets faster.
-  - **Music Player**: twelve public-domain tunes (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and more). The
-    music plays on in other programs (a note in the top bar goes back to it) and after **Close**, which leaves the
+  - **Music Player**: 32 tunes: twelve public-domain classics (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and
+    more) and twenty free tunes from OpenGameArt.org (chiptune, jazz, blues, steel drums, synth rock, ambient). It
+    sounds like a pair of small PC speakers, has a spectrum visualizer, a shuffle (H), and the arrow keys go back and
+    on. The music plays on in other programs (a note in the top bar goes back to it) and after **Close**, which leaves the
     player open for next time; only you hear it, fading as you walk away, and it stops past 24 blocks, in another
     dimension, or when the computer is broken or loses power.
   - **Bible**: the four gospels of the World English Bible (public domain): read by chapter, go to a verse, search.
@@ -244,7 +246,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - **ADS-B**: hills and buildings do not block 1090 MHz yet (only the craft's height sets the range). It is built on Sable;
   Create Aeronautics craft, which are built on Sable too, have not been tried yet.
 - **Marine radios**: no DSC distress button, and nothing broadcasts NOAA weather on the WX channels yet.
-- The **Music Player** is heard only by the player at the screen, and stops when the screen closes.
+- The **Music Player** is heard only by the player who started it (near the computer, not by other players), and not
+  through Minecraft's sound engine.
 - Another Weather Mod's new sirens and recorded siren sounds are still to come.
 
 ### For mod developers

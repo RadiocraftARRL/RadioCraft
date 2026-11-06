@@ -1,35 +1,51 @@
 package com.arrl.radiocraft.client.screens.computer;
 
 import com.arrl.radiocraft.Radiocraft;
+import com.arrl.radiocraft.common.computer.MusicSpectrum;
+import com.arrl.radiocraft.common.computer.SpeakerFilter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.sounds.SoundSource;
 import org.jetbrains.annotations.Nullable;
 
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.Sequencer;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Synthesizer;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.SourceDataLine;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * The radio computer's sound card for MUSIC (1.12 step 8): plays a MIDI file on this computer through Java's built-in
- * software synthesizer ({@code javax.sound.midi}, Gervill), not through Minecraft's sound engine. One tune at a time,
- * for the whole client. Opening the synthesizer takes a moment, so it is done on a thread of its own; the methods are
- * safe to call from the render thread.
+ * The radio computer's sound card for MUSIC (1.12 step 8, reworked in the music player fixes): plays a MIDI file on this
+ * computer through Java's built-in software synthesizer (Gervill), not through Minecraft's sound engine. One tune at a
+ * time, for the whole client.
  * <p>
- * Loudness follows the game's sound settings: master times "Jukebox/Note Blocks" ({@link SoundSource#RECORDS}), read
- * by {@link #updateVolume} every tick the program runs. It is applied to each note as it starts (velocity scaled by the
- * square root of the gain, since a General MIDI synth's loudness goes with velocity squared), so a held note keeps the
- * level it began at; at 0 no note starts.
+ * The tune is rendered to PCM as it plays ({@link AudioSystem#getAudioInputStream} reads a MIDI file as sound through
+ * Gervill, much faster than real time), then on its own thread: mixed to mono, measured for the visualizer
+ * ({@link MusicSpectrum}, on the clean sound), sent through the computer's small speakers ({@link SpeakerFilter}),
+ * scaled to the volume and written to a {@link SourceDataLine} of Java's default audio device. Loudness follows the
+ * game's sound settings, master times "Jukebox/Note Blocks" ({@link SoundSource#RECORDS}), times the fade with distance
+ * ({@link #updateVolume(float)}), applied to every sample with a short ramp, so held notes follow it too.
+ * <p>
+ * All methods are safe to call from the render thread.
  */
 public final class ComputerMidi {
+
+	/** Visualizer bars. */
+	public static final int BARS = 24;
+	/** The visualizer's range, Hz (the speakers pass little outside it). */
+	private static final double LOW_HZ = 55.0D, HIGH_HZ = 5500.0D;
+	/** Gervill leaves notes ringing past the tune's last event: this many seconds of it are played. */
+	private static final double TAIL_SECONDS = 1.5D;
+	/** Frames per chunk written to the line (23 ms at 44.1 kHz). */
+	private static final int CHUNK = 1024;
+	/** The line's buffer, frames: the delay from the visualizer to the ears (93 ms), and the cushion against stalls. */
+	private static final int LINE_FRAMES = 4096;
 
 	private static final ExecutorService THREAD = Executors.newSingleThreadExecutor(runnable -> {
 		Thread thread = new Thread(runnable, "RadioCraft computer MIDI");
@@ -37,20 +53,24 @@ public final class ComputerMidi {
 		return thread;
 	});
 
-	@Nullable
-	private static Sequencer sequencer;
-	@Nullable
-	private static Synthesizer synth;
-	/** Velocity scale, 0-1, read by the MIDI thread. */
-	private static volatile float velocityScale = 1.0F;
-	/** Bumped on every play or stop, so a slow start that was overtaken gives up. */
+	/** Linear gain the audio thread ramps to. */
+	private static volatile float gain = 1.0F;
+	/** Bumped on every play, stop or close, so the tune being played (or started) gives up. */
 	private static volatile int generation;
-	/** What each of the 16 channels last did, 0-1 (the program's level meters); decays as the screen reads it. */
-	private static final float[] LEVELS = new float[16];
-	@Nullable
-	private static volatile String problem;
+	private static volatile boolean paused;
 	/** True from {@link #play} until the tune has started (or failed), so the last tune's end is not taken for this one's. */
 	private static volatile boolean starting;
+	/** True once the tune loaded has been played to its end. */
+	private static volatile boolean finished;
+	/** The {@link #generation} the audio thread is playing (or has paused); another number while nothing is loaded. */
+	private static volatile int active = -1;
+	/** Frames of this tune heard so far, and in all. */
+	private static volatile long heardFrames, totalFrames;
+	private static volatile float frameRate = 44100.0F;
+	@Nullable
+	private static volatile MusicSpectrum spectrum;
+	@Nullable
+	private static volatile String problem;
 
 	private ComputerMidi() {}
 
@@ -59,99 +79,50 @@ public final class ComputerMidi {
 		int mine = ++generation;
 		problem = null;
 		starting = true;
+		finished = false;
+		paused = false;
+		heardFrames = 0L;
+		totalFrames = 0L;
 		updateVolume();
-		THREAD.execute(() -> {
-			try {
-				Sequencer seq = open();
-				if(mine != generation)
-					return;
-				seq.stop();
-				seq.setSequence(new ByteArrayInputStream(midi));
-				seq.setTickPosition(0L);
-				allNotesOff();
-				if(mine != generation)
-					return;
-				seq.start();
-			}
-			catch(MidiUnavailableException | InvalidMidiDataException | IOException | RuntimeException e) {
-				problem = e.getClass().getSimpleName() + (e.getMessage() == null ? "" : ": " + e.getMessage());
-				Radiocraft.LOGGER.warn("The radio computer could not play a MIDI file", e);
-			}
-			finally {
-				if(mine == generation)
-					starting = false;
-			}
-		});
+		THREAD.execute(() -> run(mine, midi));
 	}
 
-	/** Stops (keeps the synthesizer open for the next tune). */
+	/** Stops. */
 	public static void stop() {
 		++generation;
 		starting = false;
-		THREAD.execute(() -> {
-			Sequencer seq = sequencer;
-			if(seq != null && seq.isOpen())
-				seq.stop();
-			allNotesOff();
-		});
+		paused = false;
 	}
 
 	/** Pauses or carries on from where it was. */
-	public static void pause(boolean paused) {
-		THREAD.execute(() -> {
-			Sequencer seq = sequencer;
-			if(seq == null || !seq.isOpen() || seq.getSequence() == null)
-				return;
-			if(paused) {
-				seq.stop();
-				allNotesOff();
-			}
-			else
-				seq.start();
-		});
+	public static void pause(boolean pause) {
+		paused = pause;
 	}
 
-	/** Closes the synthesizer (the program has exited). */
+	/** Stops (the program has exited or the player logged out). */
 	public static void close() {
-		++generation;
-		starting = false;
-		THREAD.execute(() -> {
-			if(sequencer != null)
-				sequencer.close();
-			if(synth != null)
-				synth.close();
-			sequencer = null;
-			synth = null;
-		});
+		stop();
 	}
 
 	/** True while a tune is playing (not paused, not at its end). */
 	public static boolean playing() {
-		Sequencer seq = sequencer;
-		return seq != null && seq.isOpen() && seq.isRunning();
+		return active == generation && !paused && !finished;
 	}
 
 	/** How far into the tune it is, 0-1 (0 with nothing loaded). */
 	public static double position() {
-		Sequencer seq = sequencer;
-		if(seq == null || !seq.isOpen() || seq.getSequence() == null)
-			return 0.0D;
-		long length = seq.getMicrosecondLength();
-		return length <= 0L ? 0.0D : Math.min(1.0D, seq.getMicrosecondPosition() / (double)length);
+		long total = totalFrames;
+		return total <= 0L ? 0.0D : Math.min(1.0D, heardFrames / (double)total);
 	}
 
 	/** Seconds into the tune. */
 	public static int seconds() {
-		Sequencer seq = sequencer;
-		return seq == null || !seq.isOpen() ? 0 : (int)(seq.getMicrosecondPosition() / 1_000_000L);
+		return (int)(heardFrames / frameRate);
 	}
 
 	/** True when the tune loaded has played to its end. */
 	public static boolean finished() {
-		if(starting)
-			return false;
-		Sequencer seq = sequencer;
-		return seq != null && seq.isOpen() && seq.getSequence() != null && !seq.isRunning() && seq.getTickPosition() >= seq.getTickLength();
+		return !starting && finished;
 	}
 
 	/** Why the last tune did not play, or null. */
@@ -160,13 +131,14 @@ public final class ComputerMidi {
 		return problem;
 	}
 
-	/** Channel {@code channel}'s level (0-1) for the meters; each read lets it fall a little. */
-	public static float level(int channel) {
-		synchronized(LEVELS) {
-			float level = LEVELS[channel];
-			LEVELS[channel] = Math.max(0.0F, level - 0.04F);
-			return level;
-		}
+	/** Visualizer bar {@code bar}'s level (0-1, {@code bar} below {@link #BARS}); falls away while nothing plays. */
+	public static float level(int bar) {
+		MusicSpectrum s = spectrum;
+		if(s == null)
+			return 0.0F;
+		if(!playing() && bar == 0)
+			s.fall(); // Read once a frame: let the bars sink while paused or stopped.
+		return s.level(bar);
 	}
 
 	/** Reads the game's sound settings (see the class comment). */
@@ -177,61 +149,108 @@ public final class ComputerMidi {
 	/** Reads the game's sound settings, times {@code fade} (0-1: the player's distance from the computer, {@link ComputerMusic}). */
 	public static void updateVolume(float fade) {
 		Minecraft mc = Minecraft.getInstance();
-		float gain = fade * mc.options.getSoundSourceVolume(SoundSource.MASTER) * mc.options.getSoundSourceVolume(SoundSource.RECORDS);
-		velocityScale = (float)Math.sqrt(Math.max(0.0F, Math.min(1.0F, gain)));
+		float g = fade * mc.options.getSoundSourceVolume(SoundSource.MASTER) * mc.options.getSoundSourceVolume(SoundSource.RECORDS);
+		gain = Math.max(0.0F, Math.min(1.0F, g));
 	}
 
-	private static Sequencer open() throws MidiUnavailableException {
-		if(sequencer != null && sequencer.isOpen())
-			return sequencer;
-		Synthesizer s = MidiSystem.getSynthesizer();
-		s.open();
-		Sequencer seq = MidiSystem.getSequencer(false); // Not to the default device: to our synth, through the volume.
-		seq.open();
-		seq.getTransmitter().setReceiver(new Volume(s.getReceiver()));
-		synth = s;
-		sequencer = seq;
-		return seq;
-	}
+	// -------------------- THE AUDIO THREAD --------------------
 
-	private static void allNotesOff() {
-		Synthesizer s = synth;
-		if(s == null || !s.isOpen())
-			return;
-		for(var channel : s.getChannels())
-			if(channel != null)
-				channel.allNotesOff();
-		synchronized(LEVELS) {
-			java.util.Arrays.fill(LEVELS, 0.0F);
-		}
-	}
-
-	/** Passes every message on to the synth, a note's velocity scaled to the volume setting; notes light the meters. */
-	private record Volume(Receiver out) implements Receiver {
-		@Override
-		public void send(MidiMessage message, long timeStamp) {
-			if(message instanceof ShortMessage note && note.getCommand() == ShortMessage.NOTE_ON && note.getData2() > 0) {
-				float scale = velocityScale;
-				if(scale <= 0.001F)
+	private static void run(int mine, byte[] midi) {
+		SourceDataLine line = null;
+		try {
+			long micros = MidiSystem.getSequence(new ByteArrayInputStream(midi)).getMicrosecondLength();
+			try(AudioInputStream in = AudioSystem.getAudioInputStream(new ByteArrayInputStream(midi))) {
+				AudioFormat source = in.getFormat(); // Gervill: 44.1 kHz, 16 bit, stereo, signed, little-endian.
+				if(source.getEncoding() != AudioFormat.Encoding.PCM_SIGNED || source.getSampleSizeInBits() != 16 || source.isBigEndian())
+					throw new UnsupportedAudioFileException("unexpected synth output " + source);
+				int channels = source.getChannels();
+				float rate = source.getSampleRate();
+				long frames = (long)((micros / 1_000_000.0D + TAIL_SECONDS) * rate);
+				if(in.getFrameLength() > 0L)
+					frames = Math.min(frames, in.getFrameLength());
+				if(mine != generation)
 					return;
-				int velocity = Math.max(1, Math.round(note.getData2() * scale));
-				synchronized(LEVELS) {
-					LEVELS[note.getChannel()] = Math.max(LEVELS[note.getChannel()], note.getData2() / 127.0F);
+				AudioFormat out = new AudioFormat(rate, 16, 2, true, false);
+				line = AudioSystem.getSourceDataLine(out);
+				line.open(out, LINE_FRAMES * out.getFrameSize());
+				MusicSpectrum s = spectrum;
+				if(s == null || rate != frameRate) {
+					s = new MusicSpectrum(BARS, rate, LOW_HZ, HIGH_HZ);
+					spectrum = s;
 				}
-				try {
-					out.send(new ShortMessage(ShortMessage.NOTE_ON, note.getChannel(), note.getData1(), velocity), timeStamp);
+				s.reset();
+				frameRate = rate;
+				totalFrames = frames;
+				SpeakerFilter speaker = new SpeakerFilter(rate);
+				byte[] buffer = new byte[CHUNK * source.getFrameSize()];
+				byte[] output = new byte[CHUNK * 4];
+				float[] mono = new float[CHUNK];
+				float applied = gain;
+				long read = 0L;
+				active = mine;
+				starting = false;
+				line.start();
+				while(read < frames && mine == generation) {
+					if(paused) {
+						if(line.isRunning())
+							line.stop();
+						Thread.sleep(20L);
+						continue;
+					}
+					if(!line.isRunning())
+						line.start();
+					int want = (int)Math.min(CHUNK, frames - read) * source.getFrameSize();
+					int got = in.readNBytes(buffer, 0, want);
+					int n = got / source.getFrameSize();
+					if(n <= 0)
+						break;
+					for(int i = 0; i < n; i++) {
+						int sum = 0;
+						for(int c = 0; c < channels; c++) {
+							int at = (i * channels + c) * 2;
+							sum += (short)(buffer[at] & 0xFF | buffer[at + 1] << 8);
+						}
+						mono[i] = sum / (32768.0F * channels);
+					}
+					s.feed(mono, n);
+					float target = gain, step = (target - applied) / n;
+					for(int i = 0; i < n; i++) {
+						applied += step;
+						int v = Math.round(speaker.process(mono[i]) * applied * 32767.0F);
+						v = Math.max(-32768, Math.min(32767, v));
+						output[i * 4] = output[i * 4 + 2] = (byte)v;
+						output[i * 4 + 1] = output[i * 4 + 3] = (byte)(v >> 8);
+					}
+					applied = target;
+					line.write(output, 0, n * 4);
+					read += n;
+					heardFrames = Math.max(0L, read - (line.getBufferSize() - line.available()) / 4);
 				}
-				catch(InvalidMidiDataException e) {
-					out.send(message, timeStamp);
+				if(mine == generation) {
+					line.drain();
+					heardFrames = read;
+					finished = true;
 				}
-				return;
 			}
-			out.send(message, timeStamp);
 		}
-
-		@Override
-		public void close() {
-			out.close();
+		catch(InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		catch(InvalidMidiDataException | UnsupportedAudioFileException | LineUnavailableException | IOException | RuntimeException e) {
+			if(mine == generation)
+				problem = e.getClass().getSimpleName() + (e.getMessage() == null ? "" : ": " + e.getMessage());
+			Radiocraft.LOGGER.warn("The radio computer could not play a MIDI file", e);
+		}
+		finally {
+			if(line != null) {
+				line.stop();
+				line.flush();
+				line.close();
+			}
+			if(mine == generation)
+				starting = false;
+			if(active == mine)
+				active = -1;
 		}
 	}
 }

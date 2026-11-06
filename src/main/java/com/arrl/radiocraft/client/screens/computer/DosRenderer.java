@@ -104,7 +104,7 @@ public final class DosRenderer {
 
 	private static boolean isShape(char c) {
 		return TextGrid.isBoxDrawing(c) || TextGrid.isBlock(c) || c == TextGrid.ARROW_UP || c == TextGrid.ARROW_DOWN
-				|| c == TextGrid.ARROW_LEFT || c == TextGrid.ARROW_RIGHT;
+				|| c == TextGrid.ARROW_LEFT || c == TextGrid.ARROW_RIGHT || c == TextGrid.KEY_LEFT || c == TextGrid.KEY_RIGHT;
 	}
 
 	/** Draws a box-drawing, block or arrow character in the cell at {@code x, y}. */
@@ -133,6 +133,18 @@ public final class DosRenderer {
 			case TextGrid.ARROW_LEFT -> {
 				for(int i = 0; i < 3; i++)
 					quad(out, pose, cx + 1 - i, cy - 2 + i, cx + 2 - i, cy + 3 - i, colour);
+			}
+			case TextGrid.KEY_RIGHT -> { // A shaft and an open head: ->
+				quad(out, pose, x, cy, x + w - 1, cy + 1, colour);
+				quad(out, pose, x + w - 2, cy - 1, x + w - 1, cy + 2, colour);
+				quad(out, pose, x + w - 3, cy - 2, x + w - 2, cy - 1, colour);
+				quad(out, pose, x + w - 3, cy + 2, x + w - 2, cy + 3, colour);
+			}
+			case TextGrid.KEY_LEFT -> { // <-
+				quad(out, pose, x + 1, cy, x + w, cy + 1, colour);
+				quad(out, pose, x + 1, cy - 1, x + 2, cy + 2, colour);
+				quad(out, pose, x + 2, cy - 2, x + 3, cy - 1, colour);
+				quad(out, pose, x + 2, cy + 2, x + 3, cy + 3, colour);
 			}
 			default -> lines(out, pose, c, x, y, cx, cy, colour);
 		}
