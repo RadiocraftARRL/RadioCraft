@@ -61,7 +61,7 @@ public final class MonitorMirror {
 		for(ComputerSession session : ComputerSession.all()) {
 			if(session.seenFrame != last || session.isOpen() || !session.hasMirror())
 				continue; // Not drawn last frame (far, or out of sight), or the open screen copies itself there already.
-			boolean music = ComputerMusic.isPlayingAt(session.pos()) && !ComputerMusic.paused();
+			boolean music = ComputerMusic.isPlayingAt(session.pos()) && !ComputerMusic.paused() || session.saverShowing(); // The screensaver moves too.
 			if(now - session.lastRedraw < (music ? MUSIC_INTERVAL_MS : INTERVAL_MS))
 				continue;
 			session.lastRedraw = now;

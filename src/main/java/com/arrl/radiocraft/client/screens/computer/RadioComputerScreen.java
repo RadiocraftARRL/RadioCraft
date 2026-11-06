@@ -43,6 +43,8 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 	private final DosInput passwordField = new DosInput("", com.arrl.radiocraft.common.computer.ComputerLock.MAX_LENGTH).masked();
 	private String lockMessage = "";
 	private boolean wasLocked = false;
+	/** The last key pressed only woke the screensaver: the character that follows it is dropped. */
+	private boolean wokeByKey = false;
 
 	public RadioComputerScreen(RadioComputerMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
@@ -211,6 +213,11 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		}
 		if(skipBoot())
 			return true;
+		if(session.touch()) {
+			wokeByKey = true; // The screensaver: the key only wakes it, and its character goes nowhere.
+			return true;
+		}
+		wokeByKey = false;
 		if(menu.isLocked()) {
 			if(key == GLFW.GLFW_KEY_ESCAPE)
 				onClose();
@@ -232,6 +239,10 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 	public boolean charTyped(char c, int modifiers) {
 		if(!menu.isPowered() || boot != null && boot.running())
 			return true;
+		if(session.saverShowing() || wokeByKey) { // The key that woke the screensaver types nothing.
+			wokeByKey = false;
+			return true;
+		}
 		if(menu.isLocked()) {
 			passwordField.charTyped(c);
 			return true;
@@ -247,7 +258,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseClicked(double rawX, double rawY, int button) {
-		if(!menu.isPowered() || skipBoot() || menu.isLocked())
+		if(!menu.isPowered() || skipBoot() || session.touch() || menu.isLocked())
 			return true;
 		int c = col(rawX), r = row(rawY);
 		if(r == 0 && c >= MUSIC_COL && c < MUSIC_COL + MUSIC_W && showsMusicNote()) {
@@ -272,11 +283,18 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseScrolled(double rawX, double rawY, double scrollX, double scrollY) {
-		if(!menu.isPowered() || menu.isLocked())
+		if(!menu.isPowered() || session.touch() || menu.isLocked())
 			return true;
 		int c = col(rawX), r = row(rawY);
 		if(TextGrid.inside(c, r))
 			session.current().scroll(c, r, scrollY);
 		return true;
+	}
+
+	/** Moving the mouse wakes the screensaver, as on a real PC. */
+	@Override
+	public void mouseMoved(double rawX, double rawY) {
+		session.moved();
+		super.mouseMoved(rawX, rawY);
 	}
 }

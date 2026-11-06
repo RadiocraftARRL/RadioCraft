@@ -94,6 +94,12 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	public static final double MUSIC_RANGE = 24.0D;
 	/** Players listening to its MUSIC with the screen closed (server); it stays in use, drawing power, for them. */
 	private final Set<UUID> listeners = new HashSet<>();
+	/** Players at the screen whose screensaver shows (computer batch 3A, server). */
+	private final Set<UUID> saving = new HashSet<>();
+	/** The game time someone last used the computer (a request from its screen, or opening or closing it). */
+	private long lastActivity = 0L;
+	/** True while the screensaver shows for everyone at it (or, with nobody at it, after SETUP's idle minutes). */
+	private boolean saverOn = false;
 	/**
 	 * Players with the CPS in its "Program radios" mode here (1.12 playtest fixes 2), with the codeplug they program
 	 * radios with and when they last used it (server). The computer stays in use, drawing power, while anyone has it.
@@ -300,15 +306,62 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		});
 	}
 
+	// -------------------- SCREENSAVER --------------------
+
+	/** {@code player} used the computer (any request from its screen): it is awake, and its screensaver off for them. */
+	public void activity(ServerPlayer player) {
+		lastActivity = level == null ? 0L : level.getGameTime();
+		saving.remove(player.getUUID());
+	}
+
+	/** {@code player}'s screen shows its screensaver ({@code on}) or woke up. */
+	public void setSaver(ServerPlayer player, boolean on) {
+		if(on)
+			saving.add(player.getUUID());
+		else
+			activity(player);
+	}
+
+	/** True while its screensaver shows (it draws less power then). Server. */
+	public boolean isSaving() {
+		return saverOn;
+	}
+
+	/** For tests: as if nobody had touched it since game time {@code gameTime}. */
+	public void idleSince(long gameTime) {
+		lastActivity = gameTime;
+	}
+
+	/**
+	 * Whether the screensaver shows: it must be installed and SETUP's wait not "never"; nobody listening to its MUSIC
+	 * or programming radios by hand; then every player at the screen has theirs on, or with nobody at it, nobody has
+	 * used it for the wait (a computer running background programs, such as the scheduler or the BBS).
+	 */
+	private boolean saverDue(List<ServerPlayer> at) {
+		if(!(level instanceof ServerLevel) || !isInstalled(ComputerApps.SCREENSAVER) || !listeners.isEmpty() || !handSessions.isEmpty())
+			return false;
+		long wait = files().settings().saverTicks();
+		if(wait < 0L)
+			return false;
+		saving.removeIf(id -> at.stream().noneMatch(player -> player.getUUID().equals(id)));
+		if(!at.isEmpty())
+			return saving.size() == at.size();
+		return level.getGameTime() - lastActivity >= wait;
+	}
+
 	/** Works out whether it is in use and paid for; with a screen just opened, at once. */
 	private void updatePower(boolean checkViewers) {
 		boolean was = powered;
 		if(checkViewers) {
-			hasViewers = !viewers().isEmpty();
+			List<ServerPlayer> at = viewers();
+			hasViewers = !at.isEmpty();
 			pruneListeners();
 			pruneHandSessions(false);
+			saverOn = saverDue(at);
 		}
 		RadioComputerNetworkObject object = powerObject();
+		if(object != null)
+			object.saving = saverOn;
 		boolean inUse = hasViewers || !listeners.isEmpty() || !handSessions.isEmpty() || tickers.length > 0;
 		if(object == null)
 			powered = inUse && !RadiocraftServerConfig.RADIO_POWER_REQUIRED.get();
@@ -503,6 +556,8 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	public void open(ServerPlayer player, BlockPos monitor) {
 		long start = System.nanoTime();
 		hasViewers = true;
+		activity(player);
+		saverOn = false;
 		updatePower(false);
 		player.openMenu(this, buffer -> {
 			buffer.writeBlockPos(worldPosition);

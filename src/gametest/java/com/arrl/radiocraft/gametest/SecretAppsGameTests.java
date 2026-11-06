@@ -36,7 +36,7 @@ import java.util.UUID;
 
 /**
  * The secret programs (1.12 step 8), server side: their four floppies install like any other, and they are found in
- * loot: the secret disk table always gives one of the four, the ham shack's chest sometimes has one, and the global
+ * loot: the secret disk table always gives one of the five, the ham shack's chest sometimes has one, and the global
  * loot modifiers put them in vanilla chests now and then (and not in chests they do not name). The games, the music
  * and the Bible screen are client side: NeedsTesting "1.12 step 8".
  */
@@ -45,7 +45,8 @@ import java.util.UUID;
 public class SecretAppsGameTests {
 
 	private static final BlockPos COMPUTER = new BlockPos(4, 2, 4);
-	private static final List<ComputerApp> SECRET = List.of(ComputerApps.SNAKE, ComputerApps.FALLING_BLOCKS, ComputerApps.MUSIC, ComputerApps.BIBLE);
+	private static final List<ComputerApp> SECRET = List.of(ComputerApps.SNAKE, ComputerApps.FALLING_BLOCKS, ComputerApps.MUSIC, ComputerApps.BIBLE,
+			ComputerApps.SCREENSAVER); // The screensaver since computer batch 3A.
 
 	private static Set<Item> secretDisks() {
 		Set<Item> disks = new HashSet<>();
@@ -74,7 +75,7 @@ public class SecretAppsGameTests {
 		return out[0] == null ? new CompoundTag() : out[0];
 	}
 
-	/** Each secret disk goes in the drive and installs its program; all four together are in the shell. */
+	/** Each secret disk goes in the drive and installs its program; all five together are in the shell. */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
 	public static void secretDisksInstall(GameTestHelper helper) {
 		helper.setBlock(COMPUTER, RadiocraftBlocks.RADIO_COMPUTER.get());
@@ -98,21 +99,21 @@ public class SecretAppsGameTests {
 			helper.assertFalse(call(computer, player, "sys.eject", new CompoundTag()).contains("error"), "eject " + app.id());
 			helper.assertTrue(computer.isInstalled(app), app.id() + " is not installed");
 		}
-		helper.assertTrue(computer.availableApps().containsAll(SECRET), "not all four in the shell: " + computer.availableApps());
+		helper.assertTrue(computer.availableApps().containsAll(SECRET), "not all five in the shell: " + computer.availableApps());
 		helper.assertTrue(ComputerApps.FALLING_BLOCKS.fileName().equals("PILEUP.EXE"), "the falling-blocks game is " + ComputerApps.FALLING_BLOCKS.fileName());
 		helper.succeed();
 	}
 
-	/** The secret disk table gives exactly one of the four every time, and every one of them turns up. */
+	/** The secret disk table gives exactly one of the five every time, and every one of them turns up. */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
-	public static void secretDiskTableGivesOneOfFour(GameTestHelper helper) {
+	public static void secretDiskTableGivesOneOfFive(GameTestHelper helper) {
 		Set<Item> disks = secretDisks(), seen = new HashSet<>();
 		for(int i = 0; i < 64; i++) {
 			List<ItemStack> stacks = roll(helper.getLevel(), Radiocraft.id("chests/secret_floppies"), helper.absolutePos(COMPUTER));
 			helper.assertTrue(stacks.size() == 1 && disks(stacks, disks) == 1, "roll " + i + ": " + stacks);
 			seen.add(stacks.getFirst().getItem());
 		}
-		helper.assertTrue(seen.size() == 4, "only " + seen + " in 64 rolls");
+		helper.assertTrue(seen.size() == SECRET.size(), "only " + seen + " in 64 rolls");
 		helper.succeed();
 	}
 

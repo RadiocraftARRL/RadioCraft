@@ -32,6 +32,27 @@ class ComputerSettingsTest {
 	}
 
 	@Test
+	void theScreensaverWaitIsOneOfTheSteps() {
+		assertEquals(5, ComputerSettings.DEFAULT.saverMinutes());
+		assertEquals("starfield", ComputerSettings.DEFAULT.saverStyle());
+		assertEquals(6000L, ComputerSettings.DEFAULT.saverTicks());
+		assertEquals(-1L, ComputerSettings.DEFAULT.withSaverMinutes(0).saverTicks());
+		assertEquals(3, ComputerSettings.DEFAULT.withSaverMinutes(4).saverMinutes());
+		assertEquals(0, ComputerSettings.DEFAULT.withSaverMinutes(-7).saverMinutes());
+		assertEquals(10, ComputerSettings.DEFAULT.withSaverMinutes(99).saverMinutes());
+		assertEquals(10, ComputerSettings.DEFAULT.stepSaver(1).saverMinutes());
+		assertEquals(0, ComputerSettings.DEFAULT.stepSaver(1).stepSaver(1).saverMinutes(), "after 10, never");
+		assertEquals(3, ComputerSettings.DEFAULT.stepSaver(-1).saverMinutes());
+		ComputerSettings set = ComputerSettings.DEFAULT.withSaverMinutes(1).withSaverStyle("waterfall");
+		assertEquals(set, ComputerSettings.fromTag(set.toTag()));
+		assertEquals("starfield", ComputerSettings.DEFAULT.withSaverStyle("Not A Style!").saverStyle());
+		// Settings kept before the screensaver existed read as the default wait.
+		CompoundTag old = new CompoundTag();
+		old.putString("view", "icons");
+		assertEquals(5, ComputerSettings.fromTag(old).saverMinutes());
+	}
+
+	@Test
 	void namesArePrintableAndShort() {
 		assertEquals("Shack", ComputerSettings.cleanName("  Sh§ack\n "));
 		assertEquals(ComputerSettings.MAX_NAME, ComputerSettings.cleanName("x".repeat(40)).length());

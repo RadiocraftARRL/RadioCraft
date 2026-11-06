@@ -10,6 +10,7 @@ import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosScheme;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
+import com.arrl.radiocraft.common.computer.ComputerApps;
 import com.arrl.radiocraft.common.computer.ComputerLock;
 import com.arrl.radiocraft.common.computer.ComputerSettings;
 import net.minecraft.nbt.CompoundTag;
@@ -26,13 +27,16 @@ import java.util.List;
  * (a preview), Enter keeps it.</li>
  * <li><b>Password</b>: sets or removes the computer's password (it was F8 in the shell).</li>
  * <li><b>Name and clock</b>: the name in the top bar, the clock (in-game, real or none) and 12 or 24 hours.</li>
+ * <li><b>Screensaver</b> (computer batch 3A): how long the computer waits with no key or click before the screensaver
+ * comes on (never, 1, 3, 5 or 10 minutes), which one, and a preview. It needs the screensaver program
+ * ({@link ComputerApps#SCREENSAVER}, found in the world) installed.</li>
  * </ul>
  * Everything is kept on the computer's disk ({@code sys.settings}, {@code sys.password}). Only the owner, an operator,
  * or anyone while the computer has no owner may change them ({@link ComputerSession#mayConfigure}); others can look.
  */
 public final class SetupApp extends DosApp {
 
-	private enum Page { LAUNCHER, COLOURS, PASSWORD, NAME_CLOCK }
+	private enum Page { LAUNCHER, COLOURS, PASSWORD, NAME_CLOCK, SAVER }
 
 	private static final Page[] PAGES = Page.values();
 	private static final ComputerSettings.View[] VIEWS = ComputerSettings.View.values();
@@ -83,6 +87,7 @@ public final class SetupApp extends DosApp {
 			case COLOURS -> DosScheme.ALL.size();
 			case PASSWORD -> 1;
 			case NAME_CLOCK -> 3;
+			case SAVER -> 3;
 		};
 	}
 
@@ -111,6 +116,7 @@ public final class SetupApp extends DosApp {
 			case COLOURS -> renderColours(g);
 			case PASSWORD -> renderPassword(g);
 			case NAME_CLOCK -> renderNameClock(g);
+			case SAVER -> renderSaver(g);
 		}
 		String message = session.message();
 		if(!message.isEmpty())
@@ -200,6 +206,20 @@ public final class SetupApp extends DosApp {
 			g.put(PANEL_COL + 3, row++, text, DosColours.DIM, DosColours.BODY_BG);
 	}
 
+	private void renderSaver(TextGrid g) {
+		ComputerSettings s = settings();
+		int row = TOP + 1;
+		boolean installed = session.isInstalled(ComputerApps.SCREENSAVER);
+		g.put(PANEL_COL + 2, row, Dos.tr(installed ? "setup.saver.intro" : "setup.saver.missing"), installed ? DosColours.BODY_FG : DosColours.ACCENT, DosColours.BODY_BG);
+		row += 2;
+		value(g, 0, row, Dos.tr("setup.saver.wait"), s.saverMinutes() <= 0 ? Dos.tr("setup.saver.never") : Dos.tr("setup.saver.minutes", s.saverMinutes()));
+		value(g, 1, row + 2, Dos.tr("setup.saver.style"), Dos.tr("setup.saver.style." + s.saverStyle()));
+		value(g, 2, row + 4, Dos.tr("setup.saver.preview"), Dos.tr("setup.saver.preview_now"));
+		row += 7;
+		for(String text : wrap(Dos.tr("setup.saver.about"), PANEL_W - 6))
+			g.put(PANEL_COL + 3, row++, text, DosColours.DIM, DosColours.BODY_BG);
+	}
+
 	private void value(TextGrid g, int i, int row, String label, String value) {
 		boolean sel = inPage && i == line;
 		g.putField(PANEL_COL + 2, row, " " + label, 18, DosColours.BODY_FG, DosColours.BODY_BG);
@@ -283,13 +303,13 @@ public final class SetupApp extends DosApp {
 			case GLFW.GLFW_KEY_TAB -> leavePage();
 			case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER, GLFW.GLFW_KEY_SPACE -> choose(1);
 			case GLFW.GLFW_KEY_LEFT -> {
-				if(page() == Page.NAME_CLOCK && line > 0)
+				if(page() == Page.NAME_CLOCK && line > 0 || page() == Page.SAVER && line < 2)
 					choose(-1);
 				else
 					leavePage();
 			}
 			case GLFW.GLFW_KEY_RIGHT -> {
-				if(page() == Page.NAME_CLOCK && line > 0)
+				if(page() == Page.NAME_CLOCK && line > 0 || page() == Page.SAVER && line < 2)
 					choose(1);
 			}
 			default -> {
@@ -301,6 +321,13 @@ public final class SetupApp extends DosApp {
 
 	/** Enter (or a click) on the line in focus: {@code step} through a value's choices. */
 	private void choose(int step) {
+		if(page() == Page.SAVER && line == 2) { // A preview changes nothing: anyone may look.
+			if(session.isInstalled(ComputerApps.SCREENSAVER))
+				session.blankNow();
+			else
+				session.message(Dos.tr("setup.saver.missing"), true);
+			return;
+		}
 		if(!session.mayConfigure()) {
 			session.message(Dos.tr("err.not_owner_settings"), true);
 			return;
@@ -319,6 +346,14 @@ public final class SetupApp extends DosApp {
 						save(s.withClock(clocks[Math.floorMod(s.clock().ordinal() + step, clocks.length)]));
 					}
 					default -> save(s.withHour24(!s.hour24()));
+				}
+			}
+			case SAVER -> {
+				if(line == 0)
+					save(s.stepSaver(step));
+				else {
+					List<String> styles = com.arrl.radiocraft.client.screens.computer.Screensaver.STYLES;
+					save(s.withSaverStyle(styles.get(Math.floorMod(styles.indexOf(s.saverStyle()) + step, styles.size()))));
 				}
 			}
 		}
@@ -374,7 +409,7 @@ public final class SetupApp extends DosApp {
 			case LAUNCHER -> row >= TOP + 3 && (row - TOP - 3) % 4 == 0 ? (row - TOP - 3) / 4 : -1;
 			case COLOURS -> row - TOP - 3;
 			case PASSWORD -> row == TOP + 3 ? 0 : -1;
-			case NAME_CLOCK -> row >= TOP + 3 && (row - TOP - 3) % 2 == 0 ? (row - TOP - 3) / 2 : -1;
+			case NAME_CLOCK, SAVER -> row >= TOP + 3 && (row - TOP - 3) % 2 == 0 ? (row - TOP - 3) / 2 : -1;
 		};
 		if(hit < 0 || hit >= lines())
 			return false;

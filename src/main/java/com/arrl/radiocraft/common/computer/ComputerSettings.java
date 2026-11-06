@@ -19,13 +19,20 @@ import java.util.Locale;
  * @param name   the computer's name in the top bar, "" for none (at most {@link #MAX_NAME} printable ASCII characters)
  * @param clock  which clock the top bar shows, if any
  * @param hour24 24-hour time ("13:05") rather than 12-hour ("1:05p")
+ * @param saverMinutes idle minutes before the screensaver comes on (one of {@link #SAVER_MINUTES}; 0 is never), if
+ *                     the screensaver program is installed (computer batch 3A)
+ * @param saverStyle   the screensaver's style, an id the client knows ({@code Screensaver.STYLES})
  */
-public record ComputerSettings(View view, String scheme, String name, Clock clock, boolean hour24) {
+public record ComputerSettings(View view, String scheme, String name, Clock clock, boolean hour24, int saverMinutes, String saverStyle) {
 
 	/** Longest computer name. */
 	public static final int MAX_NAME = 20;
 	public static final String DEFAULT_SCHEME = "classic";
-	/** A new computer's: the list, Classic Blue, no name, the in-game clock in 24-hour time. */
+	/** The screensaver waits SETUP offers, minutes (0 = never). */
+	public static final int[] SAVER_MINUTES = { 0, 1, 3, 5, 10 };
+	public static final int DEFAULT_SAVER_MINUTES = 5;
+	public static final String DEFAULT_SAVER_STYLE = "starfield";
+	/** A new computer's: the list, Classic Blue, no name, the in-game clock in 24-hour time, the starfield after 5 minutes. */
 	public static final ComputerSettings DEFAULT = new ComputerSettings(View.LIST, DEFAULT_SCHEME, "", Clock.GAME, true);
 
 	/** How the shell shows the programs. */
@@ -53,6 +60,36 @@ public record ComputerSettings(View view, String scheme, String name, Clock cloc
 		scheme = scheme == null || !scheme.matches("[a-z0-9_]{1,24}") ? DEFAULT_SCHEME : scheme;
 		name = cleanName(name);
 		clock = clock == null ? Clock.GAME : clock;
+		saverMinutes = nearestSaverMinutes(saverMinutes);
+		saverStyle = saverStyle == null || !saverStyle.matches("[a-z0-9_]{1,24}") ? DEFAULT_SAVER_STYLE : saverStyle;
+	}
+
+	/** Settings with the default screensaver (the launcher's settings before computer batch 3A). */
+	public ComputerSettings(View view, String scheme, String name, Clock clock, boolean hour24) {
+		this(view, scheme, name, clock, hour24, DEFAULT_SAVER_MINUTES, DEFAULT_SAVER_STYLE);
+	}
+
+	/** {@code minutes} as one of {@link #SAVER_MINUTES}: the nearest at or below it (0 for none or less). */
+	public static int nearestSaverMinutes(int minutes) {
+		int out = 0;
+		for(int step : SAVER_MINUTES)
+			if(step <= minutes)
+				out = step;
+		return out;
+	}
+
+	/** The next ({@code step} 1) or previous (-1) screensaver wait, going round. */
+	public ComputerSettings stepSaver(int step) {
+		int at = 0;
+		for(int i = 0; i < SAVER_MINUTES.length; i++)
+			if(SAVER_MINUTES[i] == saverMinutes)
+				at = i;
+		return withSaverMinutes(SAVER_MINUTES[Math.floorMod(at + step, SAVER_MINUTES.length)]);
+	}
+
+	/** Idle ticks before the screensaver comes on, or -1 for never. */
+	public long saverTicks() {
+		return saverMinutes <= 0 ? -1L : saverMinutes * 60L * 20L;
 	}
 
 	/** {@code name} as a computer name: printable ASCII only, trimmed, at most {@link #MAX_NAME} long. */
@@ -69,23 +106,31 @@ public record ComputerSettings(View view, String scheme, String name, Clock cloc
 	}
 
 	public ComputerSettings withView(View view) {
-		return new ComputerSettings(view, scheme, name, clock, hour24);
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
 	}
 
 	public ComputerSettings withScheme(String scheme) {
-		return new ComputerSettings(view, scheme, name, clock, hour24);
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
 	}
 
 	public ComputerSettings withName(String name) {
-		return new ComputerSettings(view, scheme, name, clock, hour24);
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
 	}
 
 	public ComputerSettings withClock(Clock clock) {
-		return new ComputerSettings(view, scheme, name, clock, hour24);
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
 	}
 
 	public ComputerSettings withHour24(boolean hour24) {
-		return new ComputerSettings(view, scheme, name, clock, hour24);
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
+	}
+
+	public ComputerSettings withSaverMinutes(int saverMinutes) {
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
+	}
+
+	public ComputerSettings withSaverStyle(String saverStyle) {
+		return new ComputerSettings(view, scheme, name, clock, hour24, saverMinutes, saverStyle);
 	}
 
 	// -------------------- THE CLOCK --------------------
@@ -120,6 +165,8 @@ public record ComputerSettings(View view, String scheme, String name, Clock cloc
 		tag.putString("name", name);
 		tag.putString("clock", clock.name().toLowerCase(Locale.ROOT));
 		tag.putBoolean("hour24", hour24);
+		tag.putInt("saverMinutes", saverMinutes);
+		tag.putString("saverStyle", saverStyle);
 		return tag;
 	}
 
@@ -132,7 +179,9 @@ public record ComputerSettings(View view, String scheme, String name, Clock cloc
 				tag.contains("scheme") ? tag.getString("scheme") : DEFAULT.scheme,
 				tag.getString("name"),
 				parse(Clock.class, tag.getString("clock"), DEFAULT.clock),
-				!tag.contains("hour24") || tag.getBoolean("hour24"));
+				!tag.contains("hour24") || tag.getBoolean("hour24"),
+				tag.contains("saverMinutes") ? tag.getInt("saverMinutes") : DEFAULT_SAVER_MINUTES,
+				tag.contains("saverStyle") ? tag.getString("saverStyle") : DEFAULT_SAVER_STYLE);
 	}
 
 	private static <E extends Enum<E>> E parse(Class<E> type, String text, E fallback) {

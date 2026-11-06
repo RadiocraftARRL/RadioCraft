@@ -78,6 +78,13 @@ public final class ComputerApps {
 	/** A directory of repeaters heard and typed in, exported to the frequency manager. */
 	public static final ComputerApp REPEATERS = add("repeaters", "REPEATER", ComputerApp.Kind.CRAFTED);
 
+	// Computer batch 3A (2026-11-06).
+	/**
+	 * Screensavers: after SETUP's idle minutes the screen shows a starfield, the callsign or a waterfall, and the
+	 * computer draws less power while it does. Found in the world only (loot), like the games.
+	 */
+	public static final ComputerApp SCREENSAVER = add("saver", "SAVER", ComputerApp.Kind.SECRET);
+
 	private ComputerApps() {}
 
 	/**

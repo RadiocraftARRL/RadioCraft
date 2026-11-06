@@ -39,6 +39,9 @@ import java.util.UUID;
  * everyone at the computer, as a {@link ComputerApps#SETUP} event {@code settings}) the settings kept. {@code open}
  * answers them too.</li>
  * <li>{@code sys.info}: storage, the drive, the scanner and its paper, the linked devices and the station callsign.</li>
+ * <li>{@code sys.saver} ({@code on}): the screensaver came on or went off on this player's screen; the computer
+ * draws less power while it shows for everyone at it. Answers {@code text}, the station's callsign, for it to show.
+ * Every other request counts as use and keeps the screensaver off (computer batch 3A).</li>
  * <li>{@code sys.floppies} (the floppies in the player's inventory), {@code sys.insert} ({@code slot}),
  * {@code sys.eject}, {@code sys.install} / {@code sys.uninstall} ({@code app}).</li>
  * <li>{@code fs.list} ({@code ext}), {@code fs.read} ({@code name}: answers {@code data}), {@code fs.write}
@@ -83,6 +86,8 @@ public final class ComputerServer {
 			reply.error("locked");
 			return;
 		}
+		if(!"sys.saver".equals(action))
+			computer.activity(player); // Someone is using it: no screensaver (computer batch 3A).
 		switch(action) {
 			case "open" -> {
 				CompoundTag out = hello(computer);
@@ -140,6 +145,12 @@ public final class ComputerServer {
 			case "print.text" -> printText(context, data, reply);
 			case "print.book" -> printBook(context, data.getString("title"), strings(data.getList("pages", Tag.TAG_STRING)), reply);
 			case "app" -> app(context, data, reply);
+			case "sys.saver" -> { // The screensaver came on ("on") or went off on this player's screen.
+				computer.setSaver(player, data.getBoolean("on"));
+				CompoundTag out = new CompoundTag();
+				out.putString("text", context.bus().callsign());
+				reply.ok(out);
+			}
 			case "music" -> { // MUSIC plays on with the screen closed: the computer stays in use for this player.
 				computer.listen(player, data.getBoolean("on"));
 				reply.ok();
@@ -151,6 +162,7 @@ public final class ComputerServer {
 	/** {@code player} closed the computer's screen: a half-written file is dropped, each program is told, and it locks again. */
 	public static void closed(RadioComputerBlockEntity computer, ServerPlayer player) {
 		UPLOADS.cancel(player.getUUID());
+		computer.activity(player); // Up from the screen: the wait for the screensaver starts now.
 		computer.relock(player.getUUID());
 		ComputerContext context = new ComputerContext(computer, player);
 		for(ComputerApp app : computer.availableApps()) {

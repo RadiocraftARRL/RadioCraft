@@ -84,6 +84,17 @@ public final class ComputerSession {
 	@Nullable
 	private DosScheme preview;
 
+	// The screensaver (computer batch 3A).
+	private final Screensaver saver = new Screensaver();
+	/** When this player last pressed a key or clicked on this screen (or opened it), ms. */
+	private long lastInput = System.currentTimeMillis();
+	/** True while the screensaver shows. */
+	private boolean saverOn = false;
+	/** SAVER.EXE was run: it shows until the next key or click, whatever SETUP's wait. */
+	private boolean saverForced = false;
+	/** What it shows: the station's callsign, from the server ("" until it answers). */
+	private String saverText = "";
+
 	// The status line's message.
 	private String message = "";
 	private boolean messageIsError = false;
@@ -125,6 +136,9 @@ public final class ComputerSession {
 		}
 		session.monitorPos = monitor.immutable();
 		session.open = true;
+		session.lastInput = System.currentTimeMillis(); // Sitting down at it wakes it.
+		session.saverForced = false;
+		session.saverOn = false;
 		active = session;
 		return session;
 	}
@@ -432,6 +446,77 @@ public final class ComputerSession {
 
 	// -------------------- STATUS LINE --------------------
 
+	// -------------------- SCREENSAVER --------------------
+
+	/**
+	 * A key, click or wheel on the screen: the computer is awake again. True if the screensaver was showing (that
+	 * input only wakes it: it goes to no program).
+	 */
+	boolean touch() {
+		lastInput = System.currentTimeMillis();
+		saverForced = false;
+		if(!saverOn)
+			return false;
+		saverOn = false;
+		tellSaver(false);
+		return true;
+	}
+
+	/** The mouse moved over the screen: awake, but the move is nobody's input. */
+	void moved() {
+		if(saverOn)
+			touch();
+		else
+			lastInput = System.currentTimeMillis();
+	}
+
+	/** Shows the screensaver now, until the next key or click (SAVER.EXE). */
+	public void blankNow() {
+		saverForced = true;
+	}
+
+	/** True while the screensaver shows. */
+	public boolean saverShowing() {
+		return saverOn;
+	}
+
+	/**
+	 * Whether the screensaver should show at {@code now}: installed, and SAVER.EXE run or SETUP's wait passed with no
+	 * key or click; never while MUSIC plays here (its page and visualizer stay up).
+	 */
+	private boolean saverDue(long now) {
+		if(!isInstalled(ComputerApps.SCREENSAVER))
+			return false;
+		if(saverForced)
+			return true;
+		long ticks = settings.saverTicks();
+		if(ticks < 0L || ComputerMusic.isPlayingAt(pos) && !ComputerMusic.paused())
+			return false;
+		return now - lastInput >= ticks * 50L;
+	}
+
+	/** Turns the screensaver on or off as due, telling the server (it draws less power while it shows). */
+	private void updateSaver(long now) {
+		boolean due = saverDue(now);
+		if(due == saverOn)
+			return;
+		saverOn = due;
+		if(due)
+			saver.reset();
+		tellSaver(due);
+	}
+
+	private void tellSaver(boolean on) {
+		if(!open)
+			return; // Up from the screen: the server keeps its own idle time.
+		CompoundTag data = new CompoundTag();
+		data.putBoolean("on", on);
+		request("sys.saver", data, response -> {
+			if(response.ok())
+				saverText = response.data().getString("text");
+		});
+	}
+
 	/** Flashes {@code text} on the screen's bottom line for a few seconds (the shell and programs use it for news). */
 	public void message(String text, boolean error) {
 		message = text;
@@ -527,6 +612,11 @@ public final class ComputerSession {
 	 * (and its dialog), the music note. Needs no open screen (the monitor's picture is drawn this way while it is closed).
 	 */
 	void drawPrograms(TextGrid grid, long now) {
+		updateSaver(now);
+		if(saverOn) {
+			saver.render(grid, now, settings.saverStyle(), saverText.isEmpty() ? settings.name() : saverText);
+			return;
+		}
 		boolean note = showsMusicNote();
 		Dos.setStatus(statusText(), note ? MUSIC_COL - 1 : TextGrid.COLS - 1);
 		current().draw(grid, now);
