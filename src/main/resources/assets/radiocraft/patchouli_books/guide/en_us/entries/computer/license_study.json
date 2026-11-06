@@ -1,0 +1,43 @@
+{
+  "name": "License Study",
+  "icon": "radiocraft:floppy_license",
+  "category": "radiocraft:computer",
+  "sortnum": 17,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "STUDY",
+      "text": "The $(item)License Study$() program drills you for the real amateur radio exams, flash card style. It ships with the US question pools: $(thing)Technician$() (2026-2030), $(thing)General$() (2023-2027) and $(thing)Amateur Extra$() (2024-2028), every question and its answer, straight from the public-domain NCVEC pools.$(br2)Pick a pool, then $(thing)S$() to study, $(thing)E$() for a practice exam or $(thing)P$() for your progress."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Study Mode",
+      "text": "Each card is one question. Press $(thing)A$() to $(thing)D$() (or click) to answer, or $(thing)I$() for \"I don't know\". The right answer lights green, a wrong pick red; Enter brings the next card.$(br2)Cards you get right come back later and later (after 1, 3, 8, 20, 50, then 120 cards). A wrong answer brings the card back after 3 cards, \"I don't know\" after 2, so what you miss comes round until it sticks. You can study the whole pool or one subelement."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Practice Exam",
+      "text": "A practice exam is built like the real one: one question from each group of the pool, 35 for Technician and General, 50 for Extra. Left and right move between questions, A-D answer, $(thing)F10$() hands it in. 74 percent passes: 26 of 35, 37 of 50. The review marks the ones you missed (W jumps to the next).$(br2)Questions that need a figure (a schematic) cannot be shown on the computer, so study and exams leave them out."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Progress",
+      "text": "The progress page shows each subelement: questions, how many you have seen, and how many you know well (right three times running).$(br2)The $(thing)aptitude$() line estimates your score on an exam taken now, from how well you know each group's questions, and your chance of passing. Your exam answers count on your cards too.$(br2)Progress belongs to you, not the computer: it is kept with the world, so it follows you to any $(l:radiocraft:computer/radio_computer)radio computer$(). R resets a pool."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Question Pools",
+      "text": "Pools are JSON files, so a server can add its own or load a new NCVEC pool without a mod update. They load with the data packs, from $(thing)data/<namespace>/license_pools/*.json$(), then from the server's $(thing)config/radiocraft/license_pools/$() folder, whose files replace a pool with the same id or add new ones. $(thing)/reload$() reads them again. A bad question is skipped and logged."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pool Format",
+      "text": "One object per file: $(thing)id$() (else the file name), $(thing)name$(), $(thing)element$(), $(thing)valid$(), $(thing)pass_percent$() (74), $(thing)order$() (menu order), $(thing)subelements$() {\"T1\": \"Commission's rules\"} and $(thing)questions$(): each with $(thing)id$() (T1A01: subelement T1, group T1A), $(thing)question$(), 2-6 $(thing)answers$(), $(thing)correct$() (\"C\" or 2), and optional $(thing)refs$() and $(thing)figure$() (skipped)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_license",
+      "text": "A blank floppy and a lectern."
+    }
+  ]
+}
