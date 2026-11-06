@@ -12,6 +12,7 @@ import com.arrl.radiocraft.common.blockentities.radio.VHFRadioBlockEntity;
 import com.arrl.radiocraft.common.init.RadiocraftBlockEntities;
 import com.arrl.radiocraft.common.menus.VHFRepeaterMenu;
 import com.arrl.radiocraft.common.radio.Band;
+import com.arrl.radiocraft.common.radio.RepeaterRegistry;
 import com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket;
 import com.arrl.radiocraft.common.radio.voice.Ctcss;
 import com.arrl.radiocraft.common.radio.voice.RepeaterAudio;
@@ -185,6 +186,7 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 			updateIsReceiving();
 		setChanged();
 		updateBlock();
+		registerRepeater();
 	}
 
 	private float clampToBand(float hz, int step) {
@@ -232,6 +234,43 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 			micEnabled = nbt.getBoolean("mic");
 		}
 		hasDuplexer = nbt.getBoolean("hasDuplexer");
+	}
+
+	// -------------------- REPEATER DIRECTORY --------------------
+
+	/** Ticks between refreshes of this repeater's entry in {@link RepeaterRegistry}. */
+	private static final long REGISTRY_REFRESH_TICKS = 100L;
+	private boolean chunkUnloading = false;
+
+	/**
+	 * Tells {@link RepeaterRegistry} what users hear of this repeater: the radio computer's Repeater Directory knows it
+	 * by the voice id of its beep and ID (computer apps 2, 2026-11-06). Server only.
+	 */
+	private void registerRepeater() {
+		if(level == null || level.isClientSide)
+			return;
+		RepeaterRegistry.update(voiceId, level.dimension(), com.arrl.radiocraft.compat.sable.Sublevels.world(level, worldPosition), callsign,
+				txFrequency, frequency, rxTone, txTone, this instanceof CommercialRepeaterBlockEntity);
+	}
+
+	@Override
+	public void onLoad() {
+		super.onLoad();
+		chunkUnloading = false;
+		registerRepeater();
+	}
+
+	@Override
+	public void onChunkUnloaded() {
+		chunkUnloading = true; // Unloaded, not broken: radios may have heard it just before, so the registry keeps it.
+		super.onChunkUnloaded();
+	}
+
+	@Override
+	public void setRemoved() {
+		if(level != null && !level.isClientSide && !chunkUnloading)
+			RepeaterRegistry.remove(voiceId);
+		super.setRemoved();
 	}
 
 	// -------------------- RADIO HOOKS --------------------
@@ -489,6 +528,8 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 		if(!(level instanceof ServerLevel serverLevel))
 			return;
 		long now = serverLevel.getGameTime();
+		if(Math.floorMod(now + worldPosition.asLong(), REGISTRY_REFRESH_TICKS) == 0L)
+			registerRepeater(); // Cheap: nothing new is made unless something changed (a ship carried it, say).
 		RadioNetworkObject networkObject = IBENetworks.getObject(level, worldPosition) instanceof RadioNetworkObject no ? no : null;
 		boolean powered = networkObject != null && networkObject.isPowered;
 		Direction duplexerSide = RepeaterNetworkObject.findDuplexerSide(level, worldPosition);

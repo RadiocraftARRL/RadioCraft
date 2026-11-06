@@ -1187,6 +1187,8 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             return false;
         if(level != null) // Who was heard, for the radio computer's logbook (fixed slots, no allocation per frame).
             stationsHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime());
+        if(level != null && com.arrl.radiocraft.common.radio.RepeaterRegistry.isRepeater(packet.getSourcePlayer())) // A repeater's own beep, carrier or ID: for the Repeater Directory.
+            repeatersHeard.heard(packet.getSourcePlayer(), packet.getFrequency(), strength, level.getGameTime());
         ModerationHooks.heard(packet, this, level, worldPosition, null, strength); // A hearer of the logged transmission.
         if(isParrot()) // Queue the audio as it arrived, before the receiver scales it, so the echo carries one path's loss, not two.
             parrotVoiceQueue.add(new QueuedVoice(packet.getRawAudio().clone(), packet.getSourcePlayer(), lastSignalGameTime + parrotDelayTicks));
@@ -1214,6 +1216,16 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     /** The stations this radio heard talking lately (who, where, how strong), for the logbook (1.12 step 6). */
     private final com.arrl.radiocraft.common.radio.StationsHeard stationsHeard = new com.arrl.radiocraft.common.radio.StationsHeard();
+    /** Repeaters heard by their own voice id (beep, hang carrier, ID), for the radio computer's Repeater Directory. */
+    private final com.arrl.radiocraft.common.radio.StationsHeard repeatersHeard = new com.arrl.radiocraft.common.radio.StationsHeard();
+
+    /**
+     * The last {@link com.arrl.radiocraft.common.radio.StationsHeard#SLOTS} repeaters this radio heard send their own
+     * audio (keyed by the repeater's voice id, see {@link com.arrl.radiocraft.common.radio.RepeaterRegistry}).
+     */
+    public com.arrl.radiocraft.common.radio.StationsHeard getRepeatersHeard() {
+        return repeatersHeard;
+    }
 
     /** The stations this radio heard talking lately, server side (the radio computer's logbook reads them). */
     public com.arrl.radiocraft.common.radio.StationsHeard getStationsHeard() {

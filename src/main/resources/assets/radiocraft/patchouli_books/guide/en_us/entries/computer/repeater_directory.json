@@ -1,0 +1,33 @@
+{
+  "name": "Repeater Directory",
+  "icon": "radiocraft:floppy_repeaters",
+  "category": "radiocraft:computer",
+  "sortnum": 16,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "REPEATER",
+      "text": "The $(item)Repeater Directory$() lists the $(l:radiocraft:repeaters/repeater)repeaters$() you know: callsign, output frequency, offset (+0.600, -5.000), the $(l:radiocraft:repeaters/tones)tone$() it needs, distance and bearing from the computer, when it was last heard, and your notes.$(br2)Below the list it spells out where to transmit: the output plus the offset."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Finding Repeaters",
+      "text": "Wire a radio to the computer (touching it, on its data wire, or on a radio interface of its station) and tune it to a repeater's output. When the repeater keys up, its hang carrier, courtesy beep and Morse ID are its own voice: the radio remembers it (the last 8 repeaters it heard).$(br2)F5 asks every wired radio and adds what they heard, or brings an entry up to date. Nothing runs in the background: open the directory now and then."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Your Own Entries",
+      "text": "Ins or F4 adds a repeater by hand (offset in kHz like -600, or MHz like -0.6; X and Z if you know where it is). Enter edits, Del deletes. Hearing a repeater again never changes the notes you wrote.$(br2)F3 sorts by distance, frequency or last heard. F6 prints the directory on the scanner. It is kept on the disk as REPEATER.DAT."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Export",
+      "text": "Space marks repeaters; F7 adds the marked ones (or the one selected) to a $(l:radiocraft:computer/frequency_manager)Frequency Manager$() list (CHANNELS.FRQ unless you name another): receive on the output, transmit on the input, FM, with the tone. Repeaters already in the list are skipped. With FREQMAN installed it offers to open the list."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_repeaters",
+      "text": "A blank floppy and a redstone repeater."
+    }
+  ]
+}
