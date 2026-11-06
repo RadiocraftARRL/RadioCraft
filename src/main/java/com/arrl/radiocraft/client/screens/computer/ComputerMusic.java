@@ -5,6 +5,8 @@ import com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity;
 import com.arrl.radiocraft.common.computer.MusicShuffle;
 import com.arrl.radiocraft.common.computer.MusicTracks;
 import com.arrl.radiocraft.common.network.serverbound.SStationPacket;
+import com.arrl.radiocraft.common.radio.BEVoiceReceiver;
+import com.arrl.radiocraft.common.radio.voice.SpeakerKind;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
@@ -20,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
@@ -32,9 +35,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * before any comes again, never the same twice in a row, and goes on round ({@link MusicShuffle}); without it the
  * list plays down once.
  * <p>
- * While it plays it is tied to its computer: the sound comes from the computer (a positional sound, fading with
- * distance to silence at {@link #MAX_RANGE} blocks, see {@link ComputerMidi}), and it stops when the player goes further
- * than that, changes dimension or logs out, or the computer is broken or loses power. The computer keeps drawing power while a
+ * While it plays it is tied to its computer: the sound comes from the computer, or from the speakers connected to it
+ * (positional sounds fading with distance, see {@link ComputerMidi} and {@link #outlets}), and it stops when the player
+ * goes out of earshot of all of them, changes dimension or logs out, or the computer is broken or loses power. The computer keeps drawing power while a
  * player listens (the server is told with the {@code music} request, see {@link RadioComputerBlockEntity#listen}), and
  * tells the client its power with the block's update.
  */
@@ -220,11 +223,12 @@ public final class ComputerMusic {
 			stop();
 			return;
 		}
-		if(distance() > MAX_RANGE) {
+		List<ComputerMidi.Outlet> outlets = outlets(pos);
+		if(!inReach(outlets)) { // Out of earshot of the computer and all its speakers.
 			stop();
 			return;
 		}
-		ComputerMidi.setOutlets(outlets(pos));
+		ComputerMidi.setOutlets(outlets);
 		ComputerMidi.tick();
 		if(!paused && ComputerMidi.finished()) {
 			List<MusicTracks.Track> list = tracks();
@@ -248,21 +252,46 @@ public final class ComputerMusic {
 		ComputerMidi.close();
 	}
 
-	/** Blocks from the player's eyes to the computer's centre (0 without a player). */
-	private static double distance() {
-		Minecraft mc = Minecraft.getInstance();
-		return mc.player == null || pos == null ? 0.0D : Math.sqrt(mc.player.getEyePosition().distanceToSqr(pos.getCenter()));
-	}
-
 	/** MUSIC's own volume onto the sound (the game's Master and Records sliders apply to it as to any sound). */
 	private static void applyVolume() {
 		float own = volume / (float)VOLUME_STEPS;
 		ComputerMidi.setVolume(own * own); // Squared: each step sounds about as big.
 	}
 
-	/** Where the music on the computer at {@code at} comes out: the computer's own speaker. */
+	/**
+	 * Where the music on the computer at {@code at} comes out: the speakers connected to it (desk and premium speakers
+	 * touching it, wall speakers and loudspeakers on its data wire; {@link RadioComputerBlockEntity#getSpeakers}), each
+	 * in its own voice, which replace its little built-in speaker; with none, the computer itself.
+	 */
 	private static List<ComputerMidi.Outlet> outlets(BlockPos at) {
-		return List.of(new ComputerMidi.Outlet(at.getCenter(), com.arrl.radiocraft.common.radio.voice.SpeakerKind.BUILT_IN, (float)MAX_RANGE));
+		Minecraft mc = Minecraft.getInstance();
+		if(mc.level != null && mc.level.getBlockEntity(at) instanceof RadioComputerBlockEntity computer && !computer.getSpeakers().isEmpty()) {
+			List<BEVoiceReceiver.WiredSpeaker> speakers = computer.getSpeakers();
+			if(speakers != lastSpeakers) { // Made again only when the server sends a new list.
+				lastSpeakers = speakers;
+				List<ComputerMidi.Outlet> out = new ArrayList<>();
+				for(BEVoiceReceiver.WiredSpeaker speaker : speakers)
+					out.add(new ComputerMidi.Outlet(speaker.pos().getCenter(), speaker.kind(), RadioComputerBlockEntity.musicRange(speaker.kind())));
+				lastOutlets = List.copyOf(out);
+			}
+			return lastOutlets;
+		}
+		return List.of(new ComputerMidi.Outlet(at.getCenter(), SpeakerKind.BUILT_IN, (float)MAX_RANGE));
+	}
+
+	@Nullable
+	private static List<BEVoiceReceiver.WiredSpeaker> lastSpeakers;
+	private static List<ComputerMidi.Outlet> lastOutlets = List.of();
+
+	/** True if the player is within earshot of one of {@code outlets}. */
+	private static boolean inReach(List<ComputerMidi.Outlet> outlets) {
+		Minecraft mc = Minecraft.getInstance();
+		if(mc.player == null)
+			return true;
+		for(ComputerMidi.Outlet outlet : outlets)
+			if(mc.player.getEyePosition().distanceToSqr(outlet.pos()) <= (double)outlet.range() * outlet.range())
+				return true;
+		return false;
 	}
 
 	/** Tells the computer at {@code at} this player listens ({@code on}) or has stopped. */

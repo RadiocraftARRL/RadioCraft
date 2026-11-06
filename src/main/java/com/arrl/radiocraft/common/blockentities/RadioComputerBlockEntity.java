@@ -43,6 +43,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import com.arrl.radiocraft.common.radio.BEVoiceReceiver;
+import com.arrl.radiocraft.common.radio.voice.SpeakerKind;
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -293,7 +296,7 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 			return;
 		listeners.removeIf(id -> {
 			ServerPlayer player = server.getServer().getPlayerList().getPlayer(id);
-			return player == null || player.level() != server || player.distanceToSqr(worldPosition.getCenter()) > MUSIC_RANGE * MUSIC_RANGE;
+			return player == null || player.level() != server || !inMusicRange(player);
 		});
 	}
 
@@ -327,12 +330,32 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	// -------------------- CLIENT SYNC --------------------
 
-	/** Only the power goes to clients (the disk, programs and states stay on the server). */
+	/** Only the power and the speakers go to clients (the disk, programs and states stay on the server). */
 	@Override
 	public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
 		CompoundTag tag = new CompoundTag();
 		tag.putBoolean("powered", powered);
+		long[] positions = new long[speakers.size()];
+		int[] kinds = new int[speakers.size()];
+		for(int i = 0; i < speakers.size(); i++) {
+			positions[i] = speakers.get(i).pos().asLong();
+			kinds[i] = speakers.get(i).kind().ordinal();
+		}
+		tag.putLongArray("speakers", positions);
+		tag.putIntArray("speakerKinds", kinds);
 		return tag;
+	}
+
+	private void readUpdate(CompoundTag tag) {
+		powered = tag.getBoolean("powered");
+		long[] positions = tag.getLongArray("speakers");
+		int[] kinds = tag.getIntArray("speakerKinds");
+		SpeakerKind[] all = SpeakerKind.values();
+		List<BEVoiceReceiver.WiredSpeaker> list = new ArrayList<>();
+		for(int i = 0; i < positions.length && i < kinds.length; i++)
+			list.add(new BEVoiceReceiver.WiredSpeaker(BlockPos.of(positions[i]), all[Math.max(0, Math.min(kinds[i], all.length - 1))]));
+		if(!list.equals(speakers))
+			speakers = List.copyOf(list);
 	}
 
 	@Override
@@ -342,12 +365,63 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	@Override
 	public void handleUpdateTag(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
-		powered = tag.getBoolean("powered");
+		readUpdate(tag);
 	}
 
 	@Override
 	public void onDataPacket(@NotNull Connection connection, @NotNull ClientboundBlockEntityDataPacket packet, HolderLookup.@NotNull Provider registries) {
-		powered = packet.getTag().getBoolean("powered");
+		readUpdate(packet.getTag());
+	}
+
+	// -------------------- SPEAKERS --------------------
+
+	/**
+	 * The speakers the computer's sound card plays through (2026-11-06), found as radios find theirs: desk and premium
+	 * speakers touching it, and wall speakers and loudspeakers touching it or on its data wire. Each plays MUSIC where it
+	 * stands, in its own voice, instead of the computer's little built-in speaker. Found on the server once a second and
+	 * sent to clients with the block's update when they change.
+	 */
+	private List<BEVoiceReceiver.WiredSpeaker> speakers = List.of();
+
+	/** The speakers connected (see above); the client's copy on the client. */
+	public List<BEVoiceReceiver.WiredSpeaker> getSpeakers() {
+		return speakers;
+	}
+
+	/** How far MUSIC is heard from a speaker of {@code kind}, blocks: at least as far as from the computer itself. */
+	public static float musicRange(SpeakerKind kind) {
+		return Math.max(kind.distance, (float)MUSIC_RANGE);
+	}
+
+	private void refreshSpeakers(ServerLevel server) {
+		List<BEVoiceReceiver.WiredSpeaker> found = new ArrayList<>();
+		for(Direction direction : Direction.values()) {
+			BlockPos at = worldPosition.relative(direction);
+			if(server.isLoaded(at) && server.getBlockState(at).getBlock() instanceof com.arrl.radiocraft.common.blocks.SpeakerBlock speaker)
+				found.add(new BEVoiceReceiver.WiredSpeaker(at.immutable(), speaker.getKind()));
+		}
+		for(BlockPos at : com.arrl.radiocraft.common.be_networks.DataWire.linked(server, worldPosition))
+			if(server.isLoaded(at) && server.getBlockState(at).getBlock() instanceof com.arrl.radiocraft.common.blocks.WiredSpeakerBlock speaker) {
+				BEVoiceReceiver.WiredSpeaker wired = new BEVoiceReceiver.WiredSpeaker(at.immutable(), speaker.getKind());
+				if(!found.contains(wired))
+					found.add(wired);
+			}
+		if(!found.equals(speakers)) {
+			speakers = List.copyOf(found);
+			server.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+		}
+	}
+
+	/** True if {@code player} can hear this computer's MUSIC: near it, or near one of its speakers. */
+	private boolean inMusicRange(ServerPlayer player) {
+		if(player.distanceToSqr(worldPosition.getCenter()) <= MUSIC_RANGE * MUSIC_RANGE)
+			return true;
+		for(BEVoiceReceiver.WiredSpeaker speaker : speakers) {
+			double range = musicRange(speaker.kind());
+			if(player.distanceToSqr(speaker.pos().getCenter()) <= range * range)
+				return true;
+		}
+		return false;
 	}
 
 	// -------------------- PROGRAMS --------------------
@@ -524,6 +598,8 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 			tickers = list.toArray(new ComputerAppHandler[0]);
 		}
 		updatePower((gameTime + worldPosition.asLong()) % VIEWER_CHECK_TICKS == 0L);
+		if((gameTime + worldPosition.asLong()) % 20L == 0L && level instanceof ServerLevel server) // Speakers come and go rarely.
+			refreshSpeakers(server);
 		if(!powered)
 			return; // Dark: the background programs wait for power.
 		for(ComputerAppHandler handler : tickers)

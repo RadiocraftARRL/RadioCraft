@@ -305,6 +305,32 @@ public class OfficeAppsGameTests {
 		helper.succeed();
 	}
 
+	/**
+	 * The sound card's speakers (2026-11-06): a large speaker touching the computer and a loudspeaker touching it are
+	 * found within a second (the client plays MUSIC from them), and a speaker taken away is forgotten.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100)
+	public static void computerFindsItsSpeakers(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper);
+		helper.setBlock(MOBILE, RadiocraftBlocks.LARGE_SPEAKER.get());
+		helper.setBlock(RADIO, RadiocraftBlocks.LOUDSPEAKER.get());
+		helper.runAfterDelay(30, () -> {
+			List<com.arrl.radiocraft.common.radio.BEVoiceReceiver.WiredSpeaker> speakers = computer.getSpeakers();
+			helper.assertTrue(speakers.size() == 2, "speakers found: " + speakers);
+			helper.assertTrue(speakers.stream().anyMatch(sp -> sp.pos().equals(helper.absolutePos(MOBILE))
+					&& sp.kind() == com.arrl.radiocraft.common.radio.voice.SpeakerKind.STANDARD), "the large speaker is missing: " + speakers);
+			helper.assertTrue(speakers.stream().anyMatch(sp -> sp.pos().equals(helper.absolutePos(RADIO))
+					&& sp.kind() == com.arrl.radiocraft.common.radio.voice.SpeakerKind.LOUDSPEAKER), "the loudspeaker is missing: " + speakers);
+			helper.assertTrue(RadioComputerBlockEntity.musicRange(com.arrl.radiocraft.common.radio.voice.SpeakerKind.LOUDSPEAKER) > RadioComputerBlockEntity.MUSIC_RANGE,
+					"a loudspeaker carries no further than the computer");
+			helper.setBlock(MOBILE, net.minecraft.world.level.block.Blocks.AIR);
+			helper.runAfterDelay(30, () -> {
+				helper.assertTrue(computer.getSpeakers().size() == 1, "the speaker taken away is still there: " + computer.getSpeakers());
+				helper.succeed();
+			});
+		});
+	}
+
 	/** A player who is gone (a fake player is never on the player list) has the mode ended at the next check. */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 40)
 	public static void handModeEndsWhenThePlayerIsGone(GameTestHelper helper) {
