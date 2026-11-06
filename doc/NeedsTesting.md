@@ -8,6 +8,25 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 advancements (added 2026-11-06)
+- [ ] The tab: open Advancements (L). A RadioCraft tab with the stone background, Going Ham (20 m radio) at the root
+  once a radio is placed. Is the tree readable (getting started, distance under First Contact, modes under Dit Dah,
+  computer things under Shack Upgrade, weather under Storm Spotter)? Are the icons right and the titles and
+  descriptions clear? Frames: goals (rounded) and challenges (spiky, purple toast) look right? Hidden ones (Moonbounce,
+  Out of Band, Bible Study, High Score, Spin the Disk, Numbers Station, The FCC Is Watching) do not show until earned.
+- [ ] Two players with handhelds: A talks, B hears it: A gets Is This Thing On? B talks back within five minutes: both
+  get First Contact (toast, and a chat line). Far apart on HF (over 1,000 blocks): Skip Day. Through a repeater one of
+  you placed: the placer gets Repeater Owner when the other talks through it (offline: at their next login).
+- [ ] Single player with a second client (or a friend): Grey Line at dawn or dusk (game time 5:30-7:00 or 17:30-19:30),
+  Into the Static during `/rcdebug solar` poor or blackout, Northern Lights hearing anything during `/rcdebug aurora on`.
+- [ ] Licensed to Chill on /callsign claim (and at login for a player who already had a callsign). Dit Dah keying CW
+  on an HF radio's screen and on the manpack. Picture This when the SSTV program finishes a picture. Bible Study
+  opening the Bible (a client request, `sys.secret`). Spin the Disk playing a tune. High Score getting on PILEUP's table.
+- [ ] Paper Trail: sign a QSL card, drop it, a second player picks it up: the signer gets it. Card Collector with 20
+  cards in an album (adding by right-click in the inventory). Mission Control opening a computer with monitor,
+  scanner, radio interface and a speaker beside it.
+- [ ] Handbook: Getting Started > Advancements, seven pages: does the text fit each page?
+
 ## 1.12 computer batch 3C: net control, awards, QSL cards (added 2026-11-06)
 - [ ] Net Control: craft it (blank floppy + lectern), install. F4: name "Tuesday Net", 147.180, FM, your call; the
   header goes green "OPEN since". Ins checks in three stations (one with T=Y, one with Short time=Y); the list shows

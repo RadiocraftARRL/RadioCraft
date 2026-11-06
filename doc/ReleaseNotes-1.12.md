@@ -289,6 +289,25 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   time on a **Small Alkaline Battery** (shift + right click to change it) and blinks every 10 seconds when the battery
   is low. Right click silences it.
 
+#### Advancements
+
+- RadioCraft has its own **advancements tab** (Going Ham, placing your first radio, opens it), with over thirty
+  advancements: getting on the air (**Is This Thing On?**, **First Contact**, **Licensed to Chill**, **Ground Plane
+  Theory**), distance and propagation (**Skip Day**, **DX Hunter**, **Grey Line**, **Into the Static**, **Northern
+  Lights**), modes (**Dit Dah**, **Typewriter Thunder**, **Chart Topper**, **Packet Rat**, **Weak Signal Wizard**,
+  **Picture This**), the station (**Repeater Owner**, **Shack Upgrade**, **Mission Control**, **Digital Native**),
+  public service (**Fleet Manager**, **Clone Wars**, **Storm Spotter**, **Take Shelter Now**), logging (**Net
+  Control**, **Paper Trail**, **Card Collector**, **Worked All Biomes**, **Contest Station**) and a few secret ones.
+- Contacts are **verified**: you heard another player on the radio and they heard you, both within five minutes (your
+  voice reaching their radio while they hold it or stand within 16 blocks of its speaker), or an FT8 contact the
+  computer completed. Logbook entries typed by hand never count. The distance is between the two stations.
+- Earning the Awards program's **Worked All Biomes** award gives the advancement of the same name. A player who is
+  offline when they earn one (the signer of a QSL card someone else picked up, the owner of a repeater someone talked
+  through) gets it at their next login.
+- Repeaters and Weather Alert Generators now remember who placed them (ones placed before this version do not: break
+  and place them again to be credited).
+- The Handbook's Getting Started chapter lists them.
+
 #### FCC field gear
 
 - The **FCC Field Agent Hat** and **Jacket** (1970s felt and corduroy, with a wide tie) are armour that protects like

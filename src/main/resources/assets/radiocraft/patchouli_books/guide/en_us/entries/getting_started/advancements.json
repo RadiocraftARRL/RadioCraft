@@ -1,0 +1,41 @@
+{
+  "name": "Advancements",
+  "icon": "radiocraft:hf_radio_20m",
+  "category": "radiocraft:getting_started",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "RadioCraft has its own advancements tab, opened by $(thing)Going Ham$(): placing your first radio.$(br2)Many of them need a $(thing)two-way contact$(): you heard another player on the radio and they heard you, both within five minutes. Your voice must reach their radio while they are close enough to hear it (holding it, or within 16 blocks of its speaker). An $(l:radiocraft:computer/ft8)FT8$(/l) contact the computer completes counts too; contacts typed into a logbook do not."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Getting started",
+      "text": "$(li)$(thing)Is This Thing On?$(): your voice reached another player's radio.$(li)$(thing)First Contact$(): your first two-way contact.$(li)$(thing)Licensed to Chill$(): a callsign with /callsign.$(li)$(thing)Ground Plane Theory$(): build your first antenna."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Distance",
+      "text": "$(li)$(thing)Skip Day$(): a contact over 1,000 blocks on HF.$(li)$(thing)DX Hunter$(): over 5,000 blocks.$(li)$(thing)Grey Line$(): a contact at dawn or dusk.$(li)$(thing)Into the Static$(): a contact in a solar storm or blackout.$(li)$(thing)Northern Lights$(): hear a signal during an aurora.$(li)$(thing)Contest Station$(): 100 contacts (each station once a band a day)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Modes",
+      "text": "$(li)$(thing)Dit Dah$(): send CW.$(li)$(thing)Typewriter Thunder$(): copy RTTY.$(li)$(thing)Chart Topper$(): print a WEFAX chart.$(li)$(thing)Packet Rat$(): post on another station's Packet BBS over the air.$(li)$(thing)Weak Signal Wizard$(): complete an FT8 contact.$(li)$(thing)Picture This$(): receive an SSTV picture."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The station",
+      "text": "$(li)$(thing)Repeater Owner$(): another player's voice goes out through a repeater you placed.$(li)$(thing)Shack Upgrade$(): get a radio computer.$(li)$(thing)Mission Control$(): a computer with a monitor, a scanner, a radio interface and speakers.$(li)$(thing)Digital Native$(): 10 programs on one computer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Service and logging",
+      "text": "$(li)$(thing)Fleet Manager$(): program a radio by hand in the CPS.$(li)$(thing)Clone Wars$(): use the Radio Cloner.$(li)$(thing)Storm Spotter$(): your Weather Alert Generator sends its first warning.$(li)$(thing)Take Shelter Now$(): a receiver near you sounds a tornado warning, then the tornado comes within 100 blocks of it."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(thing)Net Control$(): log a net of 5 or more check-ins.$(li)$(thing)Paper Trail$(): another player picks up or holds a QSL card you signed (it waits for you if you are offline).$(li)$(thing)Card Collector$(): 20 cards in a QSL album.$(li)$(thing)Worked All Biomes$(): the Awards program's award of that name.$(br2)A few more are secret: you will know them when you find them."
+    }
+  ]
+}

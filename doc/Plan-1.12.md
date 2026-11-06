@@ -2733,3 +2733,92 @@ open to label the list. Website wiki not touched.
 - Should a faxed or BBS card be a full card (now, marked COPY on its back and in the tooltip) or only a printout?
 - Worked All Biomes counts the biomes of every dimension (Nether and End too): keep, or Overworld only?
 - Certificates print on plain paper too (as a printout); photo paper gives a photo. OK?
+
+### Advancements (2026-11-06)
+Spec `doc/Plan-Advancements.md` (all but Up the Tower and Off the Grid). Built in the main tree; committed locally;
+nothing pushed. `runData`, `test` (803 pass, 9 new), `runGameTestServer` (all 550 required pass; the fourth
+run, after fixes below), `build` clean.
+
+- **Tree** (`datagen/RadiocraftAdvancementProvider`, one table `TREE` of id, parent, icon, frame, hidden, title,
+  description; the lang provider takes the titles from it, `advancements.radiocraft.<id>.title/.description`).
+  `going_ham` (the root, stone background) and `found_secret_floppy` (no display; the Handbook's secret programs page
+  locks on it) were hand-written JSON in `src/main/resources/data/radiocraft/advancement/`: deleted, now generated with
+  the same ids and criteria (Going Ham also takes the poor and pure crystal radios). Parents: Going Ham > Is This
+  Thing On? > First Contact > {Skip Day > DX Hunter, Grey Line, Into the Static, Moonbounce, Contest Station}; Going
+  Ham > {Licensed to Chill, Ground Plane Theory > Repeater Owner, Northern Lights, Dit Dah > Typewriter Thunder >
+  {Chart Topper, Packet Rat}, Shack Upgrade > {Mission Control, Digital Native, Weak Signal Wizard, Picture This,
+  Fleet Manager > {Clone Wars, Out of Band}, Net Control, Paper Trail > Card Collector, Worked All Biomes, Bible
+  Study, High Score, Spin the Disk}, Storm Spotter > Take Shelter Now, Numbers Station, The FCC Is Watching}.
+  Hidden: Moonbounce, Out of Band, Bible Study, High Score, Spin the Disk, Numbers Station, The FCC Is Watching.
+  Challenges: DX Hunter, Moonbounce, Contest Station, Take Shelter Now, Worked All Biomes. Every one but the root
+  announces in chat. No rewards.
+- **Trigger**: one `radiocraft:event` criterion (`common/advancements/RadioEventTrigger`, condition `event` = the
+  advancement's id), fired by `RadiocraftAdvancements.grant(player, id)`; `grant(server, uuid, id)` keeps it in
+  `AdvancementData` (overworld SavedData `radiocraft_advancements`: pending grants and each player's contact count)
+  for an offline player, given at login. `grantNear` / `grantStation` (owner + players within 16 blocks) for what a
+  block does by itself. Vanilla criteria: Going Ham `placed_block`, Shack Upgrade `inventory_changed` (radio computer),
+  Out of Band `recipe_crafted` (`radiocraft:mars_mod_install`), Ground Plane Theory OR `placed_block` of the antennas
+  that are whole as placed (J-pole, slim jim, Yagi, ringo, folded dipole, 5BTV, dish, horn, ADS-B).
+- **Verified contact** (`ContactBook`, pure, unit tested; `ContactTracker`, the glue): A heard B and B heard A within
+  6000 ticks. Hearings come from `ModerationHooks.heard` (always called, whether moderation recording is on or not;
+  the moderation log itself runs only while an operator records, so it cannot be the source) and from FT8
+  (`Ft8Handler.contactMade` on each side's log: the owner heard the player whose callsign was worked). Hand-typed
+  logbook lines never come in. A hearing = (hearer, talker, the hearer's station position snapshotted on the server,
+  dimension, Hz, band, game time); the contact's distance is between the two hearers' stations (horizontal, infinite
+  across dimensions), HF = both ways under 30 MHz, Y = the lower station. Earned: First Contact; Skip Day (HF, > 1000);
+  DX Hunter (> 5000, any band); Grey Line (day time 22500-1000 or 11500-13500); Moonbounce (both > Y 200); Into the
+  Static (current solar event's condition level <= 2: poor or blackout). Contest Station: a pair counts once per band
+  per game day, 100 counted contacts per player (persisted). A pair is re-examined at most every 10 s.
+- **Cost on the voice path**: `ContactTracker.heard` per voice frame per receiver = an instanceof, an identity hash
+  of the receiver mixed with the talker id into a 1024-slot `AtomicLongArray` table, one `System.nanoTime`; only when
+  that receiver has not reported that talker for 3 s does it queue one small event (queue capped at 2048). No
+  allocation and no player or block lookup per frame. The server tick drains at most 256 events: finds who heard it
+  (the holder, or players within 16 blocks of a block radio), grants Is This Thing On? / Northern Lights / Numbers
+  Station, and feeds the book. Memory: at most 4096 hearings (one per hearer/talker pair), pruned past the window
+  once a game minute; pair recheck and dupe maps pruned the same way.
+- **Hooks**: Licensed to Chill `PlayerCallsignSavedData.setCallsignData` (+ at login with a callsign); Ground Plane
+  Theory `AntennaBlockEntity.updateAntenna` when no antenna becomes one after a block/wire was placed on it (not on a
+  chunk load), players within 16; Dit Dah `SCWBufferPacket` / `ManpackRadio.transmitMorse` with a key down; Typewriter
+  Thunder `TeletypeBlockEntity.receive` (players by it), `RttyHandler.receive` (owner + near); Chart Topper
+  `WefaxReceiverBlockEntity.finish`; Packet Rat `BbsHandler.serve` on "MSG n SAVED", the poster's callsign's player,
+  unless the BBS owner; Weak Signal Wizard FT8 log (owner); Picture This `PictureHandler.done` for SSTV; Repeater Owner
+  `VHFRepeaterBlockEntity.onInput` after the retransmit, once per new talker, checked on the server thread (talker a
+  player and not the placer); Mission Control `RadioComputerBlockEntity.open` (`isMissionControl`: monitor, scanner,
+  a radio interface on the bus, speakers); Digital Native `sys.install` with 10 installed; Fleet Manager
+  `HandProgramming.program` write; Clone Wars `RadioClonerItem.tell` on a read or write; Storm Spotter the generator's
+  data packet with a new warning, to its placer; Take Shelter Now the receiver notes a TOR alert and who was within 24
+  blocks, then every 40 ticks for 5 min looks at `storms(...)` for a tornado down within 100 blocks (its own
+  `setWeatherOverride` for tests) and grants those players and the players near now; Net Control `NetControlHandler`
+  log with >= 5 check-ins; Paper Trail / Card Collector `AdvancementEvents` (pickup, container close, login, album
+  inserts; signer found by name: online, else the profile cache); Worked All Biomes `AwardsHandler.grantEarned` on
+  every awards computation (the same `Awards.Progress.complete()` the program shows); Bible Study a new `sys.secret`
+  request BIBLE sends when opened (client change); High Score `fs.write` of PILEUP.DAT with PILEUP installed; Spin the
+  Disk the `music` on request; Numbers Station `CommercialStations.start` registers NUMBERS voice ids; The FCC Is
+  Watching `FccGear.issueBadge`.
+- **Placers**: `VHFRepeaterBlockEntity` (and the commercial repeater) and `WeatherAlertGeneratorBlockEntity` save
+  `placer` (world save only; the repeater's sync tag never has it), set by `BlockEvent.EntityPlaceEvent`. Ones placed
+  before this have none.
+- **Tests**: unit `ContactBookTest` (9). GameTests `AdvancementGameTests` (every advancement file loads; grant and
+  pending; vanilla criteria; HF contact = Skip Day not DX; VHF high and far = DX + Moonbounce; block radio hearers by
+  range; Contest Station at 100; Numbers Station; FT8 contacts + Licensed to Chill; Net Control at 5; Worked All
+  Biomes from the award; Bible / MUSIC / PILEUP; Digital Native; Mission Control; Typewriter Thunder; Packet Rat; Paper
+  Trail + Card Collector; Ground Plane Theory + FCC badge), `RepeaterGameTests.anotherPlayersVoiceMakesTheRepeaterOwner`,
+  `WeatherAlertGameTests.warningsGiveStormSpotterAndTakeShelter`, and assertions added to
+  `WefaxGameTests.printsASheetOutOfTheFront` (Chart Topper) and `OfficeAppsGameTests.programmerReadsAndWritesOneRadioByHand`
+  (Fleet Manager). Fake players are found through `RadiocraftAdvancements.registerTestPlayer` (the player list does
+  not know them). **NeoForge fake players never make advancement progress** (`FakePlayer.FakePlayerAdvancements`
+  keeps none), so grants to registered test players are also recorded in a test map `has()` reads; the advancement
+  files and the trigger are checked end to end with a real `ServerPlayer` (not on the player list, `setPos` not
+  `moveTo`): every TREE entry loads with its parent, hidden flag and event criterion, the event completes First
+  Contact, and the three vanilla criteria complete theirs. The GameTest world is kept between runs, so Contest
+  Station's test uses a fresh UUID each run (the count is saved). Not GameTested: Dit Dah (needs a network packet context), Picture This (an SSTV reception), Grey
+  Line, Into the Static and Northern Lights (they need the shared world time / solar event / aurora; the rules are unit
+  tested), Clone Wars (`tell` is reached only through item use), Licensed to Chill at login.
+- Handbook `getting_started/advancements` (secret ones not named); release notes; NeedsTesting "1.12 advancements".
+  Website wiki not touched.
+
+**Open questions (advancements)**: icons and titles for review (Northern Lights is lime stained glass, Worked All
+Biomes a filled map, Contest Station the Logbook floppy). Contest Station's dupe rule (once a pair per band per game
+day) and "storm" = the poor or blackout solar event: OK? Ground Plane Theory goes to every player within 16 blocks of
+a newly made wire antenna (the antenna does not know who strung it). Paper Trail counts faxed/BBS copies of a signed
+card too. Worked All Biomes needs the Awards program to be opened (status computed) after the last biome is worked.
