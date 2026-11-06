@@ -370,6 +370,8 @@ public final class BbsHandler implements ComputerAppHandler {
 		for(String line : bbs.handle(bbsCall, from, text, now)) {
 			RadioStation.transmit(computer, bus, TncPacket.message(RadioStation.newId(level), bbsCall, from, line));
 			log(computer, state, "  " + line);
+			if(line.startsWith("MSG ") && line.endsWith(" SAVED")) // Packet Rat: a station posted here over the air.
+				posted(level, computer, from);
 		}
 		for(PacketBbs.Download download : bbs.takeDownloads()) { // D n: the attached QSL card goes to the caller as a file.
 			com.arrl.radiocraft.common.qsl.QslCard card = com.arrl.radiocraft.common.qsl.QslCard.fromTag(download.message().attachment());
@@ -377,6 +379,13 @@ public final class BbsHandler implements ComputerAppHandler {
 		}
 		persist(computer);
 		push(computer, "log");
+	}
+
+	/** Packet Rat: the player whose callsign posted on this BBS, unless it is the BBS's own owner. */
+	private static void posted(ServerLevel level, RadioComputerBlockEntity computer, String from) {
+		java.util.UUID id = com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.playerWithCallsign(level.getServer(), PacketBbs.base(from));
+		if(id != null && !id.equals(computer.files().owner()))
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(level.getServer(), id, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.PACKET_RAT);
 	}
 
 	@Override

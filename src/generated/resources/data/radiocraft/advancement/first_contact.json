@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:is_this_thing_on",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "first_contact"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.first_contact.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:hand_microphone"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.first_contact.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

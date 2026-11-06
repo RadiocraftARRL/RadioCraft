@@ -290,6 +290,8 @@ public abstract class PictureHandler implements ComputerAppHandler {
 			state.received.removeLast();
 		computer.setChanged();
 		level.playSound(null, computer.getBlockPos(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.BLOCKS, 0.4F, 1.2F);
+		if(app() == com.arrl.radiocraft.common.computer.ComputerApps.SSTV) // Picture This: an SSTV picture came in.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantStation(level, computer.getBlockPos(), computer.files().owner(), com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.PICTURE_THIS);
 		event.putString("name", name);
 		computer.push(app(), "received", event);
 	}

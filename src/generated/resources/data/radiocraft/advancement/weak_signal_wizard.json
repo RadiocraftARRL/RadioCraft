@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "weak_signal_wizard"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.weak_signal_wizard.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_ft8"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.weak_signal_wizard.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

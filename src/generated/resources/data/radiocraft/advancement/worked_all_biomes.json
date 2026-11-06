@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "worked_all_biomes"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.worked_all_biomes.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:filled_map"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.worked_all_biomes.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

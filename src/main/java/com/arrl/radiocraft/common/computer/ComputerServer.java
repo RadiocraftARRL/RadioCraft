@@ -108,7 +108,17 @@ public final class ComputerServer {
 			case "sys.floppies" -> reply.ok(floppies(player));
 			case "sys.insert" -> insert(computer, player, data.getInt("slot"), reply);
 			case "sys.eject" -> eject(computer, player, reply);
-			case "sys.install" -> install(computer, data.getString("app"), reply);
+			case "sys.install" -> {
+				install(computer, data.getString("app"), reply);
+				if(computer.installedCount() >= com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.DIGITAL_NATIVE_PROGRAMS) // Digital Native.
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.DIGITAL_NATIVE);
+			}
+			case "sys.secret" -> { // A secret program was opened on this player's screen (BIBLE): its advancement.
+				ComputerApp app = ComputerApps.get(data.getString("app"));
+				if(app != null && app.kind() == ComputerApp.Kind.SECRET && computer.isInstalled(app) && app == ComputerApps.BIBLE)
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.BIBLE_STUDY);
+				reply.ok();
+			}
 			case "sys.uninstall" -> uninstall(computer, data.getString("app"), reply);
 			case "fs.list" -> {
 				ComputerVolume volume = volume(context, data, reply);
@@ -153,6 +163,8 @@ public final class ComputerServer {
 			}
 			case "music" -> { // MUSIC plays on with the screen closed: the computer stays in use for this player.
 				computer.listen(player, data.getBoolean("on"));
+				if(data.getBoolean("on") && computer.isInstalled(ComputerApps.MUSIC)) // Spin the Disk: a tune is playing.
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.SPIN_THE_DISK);
 				reply.ok();
 			}
 			default -> reply.error("unknown_request", action);
@@ -483,6 +495,8 @@ public final class ComputerServer {
 					reply.error(problem);
 					return;
 				}
+				if(name.equalsIgnoreCase("PILEUP.DAT") && context.computer().isInstalled(ComputerApps.FALLING_BLOCKS)) // High Score: PILEUP saves its table.
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(context.player(), com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.HIGH_SCORE);
 				CompoundTag out = new CompoundTag();
 				out.putString("name", name);
 				out.putLong("used", volume.storage().used());

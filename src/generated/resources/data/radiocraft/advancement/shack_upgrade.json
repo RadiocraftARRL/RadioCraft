@@ -1,0 +1,33 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "has_computer": {
+      "conditions": {
+        "items": [
+          {
+            "items": "radiocraft:radio_computer"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.shack_upgrade.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:radio_computer"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.shack_upgrade.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_computer"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

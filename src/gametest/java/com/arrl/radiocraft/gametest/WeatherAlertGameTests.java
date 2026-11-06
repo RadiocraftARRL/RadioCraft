@@ -155,6 +155,62 @@ public class WeatherAlertGameTests {
 				.thenSucceed();
 	}
 
+	/**
+	 * Storm Spotter and Take Shelter Now (the advancements batch): the generator's placer gets Storm Spotter when its
+	 * first warning goes out; a player near the receiver when it sounds the tornado warning gets Take Shelter Now once
+	 * the tornado (the receiver's own weather, a tornado over it) is within 100 blocks. A batch of its own: the air.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 400, batch = "weather_alert_air_advancements")
+	public static void warningsGiveStormSpotterAndTakeShelter(GameTestHelper helper) {
+		BlockPos generator = new BlockPos(2, 1, 2), h19 = new BlockPos(1, 1, 2), receiver = new BlockPos(12, 1, 12);
+		helper.setBlock(generator, RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get());
+		helper.setBlock(h19, RadiocraftBlocks.APRS_TERMINAL.get());
+		GameTestUtil.placeWire(helper, generator.south(), RadiocraftBlocks.COAX_WIRE.get());
+		BlockPos lower = generator.south(2);
+		helper.setBlock(lower, RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState().setValue(DoubleVHFAntennaBlock.HALF, DoubleBlockHalf.LOWER));
+		helper.setBlock(lower.above(), RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState().setValue(DoubleVHFAntennaBlock.HALF, DoubleBlockHalf.UPPER));
+		helper.setBlock(receiver, RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get());
+		net.neoforged.neoforge.common.util.FakePlayer spotter = net.neoforged.neoforge.common.util.FakePlayerFactory.get(helper.getLevel(),
+				new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("adv-spotter".getBytes()), "wxspotter"));
+		net.neoforged.neoforge.common.util.FakePlayer sheltering = net.neoforged.neoforge.common.util.FakePlayerFactory.get(helper.getLevel(),
+				new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("adv-shelter".getBytes()), "wxshelter"));
+		BlockPos far = helper.absolutePos(generator).offset(0, 0, -300), near = helper.absolutePos(receiver.north(2));
+		spotter.moveTo(far.getX(), far.getY(), far.getZ());
+		sheltering.moveTo(near.getX() + 0.5D, near.getY(), near.getZ() + 0.5D);
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.registerTestPlayer(spotter);
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.registerTestPlayer(sheltering);
+		helper.startSequence()
+				.thenIdle(3)
+				.thenExecute(() -> {
+					WeatherAlertReceiverBlockEntity rx = GameTestUtil.blockEntity(helper, receiver, WeatherAlertReceiverBlockEntity.class);
+					rx.swapBattery(battery(100));
+					rx.setWeatherOverride(new Tornado(helper.absolutePos(receiver)));
+					AprsTerminalBlockEntity terminal = GameTestUtil.blockEntity(helper, h19, AprsTerminalBlockEntity.class);
+					beacon(helper, terminal, "WX1", -250, -250);
+					beacon(helper, terminal, "WX2", 250, -250);
+					beacon(helper, terminal, "WX3", 0, 300);
+					WeatherAlertGeneratorBlockEntity gen = GameTestUtil.blockEntity(helper, generator, WeatherAlertGeneratorBlockEntity.class);
+					gen.setPlacer(spotter.getUUID());
+					gen.setWeatherOverride(new Tornado(helper.absolutePos(receiver)));
+				})
+				.thenWaitUntil(() -> helper.assertTrue(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(spotter,
+						com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.STORM_SPOTTER), "the placer did not get Storm Spotter"))
+				.thenWaitUntil(() -> helper.assertTrue(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(sheltering,
+						com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TAKE_SHELTER_NOW), "the player by the receiver did not get Take Shelter Now"))
+				.thenExecute(() -> {
+					helper.assertFalse(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(spotter,
+							com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TAKE_SHELTER_NOW), "a player far from the receiver got Take Shelter Now");
+					helper.assertFalse(GameTestUtil.blockEntity(helper, receiver, WeatherAlertReceiverBlockEntity.class).watchingForTornado(), "still watching after the tornado came");
+				})
+				.thenWaitUntil(() -> helper.assertFalse(GameTestUtil.blockEntity(helper, generator, WeatherAlertGeneratorBlockEntity.class).isTransmitting(),
+						"the generator is still sending its tone"))
+				.thenExecute(() -> {
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.unregisterTestPlayer(spotter);
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.unregisterTestPlayer(sheltering);
+				})
+				.thenSucceed();
+	}
+
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 260)
 	public static void lowBatteryBlinksEveryTenSeconds(GameTestHelper helper) {
 		BlockPos low = new BlockPos(2, 1, 2), full = new BlockPos(6, 1, 2), none = new BlockPos(10, 1, 2);

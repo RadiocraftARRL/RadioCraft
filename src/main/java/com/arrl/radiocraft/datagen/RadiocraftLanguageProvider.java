@@ -623,6 +623,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.LicenseStudyLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.FloppyLang.add(provider); // Computer batch 3A: data floppies.
 			com.arrl.radiocraft.datagen.lang.SaverLang.add(provider); // Computer batch 3A: the screensaver.
+			com.arrl.radiocraft.datagen.RadiocraftAdvancementProvider.addLang(provider); // The advancement tree's titles and descriptions.
 			com.arrl.radiocraft.datagen.lang.SchedulerLang.add(provider); // Computer batch 3A: the scheduler.
 			com.arrl.radiocraft.datagen.lang.RigControlLang.add(provider); // Computer batch 3B: rig control and the waterfall.
 			com.arrl.radiocraft.datagen.lang.Ft8Lang.add(provider); // Computer batch 3B: FT8.

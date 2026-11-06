@@ -38,6 +38,8 @@ public final class NetControlHandler implements ComputerAppHandler {
 			reply.error(problem);
 			return;
 		}
+		if(net.checkIns().size() >= com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.NET_CHECK_INS) // Net Control: a net of five or more, logged.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(context.player(), com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.NET_CONTROL);
 		CompoundTag out = new CompoundTag();
 		out.putInt("logged", contacts.size());
 		reply.ok(out);

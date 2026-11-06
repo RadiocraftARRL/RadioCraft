@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "dit_dah"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.dit_dah.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:qrp_radio_40m"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.dit_dah.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

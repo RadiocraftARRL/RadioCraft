@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:paper_trail",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "card_collector"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.card_collector.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:qsl_album"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.card_collector.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

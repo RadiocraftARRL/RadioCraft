@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "spin_the_disk"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.spin_the_disk.description"
+    },
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_music"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.spin_the_disk.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

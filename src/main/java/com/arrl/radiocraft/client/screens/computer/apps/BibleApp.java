@@ -82,6 +82,9 @@ public final class BibleApp extends DosApp {
 	public void opened() {
 		if(text() != null)
 			show(at);
+		net.minecraft.nbt.CompoundTag secret = new net.minecraft.nbt.CompoundTag(); // The Bible Study advancement (server side).
+		secret.putString("app", "bible");
+		session.request("sys.secret", secret, response -> {});
 	}
 
 	/** Shows {@code r}'s chapter, scrolled to its verse (and marked) if it names one. */

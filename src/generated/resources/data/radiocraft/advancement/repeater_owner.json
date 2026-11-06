@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:ground_plane_theory",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "repeater_owner"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.repeater_owner.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:vhf_repeater"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.repeater_owner.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

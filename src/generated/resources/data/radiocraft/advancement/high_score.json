@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "high_score"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.high_score.description"
+    },
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_falling_blocks"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.high_score.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

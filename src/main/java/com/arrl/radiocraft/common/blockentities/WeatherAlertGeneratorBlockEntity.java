@@ -95,6 +95,9 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 	private TncPacket sending;
 	private int toneFrames;
 	private boolean newWarning;
+	/** Who placed it (saved): Storm Spotter goes to them when it sends its first warning. */
+	@Nullable
+	private UUID placer = null;
 	private UUID dataVoiceId, toneVoiceId;
 	/** For GameTests: the weather to use instead of the level's. */
 	@Nullable
@@ -278,6 +281,8 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 			if(frame >= frames.size()) { // The burst is done: the packet decodes at the far end.
 				RadioModeration.data(serverLevel, sending, WeatherAlertPacket.FREQUENCY_HZ);
 				antenna.transmitDataPacket(serverLevel, sending, band, WeatherAlertPacket.FREQUENCY_HZ);
+				if(newWarning && placer != null) // Storm Spotter: a warning went out.
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(serverLevel.getServer(), placer, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.STORM_SPOTTER);
 				if(!newWarning)
 					endBroadcast(radio);
 			}
@@ -362,6 +367,19 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 		super.saveAdditional(tag, registries);
 		long[] keys = sentKeys.stream().mapToLong(Long::longValue).toArray();
 		tag.putLongArray("sentKeys", keys);
+		if(placer != null)
+			tag.putUUID("placer", placer);
+	}
+
+	/** Notes who placed it (the placing event, {@code common/advancements/AdvancementEvents}). */
+	public void setPlacer(@Nullable UUID placer) {
+		this.placer = placer;
+		setChanged();
+	}
+
+	@Nullable
+	public UUID getPlacer() {
+		return placer;
 	}
 
 	@Override
@@ -370,5 +388,7 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 		sentKeys.clear();
 		for(long key : tag.getLongArray("sentKeys"))
 			sentKeys.add(key);
+		if(tag.hasUUID("placer"))
+			placer = tag.getUUID("placer");
 	}
 }

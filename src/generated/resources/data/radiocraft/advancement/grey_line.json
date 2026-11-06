@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:first_contact",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "grey_line"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.grey_line.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:clock"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.grey_line.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -545,4 +545,57 @@ public class RepeaterGameTests {
                 .thenExecute(() -> helper.assertTrue(station(helper, STATION_B).getLastSignalGameTime() == lastHeard[0], "The sleeping repeater still sent something"))
                 .thenSucceed();
     }
+
+    /**
+     * Repeater Owner (the advancements batch): the repeater keeps its placer in its save (not in the client sync), and
+     * when another player's voice goes out through it the placer gets the advancement; their own voice does not count.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 300, batch = BATCH)
+    public static void anotherPlayersVoiceMakesTheRepeaterOwner(GameTestHelper helper) {
+        buildWithDuplexer(helper);
+        net.neoforged.neoforge.common.util.FakePlayer owner = net.neoforged.neoforge.common.util.FakePlayerFactory.get(helper.getLevel(),
+                new com.mojang.authlib.GameProfile(UUID.nameUUIDFromBytes("adv-repeater-owner".getBytes()), "rptowner"));
+        net.neoforged.neoforge.common.util.FakePlayer talker = net.neoforged.neoforge.common.util.FakePlayerFactory.get(helper.getLevel(),
+                new com.mojang.authlib.GameProfile(UUID.nameUUIDFromBytes("adv-repeater-talker".getBytes()), "rpttalker"));
+        BlockPos far = helper.absolutePos(REPEATER).offset(0, 0, 400);
+        owner.moveTo(far.getX(), far.getY(), far.getZ());
+        talker.moveTo(far.getX(), far.getY(), far.getZ());
+        com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.registerTestPlayer(owner);
+        com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.registerTestPlayer(talker);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(repeater(helper, REPEATER).hasDuplexer(), "Repeater does not see its duplexer"))
+                .thenExecute(() -> {
+                    VHFRepeaterBlockEntity be = repeater(helper, REPEATER);
+                    be.setPlacer(owner.getUUID());
+                    CompoundTag saved = be.saveWithoutMetadata(helper.getLevel().registryAccess());
+                    helper.assertTrue(saved.hasUUID("placer") && saved.getUUID("placer").equals(owner.getUUID()), "the placer is not saved");
+                    helper.assertFalse(be.getUpdateTag(helper.getLevel().registryAccess()).contains("placer"), "the placer is sent to clients");
+                    setUp(helper, 144_660, 145_260);
+                })
+                .thenIdle(1)
+                .thenExecute(() -> {
+                    VHFRadioBlockEntity radio = station(helper, STATION_A);
+                    radio.setPTTDown(true);
+                    radio.acceptVoicePacket(() -> helper.getLevel(), toneFrame(), owner.getUUID()); // The owner's own voice.
+                    radio.setPTTDown(false);
+                })
+                .thenIdle(2)
+                .thenExecute(() -> helper.assertFalse(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(owner,
+                        com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.REPEATER_OWNER), "the owner's own voice made them Repeater Owner"))
+                .thenExecute(() -> {
+                    VHFRadioBlockEntity radio = station(helper, STATION_A);
+                    radio.setPTTDown(true);
+                    radio.acceptVoicePacket(() -> helper.getLevel(), toneFrame(), talker.getUUID());
+                    radio.setPTTDown(false);
+                    helper.assertTrue(heardNow(helper, STATION_B), "B did not hear the repeater's output");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(owner,
+                        com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.REPEATER_OWNER), "the owner is not Repeater Owner"))
+                .thenWaitUntil(() -> helper.assertFalse(repeater(helper, REPEATER).isTransmitting(), "Repeater is still transmitting"))
+                .thenExecute(() -> {
+                    com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.unregisterTestPlayer(owner);
+                    com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.unregisterTestPlayer(talker);
+                })
+                .thenSucceed();
+    }
 }

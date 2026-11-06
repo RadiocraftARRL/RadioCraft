@@ -89,6 +89,9 @@ public class PlayerCallsignSavedData extends SavedData implements IPlayerCallsig
     public IPlayerCallsignCapability setCallsignData(UUID playerUUID, PlayerCallsignData playerCallsignData) {
         callsigns.put(playerUUID.toString(), playerCallsignData);
         setDirty();
+        net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if(server != null && playerCallsignData != null && playerCallsignData.callsign() != null && !playerCallsignData.callsign().isBlank()) // Licensed to Chill.
+            com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(server, playerUUID, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.LICENSED_TO_CHILL);
         return this;
     }
 

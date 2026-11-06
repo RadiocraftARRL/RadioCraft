@@ -65,10 +65,16 @@ public class AntennaBlockEntity extends BlockEntity implements INetworkObjectPro
 		AntennaNetworkObject antenna = (AntennaNetworkObject)IBENetworks.getObject(level, worldPosition);
 		if(antenna == null)
 			return;
-		if(AntennaTypes.match(level, worldPosition) instanceof StaticAntenna<?> newAntenna)
+		boolean had = antenna.getAntenna() != null;
+		if(AntennaTypes.match(level, worldPosition) instanceof StaticAntenna<?> newAntenna) {
 			antenna.setAntenna(newAntenna);
+			if(!had && builtByHand && level instanceof net.minecraft.server.level.ServerLevel server) // Ground Plane Theory: whoever is building it.
+				com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantNear(server, worldPosition, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.STATION_RANGE,
+						com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.GROUND_PLANE_THEORY);
+		}
 		else
 			antenna.clearAntenna(); // The wires no longer make an antenna: take the old one off the air.
+		builtByHand = false;
 	}
 
 	/**
@@ -76,7 +82,11 @@ public class AntennaBlockEntity extends BlockEntity implements INetworkObjectPro
 	 */
 	public void markAntennaChanged() {
 		antennaCheckCooldown = RadiocraftServerConfig.ANTENNA_UPDATE_DELAY.get() * 20;
+		builtByHand = true;
 	}
+
+	/** The next check follows a block or wire placed on it (not a chunk loading): a new antenna there was built. */
+	private boolean builtByHand = false;
 
 	public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
 		if(t instanceof AntennaBlockEntity be) {
@@ -107,7 +117,7 @@ public class AntennaBlockEntity extends BlockEntity implements INetworkObjectPro
 		if(!level.isClientSide()) {
 			getNetworkObject(level, worldPosition); // This forces the network object to get initialised.
 			updateAntenna();
-			markAntennaChanged(); // Recheck after the delay too: wire entities may load after this block entity does.
+			antennaCheckCooldown = RadiocraftServerConfig.ANTENNA_UPDATE_DELAY.get() * 20; // Recheck after the delay too: wire entities may load after this block entity does.
 		}
 	}
 

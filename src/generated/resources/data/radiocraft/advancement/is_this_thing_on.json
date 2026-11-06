@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "is_this_thing_on"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.is_this_thing_on.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:vhf_handheld"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.is_this_thing_on.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

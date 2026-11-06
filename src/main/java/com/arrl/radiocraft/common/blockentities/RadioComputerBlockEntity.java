@@ -497,6 +497,11 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		return true;
 	}
 
+	/** How many programs are installed (built-in ones not counted). */
+	public int installedCount() {
+		return installed.size();
+	}
+
 	/** Removes an installed program (its files stay); false if it was not installed or is built in. */
 	public boolean uninstall(ComputerApp app) {
 		if(app.builtIn() || !installed.remove(app.id()))
@@ -559,12 +564,20 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		activity(player);
 		saverOn = false;
 		updatePower(false);
+		if(isMissionControl()) // Mission Control: the full station.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.MISSION_CONTROL);
 		player.openMenu(this, buffer -> {
 			buffer.writeBlockPos(worldPosition);
 			buffer.writeBlockPos(monitor);
 		});
 		Radiocraft.LOGGER.debug("Radio computer at {} opened for {} in {} ms", worldPosition, player.getScoreboardName(),
 				String.format(java.util.Locale.ROOT, "%.2f", (System.nanoTime() - start) / 1.0E6D));
+	}
+
+	/** True with a monitor, a scanner, a radio interface on its bus and speakers (Mission Control). */
+	public boolean isMissionControl() {
+		return level != null && hasMonitor() && findScanner() != null && !speakers.isEmpty()
+				&& !com.arrl.radiocraft.common.blockentities.StationBus.find(level, worldPosition).interfaces().isEmpty();
 	}
 
 	/** The players with this computer's screen open. */

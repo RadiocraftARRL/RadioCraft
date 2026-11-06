@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:typewriter_thunder",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "chart_topper"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.chart_topper.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:wefax_receiver"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.chart_topper.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

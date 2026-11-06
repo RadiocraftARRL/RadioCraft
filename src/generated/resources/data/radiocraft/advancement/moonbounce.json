@@ -1,0 +1,31 @@
+{
+  "parent": "radiocraft:first_contact",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "moonbounce"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.moonbounce.description"
+    },
+    "frame": "challenge",
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:satellite_dish"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.moonbounce.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

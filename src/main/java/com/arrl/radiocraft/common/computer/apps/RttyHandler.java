@@ -274,6 +274,8 @@ public final class RttyHandler implements ComputerAppHandler {
 		if(!state.pending.isEmpty() || now - state.lastSent < RX_BLOCKED_TICKS)
 			return; // Half duplex: our own transmitter is up.
 		print(computer, state, packet.from(), packet.text(), false);
+		if(computer.getLevel() instanceof net.minecraft.server.level.ServerLevel server) // Typewriter Thunder: RTTY copied here.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantStation(server, computer.getBlockPos(), computer.files().owner(), com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TYPEWRITER_THUNDER);
 	}
 
 	private static void print(RadioComputerBlockEntity computer, State state, String from, String text, boolean own) {

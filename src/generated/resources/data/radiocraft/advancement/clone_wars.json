@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:fleet_manager",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "clone_wars"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.clone_wars.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:radio_cloner"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.clone_wars.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "net_control"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.net_control.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_netlog"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.net_control.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

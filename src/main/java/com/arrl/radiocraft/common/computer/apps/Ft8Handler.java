@@ -377,6 +377,7 @@ public final class Ft8Handler implements ComputerAppHandler {
 		double mhz = radio == null ? 0.0D : (radio.getFrequency() + state.offset) / 1_000_000.0D;
 		Logbook.Entry entry = entry(System.currentTimeMillis(), WeatherReports.timestamp(level.getDayTime()), qso, mhz);
 		String problem = appendToLog(computer, entry);
+		contactMade(level, computer, qso, radio == null ? 0.0F : radio.getFrequency() + state.offset);
 		String line = String.format(java.util.Locale.ROOT, "%s %-10s %-4s %3s %3s", entry.time(), qso.call(), qso.grid(),
 				Ft8Message.report(qso.reportSent()), Ft8Message.report(qso.reportReceived()));
 		state.qsos.add(line);
@@ -391,6 +392,20 @@ public final class Ft8Handler implements ComputerAppHandler {
 		CompoundTag reload = new CompoundTag();
 		reload.putString("file", LOG_FILE);
 		computer.push(ComputerApps.LOGBOOK, "reload", reload);
+	}
+
+	/**
+	 * Weak Signal Wizard for the computer's owner, and the FT8 contact as one way of a verified two-way contact (the
+	 * other station's computer logs the other way): this station heard the player whose callsign {@code qso} names.
+	 */
+	public static void contactMade(ServerLevel level, RadioComputerBlockEntity computer, Ft8Sequencer.Qso qso, float hz) {
+		java.util.UUID owner = computer.files().owner();
+		if(owner == null)
+			return;
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(level.getServer(), owner, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.WEAK_SIGNAL_WIZARD);
+		java.util.UUID talker = com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.playerWithCallsign(level.getServer(), com.arrl.radiocraft.common.computer.PacketBbs.base(qso.call()));
+		if(talker != null && !talker.equals(owner))
+			com.arrl.radiocraft.common.advancements.ContactTracker.heard(level, owner, talker, com.arrl.radiocraft.compat.sable.Sublevels.world(level, computer.getBlockPos()), hz);
 	}
 
 	/** The logbook entry for a contact: mode FT8, the reports as sent, the grid in the notes and as where it was. */

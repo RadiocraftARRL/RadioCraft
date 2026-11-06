@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "storm_spotter"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.storm_spotter.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:weather_alert_generator"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.storm_spotter.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

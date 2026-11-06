@@ -128,6 +128,8 @@ public class QslAlbumItem extends Item {
 			if(!taken.isEmpty())
 				slot.safeInsert(taken);
 			player.playSound(SoundEvents.BOOK_PUT, 0.8F, 1.0F);
+			if(player instanceof net.minecraft.server.level.ServerPlayer server) // Card Collector.
+				com.arrl.radiocraft.common.advancements.AdvancementEvents.holding(server, album);
 		}
 		return true;
 	}
@@ -147,8 +149,11 @@ public class QslAlbumItem extends Item {
 		}
 		if(!QslCards.is(other))
 			return false;
-		if(add(album, other) > 0)
+		if(add(album, other) > 0) {
 			player.playSound(SoundEvents.BOOK_PUT, 0.8F, 1.0F);
+			if(player instanceof net.minecraft.server.level.ServerPlayer server) // Card Collector.
+				com.arrl.radiocraft.common.advancements.AdvancementEvents.holding(server, album);
+		}
 		return true;
 	}
 

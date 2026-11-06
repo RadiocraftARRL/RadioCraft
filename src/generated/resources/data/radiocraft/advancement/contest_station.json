@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:first_contact",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "contest_station"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.contest_station.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_logbook"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.contest_station.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

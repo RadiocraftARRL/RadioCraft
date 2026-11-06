@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:dit_dah",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "typewriter_thunder"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.typewriter_thunder.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:teletype"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.typewriter_thunder.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -96,6 +96,12 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 	private volatile long patchSeenGameTime = -1L;
 	protected volatile long lastPatchGameTime = -1L; // Phone audio last went out.
 	private final UUID patchVoiceId;
+	/** Who placed it (saved, never synced): the Repeater Owner advancement goes to them. */
+	@Nullable
+	private UUID placer = null;
+	/** The last talker it passed on whose advancement check was sent (voice thread): one check per new talker. */
+	@Nullable
+	private volatile UUID lastRelayedTalker = null;
 
 	public VHFRepeaterBlockEntity(BlockPos pos, BlockState state) {
 		this(RadiocraftBlockEntities.VHF_REPEATER.get(), pos, state);
@@ -217,6 +223,39 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 		nbt.putBoolean("hasDuplexer", hasDuplexer);
 	}
 
+	/** Notes who placed it (the placing event, {@code common/advancements/AdvancementEvents}). */
+	public void setPlacer(@Nullable UUID placer) {
+		this.placer = placer;
+		setChanged();
+	}
+
+	@Nullable
+	public UUID getPlacer() {
+		return placer;
+	}
+
+	/** The placer goes in the world save only: the client sync tag (setupSaveTag) never carries it. */
+	@Override
+	protected void saveAdditional(@NotNull CompoundTag nbt, net.minecraft.core.HolderLookup.@NotNull Provider registries) {
+		super.saveAdditional(nbt, registries);
+		if(placer != null)
+			nbt.putUUID("placer", placer);
+	}
+
+	@Override
+	public @NotNull CompoundTag getUpdateTag(net.minecraft.core.HolderLookup.@NotNull Provider registries) {
+		CompoundTag tag = super.getUpdateTag(registries);
+		tag.remove("placer");
+		return tag;
+	}
+
+	@Override
+	protected void loadAdditional(@NotNull CompoundTag nbt, net.minecraft.core.HolderLookup.@NotNull Provider registries) {
+		super.loadAdditional(nbt, registries);
+		if(nbt.hasUUID("placer"))
+			placer = nbt.getUUID("placer");
+	}
+
 	@Override
 	protected void readSaveTag(CompoundTag nbt) {
 		super.readSaveTag(nbt);
@@ -234,6 +273,22 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 			micEnabled = nbt.getBoolean("mic");
 		}
 		hasDuplexer = nbt.getBoolean("hasDuplexer");
+	}
+
+	/**
+	 * Repeater Owner: someone's voice went out through it. Once per new talker (one field read per frame otherwise), the
+	 * server thread checks the talker is a player other than the placer and grants the placer (now or at login).
+	 */
+	private void relayed(@Nullable UUID talker) {
+		UUID owner = placer;
+		if(owner == null || talker == null || talker.equals(owner) || talker.equals(lastRelayedTalker) || level == null || level.getServer() == null)
+			return;
+		lastRelayedTalker = talker;
+		net.minecraft.server.MinecraftServer server = level.getServer();
+		server.execute(() -> {
+			if(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.player(server, talker) != null)
+				com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(server, owner, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.REPEATER_OWNER);
+		});
 	}
 
 	// -------------------- REPEATER DIRECTORY --------------------
@@ -431,6 +486,7 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 				ModerationHooks.pop(was);
 		}
 		recordTransmit();
+		relayed(packet.getSourcePlayer());
 	}
 
 	/** True when the repeater has an antenna but no duplexer: its own transmitter deafens it. */

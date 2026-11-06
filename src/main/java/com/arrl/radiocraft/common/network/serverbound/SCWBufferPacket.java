@@ -58,6 +58,8 @@ public record SCWBufferPacket(BlockPos pos, List<CWBuffer> buffers) implements C
             finally {
                 com.arrl.radiocraft.common.moderation.ModerationHooks.pop(was);
             }
+            if(context.player() instanceof net.minecraft.server.level.ServerPlayer keyer && packet.buffers().stream().anyMatch(CWBuffer::hasKeyDown)) // Dit Dah.
+                com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(keyer, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.DIT_DAH);
         });
     }
 }

@@ -1,0 +1,55 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "built": {
+      "conditions": {
+        "event": "ground_plane_theory"
+      },
+      "trigger": "radiocraft:event"
+    },
+    "placed_antenna": {
+      "conditions": {
+        "location": [
+          {
+            "condition": "minecraft:location_check",
+            "predicate": {
+              "block": {
+                "blocks": [
+                  "radiocraft:j_pole_antenna",
+                  "radiocraft:slim_jim_antenna",
+                  "radiocraft:yagi_antenna",
+                  "radiocraft:ringo_antenna",
+                  "radiocraft:folded_dipole_antenna",
+                  "radiocraft:5btv_antenna",
+                  "radiocraft:satellite_dish",
+                  "radiocraft:microwave_horn",
+                  "radiocraft:adsb_antenna"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.ground_plane_theory.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:antenna_wire"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.ground_plane_theory.title"
+    }
+  },
+  "requirements": [
+    [
+      "built",
+      "placed_antenna"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

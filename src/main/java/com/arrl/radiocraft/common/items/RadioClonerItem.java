@@ -101,6 +101,8 @@ public class RadioClonerItem extends Item {
 	}
 
 	private static void tell(Player player, Outcome outcome, @Nullable net.minecraft.sounds.SoundEvent sound) {
+		if(outcome.ok() && sound == null && player instanceof net.minecraft.server.level.ServerPlayer server) // Clone Wars: a radio read or written.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(server, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.CLONE_WARS);
 		player.displayClientMessage(outcome.message().withStyle(outcome.ok() ? ChatFormatting.GREEN : ChatFormatting.RED), true);
 		net.minecraft.sounds.SoundEvent played = sound != null ? sound : outcome.ok() ? SoundEvents.NOTE_BLOCK_BIT.value() : SoundEvents.NOTE_BLOCK_BASS.value();
 		player.level().playSound(null, player.blockPosition(), played, SoundSource.PLAYERS, 0.5F, outcome.ok() ? 1.8F : 0.6F);

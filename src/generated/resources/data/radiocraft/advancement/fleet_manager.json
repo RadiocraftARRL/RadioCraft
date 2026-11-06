@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "fleet_manager"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.fleet_manager.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:basic_commercial_handheld"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.fleet_manager.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

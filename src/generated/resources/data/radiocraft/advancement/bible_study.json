@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "bible_study"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.bible_study.description"
+    },
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_bible"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.bible_study.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

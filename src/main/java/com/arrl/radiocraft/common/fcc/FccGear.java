@@ -68,5 +68,7 @@ public final class FccGear {
 		ItemStack badge = badgeFor(agent);
 		if(!agent.getInventory().add(badge))
 			agent.drop(badge, false);
+		if(agent instanceof net.minecraft.server.level.ServerPlayer server) // The FCC Is Watching.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(server, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.FCC_IS_WATCHING);
 	}
 }

@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:first_contact",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "into_the_static"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.into_the_static.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:ionosonde"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.into_the_static.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

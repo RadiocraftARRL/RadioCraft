@@ -59,6 +59,7 @@ public final class AwardsHandler implements ComputerAppHandler {
 		Logbook log = tag == null ? new Logbook() : Logbook.fromTag(tag);
 		List<Awards.Contact> contacts = contacts(log, context.server(), context.level(), context.pos());
 		List<Awards.Progress> awards = Awards.compute(contacts, universe(context.server()));
+		grantEarned(context.player(), awards);
 		switch(action) {
 			case "status" -> {
 				CompoundTag out = new CompoundTag();
@@ -104,6 +105,16 @@ public final class AwardsHandler implements ComputerAppHandler {
 			}
 			default -> reply.error("unknown_request", action);
 		}
+	}
+
+	/**
+	 * The advancements an award earns: Worked All Biomes once the award of that name is complete. Shared with the
+	 * program, so earning the award is earning the advancement.
+	 */
+	public static void grantEarned(net.minecraft.server.level.ServerPlayer player, List<Awards.Progress> awards) {
+		for(Awards.Progress p : awards)
+			if(p.id().equals("biomes") && p.complete())
+				com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.WORKED_ALL_BIOMES);
 	}
 
 	/** The certificate picture for {@code progress}'s level reached. */

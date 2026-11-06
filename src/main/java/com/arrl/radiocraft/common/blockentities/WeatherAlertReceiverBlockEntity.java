@@ -88,6 +88,18 @@ public class WeatherAlertReceiverBlockEntity extends BlockEntity implements INet
 	@Nullable
 	private BuiltInAntenna whip;
 
+	/** Take Shelter Now: a tornado this near the receiver after it sounded a tornado warning, blocks. */
+	public static final double SHELTER_RANGE = 100.0D;
+	/** Take Shelter Now: within this long of the warning, ticks (5 minutes). */
+	public static final long SHELTER_TICKS = 5L * 60L * 20L;
+	/** How often it looks for the tornado while a warning is fresh, ticks. */
+	public static final int SHELTER_CHECK_TICKS = 40;
+	// Server only, not saved: the last tornado warning it sounded and who was near to hear it.
+	private long tornadoWarnedAt = -1L;
+	private final java.util.Set<java.util.UUID> warned = new java.util.HashSet<>();
+	@Nullable
+	private com.arrl.radiocraft.api.weather.WeatherSource weatherOverride = null;
+
 	public WeatherAlertReceiverBlockEntity(BlockPos pos, BlockState state) {
 		super(RadiocraftBlockEntities.WEATHER_ALERT_RECEIVER.get(), pos, state);
 	}
@@ -190,6 +202,8 @@ public class WeatherAlertReceiverBlockEntity extends BlockEntity implements INet
 			alertingUntil = -1L;
 		}
 		tickSpeech(serverLevel, now);
+		if(tornadoWarnedAt >= 0L && now % SHELTER_CHECK_TICKS == 0)
+			checkShelter(serverLevel, now);
 		boolean lit = ReceiverSignals.lampLit(isAlerting(now), ReceiverSignals.isLow(getEnergy(), capacity()), flat, now);
 		boolean powered = pulse.tick();
 		if(blockState.getBlock() instanceof WeatherAlertReceiverBlock
@@ -267,8 +281,57 @@ public class WeatherAlertReceiverBlockEntity extends BlockEntity implements INet
 		return true;
 	}
 
+	/** GameTests: use {@code source} for the weather instead of the level's (null for the level's again). */
+	public void setWeatherOverride(@Nullable com.arrl.radiocraft.api.weather.WeatherSource source) {
+		weatherOverride = source;
+	}
+
+	/**
+	 * Take Shelter Now: while a tornado warning it sounded is fresh, a tornado on the ground within {@link #SHELTER_RANGE}
+	 * gives the advancement to the players who were near when it sounded and to those near now. A cheap look every
+	 * {@link #SHELTER_CHECK_TICKS} only while a warning is fresh (the weather source's storms near it).
+	 */
+	private void checkShelter(ServerLevel serverLevel, long now) {
+		if(now - tornadoWarnedAt > SHELTER_TICKS || now < tornadoWarnedAt) {
+			tornadoWarnedAt = -1L;
+			warned.clear();
+			return;
+		}
+		com.arrl.radiocraft.api.weather.WeatherSource source = weatherOverride != null ? weatherOverride : com.arrl.radiocraft.api.weather.WeatherSources.get(serverLevel);
+		BlockPos here = Sublevels.world(serverLevel, worldPosition);
+		boolean near = false;
+		for(com.arrl.radiocraft.api.weather.StormReport storm : source.storms(serverLevel, here, SHELTER_RANGE * 2, false)) {
+			if(!com.arrl.radiocraft.common.radio.weather.WeatherReports.tornadoDown(serverLevel, source, storm, now))
+				continue;
+			com.arrl.radiocraft.api.weather.StormReport.TrackPoint at = storm.at(now);
+			if(Math.hypot(at.x() - (here.getX() + 0.5D), at.z() - (here.getZ() + 0.5D)) <= SHELTER_RANGE) {
+				near = true;
+				break;
+			}
+		}
+		if(!near)
+			return;
+		net.minecraft.server.MinecraftServer server = serverLevel.getServer();
+		for(java.util.UUID id : warned)
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(server, id, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TAKE_SHELTER_NOW);
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantNear(serverLevel, worldPosition, TEXT_RANGE, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TAKE_SHELTER_NOW);
+		tornadoWarnedAt = -1L;
+		warned.clear();
+	}
+
+	/** True while a tornado warning it sounded is being watched for Take Shelter Now (GameTests). */
+	public boolean watchingForTornado() {
+		return tornadoWarnedAt >= 0L;
+	}
+
 	/** New alerts: flash, tone, voice, chat line, one redstone pulse. */
 	private void sound(ServerLevel serverLevel, List<WeatherAlert> fresh, BlockPos here, long now) {
+		if(fresh.stream().anyMatch(alert -> alert.event() == WeatherAlert.Event.TOR)) { // Take Shelter Now watches for the tornado.
+			tornadoWarnedAt = now;
+			warned.clear();
+			for(ServerPlayer player : com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.near(serverLevel, worldPosition, TEXT_RANGE))
+				warned.add(player.getUUID());
+		}
 		alertingUntil = now + ReceiverSignals.ALERT_FLASH_LENGTH;
 		pulse.trigger();
 		pulses++;

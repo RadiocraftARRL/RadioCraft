@@ -278,6 +278,8 @@ public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 			return;
 		receivingUntil = now + RECEIVING_TICKS;
 		print(packet.from(), packet.text());
+		if(level instanceof net.minecraft.server.level.ServerLevel server) // Typewriter Thunder: RTTY copied here.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantNear(server, worldPosition, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.STATION_RANGE, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TYPEWRITER_THUNDER);
 	}
 
 	/**

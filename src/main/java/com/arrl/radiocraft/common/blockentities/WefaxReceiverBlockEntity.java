@@ -606,6 +606,7 @@ public class WefaxReceiverBlockEntity extends BlockEntity implements MenuProvide
 		level.playSound(null, worldPosition, RadiocraftSoundEvents.TELETYPE_DING.get(), SoundSource.BLOCKS, 0.4F, 1.4F);
 		setChanged();
 		sync();
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantNear(level, worldPosition, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.STATION_RANGE, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.CHART_TOPPER); // Chart Topper: a chart printed.
 	}
 
 	/** True while a printed sheet waits in the tray. */

@@ -208,6 +208,7 @@ public final class ModerationHooks {
 	 */
 	public static void heard(IAntennaPacket packet, Object receiver, @Nullable Level level, @Nullable BlockPos pos, @Nullable Player listener, double strength) {
 		com.arrl.radiocraft.common.radio.voice.RadioModeration.heard(packet, level, pos, listener); // The computer listening to what a player hears.
+		com.arrl.radiocraft.common.advancements.ContactTracker.heard(packet, receiver, level, pos, listener); // Who heard whom, for the advancements (cheap: see its class comment).
 		ModerationLog log = ModerationHooks.radio;
 		if(log != null && packet.getSource() != null)
 			log.heard(packet, receiver, level, pos, listener, strength);

@@ -94,6 +94,7 @@ public class Radiocraft {
         RadiocraftDataComponent.DATA_COMPONENTS.register(modEventBus);
         RadiocraftLootModifiers.LOOT_MODIFIERS.register(modEventBus);
         RadiocraftIngredientTypes.INGREDIENT_TYPES.register(modEventBus);
+        com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TRIGGERS.register(modEventBus); // radiocraft:event, every advancement's own criterion.
         com.arrl.radiocraft.common.init.RadiocraftRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
         RadiocraftStructures.register(modEventBus);
         com.arrl.radiocraft.compat.create.CreateCompat.register(modEventBus); // The alternator, with Create.
@@ -124,6 +125,8 @@ public class Radiocraft {
                 RadiocraftBlockstateProvider(output, existingFileHelper));
         gen.addProvider(true, (Factory<RadiocraftRecipesProvider>) output -> new
                 RadiocraftRecipesProvider(output, event.getLookupProvider()));
+        gen.addProvider(event.includeServer(), (Factory<net.neoforged.neoforge.common.data.AdvancementProvider>) output ->
+                com.arrl.radiocraft.datagen.RadiocraftAdvancementProvider.create(output, event.getLookupProvider(), existingFileHelper));
         gen.addProvider(event.includeServer(), (Factory<LootTableProvider>) output -> new LootTableProvider(output, Set.of(),
                 List.of(new LootTableProvider.SubProviderEntry(RadiocraftBlockLootProvider::new, LootContextParamSets.BLOCK)),
                 event.getLookupProvider()));

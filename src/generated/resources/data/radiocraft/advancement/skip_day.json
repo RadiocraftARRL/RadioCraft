@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:first_contact",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "skip_day"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.skip_day.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:hf_radio_40m"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.skip_day.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:skip_day",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "dx_hunter"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.dx_hunter.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:all_band_radio"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.dx_hunter.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

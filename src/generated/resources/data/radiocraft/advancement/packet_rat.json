@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:typewriter_thunder",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "packet_rat"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.packet_rat.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:aprs_h19"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.packet_rat.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

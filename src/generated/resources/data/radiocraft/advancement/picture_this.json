@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "picture_this"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.picture_this.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:floppy_sstv"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.picture_this.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

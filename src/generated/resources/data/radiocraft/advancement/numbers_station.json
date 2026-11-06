@@ -1,0 +1,31 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "numbers_station"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.numbers_station.description"
+    },
+    "frame": "goal",
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:commercial_radio_module"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.numbers_station.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

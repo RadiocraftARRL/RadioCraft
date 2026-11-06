@@ -262,6 +262,7 @@ public class OfficeAppsGameTests {
 	public static void programmerReadsAndWritesOneRadioByHand(GameTestHelper helper) {
 		RadioComputerBlockEntity computer = computer(helper, ComputerApps.PROGRAMMER);
 		FakePlayer player = player(helper, "armed");
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.registerTestPlayer(player); // Fleet Manager is checked below.
 		ItemStack handheld = new ItemStack(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
 		CommercialProgramming.Target target = CommercialProgramming.of(handheld);
 		helper.assertTrue(target != null && CommercialProgramming.writeChannel(target, 0, CommercialChannel.parse("OPS|151.625")).ok(), "could not set up the handheld");
@@ -285,6 +286,9 @@ public class OfficeAppsGameTests {
 		CommercialProgram written = CommercialHandheldItem.program(player.getMainHandItem());
 		helper.assertTrue(written.channel(0).name().equals("DISP") && written.channel(1).name().equals("TAC"), "the handheld has " + written);
 		helper.assertFalse(computer.hasHandSessions(), "the mode is still on after the armed write");
+		helper.assertTrue(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.FLEET_MANAGER),
+				"programming a radio by hand did not give Fleet Manager");
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.unregisterTestPlayer(player);
 
 		// A mobile in item form: written (the sneak flag ignored), then read without being changed.
 		ItemStack mobileItem = new ItemStack(RadiocraftItems.COMMERCIAL_MOBILE.get());

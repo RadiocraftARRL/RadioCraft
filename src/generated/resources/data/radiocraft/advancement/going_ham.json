@@ -1,0 +1,60 @@
+{
+  "criteria": {
+    "placed_radio": {
+      "conditions": {
+        "location": [
+          {
+            "condition": "minecraft:location_check",
+            "predicate": {
+              "block": {
+                "blocks": [
+                  "radiocraft:hf_radio_10m_pure",
+                  "radiocraft:hf_radio_10m",
+                  "radiocraft:hf_radio_10m_poor",
+                  "radiocraft:hf_radio_20m_pure",
+                  "radiocraft:hf_radio_20m",
+                  "radiocraft:hf_radio_20m_poor",
+                  "radiocraft:hf_radio_40m_pure",
+                  "radiocraft:hf_radio_40m",
+                  "radiocraft:hf_radio_40m_poor",
+                  "radiocraft:hf_radio_80m_pure",
+                  "radiocraft:hf_radio_80m",
+                  "radiocraft:hf_radio_80m_poor",
+                  "radiocraft:vhf_base_station_pure",
+                  "radiocraft:vhf_base_station",
+                  "radiocraft:vhf_base_station_poor",
+                  "radiocraft:all_band_radio",
+                  "radiocraft:qrp_radio_20m",
+                  "radiocraft:qrp_radio_40m",
+                  "radiocraft:hf_receiver",
+                  "radiocraft:vhf_receiver"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:textures/gui/advancements/backgrounds/stone.png",
+    "description": {
+      "translate": "advancements.radiocraft.going_ham.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:hf_radio_20m"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.going_ham.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed_radio"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

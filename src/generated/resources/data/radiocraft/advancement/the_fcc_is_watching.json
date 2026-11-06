@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "the_fcc_is_watching"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.the_fcc_is_watching.description"
+    },
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:fcc_badge"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.the_fcc_is_watching.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

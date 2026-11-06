@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:shack_upgrade",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "paper_trail"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.paper_trail.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:qsl_card"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.paper_trail.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

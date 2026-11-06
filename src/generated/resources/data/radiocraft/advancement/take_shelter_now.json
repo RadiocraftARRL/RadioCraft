@@ -1,0 +1,30 @@
+{
+  "parent": "radiocraft:storm_spotter",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "take_shelter_now"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.take_shelter_now.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:weather_alert_receiver"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.take_shelter_now.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -34,6 +34,12 @@ public class WefaxGameTests {
 		RadiocraftServerConfig.WEFAX_SOLAR_ALWAYS.set(true); // or the Ionospheric Processor.
 		BlockPos pos = new BlockPos(6, 2, 6);
 		helper.setBlock(pos, RadiocraftBlocks.WEFAX_RECEIVER.get().defaultBlockState().setValue(WefaxReceiverBlock.FACING, Direction.SOUTH));
+		// Chart Topper (the advancements batch): a player by it when a chart comes out.
+		net.neoforged.neoforge.common.util.FakePlayer reader = net.neoforged.neoforge.common.util.FakePlayerFactory.get(helper.getLevel(),
+				new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("adv-wefax".getBytes()), "chartreader"));
+		BlockPos by = helper.absolutePos(pos.north(2));
+		reader.moveTo(by.getX() + 0.5D, by.getY(), by.getZ() + 0.5D);
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.registerTestPlayer(reader);
 		helper.startSequence()
 				.thenExecute(() -> {
 					WefaxReceiverBlockEntity receiver = GameTestUtil.blockEntity(helper, pos, WefaxReceiverBlockEntity.class);
@@ -49,6 +55,9 @@ public class WefaxGameTests {
 				})
 				.thenWaitUntil(() -> helper.assertTrue(GameTestUtil.blockEntity(helper, pos, WefaxReceiverBlockEntity.class).hasReadySheet(), "no sheet in the tray yet"))
 				.thenExecute(() -> {
+					helper.assertTrue(com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.has(reader, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.CHART_TOPPER),
+							"the player by the printer did not get Chart Topper");
+					com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.unregisterTestPlayer(reader);
 					WefaxReceiverBlockEntity receiver = GameTestUtil.blockEntity(helper, pos, WefaxReceiverBlockEntity.class);
 					helper.assertFalse(receiver.isPrinting(), "still printing");
 					helper.assertTrue(helper.getBlockState(pos).getValue(WefaxReceiverBlock.READY), "the model does not show the sheet in the tray");

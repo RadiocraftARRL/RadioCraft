@@ -241,6 +241,8 @@ public class ManpackRadio implements IAntenna {
 				|| !mayTransmit(current, marsMod))
 			return;
 		transmitCWPacket(serverLevel, buffers, Band.getBand(current.bandName()), current.frequency());
+		if(getPlayer() instanceof net.minecraft.server.level.ServerPlayer keyer && buffers.stream().anyMatch(CWBuffer::hasKeyDown)) // Dit Dah.
+			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(keyer, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.DIT_DAH);
 	}
 
 	@Override

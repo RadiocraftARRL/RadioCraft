@@ -200,6 +200,7 @@ public final class HandProgramming {
 		done.putInt("next", session.plug.unitId());
 		done.putBoolean("armed", armed);
 		RadioComputerBlockEntity.push(player, ComputerApps.PROGRAMMER, "hand_written", done);
+		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(player, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.FLEET_MANAGER); // Fleet Manager: a radio programmed by hand.
 		player.displayClientMessage(message("written", name, written.programmedCount(), written.unitId()).withStyle(ChatFormatting.GREEN), true);
 		sound(player, computer.getBlockPos(), true);
 		return true;

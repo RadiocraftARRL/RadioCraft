@@ -221,6 +221,8 @@ public class CommercialStations extends SavedData {
 		StationProgram program = new StationProgram(station.kind(), station.seed(), station.callsign().isEmpty() ? "X0X" : station.callsign(),
 				() -> CommercialRadioModuleBlockEntity.numbersTape(level));
 		UUID voiceId = UUID.nameUUIDFromBytes(("radiocraft-module-" + station.pos().asLong()).getBytes(StandardCharsets.UTF_8));
+		if(station.kind() == StationProgram.Kind.NUMBERS) // Hearing it earns the Numbers Station advancement.
+			com.arrl.radiocraft.common.advancements.ContactTracker.numbersStation(voiceId);
 		return new Live(station, program, antenna, voiceId);
 	}
 

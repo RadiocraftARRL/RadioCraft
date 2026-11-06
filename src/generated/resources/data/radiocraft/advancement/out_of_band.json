@@ -1,0 +1,31 @@
+{
+  "parent": "radiocraft:fleet_manager",
+  "criteria": {
+    "fitted": {
+      "conditions": {
+        "recipe_id": "radiocraft:mars_mod_install"
+      },
+      "trigger": "minecraft:recipe_crafted"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.out_of_band.description"
+    },
+    "frame": "goal",
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "radiocraft:mars_mod"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.out_of_band.title"
+    }
+  },
+  "requirements": [
+    [
+      "fitted"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

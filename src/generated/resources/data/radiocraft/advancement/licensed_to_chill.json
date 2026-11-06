@@ -1,0 +1,29 @@
+{
+  "parent": "radiocraft:going_ham",
+  "criteria": {
+    "done": {
+      "conditions": {
+        "event": "licensed_to_chill"
+      },
+      "trigger": "radiocraft:event"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.radiocraft.licensed_to_chill.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:name_tag"
+    },
+    "title": {
+      "translate": "advancements.radiocraft.licensed_to_chill.title"
+    }
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "sends_telemetry_event": true
+}
