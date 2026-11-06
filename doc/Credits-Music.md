@@ -52,9 +52,7 @@ too, as a courtesy.
 | `rainy_streets.mid` | Rainy Streets (rpgchip09, same pack) | Aureolus_Omicron | CC0 | https://opengameart.org/content/15-melodic-rpg-chiptunes | mellow chiptune |
 | `long_away_home.mid` | Long Away Home [8bit] | nene | CC0 | https://opengameart.org/content/long-away-home-8bit | 8-bit adventure |
 | `c64_style.mid` | C64 Style 3 ("Midi Pack 1 24 New Tunes") | Tozan | CC0 | https://opengameart.org/content/midi-pack-1-24-new-tunes | C64-style chiptune |
-| `piano_blues.mid` | Piano Blues with Drums Style 1 (same pack) | Tozan | CC0 | https://opengameart.org/content/midi-pack-1-24-new-tunes | blues |
 | `steel_drums.mid` | Caribbean Steel Drums Style 1 (same pack) | Tozan | CC0 | https://opengameart.org/content/midi-pack-1-24-new-tunes | Caribbean |
-| `acoustic_guitar_solo.mid` | Acoustic Guitar Solo Tune (same pack) | Tozan | CC0 | https://opengameart.org/content/midi-pack-1-24-new-tunes | acoustic guitar |
 | `saxophone_jazz.mid` | Saxophone1 | Tozan | CC0 | https://opengameart.org/content/saxophone1 | jazz |
 | `neon_flames.mid` | Neon Flames | Ivan Stanton (northivanastan, "continuum.mid") | CC0 | https://opengameart.org/content/neon-flames | 80s rock / techno |
 | `xenon_phoenix.mid` | Xenon Phoenix | Ivan Stanton (continuum.mid) | CC0 | https://opengameart.org/content/xenon-phoenix | electro-rock |
@@ -131,3 +129,6 @@ The text is not changed. Only its typography was made plain ASCII for the comput
 apostrophes became straight ones, the em dash `--`, the en dash `-`, and the ellipsis `...`. The script that makes the
 file keeps no copy of the source: it reads the zip as data and writes the gzipped resource (one `#B <code> <name>` line
 per book, then `<chapter>:<verse> <text>` per verse).
+
+Removed after the 2026-11-06 playtest: Tozan's "Piano Blues with Drums Style 1" and "Acoustic Guitar Solo Tune" (their notes are
+unquantized, so the timing sounds off on any player).

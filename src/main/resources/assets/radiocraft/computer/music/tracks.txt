@@ -28,10 +28,8 @@ casual_afternoon.mid|Casual Afternoon|Roppy Chop Studios|86
 huge_jazz_battle.mid|Huge Jazz Battle|Katana|59
 steal_the_moon.mid|Steal the Moon|Daniel Michel|116
 rainy_streets.mid|Rainy Streets|Aureolus_Omicron|95
-piano_blues.mid|Piano Blues with Drums|Tozan|115
 quantum_2.mid|Quantum 2|Ivan Stanton|144
 roll_up.mid|Roll Up|Yubatake (OpenGameArt)|174
-acoustic_guitar_solo.mid|Acoustic Guitar Solo|Tozan|146
 airport_attack.mid|Airport Attack|Ivan Stanton|90
 aftermath.mid|Aftermath|Ivan Stanton|198
 town_03.mid|Town 03|Beau Buckley|100
