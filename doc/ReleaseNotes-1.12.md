@@ -155,7 +155,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     callsign with an SSID of its own (W1BTR-1). Stations call in with APRS messages from an H19, the APRS program, an
     APRS handheld or another computer, and list, read and send personal messages and bulletins with the classic BBS
     commands (L, R, SP, SB, K, B; /EX ends a message). The mailbox is kept on the computer's disk (BBS.DAT). The
-    owner, as sysop, watches the traffic, posts, deletes and sets the SSID; a terminal page calls other mailboxes.
+    owner, as sysop, watches the traffic, posts, deletes and sets the SSID; a terminal page calls other mailboxes. A new mailbox starts off the air until
+    the owner switches it on (F7).
   - **Propagation Predictor** (PREDICT): which HF bands should open to a place over the next 24 in-game hours, a
     band-by-hour grid like VOACAP. Aim it at coordinates, a callsign (an APRS station the computer heard with a
     position; online players are not looked up, so it cannot find a player) or a distance and bearing. It uses the same skip ranges, solar conditions and noise floor as your radios,
@@ -180,8 +181,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Snake**, with a high score table on each computer.
   - **Pileup**: RadioCraft's own falling-blocks game. Callers pile into the band; fill a row to work them (a QSO).
     Every 8 QSOs you move up a band, 160m to 70cm, and it gets faster.
-  - **Music Player**: 48 tunes: twelve public-domain classics (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and
-    more) and thirty-six free tunes from OpenGameArt.org (chiptune, jazz, blues, steel drums, synth and guitar rock, RPG
+  - **Music Player**: 46 tunes: twelve public-domain classics (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and
+    more) and thirty-four free tunes from OpenGameArt.org (chiptune, jazz, blues, steel drums, synth and guitar rock, RPG
     orchestral, lo-fi, ambient), each credited to its author in the list. It
     sounds like a pair of small PC speakers, has a spectrum visualizer, a shuffle (H), and the arrow keys go back and
     on. The music plays on in other programs (a note in the top bar goes back to it) and after **Close**, which leaves the

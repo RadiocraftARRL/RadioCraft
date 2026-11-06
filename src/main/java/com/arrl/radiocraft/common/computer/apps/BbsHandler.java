@@ -62,7 +62,8 @@ public final class BbsHandler implements ComputerAppHandler {
 		@Nullable
 		PacketBbs bbs;
 		int ssid = 1;
-		boolean online = true;
+		/** Off until the sysop switches the mailbox on (maintainer, 2026-11-06). */
+		boolean online = false;
 		final List<String> log = new ArrayList<>();
 		String termTo = "";
 		final List<String> termLog = new ArrayList<>();
@@ -74,6 +75,10 @@ public final class BbsHandler implements ComputerAppHandler {
 
 		public List<String> termLog() {
 			return List.copyOf(termLog);
+		}
+
+		public boolean online() {
+			return online;
 		}
 
 		@Override
@@ -88,7 +93,7 @@ public final class BbsHandler implements ComputerAppHandler {
 		@Override
 		public void load(CompoundTag tag, HolderLookup.Provider registries) {
 			ssid = tag.contains("ssid") ? Math.max(PacketBbs.SSID_MIN, Math.min(PacketBbs.SSID_MAX, tag.getInt("ssid"))) : 1;
-			online = !tag.contains("online") || tag.getBoolean("online");
+			online = tag.getBoolean("online");
 			termTo = TncPacket.sanitizeCallsign(tag.getString("termTo"));
 			read(tag.getList("log", Tag.TAG_STRING), log);
 			read(tag.getList("termLog", Tag.TAG_STRING), termLog);

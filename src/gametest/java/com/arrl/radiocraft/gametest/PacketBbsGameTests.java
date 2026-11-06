@@ -114,6 +114,10 @@ public class PacketBbsGameTests {
 				.thenWaitUntil(() -> helper.assertTrue(a.isPowered() && b.isPowered(), "the computers did not come on"))
 				.thenExecute(() -> {
 					helper.assertTrue(BbsHandler.bbsCall(b).equals(BBS), "B's mailbox is " + BbsHandler.bbsCall(b));
+					helper.assertFalse(BbsHandler.state(b).online(), "a new mailbox should start switched off");
+					CompoundTag on = new CompoundTag();
+					on.putBoolean("online", true);
+					helper.assertFalse(app(b, player, "settings", on).contains("error"), "could not switch B's mailbox on");
 					type(helper, a, player, "SP W1XYZ Field day");
 				})
 				.thenWaitUntil(() -> helper.assertTrue(heard(a, "ENTER MESSAGE"), "no prompt for the text: " + BbsHandler.state(a).termLog()))

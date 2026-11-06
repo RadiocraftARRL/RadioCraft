@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "A Mailbox on the Air",
-      "text": "The $(item)Packet BBS$() program turns the computer into a packet mailbox. Stations leave messages for each other and bulletins for everyone, and call in to read them when they like.$(br2)To host one, cable a $(l:radiocraft:computer/aprs)radio interface$() with a callsign to the computer and switch on a $(thing)VHF radio$() beside it, as for APRS. The mailbox answers the station's callsign with its own $(thing)SSID$(): W1BTR-1 by default."
+      "text": "The $(item)Packet BBS$() program turns the computer into a packet mailbox. Stations leave messages for each other and bulletins for everyone, and call in to read them when they like.$(br2)To host one, cable a $(l:radiocraft:computer/aprs)radio interface$() with a callsign to the computer and switch on a $(thing)VHF radio$() beside it, as for APRS. The mailbox answers the station's callsign with its own $(thing)SSID$(): W1BTR-1 by default. A new mailbox starts $(thing)off the air$(): the owner switches it on with F7 on the SYSOP page."
     },
     {
       "type": "patchouli:text",
@@ -21,7 +21,7 @@
     {
       "type": "patchouli:text",
       "title": "The Sysop",
-      "text": "At the hosting computer the SYSOP page lists every message and shows the traffic as it comes. Enter reads, N writes a message and B a bulletin from the station's callsign. Only the computer's owner (or an operator) may delete messages (Del) or change the SSID or take the mailbox off the air (F7).$(br2)The messages are kept on the computer's disk as BBS.DAT, so they go with the computer when it is picked up."
+      "text": "At the hosting computer the SYSOP page lists every message and shows the traffic as it comes. Enter reads, N writes a message and B a bulletin from the station's callsign. Only the computer's owner (or an operator) may delete messages (Del) or change the SSID or put the mailbox on or off the air (F7).$(br2)The messages are kept on the computer's disk as BBS.DAT, so they go with the computer when it is picked up."
     },
     {
       "type": "patchouli:text",
