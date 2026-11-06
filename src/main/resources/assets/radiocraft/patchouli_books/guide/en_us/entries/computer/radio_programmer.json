@@ -7,12 +7,12 @@
     {
       "type": "patchouli:text",
       "title": "CPS",
-      "text": "The $(item)Radio Programmer$() floppy installs $(thing)CPS$(), the programming software radio shops use. It reads and writes the channels of a $(l:radiocraft:radios/commercial_radios)commercial radio$(): 16, or 40 on the upgraded handheld (the list scrolls; A, B and C mark where each zone starts).$(br2)A mobile radio already placed is reached by its programming cable: touching the computer, or on its $(l:radiocraft:radios/data_wire)data wire$(). F5 reads it, F6 writes it."
+      "text": "The $(item)Radio Programmer$() floppy installs $(thing)CPS$(), the programming software radio shops use. It reads and writes the channels of a $(l:radiocraft:radios/commercial_radios)commercial radio$(): 16, or 64 on the upgraded handheld (the list scrolls; A to D mark where each zone starts).$(br2)$(thing)F5$() reads a radio and $(thing)F6$() writes it. A placed mobile is reached by its programming cable: touching the computer, or on its $(l:radiocraft:radios/data_wire)data wire$()."
     },
     {
       "type": "patchouli:text",
-      "title": "Program radios",
-      "text": "Handhelds, and mobiles still in item form, are programmed by hand. $(thing)F9$() turns on the $(thing)Program radios$() mode; $(thing)Close$() (or C) leaves the screen with CPS still in that mode.$(br2)Now hold the radio (main hand, or off hand with the main hand empty) and right click the computer or its monitor: the channels on screen are written into it. $(thing)Sneak$() and right click to read the radio into CPS instead. The mode ends when CPS is closed, another program opened, the power goes, or after five minutes unused."
+      "title": "Radios in your hand",
+      "text": "A handheld, or a mobile still in item form, is read or written by hand. With no radio wired (or $(thing)A radio in your hand$() picked), F5 or F6 asks you to press $(thing)Continue$(): the screen closes, then right click the computer or its monitor holding the radio. CPS opens again with its channels read, or says it was written. It waits 60 seconds.$(br2)For a fleet, $(thing)F9$() turns on $(thing)Program radios$(): Close, then each click writes a radio (sneak to read one), until CPS closes or after five minutes unused."
     },
     {
       "type": "patchouli:text",
@@ -26,7 +26,7 @@
     {
       "type": "patchouli:text",
       "title": "Hidden keys",
-      "text": "A key set as not readable shows as $(thing)****$(): it never comes off the radio. Write the channels back and the radio keeps its own key; type a new key over it to change it. A hidden key cannot be copied to another radio.$(br2)Ctrl+S saves the channels as a $(thing)codeplug$() (.CPG) to load into other radios of the fleet; a 40-channel codeplug loaded for a 16-channel radio leaves out what does not fit. F8 erases a wired radio back to factory blank."
+      "text": "A key set as not readable shows as $(thing)****$(): it never comes off the radio. Write the channels back and the radio keeps its own key; type a new key over it to change it. A hidden key cannot be copied to another radio.$(br2)Ctrl+S saves the channels as a $(thing)codeplug$() (.CPG) to load into other radios of the fleet; a 64-channel codeplug loaded for a 16-channel radio leaves out what does not fit. F8 erases a wired radio back to factory blank."
     },
     {
       "type": "patchouli:crafting",

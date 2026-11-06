@@ -2251,3 +2251,99 @@ most of the state-table heap) was dropped at the maintainer's word: the states e
 complaint. `LevelRenderer.renderSky` deoptimizing ~16,000 times (unstable_if at the star-brightness check) has no
 RadioCraft or AWM hook behind it (neither touches the sky render or star brightness; RadioCraft's aurora draws after
 the sky); left alone.
+
+### Live monitor, CPS by hand, music volume (2026-11-06)
+Built: `compileJava compileTestJava compileGametestJava` clean (only the old warnings). **Not run** (the maintainer's
+runClient was open): `runData` (lang), `test`, `runGameTestServer`, `build`. Committed locally per item; nothing pushed.
+Nine requests from the maintainer's playtest, decisions made here:
+
+- **Live monitor** (`client/screens/computer/MonitorMirror`, `RenderFrameEvent.Pre`): `ComputerMonitorRenderer` passes
+  `near` (camera within `MonitorMirror.RANGE` 16 blocks) to `ComputerSession.monitorPicture(pos, near)`, which stamps
+  the session's `seenFrame`. At the start of the next frame, every session seen last frame whose screen is closed and
+  that has a picture is redrawn every 500 ms (200 ms while MUSIC plays there, not paused): `ComputerSession.drawPrograms`
+  (status bar, program in front with its dialog, music note; moved out of `RadioComputerScreen`, which calls it too)
+  into a `TextGrid` kept on the session, then `DosRenderer.render` into the session's `TextureTarget` with a `GuiGraphics`
+  kept static, the projection swapped for a 480 x 250 ortho (`backupProjectionMatrix`/`restoreProjectionMatrix`, the
+  model-view translated like the GUI's, fog start pushed out) and the alpha forced opaque as `capture` does; the main
+  target is bound again after. No `Screen` is needed: no program's `render` reads Screen fields (only key and close
+  handlers touch `Minecraft.screen`). Programs do not `tick()` while closed (MUSIC's list follows the next tune only
+  while the screen is open). Cost: `System.nanoTime` around each redraw, logged at DEBUG once a minute ("Radio computer
+  monitor: N live redraws in the last minute, X ms each on average (CPU side)"); **not measured yet** (needs the
+  client). It is the same work as one frame of the open screen (a few batched draw calls for the 2000 cells).
+- **CPS by hand**. What was wrong: F5 only listed wired mobiles and said "No commercial radio wired"; reading a
+  handheld needed F9 and then a *sneak* click, which nothing on screen asked for. fb186ce3 did not break the hand path:
+  the `RightClickBlock` listener fires before the item's `use`, and with the mode on the client cancels its own click
+  through `HandProgramming.clientComputer`, so no handheld screen opens and no mobile is placed. Now F5/F6 call
+  `RadioPicker.pickOrHand`: with no wired radio, or "A radio in your hand" picked (first line when some are wired), a
+  Continue/Cancel box; Continue sends `hand` {on, plug, arm: read|write}; the server (`RadioComputerBlockEntity.arm`,
+  `HandSession.armed/armedAt`, `ARM_TIMEOUT_TICKS` 1200, pruned as `arm_timeout`) answers and says on the action bar
+  what to do; the client sets `clientComputer` and closes the screen. The next right click on the computer or monitor
+  holding a handheld or mobile item does the armed action whatever the sneak key (`HandProgramming.use` -> `program`),
+  ends the mode and calls `computer.open`, so the screen opens again on CPS; the events (`hand_read`, `hand_written`,
+  `hand_refused`) carry `armed` so CPS disarms. While armed CPS draws a red "WAITING FOR A RADIO" line (seen on the
+  live monitor). F9's fleet mode is unchanged; arming replaces it. Lang: `button.continue`, `radio.pick_or_hand`,
+  `radio.hand_choice`, `cps.hand_prompt*`, `cps.armed_banner.*`, `cps.hand_end.arm_timeout`,
+  `message...computer.hand.armed.*` and `...ended.arm_timeout`; `cps.no_radio` and `cps.hand_no_factory` reworded,
+  `cps.hand_mode_off` removed. GameTest `OfficeAppsGameTests.programmerReadsAndWritesOneRadioByHand` (an armed read by a
+  plain click leaves the radio as it was, an armed write while sneaking writes, a mobile item both ways, the mode ends
+  after each, a later click is not taken, arm then off). `FakePlayer.openMenu` does nothing, so the reopening is not
+  asserted.
+- **MUSIC volume**: `ComputerMusic.volume` 0-10 (`VOLUME_STEPS`), client static for the game session (not a client
+  config key, which would need a config name and runData); `-` and `+` (`=`, keypad) in MUSIC, squared into the
+  sound's volume. Up/Down stay the list's. Now playing row: progress bar 42 wide, time at column 47, "Vol" and a 10-cell
+  bar at 60-73, the percentage right-aligned to column 77. Key bar `... H=Shuffle  - +=Vol  C=Close  Esc=Leave` (77
+  columns once `Dos.keyBar` packs it).
+- **MUSIC list scrolling** (bug): `MusicApp.tick` selected the playing track every tick whenever the selection
+  differed, pulling the list back; it now follows only when the playing track changes (`followed`).
+- **MUSIC through the sound engine** (`ComputerMidi` rewritten): NeoForge 21.1's `SoundInstance#getStream` lets a sound
+  supply its own `AudioStream`, so no SourceDataLine any more. A render thread (Gervill via
+  `AudioSystem.getAudioInputStream`, as before) mixes to mono, feeds `MusicSpectrum` and fills a float ring of 4 s
+  kept 3 s ahead of the heard position (`Tune.floor`). Each `Outlet` (pos, `SpeakerKind`, range) is a
+  `MusicSound extends AbstractTickableSoundInstance` (RECORDS, LINEAR attenuation, its own `Sound` with `stream` true
+  and the range as attenuation distance, made in `resolve`, no sounds.json entry; `canStartSilent`) whose stream is a
+  `Reader` (its own read position and `SpeakerFilter` voicing, 0.4 s mono 16-bit buffers, one reused direct buffer).
+  `getStream` completes once 1.6 s is rendered, so a source never starts empty. The engine queues four buffers and
+  refills them each client tick: about 1.6 s of cushion against stalls; a source that runs dry is dropped by the engine
+  and `ComputerMidi.tick` starts it again from the heard position (the ring still has it; 20 restarts in 10 s is shown
+  as a problem). Pause stops the sounds and resume starts new ones at the same place (no re-render). The heard clock
+  is real time from the engine's first read, stopped while paused, while the game is paused, and while either slider
+  is at 0 (the engine drops sounds then; the tune goes on by the clock and is heard again from there). The OpenAL
+  source offset is not reachable through vanilla classes, hence the clock (drift = the device clock's error).
+  `MusicSpectrum.HISTORY` 64 -> 192 hops (4.5 s, covering the 3 s render-ahead); `feed`/`played` are synchronized on
+  the spectrum by `ComputerMidi`. The distance fade in `ComputerMusic` is gone (OpenAL attenuation); it still stops out
+  of earshot. MUSIC's volume is the sounds' volume, which the engine applies every tick (immediate).
+- **MUSIC from speakers**: `RadioComputerBlockEntity.refreshSpeakers` (every 20 ticks, server): `SpeakerBlock`s
+  touching it (their own position and kind) and `WiredSpeakerBlock`s from `DataWire.linked` (touching or on its data
+  wire, as radios find them since 2026-10-30), as `BEVoiceReceiver.WiredSpeaker`, sent in the update tag (`speakers`,
+  `speakerKinds`) when they change; listeners are kept while in range of the computer or any speaker
+  (`inMusicRange`). Client: `ComputerMusic.outlets` = the speakers (they replace the built-in one, as speakers plugged
+  into a sound card do), else the computer as `BUILT_IN`; `musicRange(kind)` = max(kind distance, 24), so 64 for a
+  loudspeaker. At most `ComputerMidi.MAX_OUTLETS` 4 (the engine has 8 streaming channels). Voicings in
+  `SpeakerFilter.Voicing.of(SpeakerKind)`: PC (as before), DESK (150 Hz-7 kHz), PREMIUM (50 Hz-15 kHz, no clipping),
+  WALL (300-5000 Hz, drive x1.6), HORN (450-4000 Hz, +5 dB bump, drive x2.2). One render fanned out to every
+  speaker's reader. GameTest `OfficeAppsGameTests.computerFindsItsSpeakers`.
+- **Handheld knobs on the radio** (`CommercialHandheldScreen`; `widgets/RotaryKnob` deleted): the hit areas are the
+  knob faces drawn on top of each model (`knobRect`, a few pixels of slack); the wheel turns one step, a drag up or
+  down 6 px per step, a click +1 and a right click -1 on release (when not dragged); a readout plate over the knob
+  ("CH 7", "VOL 6", "OFF" in red) while turning and 1.5 s after, fading in the last 0.3 s; a light mark on each knob
+  face moves with its position. Tooltip only while hovering and not turning (`channel_knob_help`, `volume_knob_help`
+  shortened).
+- **64 channels, A-D keys**: `CommercialProgram.MAX_CHANNELS` 64 (so `MAX_ZONES` 4, `MAX_POSITIONS` 64),
+  `UPGRADED_HANDHELD` 64. `CommercialHandheldItem.stepZone` replaced by `selectZone(stack, zone)`;
+  `SCommercialRadioPacket.ZONE` carries the zone index (clamped). Keypad: A-D = zones A-D, `*` = unit ID, `#` =
+  frequency (they were on A and D; lang `key_a`..`key_d` reworded, `key_star` and `key_hash` new). CPS, `Codeplug`
+  (always 64 positions; a 40-entry .CPG pads), FREQMAN, the cloner and `/rcdebug commercial` follow `MAX_CHANNELS`.
+  Tests: `CommercialChannelTest` (64, zone D, a 40-channel program has nothing in D and still writes), `CodeplugTest`
+  (`aFortyChannelFileStillLoads`), `UnitIdTest`, `CommercialRadioGameTests.handheldKnobsAndZoneKeys` (zone values 3,
+  0, 2, 1, 9, -2 give D A C B D A; zone D knob 4 is CH52), `OfficeAppsGameTests` (capacity 64).
+- **Rename**: `block.radiocraft.low_band_mobile` "Low Band Mobile Radio" -> **"Commercial Low Band Radio"** (as asked;
+  "Commercial Low Band Mobile Radio" would match "Commercial Mobile Radio" better: one string in
+  `addCommercialRadios`). Registry id unchanged; CPS's model label "Low band mobile" and the cloner's "low band mobile"
+  kept (they name the model). Handbook, release notes, NeedsTesting and ModelDesignBounty updated; website wiki not.
+
+**Run next** (client closed): `runData` (lang: CPS, MUSIC, handheld keys and knobs, the rename), `test`,
+`runGameTestServer`, then NeedsTesting "1.12 live monitor, CPS by hand, MUSIC volume and sound, knobs on the radio, 64
+channels". **Gotchas**: MUSIC's heard clock can be off by a client tick plus the device clock's drift; with more than
+four speakers only the first four play; a resource reload restarts MUSIC from where it was; the live monitor redraws
+only sessions this client has (a computer opened since the game started). The older NeedsTesting items about the
+handheld dials and the B/C zone keys are superseded by the new section.

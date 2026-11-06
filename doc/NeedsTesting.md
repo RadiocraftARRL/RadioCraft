@@ -8,6 +8,50 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 live monitor, CPS by hand, MUSIC volume and sound, knobs on the radio, 64 channels (added 2026-11-06, evening)
+- [ ] Live monitor: open the computer, start MUSIC, Close (C). Within 16 blocks the monitor in the world keeps moving:
+  the top bar's clock, the time and bar, the visualizer (about 5 times a second while music plays, twice a second
+  otherwise). Walk past 16 blocks, or look away, and it stops updating (it shows the last frame); come back and it
+  moves again. Another player's computer still shows the model's DOS face. No flicker, no wrong colours on the
+  monitor or in the GUI/hotbar afterwards; with the debug log on, "Radio computer monitor: ... live redraws" once a
+  minute gives the cost (expect well under 1 ms).
+- [ ] Live monitor with a SETUP colour scheme (amber, green): the monitor shows the scheme, as the open screen does.
+- [ ] CPS read by hand: no mobile wired, F5: a "Read a Radio by Hand" box, Continue closes the screen and the action
+  bar says to right click the computer holding the radio. Right click the computer (or monitor) with a Basic
+  handheld in the main hand, not sneaking: the screen opens again on CPS with its channels, "Read the ...". The
+  handheld's own screen must not open, and nothing is talked on it.
+- [ ] Same with the Upgraded handheld (64 positions, zones A-D marked in the list) and with a Commercial Mobile item
+  in hand (it must not be placed). Also with the radio in the off hand and the main hand empty.
+- [ ] CPS write by hand: edit a channel, F6, Continue, right click with a handheld (sneaking too): CPS opens again,
+  "Programmed the ...", the radio has the channel. A refused write (a digital channel into the brick) opens CPS with
+  the channel marked.
+- [ ] While waiting, the monitor shows the red "WAITING FOR A RADIO" line. Wait 60 s without clicking: the action bar
+  says CPS stopped waiting; a click then just opens the computer.
+- [ ] With a mobile wired to the computer, F5/F6 offer "A radio in your hand" first, then the wired mobile.
+- [ ] F9 "Program radios" (the fleet mode) still works as before (click writes, sneak reads).
+- [ ] MUSIC volume: - and + (and keypad - +) change the "Vol" bar and percentage on the Now playing panel, heard at
+  once (within a moment); 0% silent but the tune goes on; the key bar fits in one row.
+- [ ] MUSIC track list: while a tune plays, scroll the list with the wheel, Up/Down, PgUp/PgDn: it stays where you put
+  it; Enter plays the picked tune; the playing tune keeps its mark; when a tune ends, the list moves to the next.
+- [ ] MUSIC from the computer: walk round the computer and turn your head: the music comes from it (left/right),
+  fades with distance, silent and stopped past 24 blocks. Master and Jukebox/Note Blocks sliders change it at once;
+  with either at 0 it is silent and comes back where the tune has got to.
+- [ ] MUSIC pause/resume (Space) carries on from the same place; S stops at once; Left/Right change tune at once.
+- [ ] MUSIC under lag (a heavy chunk load, /tick freeze is not it: try a big world edit or a slow device): no skips for
+  hitches under about a second; a longer stall makes a gap and then it carries on from where it was.
+- [ ] MUSIC visualizer and clock follow what is heard (no lead or lag you can see), also after pause.
+- [ ] MUSIC through speakers: put a desk speaker (or a large/premium one) against the computer: the music comes from
+  the speaker instead (fuller; premium clean and wide). A wall speaker or loudspeaker on the computer's data wire
+  plays it where it stands (loudspeaker a loud honky horn heard to 64 blocks). Two speakers play in step (no echo).
+  Remove them: within a second it comes from the computer again.
+- [ ] Commercial handheld screens: no separate dials above the radio any more. Scroll over the drawn channel knob and
+  volume knob, drag them up/down, click and right click: they turn, stop at the ends, the readout ("CH 7", "VOL 6",
+  "OFF") shows over the knob and fades 1.5 s after; the mark on the knob moves. Hover shows a short tooltip.
+- [ ] Upgraded handheld keypad: A, B, C, D go straight to zones A-D (the LCD shows ZA..ZD and CH 1-64); * shows the
+  unit ID and # the frequency for a few seconds. The basic radio is unchanged.
+- [ ] A handheld or .CPG programmed with 40 channels before this still works (zone D blank).
+- [ ] The low band mobile is called "Commercial Low Band Radio" (item, block, JEI, Handbook) after runData.
+
 ## 1.12 commercial handheld models and screens (added 2026-11-06)
 - [ ] Basic Commercial Handheld (the maintainer's 3D model): looks as he drew it, undyed grey, in first and third
   person (both hands), in the inventory and hotbar, dropped on the ground, in an item frame and on the head; the

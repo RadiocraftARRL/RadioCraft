@@ -29,14 +29,15 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 
 #### Commercial radios
 
-- Channel-only radios with a **16-position knob** (16 channels; the upgraded handheld 40), set up by a radio shop: each channel has its receive and transmit
+- Channel-only radios with a **16-position knob** (16 channels; the upgraded handheld 64), set up by a radio shop: each channel has its receive and transmit
   frequency, analog FM or digital, a CTCSS tone and an encryption key. They need no ham callsign and always transmit
   inside their own band. Program them with the radio computer's **Radio Programmer** (below). They come **blank**, with no
   channels: nothing works until they are programmed.
   - **Basic Commercial Handheld**: a 1990s brick for 150-174 MHz, analog FM, RX and TX lights, no display.
-  - **Upgraded Commercial Handheld**: the fire-service radio, crafted from the brick: **40 channels**, digital voice
-    and encryption, and the 2m ham band too. Like 1990s fire radios it keeps the 16-position knob and adds a **zone
-    switch** (A = channels 1-16, B = 17-32, C = 33-40); its display shows the channel name, zone and channel.
+  - **Upgraded Commercial Handheld**: the fire-service radio, crafted from the brick: **64 channels**, digital voice
+    and encryption, and the 2m ham band too. Like 1990s fire radios it keeps the 16-position knob and adds **four
+    zones** picked with its **A**, **B**, **C** and **D** keys (A = channels 1-16, B = 17-32, C = 33-48, D = 49-64);
+    its display shows the channel name, zone and channel.
   - **Commercial Mobile Radio** (150-174 MHz, analog and digital) and **Commercial Low Band Radio** (30-50 MHz, analog):
     desk, vehicle and ship radios with a hand mic, powered and wired to an antenna like the base stations.
 - **Digital voice** has no static: clean until the signal would be 70% static on FM, a short warble, then nothing.
@@ -45,9 +46,11 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - The cases **take dye** like leather armour. A mobile keeps its colour and channels when broken and placed again.
 - The handhelds are **3D** in the hand, on the ground, in frames and in the desk charger: the basic brick is the
   maintainer's own model, the upgraded radio a tall 1990s professional handheld with a keypad and LCD. Only the case
-  takes the dye. Their screens show the radio's front with its two knobs on top: the **channel knob** (1-16, stops at
-  both ends) and the **power/volume knob** (turn it to OFF to switch the radio off). On the upgraded radio the keypad's
-  **B** and **C** keys step down and up through the zones, **A** shows its unit ID and **D** the channel's frequency.
+  takes the dye. Their screens show the radio's front; turn the two knobs on top of it with the mouse wheel, by
+  dragging them up or down, or by clicking (right click turns back): the **channel knob** (1-16, stops at both ends)
+  and the **power/volume knob** (turn it to OFF to switch the radio off). A small readout over the knob shows where it
+  is while it turns. On the upgraded radio the keypad's **A** to **D** keys pick the zone, **\*** shows its unit ID and
+  **#** the channel's frequency.
 - **Unit IDs**: every commercial radio has a unit ID (1-9999, set in CPS, or given one the first time it is programmed)
   and sends it at every key-up, as fire and business radios do with MDC-1200 and P25: on FM a short data burst
   ("brrrp") at the start of the transmission, on digital inside the data. The upgraded handheld and the mobiles show
@@ -108,7 +111,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     it with the part that stands for the program. Put it in the drive and install it; the disk is not used up.
   - Files (documents, pictures, logbooks, frequency lists, codeplugs) live on the computer, 1 MB by default
     (`computer_storage_kb`, `computer_max_files`), and go with it when it is broken and placed again. The monitor in
-    the world shows the screen you left on it, and programs carry on for ten minutes after you get up.
+    the world shows your programs as they are (the clock and MUSIC keep moving while you are within 16 blocks), and
+    programs carry on for ten minutes after you get up.
   - **Password**: whoever places the computer owns it and can set a password in SETUP (empty removes
     it). Everyone who sits at it is then asked for it, owner included; server operators are never asked. The password
     goes with the computer when it is broken and placed again.
@@ -121,12 +125,13 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     contact in from a station your radios heard lately; F7 writes the log out as ADIF for real logging programs.
   - **Frequency Manager** (FREQMAN): lists of nets, repeaters and channels with offsets, tones and their band plan use;
     sends marked channels into a commercial mobile wired to the computer, and reads a radio's channels in.
-  - **Radio Programmer** (CPS): reads, edits and writes the channels of a commercial radio (16, or 40 on the upgraded
-    handheld), its unit ID (F4) and contact list (F7). A mobile wired to the computer is programmed through the cable;
-    handhelds (and mobiles still in item form) by hand: **F9 Program radios**, Close the screen with CPS left in that
-    mode, then hold the radio and right click the computer or its monitor to write it (sneak to read it). The unit ID
-    goes up by one from radio to radio. The mode ends when CPS closes, another program opens, the power goes or after
-    five minutes unused. Keys set as not readable show as `****` and never come off the radio. Codeplugs save to
+  - **Radio Programmer** (CPS): reads, edits and writes the channels of a commercial radio (16, or 64 on the upgraded
+    handheld), its unit ID (F4) and contact list (F7). A mobile wired to the computer is programmed through the cable.
+    A handheld (or a mobile still in item form) is read or written by hand: **F5** or **F6** asks you to press
+    **Continue**, the screen closes, and right clicking the computer or its monitor with the radio in your hand reads
+    or writes it; CPS opens again with the result (it waits 60 seconds). For a fleet, **F9 Program radios** keeps the
+    mode on: each click writes a radio (sneak to read one) and the unit ID goes up by one from radio to radio, until
+    CPS closes, another program opens, the power goes or five minutes pass unused. Keys set as not readable show as `****` and never come off the radio. Codeplugs save to
     files for the rest of a fleet.
   - **Solar Weather** (SOLAR): the solar weather, each HF band by day and night, the aurora, sporadic E and the next
     spell, and a forecast page (the days ahead, and the storms about with Another Weather Mod). The computer needs a
@@ -184,10 +189,14 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Music Player**: 43 tunes: twelve public-domain classics (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and
     more) and thirty-one free tunes from OpenGameArt.org (chiptune, jazz, ragtime, synth and guitar rock, RPG
     orchestral, lo-fi, ambient), each credited to its author in the list. It
-    sounds like a pair of small PC speakers, has a spectrum visualizer, a shuffle (H), and the arrow keys go back and
-    on. The music plays on in other programs (a note in the top bar goes back to it) and after **Close**, which leaves the
-    player open for next time; only you hear it, fading as you walk away, and it stops past 24 blocks, in another
-    dimension, or when the computer is broken or loses power.
+    sounds like a pair of small PC speakers, has a spectrum visualizer, a shuffle (H), a volume control (- and +,
+    on top of the game's sliders), and the arrow keys go back and on. It comes **from the computer** through
+    Minecraft's sound engine, so you hear where it is as you walk and turn, or from the **speakers connected to the
+    computer** (desk, large and premium speakers touching it; wall speakers and loudspeakers touching it or on its data
+    wire), each in its own sound: a premium speaker clean and full, a loudspeaker a loud horn heard from 64 blocks. The
+    music plays on in other programs (a note in the top bar goes back to it) and after **Close**, which leaves the
+    player open for next time; only you hear it, and it stops out of earshot, in another dimension, or when the
+    computer is broken or loses power. The track list can be scrolled while a tune plays.
   - **Bible**: the four gospels of the World English Bible (public domain): read by chapter, go to a verse, search.
 - **Ham shacks**: a little timber house with a J-pole on the roof, found dark: a VHF base station on 146.520 MHz,
   switched off, its battery flat (charge it or run a new power line), a radio computer and a chest of radio parts, out in the country, and now and then in a plains, taiga,
@@ -255,8 +264,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   W1BTR station), so a BBS's own station does not repeat its traffic.
 - The radio computer lists its programs alphabetically (in every launcher, `DIR` and INSTALL), built-in and installed
   ones together.
-- MUSIC keeps 0.4 s of sound ahead, so the world lagging no longer makes tunes skip, and the visualizer's bars follow
-  what you hear.
+- MUSIC renders its tunes a few seconds ahead and the sound engine keeps over a second queued, so the world lagging
+  no longer makes tunes skip, and the visualizer's bars follow what you hear.
 - Commercial CW beacons, beepers and numbers stations no longer make the server stutter every 30 seconds when they all
   start a transmission together (their Morse and tones are made far faster and the fixed ones only once).
 
@@ -269,8 +278,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - **ADS-B**: hills and buildings do not block 1090 MHz yet (only the craft's height sets the range). It is built on Sable;
   Create Aeronautics craft, which are built on Sable too, have not been tried yet.
 - **Marine radios**: no DSC distress button, and nothing broadcasts NOAA weather on the WX channels yet.
-- The **Music Player** is heard only by the player who started it (near the computer, not by other players), and not
-  through Minecraft's sound engine.
+- The **Music Player** is heard only by the player who started it, not by other players.
 - Another Weather Mod's new sirens and recorded siren sounds are still to come.
 
 ### For mod developers
