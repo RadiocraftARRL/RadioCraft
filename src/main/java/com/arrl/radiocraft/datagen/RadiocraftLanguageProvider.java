@@ -713,8 +713,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("screen", "commercial_handheld.title"), "Commercial Handheld");
 		provider.add(Radiocraft.translationKey("screen", "commercial.power"), "PWR");
 		provider.add(Radiocraft.translationKey("screen", "commercial.off"), "OFF");
-		provider.add(Radiocraft.translationKey("screen", "commercial.channel_knob_help"), "Channel knob, 1-16: click to turn, right click to turn back, or scroll or drag it");
-		provider.add(Radiocraft.translationKey("screen", "commercial.volume_knob_help"), "Power and volume: turn it to OFF to switch the radio off, up from OFF to switch it on");
+		provider.add(Radiocraft.translationKey("screen", "commercial.channel_knob_help"), "Channel knob (1-16): scroll or drag it; click turns it, right click turns it back");
+		provider.add(Radiocraft.translationKey("screen", "commercial.volume_knob_help"), "Power and volume: scroll or drag it; OFF switches the radio off");
 		provider.add(Radiocraft.translationKey("screen", "commercial.key_a"), "Zone A: channels 1-16");
 		provider.add(Radiocraft.translationKey("screen", "commercial.key_b"), "Zone B: channels 17-32");
 		provider.add(Radiocraft.translationKey("screen", "commercial.key_c"), "Zone C: channels 33-48");

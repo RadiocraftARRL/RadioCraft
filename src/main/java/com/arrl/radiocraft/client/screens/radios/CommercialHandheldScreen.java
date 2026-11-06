@@ -2,7 +2,6 @@ package com.arrl.radiocraft.client.screens.radios;
 
 import com.arrl.radiocraft.Radiocraft;
 import com.arrl.radiocraft.api.capabilities.IVHFHandheldCapability;
-import com.arrl.radiocraft.client.screens.widgets.RotaryKnob;
 import com.arrl.radiocraft.common.capabilities.RadiocraftCapabilities;
 import com.arrl.radiocraft.common.items.CommercialHandheldItem;
 import com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket;
@@ -21,10 +20,13 @@ import java.util.Locale;
 
 /**
  * A commercial handheld seen from the front (sneak and use it), drawn from its own item texture at 16 GUI pixels per
- * model unit with the case in its dye colour, so it looks like the radio in your hand. Above it, its two knobs from
- * the top: the 16-position <b>channel</b> knob (stops at 1 and 16) and the <b>power/volume</b> knob (OFF, 1-10:
- * turning it to OFF switches the radio off, up from OFF switches it on). Click turns a knob one step, right click one
- * back, the wheel or a drag around it turns it too. The RX and TX lamps light as on the radio.
+ * model unit with the case in its dye colour, so it looks like the radio in your hand. Its two knobs are the ones on
+ * top of the drawn radio (2026-11-06; there were separate dials above it): the 16-position <b>channel</b> knob (stops
+ * at 1 and 16) and the <b>power/volume</b> knob (OFF, 1-10: turning it to OFF switches the radio off, up from OFF
+ * switches it on). The wheel over a knob turns it a step, dragging it up or down turns it, a click turns it one step
+ * and a right click one back. While it turns, and for {@link #READOUT_MS} ms after, a small readout over it says where
+ * it is ("CH 7", "VOL 6", "OFF"), and a mark on the knob's face shows its position. The RX and TX lamps light as on
+ * the radio.
  * <p>
  * The upgraded radio also has its LCD (channel name, or who is talking; zone, channel and mode) and its keypad: <b>A</b>,
  * <b>B</b>, <b>C</b> and <b>D</b> pick that zone (A = channels 1-16, B 17-32, C 33-48, D 49-64; 2026-11-06, they stepped
@@ -45,9 +47,21 @@ public class CommercialHandheldScreen extends Screen {
 	/** How long (ticks) * or # keeps its line on the LCD. */
 	private static final int INFO_TICKS = 60;
 
+	/** How long a knob's readout stays after it was last turned, and how long it takes to fade, ms. */
+	private static final long READOUT_MS = 1500L, FADE_MS = 300L;
+	/** Pixels of drag up or down per step of a knob. */
+	private static final int DRAG_STEP = 6;
+	private static final int CHANNEL = 0, VOLUME = 1;
+
 	private final int index;
 	private int left, top;
-	private RotaryKnob channelKnob, volumeKnob;
+	/** The knob being pressed (CHANNEL or VOLUME, -1 for none), the button, and where the drag started. */
+	private int pressedKnob = -1, pressedButton, dragStartValue;
+	private double dragStartY;
+	private boolean dragged;
+	/** The knob whose readout shows, and when it was last turned. */
+	private int readoutKnob = -1;
+	private long readoutAt;
 	private int pressedKey = -1, pressedTicks = 0;
 	private String info = null;
 	private int infoTicks = 0;
@@ -83,10 +97,51 @@ public class CommercialHandheldScreen extends Screen {
 		super.init();
 		left = (width - WIDTH) / 2;
 		top = (height - height()) / 2;
-		channelKnob = new RotaryKnob(left + 84, top + 26, 13, CommercialProgram.KNOB_POSITIONS, "1", "16",
-				() -> CommercialHandheldItem.program(stack()).knob(), this::setChannel);
-		volumeKnob = new RotaryKnob(left + 130, top + 26, 13, CommercialHandheldItem.VOLUME_POSITIONS + 1, "OFF", "10",
-				() -> CommercialHandheldItem.volumeKnob(stack()), this::setVolume);
+	}
+
+	// ---- The knobs on top of the drawn radio -----------------------------------------------------------------------
+
+	/**
+	 * Knob {@code knob}'s face as drawn on top of the radio: {x0, y0, x1, y1} in screen pixels (from the model's knob
+	 * positions, as the drawing below places them).
+	 */
+	private int[] knobRect(int knob) {
+		int bx = left + BODY_X, by = top + BODY_TOP;
+		if(upgraded())
+			return knob == CHANNEL ? new int[] {bx + 36, by - 9, bx + 57, by} : new int[] {bx + 60, by - 7, bx + 76, by};
+		return knob == CHANNEL ? new int[] {bx + 42, by - 8, bx + 58, by} : new int[] {bx + 62, by - 8, bx + 78, by};
+	}
+
+	/** The knob under the mouse (a few pixels of slack round its face), -1 for none. */
+	private int knobAt(double x, double y) {
+		for(int knob = CHANNEL; knob <= VOLUME; knob++) {
+			int[] r = knobRect(knob);
+			if(x >= r[0] - 3 && x < r[2] + 3 && y >= r[1] - 6 && y < r[3] + 2)
+				return knob;
+		}
+		return -1;
+	}
+
+	/** Where knob {@code knob} is: the channel knob 0-15, the volume knob 0 (off) to 10. */
+	private int knobValue(int knob) {
+		return knob == CHANNEL ? CommercialHandheldItem.program(stack()).knob() : CommercialHandheldItem.volumeKnob(stack());
+	}
+
+	private int knobMax(int knob) {
+		return knob == CHANNEL ? CommercialProgram.KNOB_POSITIONS - 1 : CommercialHandheldItem.VOLUME_POSITIONS;
+	}
+
+	/** Turns knob {@code knob} to {@code value} (clamped; a real knob stops at its ends) and shows its readout. */
+	private void turnKnob(int knob, int value) {
+		int to = Math.max(0, Math.min(knobMax(knob), value));
+		readoutKnob = knob;
+		readoutAt = System.currentTimeMillis();
+		if(to == knobValue(knob))
+			return;
+		if(knob == CHANNEL)
+			setChannel(to);
+		else
+			setVolume(to);
 	}
 
 	// ---- Controls --------------------------------------------------------------------------------------------------
@@ -155,8 +210,15 @@ public class CommercialHandheldScreen extends Screen {
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
-		if(channelKnob.press(mouseX, mouseY, button) || volumeKnob.press(mouseX, mouseY, button))
+		int knob = knobAt(mouseX, mouseY);
+		if(knob >= 0 && (button == 0 || button == 1)) { // A click steps it on release; a drag turns it instead.
+			pressedKnob = knob;
+			pressedButton = button;
+			dragStartY = mouseY;
+			dragStartValue = knobValue(knob);
+			dragged = false;
 			return true;
+		}
 		int key = keyAt(mouseX, mouseY);
 		if(key >= 0 && button == 0) {
 			pressKey(key);
@@ -167,21 +229,35 @@ public class CommercialHandheldScreen extends Screen {
 
 	@Override
 	public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-		if(channelKnob.drag(mouseX, mouseY) || volumeKnob.drag(mouseX, mouseY))
+		if(pressedKnob >= 0 && pressedButton == 0) {
+			int steps = (int)((dragStartY - mouseY) / DRAG_STEP); // Up turns it up.
+			if(steps != 0 || dragged) {
+				dragged = true;
+				turnKnob(pressedKnob, dragStartValue + steps);
+			}
 			return true;
+		}
 		return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
 	}
 
 	@Override
 	public boolean mouseReleased(double mouseX, double mouseY, int button) {
-		boolean knob = channelKnob.release() | volumeKnob.release();
-		return knob || super.mouseReleased(mouseX, mouseY, button);
+		if(pressedKnob >= 0 && button == pressedButton) {
+			if(!dragged)
+				turnKnob(pressedKnob, knobValue(pressedKnob) + (button == 0 ? 1 : -1));
+			pressedKnob = -1;
+			return true;
+		}
+		return super.mouseReleased(mouseX, mouseY, button);
 	}
 
 	@Override
 	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-		if(channelKnob.scroll(mouseX, mouseY, scrollY) || volumeKnob.scroll(mouseX, mouseY, scrollY))
+		int knob = knobAt(mouseX, mouseY);
+		if(knob >= 0 && scrollY != 0.0D) {
+			turnKnob(knob, knobValue(knob) + (scrollY > 0.0D ? 1 : -1));
 			return true;
+		}
 		return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
 	}
 
@@ -265,19 +341,25 @@ public class CommercialHandheldScreen extends Screen {
 			lamp(graphics, bx + 24, by + 60, on ? POWER_ON : LED_OFF, "ON");
 		}
 
-		// The knobs from the top, with where each is.
-		channelKnob.render(graphics, font);
-		volumeKnob.render(graphics, font);
-		String ch = "CH " + (program.knob() + 1);
+		// Each knob's mark (where it points), then the readout of the one being turned.
 		int vol = CommercialHandheldItem.volumeKnob(stack);
-		String volume = vol == 0 ? Component.translatable(Radiocraft.translationKey("screen", "commercial.off")).getString() : "VOL " + vol;
-		graphics.drawCenteredString(font, ch, left + 84, top + 3, 0xFFE0E0E0);
-		graphics.drawCenteredString(font, volume, left + 130, top + 3, vol == 0 ? 0xFFFF8080 : 0xFFE0E0E0);
+		knobMark(graphics, knobRect(CHANNEL), program.knob() / (float)(CommercialProgram.KNOB_POSITIONS - 1));
+		knobMark(graphics, knobRect(VOLUME), vol / (float)CommercialHandheldItem.VOLUME_POSITIONS);
+		long since = System.currentTimeMillis() - readoutAt;
+		boolean turning = pressedKnob >= 0 && dragged;
+		if(readoutKnob >= 0 && (turning || since < READOUT_MS)) {
+			String text = readoutKnob == CHANNEL ? "CH " + (program.knob() + 1)
+					: vol == 0 ? Component.translatable(Radiocraft.translationKey("screen", "commercial.off")).getString() : "VOL " + vol;
+			float alpha = turning || since < READOUT_MS - FADE_MS ? 1.0F : (READOUT_MS - since) / (float)FADE_MS;
+			readout(graphics, knobRect(readoutKnob), text, readoutKnob == VOLUME && vol == 0, alpha);
+		}
 
-		if(channelKnob.isOver(mouseX, mouseY))
-			graphics.renderTooltip(font, Component.translatable(Radiocraft.translationKey("screen", "commercial.channel_knob_help")), mouseX, mouseY);
-		else if(volumeKnob.isOver(mouseX, mouseY))
-			graphics.renderTooltip(font, Component.translatable(Radiocraft.translationKey("screen", "commercial.volume_knob_help")), mouseX, mouseY);
+		int hovered = knobAt(mouseX, mouseY);
+		if(hovered >= 0) {
+			if(pressedKnob < 0 && (readoutKnob < 0 || since >= READOUT_MS)) // Kept short, and out of the way while it turns.
+				graphics.renderTooltip(font, Component.translatable(Radiocraft.translationKey("screen", hovered == CHANNEL ? "commercial.channel_knob_help" : "commercial.volume_knob_help")),
+						mouseX, mouseY);
+		}
 		else {
 			int key = keyAt(mouseX, mouseY);
 			char label = key < 0 ? ' ' : KEYS[key / 4].charAt(key % 4);
@@ -285,6 +367,24 @@ public class CommercialHandheldScreen extends Screen {
 			if(help != null)
 				graphics.renderTooltip(font, Component.translatable(Radiocraft.translationKey("screen", help)), mouseX, mouseY);
 		}
+	}
+
+	/** The mark on a knob's face: a light line across it, left at the bottom of its range, right at the top. */
+	private static void knobMark(GuiGraphics graphics, int[] r, float position) {
+		int x = r[0] + 2 + Math.round((r[2] - r[0] - 5) * Math.max(0.0F, Math.min(1.0F, position)));
+		graphics.fill(x, r[1] + 1, x + 1, r[3] - 1, 0xFFE8E8E8);
+	}
+
+	/** The readout over a knob: a small dark plate with its position, fading out ({@code alpha}). */
+	private void readout(GuiGraphics graphics, int[] r, String text, boolean off, float alpha) {
+		int a = Math.max(0, Math.min(255, Math.round(alpha * 255.0F)));
+		if(a < 8)
+			return;
+		int w = font.width(text) + 6, cx = (r[0] + r[2]) / 2;
+		int x0 = cx - w / 2, y1 = r[1] - 3, y0 = y1 - 12;
+		graphics.fill(x0, y0, x0 + w, y1, (Math.round(a * 0.8F) << 24) | 0x101012);
+		graphics.fill(cx - 1, y1, cx + 1, y1 + 2, (Math.round(a * 0.8F) << 24) | 0x101012);
+		graphics.drawString(font, text, x0 + 3, y0 + 2, (a << 24) | (off ? 0xFF8080 : 0xE8E8E8), false);
 	}
 
 	/** A lamp on the basic radio's front (4 x 4), lit or left as drawn, with its name under it. */
