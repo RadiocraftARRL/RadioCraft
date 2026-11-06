@@ -1,0 +1,33 @@
+{
+  "name": "Net Control",
+  "icon": "radiocraft:floppy_netlog",
+  "category": "radiocraft:computer",
+  "sortnum": 21,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Net Control",
+      "text": "A $(item)net$() is an on-air meeting run by a $(thing)net control station$() (NCS): stations check in, the NCS calls them in turn, messages are passed. The $(item)Net Control$() program (NETLOG) keeps the list for you. F4 sets up a net (name, frequency, mode, your call as NCS) and opens it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Check-ins",
+      "text": "Ins checks a station in: callsign, name, location or grid square, and two flags: $(thing)traffic$() (a message to pass) and $(thing)short time$() (must leave early). A station already in is rechecked. O checks one out (or back in), T and S set the flags, R counts a recheck, Ctrl+Up/Down moves a station on the list."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Roll Call",
+      "text": "N steps through the roll call: short-time stations first, then those with traffic, then everyone else, in list order. The station called is marked with an arrow.$(br2)F5 prints the net report on the $(l:radiocraft:computer/scanner)scanner$() (paper), F6 saves it as a text file. The net is saved to its .NET file at every change."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Closing",
+      "text": "F8 closes the net and checks everyone out. It offers to put every check-in in the $(l:radiocraft:computer/book_editor)Logbook$()'s LOGBOOK.LOG as a contact, so they count for the $(l:radiocraft:computer/awards)Awards$().$(br2)F9 sets a $(l:radiocraft:computer/scheduler)Scheduler$() reminder for the next net (the Scheduler must be installed)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_netlog",
+      "text": "A blank floppy and a lectern."
+    }
+  ]
+}
