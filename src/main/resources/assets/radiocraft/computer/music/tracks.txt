@@ -17,12 +17,9 @@ air.mid|Air (Suite No. 3, BWV 1068)|J. S. Bach|63
 airship.mid|Airship|Aureolus_Omicron|91
 neon_flames.mid|Neon Flames|Ivan Stanton|120
 headscratcher.mid|Headscratcher|congusbongus|210
-c64_style.mid|C64 Style 3|Tozan|145
 osanpo_rag.mid|Osanpo Rag|Yubatake (OpenGameArt)|196
 icy_garden.mid|Icy Garden|Roppy Chop Studios|128
-saxophone_jazz.mid|Saxophone 1|Tozan|135
 long_away_home.mid|Long Away Home|nene|121
-steel_drums.mid|Caribbean Steel Drums|Tozan|118
 xenon_phoenix.mid|Xenon Phoenix|Ivan Stanton|124
 casual_afternoon.mid|Casual Afternoon|Roppy Chop Studios|86
 huge_jazz_battle.mid|Huge Jazz Battle|Katana|59
