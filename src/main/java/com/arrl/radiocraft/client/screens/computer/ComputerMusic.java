@@ -59,6 +59,10 @@ public final class ComputerMusic {
 	private static boolean repeat;
 	private static boolean shuffle;
 	private static final MusicShuffle SHUFFLE = new MusicShuffle();
+	/** Steps of MUSIC's own volume control (- and +): 10 is full, each step 10 %. */
+	public static final int VOLUME_STEPS = 10;
+	/** MUSIC's volume, 0 to {@link #VOLUME_STEPS}: the client's, kept until the game is closed, on top of the game's sliders. */
+	private static int volume = VOLUME_STEPS;
 	private static String problem = "";
 
 	private ComputerMusic() {}
@@ -183,6 +187,17 @@ public final class ComputerMusic {
 		ComputerMidi.pause(paused);
 	}
 
+	/** MUSIC's own volume, 0 to {@link #VOLUME_STEPS}. */
+	public static int volume() {
+		return volume;
+	}
+
+	/** Turns MUSIC up ({@code steps} positive) or down; heard at once (the sound card ramps to it). */
+	public static void changeVolume(int steps) {
+		volume = Math.max(0, Math.min(VOLUME_STEPS, volume + steps));
+		applyVolume();
+	}
+
 	public static void toggleRepeat() {
 		repeat = !repeat;
 	}
@@ -240,11 +255,12 @@ public final class ComputerMusic {
 		return mc.player == null || pos == null ? 0.0D : Math.sqrt(mc.player.getEyePosition().distanceToSqr(pos.getCenter()));
 	}
 
-	/** The game's music volume times the fade with distance ({@link ComputerMidi#updateVolume(float)}). */
+	/** The game's music volume times MUSIC's own volume and the fade with distance ({@link ComputerMidi#updateVolume(float)}). */
 	private static void applyVolume() {
 		double d = distance();
 		float fade = d <= FULL_RANGE ? 1.0F : (float)Math.max(0.0D, 1.0D - (d - FULL_RANGE) / (MAX_RANGE - FULL_RANGE));
-		ComputerMidi.updateVolume(fade * fade);
+		float own = volume / (float)VOLUME_STEPS;
+		ComputerMidi.updateVolume(fade * fade * own * own); // Squared, as the fade: each step sounds about as big.
 	}
 
 	/** Tells the computer at {@code at} this player listens ({@code on}) or has stopped. */

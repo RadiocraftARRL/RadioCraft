@@ -23,7 +23,7 @@ import java.util.Locale;
  * {@code assets/radiocraft/computer/music}) played on this computer's "sound card", Java's software synthesizer
  * ({@link ComputerMidi}), at the game's master and jukebox volume, through the computer's small speakers. Enter plays
  * the track picked, Space pauses, S stops, Right and Left (or N and B) go to the next and the last tune, R repeats one,
- * H shuffles, and it plays on down the list (or round the shuffle). The visualizer is a spectrum analyser on the sound.
+ * H shuffles, - and + turn it down and up, and it plays on down the list (or round the shuffle). The visualizer is a spectrum analyser on the sound.
  * Only this player hears it.
  * <p>
  * The tune plays on after this page is left (Esc goes back with the music still on, a note in the top bar comes back
@@ -39,6 +39,8 @@ public final class MusicApp extends DosApp {
 
 	private final DosList list = new DosList();
 	private List<MusicTracks.Track> tracks = List.of();
+	/** The track playing when last looked, so the list follows the music only when it moves on (not every tick). */
+	private int followed = -1;
 
 	public MusicApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
@@ -56,6 +58,7 @@ public final class MusicApp extends DosApp {
 		list.setItems(lines);
 		if(!tracks.isEmpty())
 			list.select(playing() >= 0 ? playing() : 0);
+		followed = playing();
 	}
 
 	/** The track playing on this computer, or -1 (also when the music is on another computer). */
@@ -86,11 +89,16 @@ public final class MusicApp extends DosApp {
 			ComputerMusic.stop();
 	}
 
+	/**
+	 * The list jumps to the tune playing only when the music moves on to another one, so the player can scroll and
+	 * pick a different tune while one plays (it was pulled back to the playing tune every tick).
+	 */
 	@Override
 	public void tick() {
 		int now = playing();
-		if(now >= 0 && now != list.selected() && now < list.size())
+		if(now != followed && now >= 0 && now < list.size())
 			list.select(now); // It moved on to the next tune.
+		followed = now;
 	}
 
 	/** Esc: back to where it was started from, the music still playing. */
@@ -147,8 +155,14 @@ public final class MusicApp extends DosApp {
 			g.put(modesCol, top + 1, modes, DosColours.LIGHT_CYAN, bg);
 		int seconds = playing < 0 ? 0 : ComputerMidi.seconds();
 		String time = String.format(Locale.ROOT, "%d:%02d / %s", seconds / 60, seconds % 60, playing < 0 ? "--:--" : tracks.get(playing).length());
-		g.bar(3, top + 2, 60, playing < 0 ? 0.0D : ComputerMidi.position(), DosColours.LIGHT_CYAN, bg);
-		g.put(65, top + 2, time, fg, bg);
+		g.bar(3, top + 2, 42, playing < 0 ? 0.0D : ComputerMidi.position(), DosColours.LIGHT_CYAN, bg);
+		g.put(47, top + 2, time, fg, bg);
+		// The volume (- and +), on top of the game's Master and Jukebox sliders.
+		int volume = ComputerMusic.volume();
+		g.put(60, top + 2, Dos.tr("music.volume"), DosColours.YELLOW, bg);
+		g.bar(64, top + 2, 10, volume / (double)ComputerMusic.VOLUME_STEPS, volume == 0 ? DosColours.DARK_GREY : DosColours.LIGHT_GREEN, bg);
+		String percent = volume * 100 / ComputerMusic.VOLUME_STEPS + "%";
+		g.put(78 - percent.length(), top + 2, percent, fg, bg);
 		// The visualizer: a bar per band of pitch, low on the left, two columns each, from the bottom row of the box up.
 		int meterRow = top + 3, height = 24 - top - 4;
 		for(int bar = 0; bar < ComputerMidi.BARS && height > 0; bar++) {
@@ -195,6 +209,14 @@ public final class MusicApp extends DosApp {
 			}
 			case GLFW.GLFW_KEY_C -> {
 				closeScreen();
+				return true;
+			}
+			case GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> {
+				ComputerMusic.changeVolume(-1);
+				return true;
+			}
+			case GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> { // + is shift and = on most keyboards.
+				ComputerMusic.changeVolume(1);
 				return true;
 			}
 			default -> {

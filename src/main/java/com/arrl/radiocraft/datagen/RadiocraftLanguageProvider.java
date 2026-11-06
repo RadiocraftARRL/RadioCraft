@@ -1534,7 +1534,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("pileup.help.8", "A full band ends it.");
 		// MUSIC.
 		s.accept("music.title", "MUSIC - the computer's sound card");
-		s.accept("music.keys", "Space=Pause  S=Stop  %s=Back/Next  R=Repeat  H=Shuffle  C=Close  Esc=Leave");
+		s.accept("music.keys", "Space=Pause  S=Stop  %s=Back/Next  R=Repeat  H=Shuffle  - +=Vol  C=Close  Esc=Leave");
+		s.accept("music.volume", "Vol");
 		s.accept("music.close_button", "[ Close ]");
 		s.accept("music.elsewhere", "Music is playing on another computer. Pick a tune to play it here instead.");
 		s.accept("music.tracks", "Tracks");
