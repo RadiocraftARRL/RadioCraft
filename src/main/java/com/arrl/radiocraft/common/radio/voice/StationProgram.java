@@ -50,6 +50,15 @@ public final class StationProgram {
 	private final ArrayDeque<short[]> queue = new ArrayDeque<>();
 	private long nextStart = Long.MIN_VALUE;
 	private long kerchunkAt = Long.MIN_VALUE;
+	/**
+	 * A CW beacon's or beeper's transmission, the same every time: made once and queued again each period (the frames
+	 * are only read, every listener gets its own copy), so the server does not synthesise it again on the tick when
+	 * every station starts together.
+	 */
+	@org.jetbrains.annotations.Nullable
+	private List<short[]> fixed;
+	/** The numbers station's interval tune, the same for every station. */
+	private static volatile List<short[]> chime;
 
 	public StationProgram(Kind kind, long seed, String callsign, Supplier<List<short[]>> voice) {
 		this.kind = kind;
@@ -109,12 +118,18 @@ public final class StationProgram {
 				nextStart = kerchunkAt;
 			}
 			case DF_BEEPER -> {
-				queue.addAll(RepeaterAudio.tone(1000.0D, 0.5D, 0.3D));
+				if(fixed == null)
+					fixed = List.copyOf(RepeaterAudio.tone(1000.0D, 0.5D, 0.3D));
+				queue.addAll(fixed);
 				nextStart = gameTime + BEEPER_PERIOD;
 			}
 			case CW_BEACON -> {
-				queue.addAll(RepeaterAudio.morse("VVV VVV DE " + callsign + " " + callsign, 18, 700.0D));
-				queue.addAll(RepeaterAudio.tone(700.0D, 3.0D, 0.35D));
+				if(fixed == null) {
+					List<short[]> made = new ArrayList<>(RepeaterAudio.morse("VVV VVV DE " + callsign + " " + callsign, 18, 700.0D));
+					made.addAll(RepeaterAudio.tone(700.0D, 3.0D, 0.35D));
+					fixed = List.copyOf(made);
+				}
+				queue.addAll(fixed);
 				nextStart = gameTime + CW_PERIOD;
 			}
 		}
@@ -122,12 +137,18 @@ public final class StationProgram {
 
 	/** An interval tune, the station's call-up, then ten groups of five figures (or a voice tape) and the end mark. */
 	private void numbers(SplittableRandom random) {
-		double[] tune = { 523.25D, 659.25D, 783.99D, 659.25D }; // A falling and rising chime.
-		for(int repeat = 0; repeat < 3; repeat++) {
-			for(double hz : tune)
-				queue.addAll(RepeaterAudio.tone(hz, 0.35D, 0.25D));
-			queue.addAll(RepeaterAudio.tone(1.0D, 0.6D, 0.0D)); // A pause.
+		List<short[]> tune = chime;
+		if(tune == null) {
+			double[] notes = { 523.25D, 659.25D, 783.99D, 659.25D }; // A falling and rising chime.
+			List<short[]> made = new ArrayList<>();
+			for(int repeat = 0; repeat < 3; repeat++) {
+				for(double hz : notes)
+					made.addAll(RepeaterAudio.tone(hz, 0.35D, 0.25D));
+				made.addAll(RepeaterAudio.tone(1.0D, 0.6D, 0.0D)); // A pause.
+			}
+			chime = tune = List.copyOf(made);
 		}
+		queue.addAll(tune);
 		List<short[]> recording = voice == null ? null : voice.get();
 		if(recording != null && !recording.isEmpty()) {
 			queue.addAll(recording);

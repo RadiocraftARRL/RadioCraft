@@ -138,11 +138,27 @@ public final class RepeaterAudio {
 		return frame;
 	}
 
+	/**
+	 * Writes a tone into {@code samples}. The sine is made by turning a unit phasor one step per sample (a multiply and
+	 * add, not a {@code Math.sin} per sample): a numbers station's minute of Morse is millions of samples, made on the
+	 * server thread in one go, and with {@code Math.sin} every station starting at once cost a tick of 170 ms.
+	 */
 	private static void tone(double[] samples, int from, int length, double hz, double level) {
 		int ramp = (int)(RAMP_SECONDS * SAMPLE_RATE);
+		double step = 2.0D * Math.PI * hz / SAMPLE_RATE;
+		double cos = Math.cos(step), sin = Math.sin(step);
+		double re = 1.0D, im = 0.0D; // cos and sin of the phase, which starts at 0.
 		for(int i = 0; i < length && from + i < samples.length; i++) {
 			double envelope = Math.min(1.0D, Math.min(i, length - 1 - i) / (double)ramp);
-			samples[from + i] = Math.sin(2.0D * Math.PI * hz * i / SAMPLE_RATE) * level * envelope;
+			samples[from + i] = im * level * envelope;
+			double next = re * cos - im * sin;
+			im = re * sin + im * cos;
+			re = next;
+			if((i & 4095) == 4095) { // Keep it on the unit circle (rounding drifts it very slowly).
+				double norm = 1.0D / Math.sqrt(re * re + im * im);
+				re *= norm;
+				im *= norm;
+			}
 		}
 	}
 
