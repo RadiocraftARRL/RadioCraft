@@ -62,6 +62,8 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 
 	@Override
 	public void receiveCW(AntennaCWPacket packet) {
+		if(level instanceof ServerLevel && !isDeafNow())
+			recordCarrier(packet.getStrength()); // A scanner stops on CW too.
 		if(level instanceof ServerLevel serverLevel && canReceiveCW() && !isDeafNow()) { // Not while its own key is down.
 			List<AntennaNetworkObject> antennas = ((RadioNetworkObject)IBENetworks.getObject(this.level, worldPosition)).getAntennas();
 			if(antennas.size() <= 1) { // None: it came in through the bare connector.

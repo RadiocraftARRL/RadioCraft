@@ -1,0 +1,38 @@
+{
+  "name": "Rig Control and the Waterfall",
+  "icon": "radiocraft:floppy_rigctl",
+  "category": "radiocraft:computer",
+  "sortnum": 19,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "RIGCTL",
+      "text": "$(item)Rig Control$() drives a radio from the keyboard, as CAT software drives a real rig. Like the other radio programs it goes through a $(l:radiocraft:radios/station_accessories)radio interface$() cabled to the computer: the radio beside the interface is the one it controls (R picks another if there are several)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tuning",
+      "text": "Left and Right tune a step (Shift: ten steps), the wheel too. F types a frequency; on the All-Band radio it turns the band knob for you. PgUp and PgDn change band, M the mode (SSB, CW, FM where the radio has it), P switches the radio on and off, T keys and unkeys the PTT (leaving the program lets it go). Channel radios are programmed with CPS instead."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Waterfall",
+      "text": "Under the display the $(thing)waterfall$() scrolls down four times a second: each column is a slice of the band, brighter for a stronger signal, the dial marked with an arrow and dots. Band plan spots show as + on the scale. Z zooms in round the dial (x4, x16, x64), Shift+Z back out.$(br2)Click a signal to tune to it, or Ctrl+Left/Right to jump to the next one."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Scanning",
+      "text": "S scans a range at the radio's step; F3 scans the memory channels. The scan stops on a signal over the squelch (Q sets it, 0 to 9) and goes on three seconds after it drops. Space holds it, X stops it.$(br2)The memories are the $(l:radiocraft:computer/frequency_manager)Frequency Manager's$() list, CHANNELS.FRQ: F4 stores the dial in it, F5 loads another .FRQ, Up and Down step through them."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cheap to Watch",
+      "text": "The waterfall shows what the antenna really hears: every signal the radio is handed, on any frequency, at the strength it arrived. It only runs while someone has the program on screen, or for a player who walked away from the screen and is still near the monitor."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_rigctl",
+      "text": "A blank floppy and a lever."
+    }
+  ]
+}

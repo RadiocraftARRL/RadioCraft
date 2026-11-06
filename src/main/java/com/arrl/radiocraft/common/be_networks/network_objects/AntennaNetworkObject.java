@@ -118,6 +118,8 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
         for(BlockPos checkPos : receivers()) {
             if(level.isLoaded(checkPos)) {
                 BlockEntity be = level.getBlockEntity(checkPos);
+                if(be instanceof RadioBlockEntity tapped) // The band scope sees CW on every frequency (computer batch 3B).
+                    tapped.scopeHear(packet.getFrequency(), packet.getStrength());
                 if(be instanceof HFRadioBlockEntity radio) {
                     if(BandUtils.areFrequenciesEqualWithTolerance(radio.getTunedFrequency(), packet.getFrequency(), 1000.0F)) // Only receive if listening to correct frequency.
                         radio.receiveCW(packet);
