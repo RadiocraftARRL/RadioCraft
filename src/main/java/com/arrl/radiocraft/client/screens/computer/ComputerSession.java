@@ -259,7 +259,11 @@ public final class ComputerSession {
 
 	// -------------------- WHAT IT KNOWS --------------------
 
-	/** The programs on this computer, in shell order (the built-in ones until the server has answered). */
+	/**
+	 * The programs on this computer (the built-in ones until the server has answered), alphabetically by the name the
+	 * player sees, ignoring case, built-in and installed ones mixed: every launcher, {@code dir} and INSTALL list them
+	 * this way.
+	 */
 	public List<ComputerApp> apps() {
 		List<ComputerApp> out = new ArrayList<>();
 		for(String id : apps) {
@@ -267,6 +271,7 @@ public final class ComputerSession {
 			if(app != null)
 				out.add(app);
 		}
+		out.sort(java.util.Comparator.comparing(Dos::name, String.CASE_INSENSITIVE_ORDER).thenComparing(ComputerApp::id));
 		return out;
 	}
 
