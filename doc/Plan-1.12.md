@@ -2041,6 +2041,18 @@ Gervill and the analyser outside the game (all load, all light the bars). Still 
 
 **Open questions**: the key-bar wording above; is the speaker effect the right amount; take any CC BY-SA tunes?
 
+### Music: CC-BY-SA tunes (2026-11-06)
+The maintainer approved CC BY-SA music (credited to the author in the track). 16 tunes added after Aftermath in
+`tracks.txt` (48 in all, 892 KB folder): seven of Beau Buckley's (Fantasy Musica) RPG pieces (Town 03, Snow 01, Beach
+02, Desert 02, Plains 03, Swamp 02, Opening 03), Ideka's Backstab and Hellin (CC BY-SA 3.0), five from the Ultimate
+MIDI Pack (Lippeth, Bloo, TrialD x2, Sego), Raymond1206's Chestnut (all CC BY-SA 4.0) and bart's orchestral The
+Adventure Begins (taken under its CC BY 3.0 option). Licence read on each live page; files byte-identical to the
+downloads (**never edit them**: an edited CC BY-SA file must itself be CC BY-SA), only renamed. Each was rendered
+through Gervill: all load, several instruments each, no long trailing silence. `doc/Credits-Music.md` has the table,
+attribution lines, deed links and the note that CC BY-SA files stay under their licence; `MusicTracksTest` now also
+checks every track names a composer. Release notes, Handbook (`secret_programs`: forty-eight) and NeedsTesting ("1.12
+music: 16 CC BY-SA and CC BY tunes") updated. No lang change. `test` + `build` clean (677 tests). Not played in game.
+
 ### Launcher and SETUP (2026-11-06)
 Built: `compileJava compileTestJava compileGametestJava` clean (no new warning). **Not run** (the maintainer's runClient
 was open): `runData`, `test`, `runGameTestServer`, `build`. Committed locally; nothing pushed.

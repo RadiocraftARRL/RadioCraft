@@ -1,10 +1,17 @@
 # Credits: music and texts on the radio computer
 
-The radio computer's secret programs (1.12) ship some music and some scripture. Everything here is either in the
-**public domain** (or dedicated to it with **CC0**) or under **CC BY 4.0**, which asks only for credit: the CC BY tunes are
-credited below and by their author's name in the MUSIC program's list. Nothing share-alike (CC BY-SA), non-commercial
-(NC), no-derivatives (ND) or "personal use only" is used. Each source and its licence were checked on its own page
-(classical pieces 2026-11-05, the newer tunes 2026-11-06). Keep this list up to date when a file is added or replaced.
+The radio computer's secret programs (1.12) ship some music and some scripture. Everything here is in the **public
+domain** (or dedicated to it with **CC0**), or under **CC BY** (3.0 or 4.0, credit only) or **CC BY-SA** (3.0 or 4.0,
+credit and share-alike). The CC BY and CC BY-SA tunes are credited below and by their author's name in the MUSIC
+program's list. Nothing non-commercial (NC), no-derivatives (ND), "personal use only" or of unclear licence is used.
+Each source and its licence were checked on its own page (classical pieces 2026-11-05, the newer tunes 2026-11-06).
+Keep this list up to date when a file is added or replaced.
+
+**CC BY-SA tunes**: they are included **unmodified**, as separate files in a collection (the mod's jar), and they
+**remain under their CC BY-SA licence**: anyone may take them out and reuse them under that licence (with the credit
+given below). Including them does not put the rest of RadioCraft under CC BY-SA, and RadioCraft's licence does not
+change theirs. Do not edit these files in the repository: an edited version would itself have to be shared under CC
+BY-SA; replace a file only with another unchanged original.
 
 ## Music (MUSIC.EXE)
 
@@ -67,9 +74,50 @@ by congusbongus; "Osanpo Rag" and "Roll Up" by Yubatake (as asked: "Please just 
 https://opengameart.org); "Steal the Moon" by Daniel Michel. The radio computer plays them through a speaker filter,
 which is how they are heard, not a change to the files.
 
-Not taken from OpenGameArt: anything CC BY-SA (Fantasy Musica's GM RPG series, Ideka, northivanastan's "Ultimate MIDI
-Pack"), covers and remakes of copyrighted songs, files with no program changes (they play as all piano on a General
-MIDI synth), and files with minutes of trailing silence.
+### CC BY-SA and more CC BY tunes (OpenGameArt.org)
+
+Added 2026-11-06 after the maintainer approved CC BY-SA music. Original compositions, released by their authors as
+MIDI files on [OpenGameArt.org](https://opengameart.org/), licence read on each submission's own page that day. Every
+file is byte-for-byte the one downloaded (the Ultimate MIDI Pack ones taken out of its `ultimidi-oga-midis.zip`
+unchanged), only renamed. Licence deeds: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/),
+[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/), [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
+
+| File | Title | Author | Licence | Page | Style |
+|---|---|---|---|---|---|
+| `town_03.mid` | Town 03 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/town-03 | folk village theme |
+| `snow_01.mid` | Snow 01 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/snow-01 | wintry journey |
+| `beach_02.mid` | Beach 02 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/beach-02 | seaside |
+| `desert_02.mid` | Desert 02 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/desert-02 | eastern / desert |
+| `plains_03.mid` | Plains 03 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/plains-03 | epic overworld |
+| `swamp_02.mid` | Swamp 02 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/swamp-02 | tribal |
+| `opening_03.mid` | Opening 03 | Beau Buckley (Fantasy Musica) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/opening-03 | cinematic orchestral |
+| `backstab.mid` | Backstab | Ideka | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | https://opengameart.org/content/backstab | rock guitar |
+| `hellin.mid` | Hellin | Ideka | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/) | https://opengameart.org/content/hellin | rock ballad |
+| `youre_winner.mid` | You're Winner (Ultimate MIDI Pack, E1M9) | Lippeth | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/ultimate-midi-pack | 12-bar blues rock |
+| `happy_destruction.mid` | Happy Destruction (same pack, E1M4) | Bloo | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/ultimate-midi-pack | guitar rock |
+| `pagliaccis_going_to_town.mid` | Pagliacci's Going to Town (same pack, E2M1) | TrialD | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/ultimate-midi-pack | circus music meets thrash |
+| `world_of_no_sorrow.mid` | World of No Sorrow (same pack, E2M7) | TrialD | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/ultimate-midi-pack | calm historical-strategy style |
+| `a_compact_hell.mid` | A Compact Hell (same pack, E4M2) | Sego | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/ultimate-midi-pack | funk / progressive metal |
+| `chestnut.mid` | Chestnut | Raymond1206 | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | https://opengameart.org/content/chestnut | indie / lo-fi |
+| `adventure_begins.mid` | The Adventure Begins (orchestral "Little Town") | bart (Bart Kelsey) | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), taken under it (the page also offers CC BY-SA 3.0, GPL 2.0/3.0, LGPL 2.1/3.0) | https://opengameart.org/content/adventure-begins | orchestral town theme |
+
+Attribution, none of these files changed:
+- "Town 03", "Snow 01", "Beach 02", "Desert 02", "Plains 03", "Swamp 02" and "Opening 03" by Beau Buckley (Fantasy
+  Musica on OpenGameArt.org; his notice: "Just credit Beau Buckley"), CC BY-SA 4.0.
+- "Backstab" and "Hellin" by Ideka (OpenGameArt.org), CC BY-SA 3.0.
+- From the **Ultimate MIDI Pack** (a community MIDI pack made on the Doomworld forums, organised by Ivan Stanton /
+  northivanastan; the OpenGameArt edition leaves out the three remixes of copyrighted songs so that all of it can be
+  CC BY-SA): "You're Winner" by Lippeth, "Happy Destruction" by Bloo, "Pagliacci's Going to Town" and "World of No
+  Sorrow" by TrialD, "A Compact Hell" by Sego; CC BY-SA 4.0. The pack's readme asks for credit and a link to the
+  licence.
+- "Chestnut" by Raymond1206 (https://raymond1206.com), CC BY-SA 4.0.
+- "The Adventure Begins" by bart (Bart Kelsey, OpenGameArt.org), CC BY 3.0.
+
+Not taken from OpenGameArt: covers and remakes of copyrighted songs, and Ultimate MIDI Pack tracks that its readme says
+borrow from Bobby Prince's Doom music ("Dread Factory", "Lost in the Abstraction"), files with no program changes
+(they play as all piano on a General MIDI synth), files with minutes of trailing silence ("Ammo Count: 00"), files the
+author says play wrong as MIDI ("Little Town", Hobgoblin's tracks), mislabelled uploads (Fantasy Musica's "Forest 01"
+holds Fanfare 01, "Dungeon 01" holds Desert 01), and fanfares of a few seconds.
 
 ## Scripture (BIBLE.EXE)
 

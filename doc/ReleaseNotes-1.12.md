@@ -175,8 +175,9 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Snake**, with a high score table on each computer.
   - **Pileup**: RadioCraft's own falling-blocks game. Callers pile into the band; fill a row to work them (a QSO).
     Every 8 QSOs you move up a band, 160m to 70cm, and it gets faster.
-  - **Music Player**: 32 tunes: twelve public-domain classics (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and
-    more) and twenty free tunes from OpenGameArt.org (chiptune, jazz, blues, steel drums, synth rock, ambient). It
+  - **Music Player**: 48 tunes: twelve public-domain classics (Joplin, Beethoven, Mozart, Grieg, Debussy, Bach and
+    more) and thirty-six free tunes from OpenGameArt.org (chiptune, jazz, blues, steel drums, synth and guitar rock, RPG
+    orchestral, lo-fi, ambient), each credited to its author in the list. It
     sounds like a pair of small PC speakers, has a spectrum visualizer, a shuffle (H), and the arrow keys go back and
     on. The music plays on in other programs (a note in the top bar goes back to it) and after **Close**, which leaves the
     player open for next time; only you hear it, fading as you walk away, and it stops past 24 blocks, in another

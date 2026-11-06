@@ -49,6 +49,8 @@ class MusicTracksTest {
 			byte[] bytes = Files.readAllBytes(file);
 			assertEquals("MThd", new String(bytes, 0, 4, StandardCharsets.US_ASCII), track.file() + " is not a MIDI file");
 			assertTrue(credits.contains("`" + track.file() + "`"), track.file() + " is not in doc/Credits-Music.md");
+			// CC BY and CC BY-SA tunes must show their author in the player's list.
+			assertTrue(!track.composer().isBlank(), track.file() + " has no composer to credit");
 		}
 		try(Stream<Path> files = Files.list(folder)) {
 			files.map(p -> p.getFileName().toString()).filter(n -> n.endsWith(".mid"))

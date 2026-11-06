@@ -1,6 +1,7 @@
 # The music player's tracks, in play order: file|title|composer|seconds. The classical pieces are public domain, from
-# the Mutopia Project; the newer tunes are CC0 or CC BY 4.0 from OpenGameArt.org (the CC BY ones credit their author
-# here, which the player shows). See doc/Credits-Music.md for each file's page and licence.
+# the Mutopia Project; the newer tunes are CC0, CC BY or CC BY-SA from OpenGameArt.org (the CC BY and CC BY-SA ones
+# credit their author here, which the player shows). The CC BY-SA files are included unmodified and stay under CC BY-SA.
+# See doc/Credits-Music.md for each file's page and licence.
 entertainer.mid|The Entertainer|Scott Joplin|253
 maple_leaf_rag.mid|Maple Leaf Rag|Scott Joplin|144
 fur_elise.mid|Fur Elise|Ludwig van Beethoven|130
@@ -33,3 +34,19 @@ roll_up.mid|Roll Up|Yubatake (OpenGameArt)|174
 acoustic_guitar_solo.mid|Acoustic Guitar Solo|Tozan|146
 airport_attack.mid|Airport Attack|Ivan Stanton|90
 aftermath.mid|Aftermath|Ivan Stanton|198
+town_03.mid|Town 03|Beau Buckley|100
+youre_winner.mid|You're Winner|Lippeth|173
+chestnut.mid|Chestnut|Raymond1206|111
+backstab.mid|Backstab|Ideka|96
+snow_01.mid|Snow 01|Beau Buckley|92
+adventure_begins.mid|The Adventure Begins|bart|193
+a_compact_hell.mid|A Compact Hell|Sego|137
+beach_02.mid|Beach 02|Beau Buckley|80
+world_of_no_sorrow.mid|World of No Sorrow|TrialD|298
+hellin.mid|Hellin|Ideka|96
+desert_02.mid|Desert 02|Beau Buckley|96
+happy_destruction.mid|Happy Destruction|Bloo|158
+plains_03.mid|Plains 03|Beau Buckley|134
+pagliaccis_going_to_town.mid|Pagliacci's Going to Town|TrialD|223
+swamp_02.mid|Swamp 02|Beau Buckley|111
+opening_03.mid|Opening 03|Beau Buckley|113

@@ -69,6 +69,18 @@ Run `./gradlew runData` first (new and changed lang lines: the key bar, "(shuffl
   instruments: no tune all on piano that should not be, no missing drums, sensible balance. Drop any that sound bad
   (remove its line in `tracks.txt`, its file and its credit).
 
+## 1.12 music: 16 CC BY-SA and CC BY tunes (added 2026-11-06)
+
+No lang change; nothing to regenerate.
+
+- [ ] MUSIC: the list now has 48 tunes. The 16 new ones (Town 03 to Opening 03, after Aftermath) each sound right on
+  Java's built-in instruments: Beau Buckley's RPG pieces (Town, Snow, Beach, Desert, Plains, Swamp, Opening), Ideka's
+  rock guitar (Backstab, Hellin), five from the Ultimate MIDI Pack (You're Winner, Happy Destruction, Pagliacci's Going
+  to Town, World of No Sorrow, A Compact Hell: guitar-heavy, check the distortion guitar is not harsh through the
+  speaker filter), Chestnut (lo-fi) and The Adventure Begins (orchestral). Several render near full scale, so listen
+  for clipping at full volume. The composer column shows each author (Beau Buckley, Ideka, Lippeth, ...). Drop any that
+  sound bad (its line in `tracks.txt`, its file and its credit in `doc/Credits-Music.md`); never edit the files.
+
 ## 1.12 computer apps 2: RTTY, Packet BBS, Propagation Predictor, Repeater Directory, License Study (added 2026-11-06)
 
 - [ ] Craft the five floppies (blank floppy + note block / chest / clock / redstone repeater / lectern); each has its
