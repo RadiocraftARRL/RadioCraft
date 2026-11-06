@@ -1,0 +1,32 @@
+{
+  "name": "RTTY on the Computer",
+  "icon": "radiocraft:floppy_rtty",
+  "category": "radiocraft:computer",
+  "sortnum": 13,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "RTTY",
+      "text": "The $(item)RTTY$() program is a radioteletype terminal: 45.45 baud Baudot with 170 Hz shift, the same RTTY as the $(l:radiocraft:digital/teletype)Teletype Machine$() and the H19, so they all copy each other. Like APRS it goes through a $(item)Radio Interface$() cabled to the computer, under the interface's callsign. RTTY lives on HF: put an HF radio beside the interface (20m around 14.080 MHz is the usual spot)."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "What you type goes into the $(thing)type-ahead buffer$() at once and out on the air at about six characters a second, so you can type ahead of the transmitter. Backspace takes back what has not gone out; Ctrl+X drops the lot. Enter ends the line.$(br2)The receive window prints a line per station, your own copy in yellow. While you send, the receiver is muted (half duplex)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weak signals",
+      "text": "A signal well above the noise prints clean. Near the noise it prints with $(thing)misprints$(), as a real teleprinter does when a bit is lost: a letter one bit away (E for A), or figures where letters should be when a shift is missed (UE for 73). Below that nothing prints. Two stations sending at once garble each other."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Macros and files",
+      "text": "F3 calls CQ, F4 sends the exchange, F5 signs off. F9 edits them: {MYCALL} is your call, {CALL} the station you are working (set it with F10), \\n ends a line.$(br2)F6 sends a text file from the disk. F7 saves the receive window as RTTY0001.TXT (then 0002...), F8 clears it. The program keeps sending and receiving while you are away from the screen."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_rtty",
+      "text": "A blank floppy and a note block (mark and space)."
+    }
+  ]
+}

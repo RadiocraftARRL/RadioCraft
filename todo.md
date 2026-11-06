@@ -699,10 +699,3 @@ An admin-only block (not craftable) for moderating voice on a server. Design agr
     handheld LCD; `/radio moderation unlock <pos>`. Needs a playtest (doc/NeedsTesting.md) and a real model (bounty).
     Left: scrubbing within a playback (play/stop only), narrowband.
 
-
-## Radio computer (1.12 follow-ups, maintainer 2026-11-05)
-
-- [ ] **RTTY program** for the radio computer: live RTTY send/receive through a radio interface (like the TNC's RTTY
-  at 45.45 baud: a line per sender, garbles when weak), with a scrollback, saving received text to a file, and
-  sending a saved text file. Needs its own floppy (none registered yet; the 1.12 programs are listed in
-  `ComputerApps`). See `doc/Plan-1.12.md` Steps 5-7 for how computer programs are built.

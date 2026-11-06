@@ -7,8 +7,8 @@ import java.util.random.RandomGenerator;
 /**
  * Radioteletype as amateurs send it: 45.45 baud ITA2 (Baudot) with mark at 2125 Hz and space 170 Hz above. Each
  * character is a start bit (space), five data bits and one and a half stop bits (mark), about 6 characters a second.
- * Like a teleprinter it only knows capitals, figures and a little punctuation. The data bits come from the character
- * code rather than the real ITA2 table, which sounds the same.
+ * Like a teleprinter it only knows capitals, figures and a little punctuation. The data bits are the real ITA2 codes
+ * ({@link Baudot}, with its letters and figures shifts), and a weak signal misprints the way a real one does.
  */
 public final class Rtty {
 
@@ -69,7 +69,8 @@ public final class Rtty {
 	public static List<short[]> frames(String text, boolean leadIn, double[] phase) {
 		double samplesPerBit = RadioVoiceProcessor.SAMPLE_RATE / BAUD;
 		int lead = leadIn ? (int)(LEAD_IN_SECONDS * RadioVoiceProcessor.SAMPLE_RATE) : 0;
-		int body = (int)Math.ceil(text.length() * BITS_PER_CHAR * samplesPerBit);
+		int[] codes = Baudot.encode(text);
+		int body = (int)Math.ceil(codes.length * BITS_PER_CHAR * samplesPerBit);
 		int total = (lead + body + RepeaterAudio.FRAME - 1) / RepeaterAudio.FRAME * RepeaterAudio.FRAME;
 		double[] samples = new double[Math.max(total, RepeaterAudio.FRAME)];
 		for(int i = 0; i < samples.length; i++) {
@@ -77,7 +78,7 @@ public final class Rtty {
 			int inBody = i - lead;
 			if(inBody >= 0 && inBody < body) {
 				double bit = (inBody / samplesPerBit) % BITS_PER_CHAR;
-				int c = text.charAt(Math.min(text.length() - 1, (int)(inBody / samplesPerBit / BITS_PER_CHAR)));
+				int c = codes[Math.min(codes.length - 1, (int)(inBody / samplesPerBit / BITS_PER_CHAR))];
 				if(bit < 1.0D)
 					mark = false; // Start bit.
 				else if(bit < 6.0D)
