@@ -252,6 +252,12 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   teleprinter instead of printing random characters.
 - A radio interface no longer digipeats messages addressed to its own callsign under another SSID (W1BTR-1 at a
   W1BTR station), so a BBS's own station does not repeat its traffic.
+- The radio computer lists its programs alphabetically (in every launcher, `DIR` and INSTALL), built-in and installed
+  ones together.
+- MUSIC keeps 0.4 s of sound ahead, so the world lagging no longer makes tunes skip, and the visualizer's bars follow
+  what you hear.
+- Commercial CW beacons, beepers and numbers stations no longer make the server stutter every 30 seconds when they all
+  start a transmission together (their Morse and tones are made far faster and the fixed ones only once).
 
 ### Not finished yet
 

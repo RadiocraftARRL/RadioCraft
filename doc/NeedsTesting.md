@@ -30,6 +30,19 @@ it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
   A and C, the knob kept: ZB CH20 from ZA CH4); **A** shows the unit ID and **D** the frequency for 3 s; the number
   keys only click. Hovering a knob or A-D shows what it does. The lamp on top lights red/green.
 
+## 1.12 performance fixes: music cushion, alphabetical programs (added 2026-11-06)
+- [ ] MUSIC: play a tune, then make the game hitch (open a big inventory, fly fast into new chunks, alt-tab): the tune
+  carries on without skipping. Short stalls under about 0.4 s are not heard any more.
+- [ ] MUSIC visualizer: the bars move with what you hear (a drum hit and its bar together), not ahead of it; at the end
+  of a tune the bars follow the last notes out; pause stops the bars and they sink.
+- [ ] MUSIC: Stop, Next and starting another tune still cut the old one off at once (the bigger buffer is dropped, not
+  played out).
+- [ ] Programs are listed alphabetically by their name (case does not matter), built-in and installed ones mixed, in the
+  classic list, the Program Manager icons, RC-DOS `DIR` and INSTALL's "installed" list. Installing a program puts it in
+  its alphabetical place, not at the end.
+- [ ] Opening the computer: the first open after starting the game shows the screen within a second (with `debug.log`,
+  look for "Radio computer screen: first frame" and "Radio computer request open took" lines for the timings).
+
 ## 1.12 launcher views, SETUP, colour schemes, ABOUT, built-in STUDY (added 2026-11-06)
 Needs `runData` first (new lang; the License Study floppy and its recipe are gone; the computer recipe's diamond is a
 diamond block).

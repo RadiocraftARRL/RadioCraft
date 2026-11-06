@@ -2199,3 +2199,55 @@ only), `test` 678/678, `runGameTestServer` all 507 required passed.
 
 **Left / for the playtest**: everything rendered (hand, GUI, ground, frame, head, charger, all 16 dyes) and the screen
 by hand; the overlays at z +0.01 may z-fight at a distance (raise to +0.02 if so). The website wiki was not touched.
+
+### Performance fixes (2026-11-06)
+
+The maintainer reported a 1.2 GB heap, a 4 s freeze on the first computer open, clicks on the computer doing nothing
+for seconds, MUSIC skipping when the world lagged, and TPS drops since the day's apps and theming.
+
+**The freezes were the disk, not the code.** A stray recursive `grep` over the whole E: drive had been running since
+10:26 and kept the drive at 750 % busy with 250 ms reads; the client's JFR showed the render thread waiting 0.4-1.7 s
+per class file and texture on the first use of each screen (the computer screen loads dozens of new classes and 26
+icon PNGs on first open), and slow saves. Killed at 13:20. The computer's open path was reviewed and is cheap: the
+server sends the program list, drive, serial, password flag and SETUP settings (file lists carry no contents; a file
+is read only when opened), and the client screen does nothing heavy in `init`. Debug timings now log both sides
+("Radio computer request open took", "Radio computer screen: first frame"), so a slow open can be measured next time.
+
+**TPS.** Measured on a copy of the maintainer's "New World" on a dedicated dev server (13 x 13 force-loaded chunks
+around the player's base, 18 `/tick query` samples over 3 minutes after a 90 s warm-up), with the same AWM jar:
+
+| Build | mean ms/tick | median P50 | median P95 | worst P99 | windows with a tick over 100 ms |
+|---|---|---|---|---|---|
+| 41162b66 (before the 2026-11-06 commits) | 3.83 | 3.35 | 4.30 | 167.9 | 4 of 18 |
+| bb42910d (the day's commits) | 3.89 | 3.40 | 4.55 | 196.4 | 4 of 18 |
+| with the station fix | 3.47 | 3.50 | 4.40 | 14.7 | 0 of 18 |
+
+The day's commits (Repeater Directory lookup per voice frame, RTTY/Baudot, BBS, License Study, FCC badge lookups, RWI
+gating) cost nothing measurable. The spikes were older: a JFR of the server showed every 30 s tick of ~170 ms spent
+in `StationProgram.start`, i.e. every commercial CW beacon (all on the same 30 s period from the same start tick)
+synthesising its Morse with a `Math.sin` per sample at 48 kHz, plus the numbers stations' minute of Morse.
+`RepeaterAudio.tone` now turns a unit phasor (multiply-add per sample, renormalised every 4096 samples) and a beacon's
+or beeper's fixed transmission and the numbers chime are made once and queued again (listeners clone frames, so
+sharing them is safe). The remaining steady cost on that world is `RadioVoiceProcessor.process` for radios receiving
+the commercial stations (about a third of the server thread's samples), unchanged by today's work.
+
+**AWM allocation.** 44 % of the game's allocation (integrated server) was `EnumSet.noneOf` in `WeatherModel.sample`, called by
+`WindPush` for every entity near a storm every other tick. Samples now build their hazards as a bitmask and share one
+unmodifiable set per combination, the player tracker keeps that set instead of copying it, and `WindPush` reads only
+the storm field's wind (no biome lookup, no hazards). AWM commit 1a7cd03; jar copied to `libs/`.
+
+**MUSIC.** The line buffer was 4096 frames (93 ms), so any hitch underran it. It is now 0.4 s, the audio thread runs at
+`MAX_PRIORITY`, and `MusicSpectrum` keeps each hop's bars with the sample count it was taken at; the audio thread says
+how many frames have been heard (`played`, from the line's queued bytes) and the bars show the newest hop already
+heard, including while the tail plays out. Gervill renders much faster than real time, so a full line is the
+rendering-ahead cushion.
+
+**Programs alphabetical.** `ComputerSession.apps()` sorts by the translated name, ignoring case (id as tie-break),
+built-in and installed programs mixed (nothing grouped them before: the order was `ComputerApps` registration order).
+Every launcher view, `DIR`, Tab completion and INSTALL's list go through it.
+
+**Not done.** The wire block-state reduction (52 wire blocks x 3840 states, about 200k of the ~232k block states and
+most of the state-table heap) was dropped at the maintainer's word: the states existed before and memory is not the
+complaint. `LevelRenderer.renderSky` deoptimizing ~16,000 times (unstable_if at the star-brightness check) has no
+RadioCraft or AWM hook behind it (neither touches the sky render or star brightness; RadioCraft's aurora draws after
+the sky); left alone.
