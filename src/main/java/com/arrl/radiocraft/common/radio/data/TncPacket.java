@@ -33,7 +33,9 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 
 	public enum Kind { BEACON, MESSAGE, RTTY, FILE_HEADER, FILE, ACK, FAX_CALL, FAX_ANSWER, FAX_PACKET, FAX_ACK, SOLAR, QUERY, ALERT,
 		/** A Simple Weather Alert Generator's alerts on 162.500 MHz, a line each (see {@code wxalert.WeatherAlertPacket}). */
-		WX_ALERT }
+		WX_ALERT,
+		/** An FT8 message ({@code ft8.Ft8Message}): "message|offset", and "|snr" added by the radio that decodes it. */
+		FT8 }
 
 	/** A message to this callsign is for every station that hears it, as a bulletin. */
 	public static final String EVERYONE = "ALL";
@@ -103,6 +105,40 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 
 	public static TncPacket rtty(long id, String from, String text) {
 		return new TncPacket(id, Kind.RTTY, sanitizeCallsign(from), "", Rtty.sanitize(text, RTTY_TEXT_MAX), null, AprsIcon.HOUSE.name(), 0, ItemStack.EMPTY);
+	}
+
+	/**
+	 * An FT8 transmission (computer batch 3B): {@code message} (as {@code Ft8Message#encode} writes it) at audio offset
+	 * {@code offsetHz}. The radio that decodes it adds the SNR it measured ({@link #withFt8Snr}).
+	 */
+	public static TncPacket ft8(long id, String from, String message, int offsetHz) {
+		return new TncPacket(id, Kind.FT8, sanitizeCallsign(from), "", sanitizeText(message.replace("|", " "), 40) + "|" + offsetHz, null, AprsIcon.HOUSE.name(), 0, ItemStack.EMPTY);
+	}
+
+	/** An FT8 packet's message, without its offset and SNR. */
+	public String ft8Message() {
+		int bar = text.indexOf('|');
+		return bar < 0 ? text : text.substring(0, bar);
+	}
+
+	/** An FT8 packet's audio offset in Hz, 0 if it has none. */
+	public int ft8Offset() {
+		String[] parts = text.split("\\|");
+		return parts.length > 1 ? digits(parts[1]) : 0;
+	}
+
+	/** The SNR the decoding radio measured, in dB; {@code Integer.MIN_VALUE} if none was added. */
+	public int ft8Snr() {
+		String[] parts = text.split("\\|");
+		if(parts.length < 3 || parts[2].isEmpty())
+			return Integer.MIN_VALUE;
+		boolean negative = parts[2].charAt(0) == '-';
+		return negative ? -digits(parts[2].substring(1)) : digits(parts[2]);
+	}
+
+	/** The same FT8 packet as a radio decoded it at {@code snr} dB. */
+	public TncPacket withFt8Snr(int snr) {
+		return withText(ft8Message() + "|" + ft8Offset() + "|" + snr);
 	}
 
 	/** Most characters a solar bulletin carries: the whole report, lines joined by {@link #SOLAR_LINE_BREAK}. */

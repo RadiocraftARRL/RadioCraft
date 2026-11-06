@@ -137,6 +137,7 @@ public final class SchedulerApp extends DosApp {
 			case WEFAX -> job.file();
 			case BEACON -> Dos.tr("sched.details.beacon");
 			case REMINDER -> (job.to().isEmpty() ? "" : job.to() + ": ") + job.text();
+			case FT8_CQ -> Dos.tr("sched.details.ft8", com.arrl.radiocraft.common.computer.apps.Ft8Handler.SCHEDULED_CQ_MINUTES);
 		};
 	}
 
@@ -222,7 +223,7 @@ public final class SchedulerApp extends DosApp {
 		showDialog(DosDialog.choice(Dos.tr("sched.add_title"), Dos.tr("sched.add_which"), buttons, i -> {
 			if(i >= 0 && i < kinds.length)
 				form(new Schedule.Job(0, kinds[i], kinds[i] == Schedule.Kind.REMINDER ? Schedule.When.DAILY_GAME : Schedule.When.EVERY,
-						kinds[i] == Schedule.Kind.REMINDER ? 20 * 60 : kinds[i] == Schedule.Kind.STATION_ID ? 10 : 30, true, "", "", "", 0L));
+						kinds[i] == Schedule.Kind.REMINDER ? 20 * 60 : kinds[i] == Schedule.Kind.STATION_ID ? 10 : kinds[i] == Schedule.Kind.FT8_CQ ? 60 : 30, true, "", "", "", 0L));
 		}));
 	}
 

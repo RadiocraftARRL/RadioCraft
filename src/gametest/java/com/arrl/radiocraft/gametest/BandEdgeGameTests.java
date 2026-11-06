@@ -192,7 +192,9 @@ public class BandEdgeGameTests {
 		finally {
 			RadiocraftServerConfig.BAND_PLAN_MARKERS.set(before);
 		}
-		helper.assertTrue(BandPlan.current().markers().size() == BandPlan.DEFAULT_MARKERS.size(), "Markers should be back to the defaults");
+		// Back to what the config had: the defaults on a new config, an older default list on one written before
+		// markers were added (computer batch 3B added the FT8 ones; configs keep their own list).
+		helper.assertTrue(BandPlan.current().markers().size() == BandPlan.parse(List.of(), before).markers().size(), "Markers should be back to the config's");
 		List<BandPlan.Row> rows = BandPlan.current().rows(BandPlan.sheetBands());
 		helper.assertTrue(rows.size() == 7, "Seven bands on the sheet, was " + rows.size());
 		helper.succeed();

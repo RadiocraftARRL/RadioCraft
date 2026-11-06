@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "SCHEDULE",
-      "text": "The $(item)Scheduler$() runs jobs on time with nobody at the screen, as long as the computer has power and its chunk is loaded:$(li)a $(thing)station ID$(): your callsign in Morse through the radio;$(li)a $(thing)WEFAX chart$() from the disk;$(li)an $(thing)APRS beacon$();$(li)a $(thing)reminder$() for a net."
+      "text": "The $(item)Scheduler$() runs jobs on time with nobody at the screen, as long as the computer has power and its chunk is loaded:$(li)a $(thing)station ID$(): your callsign in Morse through the radio;$(li)a $(thing)WEFAX chart$() from the disk;$(li)an $(thing)APRS beacon$();$(li)a $(thing)reminder$() for a net;$(li)ten minutes of $(thing)FT8 CQ$() (FT8 installed), logging what it works."
     },
     {
       "type": "patchouli:text",
@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "The Rules",
-      "text": "Jobs that transmit go out like the station's other programs: through a $(l:radiocraft:radios/station_accessories)radio interface$() with its transmit switch on and a radio switched on, under the interface's callsign. WEFAX jobs need $(thing)WEFAX$() installed, beacons $(thing)APRS$().$(br2)A reminder goes to chat for players within 16 blocks and onto the screen, or as an APRS message if you give a callsign."
+      "text": "Jobs that transmit go out like the station's other programs: through a $(l:radiocraft:radios/station_accessories)radio interface$() with its transmit switch on and a radio switched on, under the interface's callsign. WEFAX jobs need $(thing)WEFAX$() installed, beacons $(thing)APRS$(), FT8 CQ $(thing)FT8$().$(br2)A reminder goes to chat for players within 16 blocks and onto the screen, or as an APRS message if you give a callsign."
     },
     {
       "type": "patchouli:text",

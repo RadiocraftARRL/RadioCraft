@@ -48,7 +48,12 @@ public final class Schedule {
 		/** Sends an APRS position beacon, through the APRS program. */
 		BEACON,
 		/** A reminder: on the screen and in chat to players near the computer, or as an APRS message to a callsign. */
-		REMINDER;
+		REMINDER,
+		/**
+		 * Calls CQ on FT8 for {@code Ft8Handler#SCHEDULED_CQ_MINUTES} through the FT8 program, auto-sequencing and logging
+		 * any contact (computer batch 3B).
+		 */
+		FT8_CQ;
 
 		public String id() {
 			return name().toLowerCase(Locale.ROOT);

@@ -649,6 +649,7 @@ public final class ModerationLog {
 			case FAX_CALL, FAX_ANSWER, FAX_PACKET, FAX_ACK -> packet.from() + ">" + packet.to() + ": " + packet.faxLabel();
 			case SOLAR, ALERT, WX_ALERT -> packet.from() + ": " + String.join(" / ", packet.solarLines());
 			case QUERY -> packet.from() + ": " + packet.text();
+			case FT8 -> packet.from() + ": " + packet.ft8Message();
 			case ACK -> packet.from() + ">" + packet.to() + " ack";
 		};
 		if(!packet.item().isEmpty())

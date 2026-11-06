@@ -61,6 +61,13 @@ public final class LogbookApp extends DosApp {
 		load(name, false);
 	}
 
+	/** FT8 logged a contact into a log file (computer batch 3B): if it is the one open, read it again. */
+	@Override
+	public void event(String kind, CompoundTag data) {
+		if(kind.equals("reload") && loaded && data.getString("file").equals(fileName))
+			load(fileName, true);
+	}
+
 	// -------------------- THE FILE --------------------
 
 	/** Reads {@code name}; a missing one is a new, empty log if {@code missingIsNew}. */

@@ -1,0 +1,33 @@
+{
+  "name": "FT8",
+  "icon": "radiocraft:floppy_ft8",
+  "category": "radiocraft:computer",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "FT8",
+      "text": "$(item)FT8$() is the weak-signal digital mode: stations take turns in $(thing)15 second slots$(), even and odd, each sending one short message of eight slow tones. It copies far under where voice and RTTY are lost: about 12 dB weaker than RTTY needs. It goes through a $(l:radiocraft:radios/station_accessories)radio interface$() like the other radio programs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Getting On",
+      "text": "Put an HF radio on the band's FT8 frequency: 3.573, 7.074, 14.074 or 28.074 MHz (144.174 on 2m). F6 tunes the radio there for you. At the end of each slot the decodes appear: time, SNR in dB, audio offset and message. $(thing)CQ$() lines are green, anything for you is red, your own transmissions yellow."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A Contact",
+      "text": "Click a CQ (or press Enter on it) to answer it, or F3 to call CQ yourself. The program does the rest: your grid, the signal reports, R, RR73 and 73, a slot at a time. A message that did not get through is sent again. When the contact is complete it goes in the $(l:radiocraft:computer/book_editor)Logbook$()'s LOGBOOK.LOG by itself, with the reports and the other station's grid."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Settings",
+      "text": "F4 halts, F5 turns TX on and off, F7 sets your audio offset (pick a clear spot on the passband strip), F8 swaps even and odd. Your grid square comes from where the computer stands. Slots run on game time, so every station on the server stays in step.$(br2)The $(l:radiocraft:computer/scheduler)Scheduler$() can call CQ on FT8 for ten minutes at a time."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_ft8",
+      "text": "A blank floppy and any pressure plate."
+    }
+  ]
+}

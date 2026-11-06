@@ -158,7 +158,8 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 
 	/** The default markers. 144.390 is the APRS frequency the mod uses ({@code handheld_aprs_frequency_mhz}). */
 	public static final List<String> DEFAULT_MARKERS = List.of(
-			"3.845|SSTV", "7.171|SSTV", "14.070|PSK31", "14.230|SSTV calling",
+			"3.573|FT8", "3.845|SSTV", "7.074|FT8", "7.171|SSTV", "14.070|PSK31", "14.074|FT8", "14.230|SSTV calling",
+			"28.074|FT8", "144.174|FT8", // The FT8 dial frequencies (computer batch 3B, Ft8.DIAL_HZ).
 			"14.300|Emergency / maritime net", "28.680|SSTV", "29.600|10m FM simplex calling",
 			"144.200|SSB calling", "144.390|APRS", "146.520|National simplex calling",
 			"151.820|MURS 1", "151.880|MURS 2", "151.940|MURS 3", "154.570|MURS 4", "154.600|MURS 5",

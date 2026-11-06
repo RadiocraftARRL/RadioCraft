@@ -314,6 +314,7 @@ public final class SchedulerHandler implements ComputerAppHandler {
 				yield AprsHandler.beacon(computer, AprsHandler.state(computer)) ? null : "station_no_radio";
 			}
 			case REMINDER -> reminder(computer, level, job);
+			case FT8_CQ -> Ft8Handler.startCq(computer, Ft8Handler.SCHEDULED_CQ_MINUTES); // Computer batch 3B.
 		};
 	}
 
