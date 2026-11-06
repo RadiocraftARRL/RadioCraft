@@ -1,0 +1,33 @@
+{
+  "name": "Awards",
+  "icon": "radiocraft:floppy_awards",
+  "category": "radiocraft:computer",
+  "sortnum": 22,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Awards",
+      "text": "The $(item)Awards$() program reads your $(l:radiocraft:computer/book_editor)logbook$() (LOGBOOK.LOG, or F3 for another) and tracks operating awards. $(thing)Every contact counts$(): nothing needs confirming. Each award has levels; Enter shows what you have worked and what is still missing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Awards",
+      "text": "Worked All Biomes, Worked All Dimensions, Worked All Bands (80, 40, 20, 10 and 2 m), Worked All Modes (phone, CW, RTTY, FT8, SSTV), the Contact Ladder, Stations Worked, Grid Chaser, Long Haul (the longest contact), Night Owl (contacts at night) and a ladder for each mode. F6 shows the distance records per band and per mode."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where They Were",
+      "text": "A station the logbook filled in from a radio is placed by the $(thing)grid square$() it was heard from (squares of 256 blocks), its dimension and the biome at the square's centre. An FT8 contact or a typed grid works the same. Distances are to the nearest 100 blocks. No exact positions are ever kept."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Certificates",
+      "text": "F5 prints the selected award's certificate for the level you reached, on the $(l:radiocraft:computer/scanner)scanner$(): on paper or an empty map as a printout, on photo paper as a photo. Frame it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_awards",
+      "text": "A blank floppy and an item frame."
+    }
+  ]
+}
