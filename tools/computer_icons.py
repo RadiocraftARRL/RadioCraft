@@ -103,9 +103,13 @@ def waves(i, x, y, c=LR, n=3):
 
 
 def floppy(i, x0, y0, s=14, body=B):
-    i.rect(x0, y0, x0 + s, y0 + s, fill=body)
-    i.rect(x0 + 3, y0, x0 + s - 3, y0 + 4, fill=L)
-    i.rect(x0 + 3, y0 + s - 5, x0 + s - 3, y0 + s, fill=W)
+    """A 3.5 inch disk: a body with one clipped corner, a metal shutter with its window, a label inset below."""
+    x1, y1 = x0 + s, y0 + s
+    i.poly([(x0, y0), (x1 - 2, y0), (x1, y0 + 2), (x1, y1), (x0, y1)], fill=body)
+    i.rect(x0 + 3, y0 + 1, x1 - 4, y0 + 5, fill=L, outline=None)
+    i.rect(x1 - 7, y0 + 2, x1 - 6, y0 + 4, fill=D, outline=None)
+    i.rect(x0 + 3, y1 - 6, x1 - 3, y1 - 2, fill=W, outline=None)
+    i.line([(x0 + 4, y1 - 5), (x1 - 4, y1 - 5)], D)
 
 
 # -------------------- THE ICONS --------------------
@@ -134,8 +138,8 @@ def bandplan():
 
 
 def install():
-    i = Icon(); floppy(i, 9, 2, 14)
-    i.poly([(16, 18), (24, 24), (16, 30), (16, 27), (8, 27), (8, 21), (16, 21)], fill=LG); i.save('install')
+    i = Icon(); floppy(i, 8, 1, 15)
+    i.poly([(13, 19), (19, 19), (19, 24), (23, 24), (16, 30), (9, 24), (13, 24)], fill=LG); i.save('install')
 
 
 def setup():
@@ -191,9 +195,13 @@ def solar():
 
 
 def aprs():
+    """A map pin on a green map."""
     i = Icon(); i.rect(2, 4, 29, 27, fill=LG)
-    i.line([(2, 18), (12, 12), (20, 20), (29, 10)], N, 1)
-    i.poly([(14, 6), (20, 6), (17, 12)], fill=LR); i.rect(16, 3, 18, 6, fill=LR); i.save('aprs')
+    i.poly([(10, 13), (22, 13), (16, 25)], fill=LR, outline=None)
+    i.ellipse(9, 6, 23, 19, fill=LR, outline=None)
+    i.line([(10, 15), (16, 25), (22, 15)], K)
+    i.d.arc([9, 6, 23, 19], 150, 30, fill=rgb(K))
+    i.ellipse(14, 10, 18, 14, fill=W, outline=None); i.save('aprs')
 
 
 def wefax():
@@ -274,10 +282,19 @@ def propagation():
 
 
 def repeaters():
-    i = Icon(); i.poly([(16, 3), (22, 29), (10, 29)], fill=None)
-    i.line([(13, 17), (19, 17)], K); i.line([(12, 23), (20, 23)], K); i.line([(14, 11), (18, 11)], K)
-    waves(i, 16, 5, LR, 2)
-    i.d.arc([4, 0, 28, 10], 120, 240, fill=rgb(LR)); i.rect(14, 1, 18, 4, fill=LR); i.save('repeaters')
+    """A lattice tower with signal arcs either side of its top, centred on the mast."""
+    i = Icon(); top = 10
+    i.line([(16, top), (10, 29)], L); i.line([(16, top), (22, 29)], L)
+    for y in (14, 20, 26):
+        half = 1 + (y - top) * 6 // 21
+        i.line([(16 - half, y), (16 + half, y)], L)
+    i.line([(16 - 2, 14), (16 + 4, 20)], L); i.line([(16 + 4, 20), (16 - 5, 26)], L)
+    i.line([(16, top - 3), (16, top)], L)
+    i.rect(15, top - 4, 17, top - 2, fill=LR, outline=None)
+    for r in (5, 9):
+        i.d.arc([16 - r, top - 3 - r, 16 + r, top - 3 + r], 315, 45, fill=rgb(LR))
+        i.d.arc([16 - r, top - 3 - r, 16 + r, top - 3 + r], 135, 225, fill=rgb(LR))
+    i.save('repeaters')
 
 
 ALL = [edit, sysinfo, bandplan, install, setup, about, license_study, bookedit, logbook, freqman, programmer, solar,
