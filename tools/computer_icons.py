@@ -297,8 +297,26 @@ def repeaters():
     i.save('repeaters')
 
 
+def saver():
+    """A monitor with a starfield on its black screen (computer batch 3A)."""
+    i = Icon(); monitor(i, screen=K)
+    for (x, y, c) in [(8, 7, W), (20, 6, L), (14, 10, W), (24, 12, D), (10, 15, L), (18, 16, W), (6, 11, D), (22, 9, W)]:
+        i.px(x, y, c)
+    i.rect(15, 12, 16, 13, fill=Y, outline=None); i.save('saver')
+
+
+def scheduler():
+    """A wall clock with a little bell on top (computer batch 3A)."""
+    i = Icon(); i.ellipse(4, 6, 27, 29, fill=W); i.ellipse(6, 8, 25, 27, fill=None, outline=L)
+    for (x, y) in [(15, 9), (15, 25), (7, 17), (23, 17)]:
+        i.rect(x, y, x + 1, y + 1, fill=K, outline=None)
+    i.line([(16, 18), (16, 11)], K, 2); i.line([(16, 18), (21, 21)], LR, 2)
+    i.poly([(12, 5), (16, 1), (20, 5)], fill=Y); i.save('scheduler')
+
+
 ALL = [edit, sysinfo, bandplan, install, setup, about, license_study, bookedit, logbook, freqman, programmer, solar,
-       aprs, wefax, radiofax, sstv, df, snake, pileup, music, bible, adsb, rtty, bbs, propagation, repeaters]
+       aprs, wefax, radiofax, sstv, df, snake, pileup, music, bible, adsb, rtty, bbs, propagation, repeaters, saver,
+       scheduler]
 
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)

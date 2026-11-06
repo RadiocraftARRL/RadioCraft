@@ -84,6 +84,11 @@ public final class ComputerApps {
 	 * computer draws less power while it does. Found in the world only (loot), like the games.
 	 */
 	public static final ComputerApp SCREENSAVER = add("saver", "SAVER", ComputerApp.Kind.SECRET);
+	/**
+	 * Timed jobs with nobody at the screen: an automatic station ID in Morse, WEFAX broadcasts of a saved chart, an APRS
+	 * beacon every so often, net reminders. Runs while the computer has power and its chunk is loaded.
+	 */
+	public static final ComputerApp SCHEDULER = add("scheduler", "SCHEDULE", ComputerApp.Kind.CRAFTED);
 
 	private ComputerApps() {}
 

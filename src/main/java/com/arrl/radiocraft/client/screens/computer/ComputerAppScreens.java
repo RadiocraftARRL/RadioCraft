@@ -80,6 +80,7 @@ public final class ComputerAppScreens {
 		register(ComputerApps.MUSIC, com.arrl.radiocraft.client.screens.computer.apps.MusicApp::new);
 		register(ComputerApps.BIBLE, com.arrl.radiocraft.client.screens.computer.apps.BibleApp::new);
 		register(ComputerApps.SCREENSAVER, com.arrl.radiocraft.client.screens.computer.apps.SaverApp::new); // Computer batch 3A.
+		register(ComputerApps.SCHEDULER, com.arrl.radiocraft.client.screens.computer.apps.SchedulerApp::new);
 
 		// Floppy labels (0xRRGGBB): office programs blue, radio programs red, the secret ones gold, ADS-B green.
 		label(ComputerApps.BOOK_EDITOR, 0x3A6FD8);
@@ -102,6 +103,7 @@ public final class ComputerAppScreens {
 		label(ComputerApps.PROPAGATION, 0xF0D040);
 		label(ComputerApps.REPEATERS, 0x7A1E1E);
 		label(ComputerApps.SCREENSAVER, 0x6A50D8); // Computer batch 3A: a starry violet among the gold secret disks.
+		label(ComputerApps.SCHEDULER, 0x2F8F8F); // Teal: a station utility, between office blue and radio red.
 	}
 
 	private ComputerAppScreens() {}

@@ -24,5 +24,6 @@ public final class RadioApps {
 		ComputerAppHandlers.register(ComputerApps.BBS, new BbsHandler());
 		ComputerAppHandlers.register(ComputerApps.PROPAGATION, new PropagationHandler());
 		ComputerAppHandlers.register(ComputerApps.REPEATERS, new RepeaterDirectoryHandler());
+		ComputerAppHandlers.register(ComputerApps.SCHEDULER, new SchedulerHandler()); // Computer batch 3A.
 	}
 }

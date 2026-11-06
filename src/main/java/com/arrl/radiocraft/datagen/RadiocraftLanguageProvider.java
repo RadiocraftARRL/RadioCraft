@@ -623,6 +623,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.LicenseStudyLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.FloppyLang.add(provider); // Computer batch 3A: data floppies.
 			com.arrl.radiocraft.datagen.lang.SaverLang.add(provider); // Computer batch 3A: the screensaver.
+			com.arrl.radiocraft.datagen.lang.SchedulerLang.add(provider); // Computer batch 3A: the scheduler.
 			addAdsb(provider);
 			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
 			addFccGear(provider);
@@ -1663,7 +1664,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			Map.entry("df", "Direction Finding"), Map.entry("snake", "Snake"), Map.entry("falling_blocks", "Pileup"),
 			Map.entry("music", "Music Player"), Map.entry("bible", "Bible"), Map.entry("adsb", "ADS-B"),
 			Map.entry("rtty", "RTTY"), Map.entry("bbs", "Packet BBS"), Map.entry("propagation", "Propagation Predictor"),
-			Map.entry("repeaters", "Repeater Directory"), Map.entry("saver", "Screensaver"));
+			Map.entry("repeaters", "Repeater Directory"), Map.entry("saver", "Screensaver"),
+			Map.entry("scheduler", "Scheduler"));
 
 	/** FCC field gear (1.12 step 10): the hat, jacket, seal banner pattern and banner names, the badge, its tooltips, messages and command. */
 	private static void addFccGear(LanguageProvider provider) {

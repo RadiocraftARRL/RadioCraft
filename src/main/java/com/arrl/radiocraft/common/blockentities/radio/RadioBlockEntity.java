@@ -367,6 +367,21 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         return true;
     }
 
+    /**
+     * Sends {@code callsign} in Morse (20 wpm, the repeaters' CW ID tone) as an automatic station ID, the radio
+     * computer's scheduler's (computer batch 3A): through the DTMF encoder's path, on the radio's transmit frequency
+     * with its CTCSS tone, so the same rules hold (a transmitter, switched on, not blown).
+     *
+     * @return True if the ID will go out.
+     */
+    public boolean sendMorseId(String callsign) {
+        String call = com.arrl.radiocraft.common.radio.voice.RepeaterAudio.sanitizeCallsign(callsign);
+        if(call.isEmpty() || !hasTransmitter() || isBlown() || !isPowered())
+            return false;
+        dtmfFrames.addAll(com.arrl.radiocraft.common.radio.voice.RepeaterAudio.morse("DE " + call));
+        return true;
+    }
+
     /** True while DTMF tones are going out or waiting to. */
     public boolean isSendingDtmf() {
         return !dtmfFrames.isEmpty();

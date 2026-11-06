@@ -278,6 +278,8 @@ public final class ComputerSession {
 		}
 		else if("event".equals(kind)) {
 			String app = data.getString("app");
+			if(ComputerApps.SCHEDULER.id().equals(app) && "notice".equals(data.getString("kind"))) // A reminder, whatever is in front.
+				session.message(Dos.tr("sched.notice", data.getCompound("data").getString("text")), false);
 			if(ComputerApps.SETUP.id().equals(app) && "settings".equals(data.getString("kind")))
 				session.learn(data.getCompound("data")); // Someone changed SETUP: every screen at the computer follows.
 			for(DosApp running : new ArrayList<>(session.stack))

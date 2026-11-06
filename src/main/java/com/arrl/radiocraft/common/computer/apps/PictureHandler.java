@@ -205,17 +205,28 @@ public abstract class PictureHandler implements ComputerAppHandler {
 	/** Sends the picture {@code name} to everyone in range; null if it went, else an error key. */
 	@Nullable
 	protected String send(ComputerContext context, String name) {
+		return send(context.computer(), name);
+	}
+
+	/**
+	 * Sends the picture {@code name} on {@code computer}'s disk to everyone in range, with nobody at the screen (the
+	 * scheduler's WEFAX broadcasts, computer batch 3A); null if it went, else an error key.
+	 */
+	@Nullable
+	public String send(RadioComputerBlockEntity computer, String name) {
+		if(!(computer.getLevel() instanceof ServerLevel level))
+			return "station_no_radio";
 		String file = ComputerStorage.normalise(name);
-		byte[] pixels = file == null ? null : context.files().read(file);
+		byte[] pixels = file == null ? null : computer.files().read(file);
 		if(pixels == null || !ComputerFileFormats.isImage(pixels))
 			return "picture_not_image";
-		StationBus bus = context.bus();
+		StationBus bus = RadioStation.bus(computer);
 		String problem = RadioStation.cannotSend(bus);
 		if(problem != null)
 			return problem;
-		TncPacket packet = TncPacket.file(RadioStation.newId(context.level()), bus.callsign(), "",
+		TncPacket packet = TncPacket.file(RadioStation.newId(level), bus.callsign(), "",
 				FileTransfer.image(outgoing(pixels), file.substring(0, file.indexOf('.')), mode()));
-		return RadioStation.transmit(context.computer(), bus, packet) ? null : "station_no_radio";
+		return RadioStation.transmit(computer, bus, packet) ? null : "station_no_radio";
 	}
 
 	// -------------------- RECEIVING --------------------

@@ -1495,6 +1495,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.BBS, Items.CHEST); // The mailbox.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.PROPAGATION, Items.CLOCK); // The hours ahead.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.REPEATERS, Items.REPEATER);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SCHEDULER, Items.BELL); // Computer batch 3A: it rings the hours (proposed).
         programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())
                 .requires(ingredient)
