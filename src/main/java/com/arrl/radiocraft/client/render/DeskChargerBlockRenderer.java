@@ -22,8 +22,8 @@ import software.bernie.geckolib.renderer.GeoBlockRenderer;
  * <p>
  * Handles rendering of the desk charger model with dynamic LED indicators via
  * {@link BlinkingAutoGlowingGeoLayer}. A VHF handheld in the slot is drawn with its own 3D model standing in the
- * cradle, its LCD showing its main display while it is switched on; anything else in the slot shows the model's own
- * Radio bone.
+ * cradle, its LCD showing its main display while it is switched on; a commercial handheld with its own 3D model (both
+ * stand on their battery at {@link #MODEL_BOTTOM}); anything else in the slot shows the model's own Radio bone.
  */
 public class DeskChargerBlockRenderer extends GeoBlockRenderer<DeskChargerBlockEntity> {
 
@@ -51,8 +51,10 @@ public class DeskChargerBlockRenderer extends GeoBlockRenderer<DeskChargerBlockE
 
         // Hide the "Radio" bone if there's no radio in the charger slot, or a handheld drawn with its own model
         var stack = blockEntity.inventory.getStackInSlot(0);
-        // The ham handheld draws itself (its LCD); a commercial or marine one shows as the charger's own radio for now.
-        boolean handheld = stack != null && stack.getItem() instanceof VHFHandheldItem && !VHFHandheldItem.isChannelized(stack);
+        // The ham handheld draws itself (its LCD), the commercial handhelds their own 3D models (dyed case); a marine one
+        // (a flat sprite still) shows as the charger's own radio.
+        boolean handheld = stack != null && stack.getItem() instanceof VHFHandheldItem
+                && (!VHFHandheldItem.isChannelized(stack) || com.arrl.radiocraft.common.items.CommercialHandheldItem.is(stack));
         try {
             var bone = MODEL.getAnimationProcessor().getBone("Radio");
             if (bone != null) {

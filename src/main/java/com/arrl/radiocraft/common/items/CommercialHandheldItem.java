@@ -33,8 +33,16 @@ import java.util.Locale;
  */
 public class CommercialHandheldItem extends VHFHandheldItem {
 
-	/** The case colour when it has not been dyed: radio-shop black. */
+	/** The case colour when it has not been dyed: radio-shop black (the upgraded handheld). */
 	public static final int DEFAULT_CASE_COLOUR = 0xFF2B2D30;
+	/**
+	 * The basic handheld's undyed case: the maintainer's grey. Its model's case is a light grey copy of that art
+	 * (tools/commercial_handheld_models.py), which this tint turns back into the grey he drew.
+	 */
+	public static final int BASIC_DEFAULT_CASE_COLOUR = 0xFF616265;
+	/** Volume knob positions above off: 1 to 10, each {@link #VOLUME_STEP} of gain (10 = 1.5, the ham handheld's top). */
+	public static final int VOLUME_POSITIONS = 10;
+	public static final float VOLUME_STEP = 0.15F;
 
 	private final CommercialRadioModel model;
 
@@ -125,6 +133,60 @@ public class CommercialHandheldItem extends VHFHandheldItem {
 	public static DigitalVoice.Decoder decoder(ItemStack stack) {
 		CommercialChannel channel = activeChannel(stack);
 		return channel == null ? null : channel.decoder();
+	}
+
+	/** The undyed case colour of {@code stack}'s model (ARGB). */
+	public static int defaultCaseColour(ItemStack stack) {
+		return modelOf(stack) == CommercialRadioModel.BASIC_HANDHELD ? BASIC_DEFAULT_CASE_COLOUR : DEFAULT_CASE_COLOUR;
+	}
+
+	/** The case colour as shown: the dye, or the model's undyed colour (ARGB). */
+	public static int caseColour(ItemStack stack) {
+		return 0xFF000000 | net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, defaultCaseColour(stack));
+	}
+
+	/**
+	 * Where the power/volume knob is: 0 (clicked off) while the radio is off, else 1 to {@link #VOLUME_POSITIONS}
+	 * from its gain (at least 1, so an old radio left on at gain 0 still reads as on).
+	 */
+	public static int volumeKnob(ItemStack stack) {
+		HandheldRadioState state = stack.get(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value());
+		if(state == null || !state.power())
+			return 0;
+		return Math.max(1, Math.min(VOLUME_POSITIONS, Math.round(state.gain() / VOLUME_STEP)));
+	}
+
+	/**
+	 * Turns the power/volume knob to {@code position} (clamped 0 to {@link #VOLUME_POSITIONS}): 0 clicks the radio off
+	 * (and lets go of the PTT), anything above switches it on at that volume. The gain is kept when it clicks off, so
+	 * the radio does not come back on at a different volume than the knob shows.
+	 */
+	public static void setVolumeKnob(ItemStack stack, int position) {
+		if(!is(stack))
+			return;
+		int to = Math.max(0, Math.min(VOLUME_POSITIONS, position));
+		stack.update(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value(), HandheldRadioState.getDefault(),
+				old -> to == 0
+						? new HandheldRadioState(false, false, old.freq(), old.gain(), old.micGain(), old.receiveIndicatorStrength(), old.ctcssTone(), old.offsetHz(), old.rxTone())
+						: new HandheldRadioState(true, old.ptt(), old.freq(), to * VOLUME_STEP, old.micGain(), old.receiveIndicatorStrength(), old.ctcssTone(), old.offsetHz(), old.rxTone()));
+	}
+
+	/** Turns the channel knob {@code steps} clicks (it stops at 1 and 16, inside the zone). */
+	public static void turnChannelKnob(ItemStack stack, int steps) {
+		if(is(stack))
+			setProgram(stack, program(stack).turn(steps));
+	}
+
+	/**
+	 * The upgraded handheld's B and C keys: {@code delta} -1 is the zone before (B), +1 the zone after (C), stopping at
+	 * zone A and the last zone; the knob keeps its position. Nothing on a radio without zones.
+	 */
+	public static void stepZone(ItemStack stack, int delta) {
+		CommercialRadioModel model = modelOf(stack);
+		if(model == null || !model.hasZones())
+			return;
+		CommercialProgram program = program(stack);
+		setProgram(stack, program.zone(program.zone() + Integer.signum(delta), model.zones()));
 	}
 
 	/** Sneak and use opens the radio's top panel (knob, volume, LEDs); use without sneaking talks, as on the ham handheld. */

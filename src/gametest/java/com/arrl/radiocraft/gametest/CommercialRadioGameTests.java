@@ -12,6 +12,7 @@ import com.arrl.radiocraft.common.init.RadiocraftDataComponent;
 import com.arrl.radiocraft.common.init.RadiocraftItems;
 import com.arrl.radiocraft.common.items.CommercialHandheldItem;
 import com.arrl.radiocraft.common.items.MarsModItem;
+import com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket;
 import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.BandEdges;
 import com.arrl.radiocraft.common.radio.commercial.CommercialChannel;
@@ -286,6 +287,74 @@ public class CommercialRadioGameTests {
 		ItemStack basic = new ItemStack(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
 		CommercialHandheldItem.selectChannel(basic, 33);
 		helper.assertTrue(CommercialHandheldItem.program(basic).selected() == 1, "The basic handheld should be on channel 2, was " + (CommercialHandheldItem.program(basic).selected() + 1));
+		helper.succeed();
+	}
+
+	/**
+	 * The handhelds' screen controls, as the server applies them (SCommercialRadioPacket for a player's slot): the
+	 * power/volume knob (OFF switches the radio off and lets go of the PTT, up from OFF switches it on; 10 positions),
+	 * the channel knob (stops at 1 and 16) and the upgraded radio's B and C keys (one zone down and up, stopping at A
+	 * and C, the knob kept). The basic radio has no zones: B and C do nothing.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, batch = BATCH)
+	public static void handheldKnobsAndZoneKeys(GameTestHelper helper) {
+		net.minecraft.world.entity.player.Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+		ItemStack radio = new ItemStack(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());
+		player.getInventory().setItem(0, radio);
+		List<CommercialChannel> channels = new ArrayList<>();
+		for(int i = 0; i < 40; i++)
+			channels.add(CommercialChannel.simplex("CH" + (i + 1), 155_300_000.0F + i * 12_500.0F));
+		helper.assertTrue(CommercialProgramming.write(CommercialProgramming.of(radio), channels).ok(), "40 channels did not fit");
+		ItemStack held = player.getInventory().getItem(0);
+		IVHFHandheldCapability cap = held.getCapability(RadiocraftCapabilities.VHF_HANDHELDS);
+
+		// Power and volume.
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.VOLUME, 5).apply(player);
+		helper.assertTrue(cap.isPowered() && Math.abs(cap.getGain() - 0.75F) < 0.001F, "Volume 5 should switch it on at gain 0.75, was " + cap.isPowered() + " " + cap.getGain());
+		helper.assertTrue(CommercialHandheldItem.volumeKnob(held) == 5, "The knob should read 5, was " + CommercialHandheldItem.volumeKnob(held));
+		cap.setPTTDown(true);
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.VOLUME, 0).apply(player);
+		helper.assertFalse(cap.isPowered(), "Volume 0 should switch it off");
+		helper.assertFalse(cap.isPTTDown(), "Switching off lets go of the PTT");
+		helper.assertTrue(CommercialHandheldItem.volumeKnob(held) == 0, "Off reads 0 on the knob");
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.VOLUME, 1).apply(player);
+		helper.assertTrue(cap.isPowered() && CommercialHandheldItem.volumeKnob(held) == 1, "Up from 0 switches it on");
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.VOLUME, 99).apply(player);
+		helper.assertTrue(CommercialHandheldItem.volumeKnob(held) == CommercialHandheldItem.VOLUME_POSITIONS && Math.abs(cap.getGain() - 1.5F) < 0.001F,
+				"The knob stops at 10 (gain 1.5), was " + cap.getGain());
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.VOLUME, -4).apply(player);
+		helper.assertFalse(cap.isPowered(), "Below 0 is still off");
+
+		// The channel knob stops at 1 and 16.
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.CHANNEL, 2).apply(player);
+		CommercialHandheldItem.turnChannelKnob(held, 30);
+		helper.assertTrue(CommercialHandheldItem.program(held).knob() == 15, "The knob stops at 16, was " + (CommercialHandheldItem.program(held).knob() + 1));
+		CommercialHandheldItem.turnChannelKnob(held, -40);
+		helper.assertTrue(CommercialHandheldItem.program(held).knob() == 0, "The knob stops at 1, was " + (CommercialHandheldItem.program(held).knob() + 1));
+		CommercialHandheldItem.turnChannelKnob(held, 3);
+
+		// B and C: zone down and up, the knob kept, stopping at A and C.
+		int[] zones = new int[6];
+		int[] deltas = {1, 1, 1, -1, -1, -1};
+		for(int i = 0; i < deltas.length; i++) {
+			new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.ZONE, deltas[i]).apply(player);
+			zones[i] = CommercialHandheldItem.program(held).zone();
+			helper.assertTrue(CommercialHandheldItem.program(held).knob() == 3, "A zone key keeps the knob on 4");
+		}
+		helper.assertTrue(java.util.Arrays.equals(zones, new int[] {1, 2, 2, 1, 0, 0}), "C, C, C, B, B, B should give zones B C C B A A, was " + java.util.Arrays.toString(zones));
+		new SCommercialRadioPacket(0, 0L, SCommercialRadioPacket.ZONE, 1).apply(player);
+		CommercialChannel on = CommercialHandheldItem.activeChannel(held);
+		helper.assertTrue(on != null && on.name().equals("CH20") && Math.abs(cap.getFrequencyHertz() - (155_300_000.0F + 19 * 12_500.0F)) < 1.0F,
+				"Zone B, knob 4 is channel 20 and the radio is on it, was " + on);
+
+		// The basic radio: no zones, the same volume knob.
+		ItemStack basic = new ItemStack(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
+		player.getInventory().setItem(1, basic);
+		new SCommercialRadioPacket(1, 0L, SCommercialRadioPacket.CHANNEL, 5).apply(player);
+		new SCommercialRadioPacket(1, 0L, SCommercialRadioPacket.ZONE, 1).apply(player);
+		helper.assertTrue(CommercialHandheldItem.program(player.getInventory().getItem(1)).selected() == 5, "B and C do nothing on the basic radio");
+		new SCommercialRadioPacket(1, 0L, SCommercialRadioPacket.VOLUME, 7).apply(player);
+		helper.assertTrue(CommercialHandheldItem.volumeKnob(player.getInventory().getItem(1)) == 7, "The basic radio's volume knob");
 		helper.succeed();
 	}
 }

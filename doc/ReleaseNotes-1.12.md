@@ -43,6 +43,11 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   An **encrypted** channel sounds like garbled digital noise without the key, and any digital signal is a harsh buzz
   on an analog or ham radio. Repeaters pass digital on as it is. The moderation computer still records the clear voice.
 - The cases **take dye** like leather armour. A mobile keeps its colour and channels when broken and placed again.
+- The handhelds are **3D** in the hand, on the ground, in frames and in the desk charger: the basic brick is the
+  maintainer's own model, the upgraded radio a tall 1990s professional handheld with a keypad and LCD. Only the case
+  takes the dye. Their screens show the radio's front with its two knobs on top: the **channel knob** (1-16, stops at
+  both ends) and the **power/volume knob** (turn it to OFF to switch the radio off). On the upgraded radio the keypad's
+  **B** and **C** keys step down and up through the zones, **A** shows its unit ID and **D** the channel's frequency.
 - **Unit IDs**: every commercial radio has a unit ID (1-9999, set in CPS, or given one the first time it is programmed)
   and sends it at every key-up, as fire and business radios do with MDC-1200 and P25: on FM a short data burst
   ("brrrp") at the start of the transmission, on digital inside the data. The upgraded handheld and the mobiles show

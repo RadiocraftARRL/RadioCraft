@@ -341,16 +341,24 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
 - **Commercial radios** (1.12 step 2, placeholders from `tools/commercial_radio_assets.py`): the case must stay a
   light grey layer (item `layer0` / block faces with `tintindex: 0`) so dye can tint it, with the details untinted on
   top.
-  - **Basic Commercial Handheld**: a 1990s brick (Motorola HT1000 / Kenwood TK-series feel): stubby antenna, a
-    16-position channel knob and a volume/power knob on top, RX (green) and TX (red) LEDs, speaker grille, no display.
-    Item texture `basic_commercial_handheld` over `commercial_handheld_case`; ideally a 3D item model too.
-  - **Upgraded Commercial Handheld**: the fire-service radio (XTS-3000 feel): the same with a small green LCD for the
-    channel name and an emergency button.
+  - ~~**Basic Commercial Handheld**~~ Done (2026-11-06, maintainer): his 3D model `models/item/basic_commercial_handheld.json`
+    and 64x64 `textures/item/basic_commercial_handheld.png` (body, battery, antenna, channel and volume knobs, PTT,
+    speaker panel, TX/RX/power LEDs). `tools/commercial_handheld_models.py` only adds a light grey copy of his case
+    (front and sides) in empty parts of the sheet for the dye tint (`tintindex` 0) and lays the speaker panel, LEDs
+    and seam over the front untinted; undyed it is tinted back to his grey (`BASIC_DEFAULT_CASE_COLOUR` 0x616265).
+    If you redraw the front or sides, run the script again to refresh the copies. Its screen draws the same texture.
+  - **Upgraded Commercial Handheld**: placeholder 3D model from `tools/commercial_handheld_models.py` (2026-11-06), a
+    1990s professional handheld (GP300 feel, generic "RC-300" plate, no real brand): tall black body, rubber duck on
+    the top left, channel and volume knobs and a lamp on top, speaker grille, a small LCD strip, a 4x4 keypad (A-D in
+    the right column; B and C switch zones), side PTT, belt clip, battery. 128x128 `upgraded_commercial_handheld.png`
+    (8 px per unit): case regions light grey and tinted, everything else untinted; region map in the script, which the
+    screen (`CommercialHandheldScreen`) also reads. A proper model and texture in the same layout are welcome.
   - **Commercial Mobile Radio** and **Low Band Mobile Radio**: dash-mount mobiles (blocks), a box with a front panel,
     display (the element named `DISPLAY` is where the channel text is drawn), channel knob, TX/RX lamps (positions in
     `RadioDisplays`), a mic hook on the side. The low band one older and plainer. Models `commercial_mobile`,
     `low_band_mobile`; textures `commercial_mobile_case`, `commercial_mobile_front`, `low_band_mobile_front`.
-  - The handheld's top panel screen and the mobile's front panel screen are drawn with plain fills: want textures.
+  - The handhelds' screens now draw their item textures (2026-11-06); the mobile's front panel screen is still
+    plain fills: wants a texture.
 - **Marine radios** (1.12 step 3, placeholders from `tools/marine_radio_assets.py`):
   - **Marine Handheld** (`marine_handheld`, item): a floating VHF marine handheld (Standard Horizon HX / Icom M-series
     feel): dark grey, a yellow or orange float collar, rubber antenna, a big display for the channel number, keys for

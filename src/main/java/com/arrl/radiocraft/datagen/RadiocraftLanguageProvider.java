@@ -712,8 +712,13 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("tooltip", "commercial.unit_id"), "Unit ID %s");
 		provider.add(Radiocraft.translationKey("screen", "commercial_handheld.title"), "Commercial Handheld");
 		provider.add(Radiocraft.translationKey("screen", "commercial.power"), "PWR");
-		provider.add(Radiocraft.translationKey("screen", "commercial.channel_knob"), "CHANNEL");
-		provider.add(Radiocraft.translationKey("screen", "commercial.zone"), "Zone %s");
+		provider.add(Radiocraft.translationKey("screen", "commercial.off"), "OFF");
+		provider.add(Radiocraft.translationKey("screen", "commercial.channel_knob_help"), "Channel knob, 1-16: click to turn, right click to turn back, or scroll or drag it");
+		provider.add(Radiocraft.translationKey("screen", "commercial.volume_knob_help"), "Power and volume: turn it to OFF to switch the radio off, up from OFF to switch it on");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_a"), "A: show this radio's unit ID");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_b"), "B: zone down (C to B to A)");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_c"), "C: zone up (A to B to C)");
+		provider.add(Radiocraft.translationKey("screen", "commercial.key_d"), "D: show the channel's frequency");
 		provider.add(Radiocraft.translationKey("message", "commercial.rx_out_of_range"), "The receive frequency is outside this radio's bands");
 		provider.add(Radiocraft.translationKey("message", "commercial.tx_out_of_range"), "The transmit frequency is outside this radio's bands");
 		provider.add(Radiocraft.translationKey("message", "commercial.no_digital"), "This radio has no digital voice");

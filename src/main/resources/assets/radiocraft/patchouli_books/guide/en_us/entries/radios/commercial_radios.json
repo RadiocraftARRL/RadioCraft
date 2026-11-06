@@ -22,13 +22,13 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:basic_commercial_handheld",
       "title": "Basic Commercial Handheld",
-      "text": "A 1990s brick for 150-174 MHz, analog FM only. No display: just RX and TX lights and the knob. Sneak and use it to turn the knob, power and volume; hold right click to talk. It runs on a small battery and charges in a desk charger like the ham handheld."
+      "text": "A 1990s brick for 150-174 MHz, analog FM only. No display: TX (red), RX (green) and power (blue) lights. Sneak and use it to see the top: the $(thing)channel knob$() (1-16) and the $(thing)power/volume knob$() (OFF switches it off). Hold right click to talk. Charges in a desk charger."
     },
     {
       "type": "patchouli:spotlight",
       "item": "radiocraft:upgraded_commercial_handheld",
       "title": "Upgraded Commercial Handheld",
-      "text": "The fire-service radio: 40 channels, digital voice and encryption, and the 2 m ham band too. Its 16-position knob works with a $(thing)zone switch$(): zone A is channels 1-16, B 17-32, C 33-40. The display shows the channel name, zone and number."
+      "text": "The fire-service radio: 40 channels, digital voice and encryption, and 2 m too. The same two knobs on top; the knob picks within a $(thing)zone$(): A is channels 1-16, B 17-32, C 33-40. Keypad: $(thing)B$() zone down, $(thing)C$() zone up, A its unit ID, D the frequency."
     },
     {
       "type": "patchouli:spotlight",
@@ -44,7 +44,7 @@
     {
       "type": "patchouli:text",
       "title": "Paint",
-      "text": "The cases take dye like leather armour: craft a radio with dyes to colour it. A mobile keeps its colour and its channels when you break it and place it again."
+      "text": "The cases take dye like leather armour: craft a radio with dyes to colour it (the knobs, antenna, battery, grille and keypad stay black). Undyed, the brick is grey and the upgraded radio black. A mobile keeps its colour and its channels when you break it and place it again."
     },
     {
       "type": "patchouli:crafting",

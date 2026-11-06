@@ -131,9 +131,11 @@ public class ClientSetupEvents {
 	public static void registerItemColours(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
 		event.register((stack, tint) -> tint == 1 ? com.arrl.radiocraft.common.items.TapeItem.reelColour(stack)
 				: tint == 2 ? com.arrl.radiocraft.common.items.TapeItem.labelColour(stack) : -1, com.arrl.radiocraft.common.init.RadiocraftItems.TAPE_REEL.get());
-		// Commercial radios: the case (tint 0) takes dye like leather armour.
+		// Commercial radios: the case (tint 0) takes dye like leather armour. The handhelds' 3D models tint only their
+		// case faces (light grey); undyed, each model gets its own colour (the basic's grey, the upgraded's black).
+		event.register((stack, tint) -> tint == 0 ? com.arrl.radiocraft.common.items.CommercialHandheldItem.caseColour(stack) : -1,
+				com.arrl.radiocraft.common.init.RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get(), com.arrl.radiocraft.common.init.RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());
 		event.register((stack, tint) -> tint == 0 ? net.minecraft.world.item.component.DyedItemColor.getOrDefault(stack, com.arrl.radiocraft.common.items.CommercialHandheldItem.DEFAULT_CASE_COLOUR) : -1,
-				com.arrl.radiocraft.common.init.RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get(), com.arrl.radiocraft.common.init.RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get(),
 				com.arrl.radiocraft.common.init.RadiocraftItems.COMMERCIAL_MOBILE.get(), com.arrl.radiocraft.common.init.RadiocraftItems.LOW_BAND_MOBILE.get());
 		// Floppy disks: one texture, the label (tint 1) in each program's colour.
 		event.register((stack, tint) -> tint == 1 ? com.arrl.radiocraft.client.screens.computer.ComputerAppScreens.labelColour(stack) : -1,

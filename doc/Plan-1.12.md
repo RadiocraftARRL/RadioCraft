@@ -2140,3 +2140,62 @@ pixel is one of the 16 EGA colours; text drawn as 3 x 5 pixel glyphs, never a fo
 SETUP's settings are per computer, not per player (a player who prefers amber sees whatever the owner chose).
 `Dos.status` is static (one computer screen at a time). The prompt's COPY reads the whole file into the client and
 writes it back (fine at the 256 KB cap). Website wiki not rebuilt (needs runData first).
+
+### Commercial handheld models (2026-11-06)
+The maintainer's 3D basic handheld adopted and dyeable, a new 3D upgraded handheld, and both screens redrawn as the
+radio's front with two knobs on top. Built: `compileJava compileGametestJava` clean (no new warning), `runData` (lang
+only), `test` 678/678, `runGameTestServer` all 507 required passed.
+
+- **Basic**: the maintainer's untracked `basic_commercial_handheld_edited.json/.png` moved into place as
+  `models/item/basic_commercial_handheld.json` / `textures/item/basic_commercial_handheld.png` (first commit: as he
+  made it, texture refs fixed, the `vhf_handheld_3d` parent dropped, credit to him). Then
+  `tools/commercial_handheld_models.py` (PIL) adds a light grey copy of his case front (sheet 20,0-40,34) and sides
+  (40,0-50,10), greyscale x 2.6, and writes the model: body faces on the copies with `tintindex` 0; untinted flat
+  overlays at z 9.26 for the speaker panel, TX/RX/power LEDs and bottom seam; his battery, antenna, knobs, PTT and
+  display transforms unchanged. His original pixels stay where he drew them, so the script can be re-run after he
+  edits them.
+- **Tinting choice**: tinted light grey case faces (like leather armour), not per-colour textures: every dye and dye
+  mix works, and multiplying a light neutral keeps each dye's own colour (preview sheet
+  `doc/testing_shots/commercial_handhelds_dyes.png`, all 16 dyes, checked by eye: white reads light grey, black and
+  grey dark, the rest clearly their colour). Tinting the old dark art would have made every dye near black, and
+  tinting whole faces would have tinted the LEDs and labels, hence the overlays. Undyed colour per model:
+  `CommercialHandheldItem.defaultCaseColour/caseColour` (basic `BASIC_DEFAULT_CASE_COLOUR` 0xFF616265 = his grey back,
+  upgraded `DEFAULT_CASE_COLOUR` 0xFF2B2D30 black). The item colour handler (`ClientSetupEvents`) uses `caseColour`
+  for the handhelds; mobiles unchanged.
+- **Upgraded**: 128x128 texture, 8 px per unit, regions in `REGIONS` of the script (front details 0,0 40x84; tinted
+  front/back case 40,0; sides 80,0; top 40,84; battery 0,84; small parts at 106+). Body 5 x 10.5 x 3.25 (y 5.5-16),
+  battery y 1.5-5.5, antenna to 24.25 on the top left, channel knob 7.75-9.05, volume knob 9.25-10.25, a top lamp,
+  side PTT, belt clip; overlays: grille with "RC-300" plate, LCD strip, 4x4 keypad (`123A/456B/789C/*0#D`). GUI and
+  fixed transforms scale 0.64, y -3.2 (taller than the basic). No real brand anywhere.
+- **Old art removed**: `textures/item/commercial_handheld_case.png` (git rm); `tools/commercial_radio_assets.py` no
+  longer writes the handheld textures or item models (only the mobiles).
+- **Desk charger**: `DeskChargerBlockRenderer` now draws commercial handhelds with their own model through
+  `HandheldItemRenderer.renderDocked` (plain baked model, tinted by the item colours; both stand on y 1.5). Marine
+  handheld still shows the charger's Radio bone. The commercial handhelds are not wrapped by `HandheldItemRenderer`
+  (no live LCD/LED on the model in the world).
+- **Server controls**: `CommercialHandheldItem.VOLUME_POSITIONS` 10, `VOLUME_STEP` 0.15 (10 = gain 1.5, the ham top),
+  `volumeKnob(stack)` (0 when off, else 1-10 from the gain, at least 1), `setVolumeKnob(stack, p)` (0 = off and PTT
+  released, gain kept; >0 = on at p x 0.15), `turnChannelKnob(stack, steps)` (stops at 1/16 in the zone),
+  `stepZone(stack, delta)` (stops at A and the last zone, knob kept; nothing on the basic). `SCommercialRadioPacket`
+  is now `(slot, pos, action, value)` with `CHANNEL`/`VOLUME`/`ZONE`, `apply(Player)` for tests, helpers `handheld`,
+  `volume`, `zone`, `mobile` (mobiles take only CHANNEL). Power/volume no longer go through
+  `SHandheldRadioUpdatePacket` from this screen.
+- **Screen** (`CommercialHandheldScreen`, rewritten): the radio's front from its item texture (case blitted with
+  `GuiGraphics.setColor` in the dye colour, details over it) at 16 GUI px per unit, antenna and knobs drawn above,
+  and two `client/screens/widgets/RotaryKnob` dials (new helper, not a widget: the screen routes the mouse) for the
+  channel (1-16) and power/volume (OFF-10): click +1, right click -1, wheel, drag around it, stops at the ends. Basic:
+  TX/RX/ON lamps on his three LEDs. Upgraded: LCD (name or caller or A/D line; "ZB CH20" and FM/DIG/ENC or TX; dark
+  when off), keypad: **B = zone down, C = zone up** (kept as asked: the old zone button cycled A-B-C-A; stops are
+  clearer with two keys, and A-D sit in the keypad's right column like a DTMF pad, so B and C needed no extra buttons
+  on the model), A = unit ID, D = frequency (3 s), digits/*/# only click. The power button, volume +/-, zone button
+  and the PTT bar are gone (talk with right click as always). Lang: `screen.radiocraft.commercial.off`,
+  `channel_knob_help`, `volume_knob_help`, `key_a`..`key_d`; `commercial.channel_knob` and `commercial.zone` removed.
+- **GameTest** `CommercialRadioGameTests.handheldKnobsAndZoneKeys` (batch `commercial_radios`; 155.3 MHz up): volume
+  5 = on at 0.75, 0 = off and PTT up, 1 = on, 99 clamps to 10 (1.5), -4 off; knob stops at 16 and 1; zone keys
+  C,C,C,B,B,B give B,C,C,B,A,A with the knob kept, then ZB knob 4 is CH20 and the radio state follows; the basic
+  ignores zone keys and has the same volume knob.
+- **Docs**: Handbook `radios/commercial_radios` (both spotlights, Paint), ModelDesignBounty (basic done, credited;
+  upgraded placeholder), release notes, NeedsTesting "1.12 commercial handheld models and screens".
+
+**Left / for the playtest**: everything rendered (hand, GUI, ground, frame, head, charger, all 16 dyes) and the screen
+by hand; the overlays at z +0.01 may z-fight at a distance (raise to +0.02 if so). The website wiki was not touched.

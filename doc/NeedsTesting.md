@@ -8,6 +8,28 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 commercial handheld models and screens (added 2026-11-06)
+- [ ] Basic Commercial Handheld (the maintainer's 3D model): looks as he drew it, undyed grey, in first and third
+  person (both hands), in the inventory and hotbar, dropped on the ground, in an item frame and on the head; the
+  speaker panel, the three lamps and the bottom seam show without flicker (they are thin parts laid over the front).
+- [ ] Upgraded Commercial Handheld (new placeholder, GP300 style, "RC-300" plate): same places; the long antenna stays
+  inside the inventory slot; undyed it is black; the knobs, lamp, PTT and belt clip sit right.
+- [ ] Both, dyed with each of the 16 dyes (craft with a dye; several dyes mix): only the case changes colour, the
+  grille, plate, LCD, keypad, lamps, knobs, antenna and battery stay as drawn. White, light grey, yellow and black are
+  the ones to check closely. The preview sheet is in `doc/testing_shots/commercial_handhelds_dyes.png`.
+- [ ] Both in a desk charger: they stand in the cradle with their own 3D model and dye colour (no longer the charger's
+  own radio); a marine handheld still shows the charger's radio.
+- [ ] Sneak-use the basic radio: the screen shows its front (the same art, in its dye colour) with the antenna and the
+  two knobs above it as seen from the top. Channel knob 1-16 and power/volume knob OFF-10: left click turns one step,
+  right click one back, the wheel turns it, dragging around it points it at the mouse; both stop at their ends (the
+  gap at the bottom does nothing). OFF switches the radio off (the blue lamp goes out, nothing heard), up from OFF
+  switches it on. TX (red) and RX (green) lamps light when talking (right click outside the screen) and hearing. No
+  other buttons (power, +/-, PTT bar and zone button are gone).
+- [ ] Sneak-use the upgraded radio: front with the LCD and keypad; the same knobs. The LCD shows channel name (or the
+  caller), "ZA CH1" and the mode, TX while talking, dark when off. Keypad: **B** zone down and **C** zone up (stop at
+  A and C, the knob kept: ZB CH20 from ZA CH4); **A** shows the unit ID and **D** the frequency for 3 s; the number
+  keys only click. Hovering a knob or A-D shows what it does. The lamp on top lights red/green.
+
 ## 1.12 launcher views, SETUP, colour schemes, ABOUT, built-in STUDY (added 2026-11-06)
 Needs `runData` first (new lang; the License Study floppy and its recipe are gone; the computer recipe's diamond is a
 diamond block).
