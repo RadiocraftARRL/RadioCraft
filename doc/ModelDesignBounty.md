@@ -388,3 +388,8 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
     a label with a little picture per program (logbook, APRS, SSTV...), and the secret disks (Snake, the
     falling-blocks game, the music player, the Bible) in other colours or hand-written labels.
   - **Scanner screen**: the lid-up panel is plain fills (`ScannerScreen`); wants a texture.
+  - **Program Manager icons** (1.12 launcher work, placeholders from `tools/computer_icons.py`): one 32 x 32 PNG per
+    program in `textures/gui/computer/icons/<program id>.png` (26 now: the built-in ones, every floppy program and the
+    secret ones, SETUP and ABOUT). Wanted: Windows 3.1 / DOS Shell style pictograms, readable at 32 x 32. **Keep to
+    the sixteen EGA colours exactly** (`DosColours.PALETTE`; no anti-aliasing, transparency allowed): the colour
+    schemes recolour icons by matching those colours, and `ComputerIconsTest` fails on any other colour.

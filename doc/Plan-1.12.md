@@ -1722,6 +1722,9 @@ Approved and applied in `RadiocraftRecipesProvider` (needs `runData`):
 - Radio Computer made late game: `GXG / QDQ / ITI` (gold ingot, any encased crystal, nether quartz block, diamond, iron, iron trapdoor), replacing `III / PCP / ITI`.
 - Radio Cloner: ` W / IDI / ICI` (wire, iron, diamond, comparator): approved as built.
 - **Recipe review complete (2026-11-05).**
+- Radio Computer: D is now a diamond block (2026-11-06).
+- RTTY floppy (note block) and Packet BBS floppy (chest): approved as built (2026-11-06).
+- License Study is built in (2026-11-06): its floppy and the lectern recipe are gone.
 
 ### Playtest fixes 2 (2026-11-05)
 Five maintainer requests, decisions already made. Built: `compileJava compileTestJava compileGametestJava` clean (the
@@ -2037,3 +2040,91 @@ Gervill and the analyser outside the game (all load, all light the bars). Still 
   release notes and NeedsTesting updated. Website wiki not touched.
 
 **Open questions**: the key-bar wording above; is the speaker effect the right amount; take any CC BY-SA tunes?
+
+### Launcher and SETUP (2026-11-06)
+Built: `compileJava compileTestJava compileGametestJava` clean (no new warning). **Not run** (the maintainer's runClient
+was open): `runData`, `test`, `runGameTestServer`, `build`. Committed locally; nothing pushed.
+
+Verify first, in this order (once the client is closed):
+1. `./gradlew runData` and commit `src/generated`: lang (`datagen/lang/SetupLang`, the shell's key line without F8, the
+   `shell.password*` keys removed), the License Study floppy's recipe/advancement/lang **removed**, the Radio Computer
+   recipe (diamond block). Until then the old generated `floppy_license` recipe names an item that no longer exists
+   (a recipe load error in the log, harmless).
+2. `./gradlew test`: new `client/screens/computer/DosSchemeTest`, `IconGridTest`, `DosCommandsTest`,
+   `ComputerIconsTest` (every program has a 32 x 32 icon in the 16 EGA colours), `common/computer/ComputerSettingsTest`;
+   `ComputerAppsTest` now expects seven built-ins. `PatchouliBookTest` covers the changed computer entries.
+3. `./gradlew runGameTestServer`: new `ComputerSetupGameTests` (`setupIsTheOwnersAndFollowsTheDisk`,
+   `studyAndAboutAreBuiltIn`); `LicenseStudyGameTests` no longer installs STUDY.
+4. Website: rebuild the wiki from the Handbook after runData (`tools/build_wiki.py` in the website repo; the computer
+   page's recipe picture comes from the generated recipe). Not done here.
+5. runClient: NeedsTesting "1.12 launcher views, SETUP, colour schemes, ABOUT, built-in STUDY".
+
+**Theme** (`client/screens/computer/DosScheme`, pure): programs keep drawing in the 16 logical DOS colours and the
+semantic roles in `DosColours` (`TITLE_*`, `BODY_*`, `TEXT_FG`, `HIGHLIGHT_*`, `KEYS_*`, `DIALOG_*`, `FIELD_*`,
+`ERROR_*`, `HOTKEY_FG`, new `DIM`, `ACCENT`, `GOOD`, `BAD`); `DosRenderer.render(..., scheme)` puts every cell's
+colours through `scheme.display(rgb)`. So **every program is themed with no per-program code**: the conversion was the
+renderer plus FaxApp's one literal (0x88AA88 -> LIGHT_GREY). A colour scheme maps the 16 to its own palette and keeps
+any other RGB (the band plan's); a monochrome scheme (`phosphor` >= 0) gives the 16 fixed brightnesses
+(`MONO_LEVELS`, ordered so text/bars/fields/errors keep their contrast; unit tested) of its phosphor, and any other RGB
+its luminance. `DosColours.RAW` (0x01000000 flag) bypasses the scheme (SETUP's swatches). Pictures (`g.image`) are not
+themed; icons (`g.icon`) are (`DosIcons` recolours each PNG pixel through the scheme, a texture per icon and scheme,
+freed with the session's other textures). The in-world monitor mirror copies the drawn frame, so it shows the scheme.
+Schemes: `classic`, `teal` ("RC-DOS Teal"), `high_contrast`, `green`, `amber`, `white` ("Paper White"), `plasma` ("Gas
+Plasma"). Add one in `DosScheme.ALL` + a lang key `setup.scheme.<id>`. New program code: use the roles; `DIM`/`ACCENT`
+over raw `DARK_GREY`/`YELLOW` where they mean that. The music app needed no change (it already used `DosColours`).
+
+**Settings** (`common/computer/ComputerSettings`, pure record: `view` LIST/ICONS/COMMAND, `scheme` id, `name` (20
+printable ASCII), `clock` GAME/REAL/OFF, `hour24`; `gameTime(dayTime)` (0 ticks = 6:00), `time(h, m, hour24)` ("13:05"
+/ "1:05p")). Kept in `ComputerFileStore` (tag `settings`, only when not default), so they follow the disk like the
+password. Server: `sys.settings` {settings} in `ComputerServer` (cleaned by `fromTag`), answers and pushes the kept
+settings to everyone at the computer as a `ComputerApps.SETUP` event `settings` (`ComputerSession.receive` takes it
+whatever program is in front); `open` answers `settings` too. **Permission decision**: SETUP uses the password's rule,
+`mayChangePassword` = the owner, an operator (level 2), or anyone while the computer has no owner (old/GameTest
+computers). Every computer placed since the password work has an owner, so in practice owner or op. Others can open
+SETUP and look (a note says so); their changes are refused client side and with `not_owner_settings`.
+Client: `ComputerSession.settings()/mayConfigure()/hasPassword()/scheme()/preview(scheme)/endPreview()` (learned from
+any answer carrying `settings`, `owner`, `password`). The top bar: `Dos.setStatus(text, end)` is set by
+`RadioComputerScreen` every frame (name + clock, ending before the music note when it shows) and `Dos.frame` draws it
+right-aligned; programs that draw on row 0 themselves can use `Dos.statusStart()` (the shell's serial moved left of it;
+STUDY's session score still covers it).
+
+**SETUP** (`apps/SetupApp`, built-in `ComputerApps.SETUP`, SETUP.EXE): pages Launcher, Colours (moving the highlight
+previews the scheme on the whole screen; Enter keeps; Esc/leaving drops the preview, also on `closed`/`covered`/exit),
+Password (the old shell F8 dialog; **F8 removed from the shell** and its key line, so there is one way), Name and
+Clock (Enter edits the name; Enter/Left/Right step the clock and hours).
+
+**Launchers** (`ShellApp` dispatches on `settings().view()`):
+- LIST: unchanged RC-DOS Shell (helpers made package-private for the other two).
+- ICONS: `ShellIcons`, a double-lined "RC-DOS Program Manager" window, tiles 12 x 6 cells (icon 32 x 32 px over the top
+  4 rows, name wrapped to 2 lines), 6 x 3 visible, scrolled by the pure `IconGrid` (arrows run on through rows, down
+  into a short last row lands on its end, PgUp/PgDn, Home/End, wheel; `at`/`tile` for clicks; double-click 450 ms).
+  Tab toggles the File Manager (the shell's files `DosList`, same keys as the list view). Icons are skipped while a
+  dialog is up (they draw over cells). "RC-DOS" rather than the brief's "RADIO-DOS", to match the boot and shell.
+- COMMAND: `ShellPrompt` (pure parts in `DosCommands`: `parse` (quotes, `DIR/W`), DOS wildcards `matches`,
+  `program` (NAME or NAME.EXE), Tab `complete`, `History` (30, no repeats)). Commands DIR [pattern] [/W] (programs
+  listed as `<PROG>` entries, files with size and date, volume label = computer name, bytes free), TYPE, COPY [/Y],
+  DEL/ERASE (wildcards; `*.*` asks Y/N), REN, PRINT, CLS, VER (RC-DOS + mod version), TIME/DATE, HELP, SETTINGS (SETUP
+  is a program name anyway), EXIT (closes the screen), CD/C:/A: answered. Unknown: "Bad command or file name"; a known
+  program not installed says to INSTALL it. Esc clears the line (the screen does not close from the prompt). Programs
+  return to the prompt (`ShellApp.resumed`). 300 lines of scrollback, PgUp/PgDn/wheel.
+
+**ABOUT** (`apps/AboutApp`, built-in `ComputerApps.ABOUT`, ABOUT.EXE): banner, mod version (`ModList`), paragraphs
+from the website's home page (the pitch, "Project history", Discord invitation) adapted, credits pointer, links
+(https://radiocraft.w1btr.com/, Discord, Modrinth, GitHub). Lang keys `about.*` in `SetupLang`.
+
+**License Study built in**: `ComputerApps.LICENSE` is `BUILT_IN` (moved up beside the other built-ins), so
+`RadiocraftItems.FLOPPIES` no longer registers `floppy_license`: recipe line removed, `models/item/floppy_license.json`
+deleted, `tools/radio_computer_models.py` and `FLOPPY_NAMES` updated, its label colour dropped, Handbook entry icon a
+lectern and its crafting page replaced by "Built In". A computer whose install list still holds "license" (dev saves)
+just shows it once (`ComputerApps.available` skips built-ins). 1.12 is unreleased, so no item remap was added.
+
+**Radio Computer recipe**: `GXG / QDQ / ITI` with D = **diamond block** (maintainer, 2026-11-06); unlock still
+`has_diamond`. No test asserts it; the Handbook page shows the generated recipe.
+
+**Icons**: `tools/computer_icons.py` (PIL; writes 26 PNGs to `textures/gui/computer/icons/<id>.png` and checks every
+pixel is one of the 16 EGA colours; text drawn as 3 x 5 pixel glyphs, never a font). On ModelDesignBounty as placeholders.
+
+**Gotchas / left**: the Handbook pages added to "Setting Up the Computer" are fairly full; check for overflow in game.
+SETUP's settings are per computer, not per player (a player who prefers amber sees whatever the owner chose).
+`Dos.status` is static (one computer screen at a time). The prompt's COPY reads the whole file into the client and
+writes it back (fine at the 256 KB cap). Website wiki not rebuilt (needs runData first).

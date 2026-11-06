@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The $(item)Radio Computer$() is the shack's PC: a cabinet with the hard disk and a floppy drive. Put a $(item)Computer Monitor$() on top of it and right click the monitor to sit down at it.$(br2)It boots into $(thing)RC-DOS$(), a colour text screen of 80 by 25 characters, and the $(thing)RC-DOS Shell$(): your programs on the left, the files on the disk on the right. Tab moves between them, Enter runs a program or opens a file, Escape gets up."
+      "text": "The $(item)Radio Computer$() is the shack's PC: a cabinet with the hard disk and a floppy drive. Put a $(item)Computer Monitor$() on top of it and right click the monitor to sit down at it.$(br2)It boots into $(thing)RC-DOS$(), a colour text screen of 80 by 25 characters, and the $(thing)RC-DOS Shell$(): your programs on the left, the files on the disk on the right. Tab moves between them, Enter runs a program or opens a file, Escape gets up. $(thing)SETUP$() can turn the shell into icons or a bare command line (next pages)."
     },
     {
       "type": "patchouli:text",
@@ -19,8 +19,28 @@
     },
     {
       "type": "patchouli:text",
+      "title": "Three Launchers",
+      "text": "SETUP's $(thing)Launcher$() page picks how the computer shows its programs:$(li)$(thing)RC-DOS Shell$(), the list: programs left, files right.$(li)$(thing)Program Manager$(): a window of 16-colour icons with each program's name. Arrow keys or a click move the highlight, Enter or a double-click runs it, Tab shows the files (the File Manager).$(li)$(thing)RC-DOS prompt$(): a bare command line, $(thing)C:\\>$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Prompt",
+      "text": "Type a program's name to run it ($(thing)RTTY$(), or $(thing)EDIT NOTES.TXT$() to open a file); it comes back to the prompt when it exits. Commands: DIR, TYPE, COPY, DEL, REN, PRINT, CLS, TIME, VER, HELP and EXIT. Up and down bring back lines, Tab completes names.$(br2)$(thing)SETTINGS$() or $(thing)SETUP$() opens SETUP to switch back."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "SETUP",
+      "text": "$(thing)SETUP$(), built into every computer, has four pages: $(thing)Launcher$(), $(thing)Colours$(), $(thing)Password$() and $(thing)Name and Clock$().$(br2)Colour schemes recolour every program: Classic Blue, RC-DOS Teal, High Contrast, and the monochrome Green Phosphor, Amber, Paper White and Gas Plasma. Moving through the list shows the whole screen in that scheme; Enter keeps it. Pictures (SSTV, maps, photos) keep their own colours."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Name, Clock, Password",
+      "text": "The top bar can show the computer's name and a clock: world time (the Minecraft day, sunrise at 6:00) or your real time, 12 or 24 hours.$(br2)Whoever places the computer owns it. Only the owner or a server operator may change SETUP (anyone may look); a computer with no owner yet lets anyone. Settings stay with the computer when it is broken and placed again, like its files."
+    },
+    {
+      "type": "patchouli:text",
       "title": "Password",
-      "text": "Whoever places the computer owns it. In the shell, $(thing)F8$() sets a password (up to 16 characters; leave it empty to remove it). From then on everyone who sits at the computer types it first, you too, and nothing on it can be read until they do. Server operators are never asked.$(br2)The password stays with the computer when it is broken and placed again, like its files."
+      "text": "SETUP's $(thing)Password$() page sets a password (up to 16 characters; leave it empty to remove it). From then on everyone who sits at the computer types it first, you too, and nothing on it can be read until they do. Server operators are never asked, and can clear a forgotten one there.$(br2)The password stays with the computer when it is broken and placed again, like its files."
     },
     {
       "type": "patchouli:crafting",

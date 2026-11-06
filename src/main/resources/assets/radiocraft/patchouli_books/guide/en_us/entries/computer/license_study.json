@@ -1,6 +1,6 @@
 {
   "name": "License Study",
-  "icon": "radiocraft:floppy_license",
+  "icon": "minecraft:lectern",
   "category": "radiocraft:computer",
   "sortnum": 17,
   "pages": [
@@ -35,9 +35,9 @@
       "text": "One object per file: $(thing)id$() (else the file name), $(thing)name$(), $(thing)element$(), $(thing)valid$(), $(thing)pass_percent$() (74), $(thing)order$() (menu order), $(thing)subelements$() {\"T1\": \"Commission's rules\"} and $(thing)questions$(): each with $(thing)id$() (T1A01: subelement T1, group T1A), $(thing)question$(), 2-6 $(thing)answers$(), $(thing)correct$() (\"C\" or 2), and optional $(thing)refs$() and $(thing)figure$() (skipped)."
     },
     {
-      "type": "patchouli:crafting",
-      "recipe": "radiocraft:floppy_license",
-      "text": "A blank floppy and a lectern."
+      "type": "patchouli:text",
+      "title": "Built In",
+      "text": "License Study comes with every $(l:radiocraft:computer/radio_computer)radio computer$(): no floppy to craft or install. Run $(thing)STUDY$() from the shell, double-click its icon in the Program Manager, or type $(thing)STUDY$() at the RC-DOS prompt."
     }
   ]
 }

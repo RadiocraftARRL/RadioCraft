@@ -88,13 +88,23 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   colour text screen, into the **RC-DOS Shell** (programs on the left, files on the right). It runs off the power wire,
   8 FE/t while in use (someone at it, or a background program such as APRS or fax installed), about an HF radio
   listening (`computer_power_use`); with no power the screen goes dark and its programs stop.
-  - Built in: **EDIT** (a text editor; Ctrl+S saves), **SYSINFO**, **BANDPLAN** and **INSTALL**.
+  - Built in: **EDIT** (a text editor; Ctrl+S saves), **SYSINFO**, **BANDPLAN**, **INSTALL**, **SETUP**, **STUDY**
+    (License Study) and **ABOUT** (About RadioCraft: the mod's story, version, credits and website).
+  - **Three launchers**, chosen in SETUP: the **RC-DOS Shell** list, the **Program Manager** (a window of 16-colour
+    program icons; arrow keys or the mouse, Enter or a double-click runs, Tab shows the files) and the bare **RC-DOS
+    prompt** (`C:\>`: DIR with wildcards and /W, TYPE, COPY, DEL/ERASE, REN, PRINT, CLS, TIME, VER, HELP, EXIT; run a
+    program by its name, `EDIT NOTES.TXT` opens a file; up/down history, Tab completion; SETTINGS opens SETUP).
+  - **SETUP**: the launcher, **colour schemes** that recolour every program (Classic Blue, RC-DOS Teal, High
+    Contrast, and the monochrome Green Phosphor, Amber, Paper White and Gas Plasma; the screen previews a scheme as you
+    move through the list), the password, and a computer name and clock (world or real time, 12 or 24 hours) in the
+    top bar. Only the owner or an operator may change SETUP (anyone while the computer has no owner); it goes with the
+    computer when it is broken and placed again.
   - Other programs come on **Floppy Disks**: craft a blank disk (iron nugget, redstone, black dye, paper), then craft
     it with the part that stands for the program. Put it in the drive and install it; the disk is not used up.
   - Files (documents, pictures, logbooks, frequency lists, codeplugs) live on the computer, 1 MB by default
     (`computer_storage_kb`, `computer_max_files`), and go with it when it is broken and placed again. The monitor in
     the world shows the screen you left on it, and programs carry on for ten minutes after you get up.
-  - **Password**: whoever places the computer owns it and can set a password from the shell (**F8**; empty removes
+  - **Password**: whoever places the computer owns it and can set a password in SETUP (empty removes
     it). Everyone who sits at it is then asked for it, owner included; server operators are never asked. The password
     goes with the computer when it is broken and placed again.
 - **Scanner**: set it beside the computer. It scans maps, photos and books into files, and prints pictures (on color
@@ -150,7 +160,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     each was last heard, and your notes. Tune a radio wired to the computer to a repeater's output: its hang carrier,
     courtesy beep and ID tell the radio which repeater it is, and F5 adds it. Add repeaters by hand too. Mark some and
     F7 adds them to a Frequency Manager list, skipping ones already there. Kept on the disk as REPEATER.DAT.
-  - **License Study** (STUDY): flash cards for the amateur exams, like hamstud.org, with the current US NCVEC
+  - **License Study** (STUDY, built into every computer, no floppy): flash cards for the amateur exams, like hamstud.org, with the current US NCVEC
     Technician (2026-2030), General (2023-2027) and Extra (2024-2028) pools built in. Answer A-D or "I don't know":
     missed cards come back within a few cards, known ones further and further apart. Progress per subelement, your
     expected score and pass likelihood, and practice exams drawn one question per group (35/35/50, 74% to pass).

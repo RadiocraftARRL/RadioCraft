@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Every computer comes with four programs:$(li)$(thing)EDIT$(), the text editor: Ctrl+S saves, F3 opens, F5 prints, F6 reads in a book from the scanner.$(li)$(thing)SYSINFO$(): the disk, the floppy drive, the scanner's paper and what is wired to the computer.$(li)$(thing)BANDPLAN$(): the $(l:radiocraft:propagation/band_plan)band plan$() as coloured bars.$(li)$(thing)INSTALL$(): installs programs from floppy disks."
+      "text": "Every computer comes with seven programs:$(li)$(thing)EDIT$(), the text editor: Ctrl+S saves, F3 opens, F5 prints.$(li)$(thing)SYSINFO$(): the disk, drive, scanner and what is wired up.$(li)$(thing)BANDPLAN$(): the $(l:radiocraft:propagation/band_plan)band plan$() as bars.$(li)$(thing)INSTALL$(): installs from floppy disks.$(li)$(thing)SETUP$(): launcher, colours, password, name, clock.$(li)$(thing)STUDY$(): $(l:radiocraft:computer/license_study)License Study$().$(li)$(thing)ABOUT$(): About RadioCraft."
     },
     {
       "type": "patchouli:text",

@@ -8,6 +8,37 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 launcher views, SETUP, colour schemes, ABOUT, built-in STUDY (added 2026-11-06)
+Needs `runData` first (new lang; the License Study floppy and its recipe are gone; the computer recipe's diamond is a
+diamond block).
+- [ ] SETUP (in the shell's list, or type SETUP): four pages on the left; Enter or Right opens one, Esc/Tab goes back,
+  Esc again exits. Clicks work on the page names and the options.
+- [ ] SETUP Launcher: pick Program Manager, Esc out: the shell is a framed "RC-DOS Program Manager" window of icons
+  with names under them; arrows and the mouse move the highlight, Enter or a double-click runs, the wheel and PgUp/PgDn
+  scroll (26 programs is two screens), Tab shows the File Manager (files list; Del/F7/F5 work), Tab back.
+- [ ] Icons: all 26 look right, sit centred above their names, never show through a dialog (Del on a file in the File
+  Manager, say), and recolour with the scheme. Placeholder art (`tools/computer_icons.py`).
+- [ ] SETUP Launcher: pick the RC-DOS prompt: a black screen, `C:\>`. Try HELP, DIR, DIR *.TXT, DIR/W, TYPE a .TXT,
+  COPY A.TXT B.TXT (again: "already exists", then /Y), REN, DEL B.TXT, DEL *.* (asks Y/N), PRINT, TIME, VER, CLS,
+  a typo ("Bad command or file name"), an uninstalled program's name, RTTY / EDIT NOTES.TXT (Esc from the program
+  comes back to the prompt), up/down history, Tab completion, PgUp scroll back, Esc clears the line, EXIT gets up.
+  SETTINGS opens SETUP to switch back.
+- [ ] SETUP Colours: moving through the list shows the whole screen in that scheme (the swatches beside each name are
+  its real colours); Enter keeps it; Esc without Enter puts the kept scheme back. Open every program in Green Phosphor
+  and Amber and check it is readable (hint lines, highlights, red errors, the key bar's red hot keys, input fields,
+  games, the band plan bars, the MUSIC visualizer). Pictures (SSTV, WEFAX, photos, the ADS-B scope, DF map) keep their
+  colours. The monitor in the world shows the scheme too.
+- [ ] SETUP Password: as the shell's old F8 (owner sets; empty removes; another player is told only the owner or an
+  operator can). The shell no longer takes F8 and its key bar no longer shows it.
+- [ ] SETUP Name and Clock: a name and the clock show at the right of every program's top bar (and the music note
+  still fits); world time follows the day, real time your clock, 12-hour shows "1:05p". DIR shows the name as the
+  volume label.
+- [ ] As a second player (not owner, not op): SETUP shows "Only the owner or an operator..." and every change is
+  refused with a message; the owner's changes appear on the second player's open screen at once.
+- [ ] ABOUT: the banner, the version, the text scrolls (keys and wheel), the website line.
+- [ ] STUDY is in every computer's program list with no floppy; the floppy is gone from JEI/creative; the Handbook's
+  License Study entry ends with a "Built In" page; the Radio Computer recipe needs a diamond block.
+
 ## 1.12 music player fixes: shuffle, arrow keys, visualizer, speaker sound, 20 new tunes (added 2026-11-06)
 
 Run `./gradlew runData` first (new and changed lang lines: the key bar, "(shuffle)"), then restart the client.
