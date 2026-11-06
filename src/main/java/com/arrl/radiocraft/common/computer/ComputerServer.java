@@ -64,7 +64,11 @@ public final class ComputerServer {
 
 	/** Carries out {@code action} for {@code player}, answering on their screen. Server thread. */
 	public static void handle(RadioComputerBlockEntity computer, ServerPlayer player, String action, CompoundTag data) {
+		long start = System.nanoTime();
 		handle(computer, player, action, data, new ComputerReply(player, data.getInt("rid")));
+		double ms = (System.nanoTime() - start) / 1.0E6D;
+		if(ms >= 20.0D || "open".equals(action)) // Debug timing for slow opens and requests (2026-11-06 performance fixes).
+			com.arrl.radiocraft.Radiocraft.LOGGER.debug("Radio computer request {} took {} ms", action, String.format(java.util.Locale.ROOT, "%.2f", ms));
 	}
 
 	/** Carries out {@code action} for {@code player}, answering {@code reply}. */

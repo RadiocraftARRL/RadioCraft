@@ -401,12 +401,15 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	/** Opens the computer's screen for {@code player}, shown on the monitor at {@code monitor}. */
 	public void open(ServerPlayer player, BlockPos monitor) {
+		long start = System.nanoTime();
 		hasViewers = true;
 		updatePower(false);
 		player.openMenu(this, buffer -> {
 			buffer.writeBlockPos(worldPosition);
 			buffer.writeBlockPos(monitor);
 		});
+		Radiocraft.LOGGER.debug("Radio computer at {} opened for {} in {} ms", worldPosition, player.getScoreboardName(),
+				String.format(java.util.Locale.ROOT, "%.2f", (System.nanoTime() - start) / 1.0E6D));
 	}
 
 	/** The players with this computer's screen open. */

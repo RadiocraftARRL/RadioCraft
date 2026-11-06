@@ -50,6 +50,9 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		session = ComputerSession.open(menu.getBlockPos(), menu.monitor);
 	}
 
+	/** When the screen was made, for the debug timing of its first frame (0 once logged). */
+	private long createdNanos = System.nanoTime();
+
 	/** An answer or event from the server ({@code CComputerPacket}). Client thread. */
 	public static void receive(String kind, CompoundTag data) {
 		ComputerSession.receive(kind, data);
@@ -114,6 +117,18 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public void render(@NotNull GuiGraphics g, int rawX, int rawY, float partialTick) {
+		long frameStart = createdNanos != 0L ? System.nanoTime() : 0L;
+		renderFrame(g, rawX, rawY, partialTick);
+		if(frameStart != 0L) { // Debug timing of the first frame (2026-11-06 performance fixes).
+			long end = System.nanoTime();
+			com.arrl.radiocraft.Radiocraft.LOGGER.debug("Radio computer screen: first frame {} ms after opening, drawn in {} ms",
+					String.format(java.util.Locale.ROOT, "%.1f", (frameStart - createdNanos) / 1.0E6D),
+					String.format(java.util.Locale.ROOT, "%.1f", (end - frameStart) / 1.0E6D));
+			createdNanos = 0L;
+		}
+	}
+
+	private void renderFrame(@NotNull GuiGraphics g, int rawX, int rawY, float partialTick) {
 		renderBackground(g, rawX, rawY, partialTick);
 		g.pose().pushPose();
 		g.pose().scale(scale, scale, 1.0F);
