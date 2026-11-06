@@ -265,17 +265,17 @@ public class CommercialRadioGameTests {
 		ItemStack handheld = new ItemStack(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());
 		IVHFHandheldCapability cap = handheld.getCapability(RadiocraftCapabilities.VHF_HANDHELDS);
 		CommercialProgramming.Target target = CommercialProgramming.of(handheld);
-		helper.assertTrue(target != null && target.model().channelCount() == 40 && target.model().zones() == 3, "The upgraded handheld holds 40 channels in 3 zones");
+		helper.assertTrue(target != null && target.model().channelCount() == 64 && target.model().zones() == 4, "The upgraded handheld holds 64 channels in 4 zones");
 		List<CommercialChannel> channels = new ArrayList<>();
 		for(int i = 0; i < 40; i++)
 			channels.add(CommercialChannel.simplex("CH" + (i + 1), 155_000_000.0F + i * 12_500.0F));
-		helper.assertTrue(CommercialProgramming.write(target, channels).ok(), "40 channels did not fit");
+		helper.assertTrue(CommercialProgramming.write(target, channels).ok(), "40 channels did not fit (an older 40-channel plan still loads)");
 		CommercialHandheldItem.selectChannel(handheld, 3);
-		CommercialHandheldItem.setProgram(handheld, CommercialHandheldItem.program(handheld).zone(1, 3));
+		CommercialHandheldItem.setProgram(handheld, CommercialHandheldItem.program(handheld).zone(1, 4));
 		CommercialChannel on = CommercialHandheldItem.activeChannel(handheld);
 		helper.assertTrue(on != null && on.name().equals("CH20"), "Zone B, knob 4 should be channel 20, was " + on);
 		helper.assertTrue(Math.abs(cap.getFrequencyHertz() - (155_000_000.0F + 19 * 12_500.0F)) < 1.0F, "The radio state follows the zone, was " + cap.getFrequencyHertz());
-		CommercialHandheldItem.setProgram(handheld, CommercialHandheldItem.program(handheld).zone(2, 3).turn(16));
+		CommercialHandheldItem.setProgram(handheld, CommercialHandheldItem.program(handheld).zone(2, 4).turn(16));
 		helper.assertTrue(CommercialHandheldItem.program(handheld).selected() == 47 && CommercialHandheldItem.activeChannel(handheld) == null,
 				"Zone C, knob 16 is past channel 40: blank");
 		helper.assertFalse(PlayerRadio.handheldMayTransmit(handheld, 0.0F), "A blank zone C position does not transmit");

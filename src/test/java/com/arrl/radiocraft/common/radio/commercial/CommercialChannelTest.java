@@ -111,7 +111,7 @@ class CommercialChannelTest {
 		assertEquals(3, program.zone(9, 4).zone(), "the zone switch has four positions");
 		CommercialProgram old = new CommercialProgram(channels(40), 0).zone(3, 4);
 		assertNull(old.active(), "a 40-channel program has nothing in zone D");
-		assertEquals("CH40", old.zone(2, 4).turn(-8).active().name());
+		assertEquals("CH40", old.zone(2, 4).turn(7).active().name(), "zone C, knob 8 is the last of 40");
 		assertEquals(0, program.zone(2, 1).zone(), "a radio with no zone switch stays in A");
 	}
 
