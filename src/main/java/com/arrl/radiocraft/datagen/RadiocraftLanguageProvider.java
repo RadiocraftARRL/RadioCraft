@@ -621,6 +621,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.PropagationLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.RepeaterLang.add(provider);
 			com.arrl.radiocraft.datagen.lang.LicenseStudyLang.add(provider);
+			com.arrl.radiocraft.datagen.lang.FloppyLang.add(provider); // Computer batch 3A: data floppies.
 			addAdsb(provider);
 			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
 			addFccGear(provider);
@@ -787,7 +788,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("tooltip", "computer_monitor"), "Goes on top of a radio computer: right click it to use the computer. Use a floppy disk on it to put the disk in the drive.");
 		provider.add(Radiocraft.translationKey("tooltip", "scanner"), "Set it beside a radio computer: it scans maps, photos and books in, and prints photos, maps and books out on the paper in its tray.");
 		provider.addItem(RadiocraftItems.FLOPPY_DISK, "Floppy Disk");
-		provider.add(Radiocraft.translationKey("tooltip", "floppy_disk"), "Blank. Craft it with the right part to make a program's disk for the radio computer.");
+		provider.add(Radiocraft.translationKey("tooltip", "floppy_disk"), "Blank. Craft it with the right part to make a program's disk, or copy files onto it in a radio computer's drive (A:).");
 		provider.add(Radiocraft.translationKey("tooltip", "floppy_disk.install"), "Put it in a radio computer's drive and run INSTALL. The disk is not used up.");
 		provider.add(Radiocraft.translationKey("item", "printout"), "Printout");
 		provider.add(Radiocraft.translationKey("message", "computer.drive_full"), "There is already a disk in drive A: (sneak and right click the computer to eject it)");
@@ -907,12 +908,12 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("shell.title", "RC-DOS Shell");
 		s.accept("shell.serial", "Serial %s");
 		s.accept("shell.programs", "Programs");
-		s.accept("shell.files", "Files on C:");
+		s.accept("shell.files", "Files on %s:");
 		s.accept("shell.no_files", "No files yet.");
 		s.accept("shell.keys_programs", "Enter=Run  Tab=Files  F6=Scan  Esc=Leave");
-		s.accept("shell.keys_files", "Enter=Open  Del=Delete  F7=Rename  F5=Print  F6=Scan  Tab=Programs");
+		s.accept("shell.keys_files", "Enter=Open  Del=Delete  F7=Rename  F8=Copy  F3=A:/C:  F5=Print  Tab=Programs");
 		s.accept("shell.file_info", "%s  %s");
-		s.accept("shell.disk", "C: %s used of %s, %s files");
+		s.accept("shell.disk", "%s: %s used of %s, %s files");
 		s.accept("shell.drive", "A: %s");
 		s.accept("shell.no_opener", "No program here opens .%s files");
 		s.accept("shell.delete_title", "Delete");

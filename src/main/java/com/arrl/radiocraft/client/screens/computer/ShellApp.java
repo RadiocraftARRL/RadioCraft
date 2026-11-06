@@ -25,6 +25,10 @@ import java.util.List;
  * ({@link ComputerAppScreens#registerOpener}); pictures ({@code .IMG}) open in a viewer here. On a file: Del deletes,
  * F7 (or F2) renames, F5 prints, and F6 scans what is on the scanner's glass into a new file. Escape closes the screen
  * (at the prompt, EXIT does). The password is SETUP's now (it was F8 here).
+ * <p>
+ * Drive A: (computer batch 3A): with a blank or data floppy in the drive, F3 shows its files instead of C:'s (and back),
+ * F8 copies the file in the list to the other drive, and F4 labels the floppy. Files on A: open only as pictures here;
+ * copy them to C: for the programs. Programs never go on a floppy.
  */
 final class ShellApp extends DosApp {
 
@@ -37,6 +41,8 @@ final class ShellApp extends DosApp {
 	private final ShellPrompt prompt = new ShellPrompt(this);
 	long used = 0L, capacity = 0L;
 	int count = 0;
+	/** The drive the files list shows: C:, or A: (the floppy). */
+	char drive = com.arrl.radiocraft.common.computer.DrivePath.COMPUTER;
 	// The picture being viewed, if any.
 	@Nullable
 	private String viewing;
@@ -81,10 +87,67 @@ final class ShellApp extends DosApp {
 		return files;
 	}
 
+	/** The drive the files list shows. */
+	ComputerFiles volume() {
+		return session.files(drive);
+	}
+
+	boolean onFloppy() {
+		return drive == com.arrl.radiocraft.common.computer.DrivePath.FLOPPY;
+	}
+
+	/** F3: the files list shows the other drive (A: only with a blank or data floppy in it). */
+	void switchDrive() {
+		if(!onFloppy() && !session.hasDataFloppy()) {
+			session.message(Dos.tr(session.hasFloppy() ? "shell.program_disk" : "prompt.no_drive_a", Dos.drive(session)), true);
+			return;
+		}
+		drive = onFloppy() ? com.arrl.radiocraft.common.computer.DrivePath.COMPUTER : com.arrl.radiocraft.common.computer.DrivePath.FLOPPY;
+		files.setItems(List.of());
+		fileList.clear();
+		refreshFiles();
+	}
+
+	/** F8: copies {@code file} to the other drive, asking before it replaces one there. */
+	void copyAcross(ComputerFiles.Info file, boolean overwrite) {
+		char other = onFloppy() ? com.arrl.radiocraft.common.computer.DrivePath.COMPUTER : com.arrl.radiocraft.common.computer.DrivePath.FLOPPY;
+		if(other == com.arrl.radiocraft.common.computer.DrivePath.FLOPPY && !session.hasDataFloppy()) {
+			session.message(Dos.tr(session.hasFloppy() ? "shell.program_disk" : "prompt.no_drive_a", Dos.drive(session)), true);
+			return;
+		}
+		volume().copy(file.name(), other + ":", overwrite, response -> {
+			if(!overwrite && !response.ok() && "exists".equals(response.error()))
+				showDialog(DosDialog.confirm(Dos.tr("shell.copy_title"), Dos.tr("shell.copy_replace", other + ":" + file.name()), () -> copyAcross(file, true)));
+			else
+				done(response, Dos.tr("shell.copied", file.name(), other + ":"));
+		});
+	}
+
+	/** F4: names the floppy. */
+	void labelFloppy() {
+		if(!session.hasDataFloppy()) {
+			session.message(Dos.tr(session.hasFloppy() ? "shell.program_disk" : "prompt.no_drive_a", Dos.drive(session)), true);
+			return;
+		}
+		showDialog(DosDialog.ask(Dos.tr("shell.label_title"), Dos.tr("shell.label", com.arrl.radiocraft.common.computer.FloppyDisk.LABEL_MAX),
+				new DosInput(session.floppyLabel(), com.arrl.radiocraft.common.computer.FloppyDisk.LABEL_MAX, c -> c >= ' ' && c <= '~'),
+				typed -> session.floppyFiles().label(typed, response -> done(response, Dos.tr("shell.labelled", Dos.drive(session))))));
+	}
+
 	void refreshFiles() {
-		session.files().list("", response -> {
-			if(!response.ok())
+		if(onFloppy() && !session.hasDataFloppy()) // The floppy came out: back to C:.
+			drive = com.arrl.radiocraft.common.computer.DrivePath.COMPUTER;
+		char asked = drive;
+		volume().list("", response -> {
+			if(asked != drive)
+				return; // Switched drives meanwhile.
+			if(!response.ok()) {
+				if(onFloppy()) { // No disk any more.
+					drive = com.arrl.radiocraft.common.computer.DrivePath.COMPUTER;
+					refreshFiles();
+				}
 				return;
+			}
 			fileList.clear();
 			fileList.addAll(ComputerFiles.infos(response));
 			used = response.data().getLong("used");
@@ -108,7 +171,7 @@ final class ShellApp extends DosApp {
 	public void openFile(String name) {
 		String extension = ComputerStorage.extension(name);
 		if(ComputerFileFormats.IMAGE.equals(extension)) {
-			session.files().read(name, response -> {
+			volume().read(name, response -> {
 				if(!response.ok()) {
 					showError(response);
 					return;
@@ -122,7 +185,9 @@ final class ShellApp extends DosApp {
 			return;
 		}
 		ComputerApp opener = ComputerAppScreens.opener(extension);
-		if(opener != null && session.isInstalled(opener))
+		if(onFloppy()) // Programs open files on C:.
+			session.message(Dos.tr("shell.open_from_a", name), true);
+		else if(opener != null && session.isInstalled(opener))
 			session.launch(opener, name);
 		else
 			session.message(Dos.tr("shell.no_opener", extension), true);
@@ -160,9 +225,9 @@ final class ShellApp extends DosApp {
 
 		g.box(1, 2, 38, 18, !filesFocused, Dos.tr("shell.programs"), DosColours.TEXT_FG, DosColours.BODY_BG);
 		programs.render(g, 2, 3, 36, 16, DosColours.TEXT_FG, DosColours.BODY_BG, !filesFocused);
-		g.box(41, 2, 38, 18, filesFocused, Dos.tr("shell.files"), DosColours.TEXT_FG, DosColours.BODY_BG);
+		g.box(41, 2, 38, 18, filesFocused, Dos.tr("shell.files", drive), DosColours.TEXT_FG, DosColours.BODY_BG);
 		if(fileList.isEmpty())
-			g.put(43, 4, Dos.tr("shell.no_files"), DosColours.BODY_FG, DosColours.BODY_BG);
+			g.put(43, 4, Dos.fit(Dos.tr(onFloppy() ? "shell.no_files_a" : "shell.no_files"), 35), DosColours.BODY_FG, DosColours.BODY_BG);
 		else
 			files.render(g, 42, 3, 36, 16, DosColours.TEXT_FG, DosColours.BODY_BG, filesFocused);
 
@@ -183,10 +248,13 @@ final class ShellApp extends DosApp {
 
 	/** The disk's use (row {@code row}) and the floppy drive (the row below). */
 	void renderDisk(TextGrid g, int row) {
-		String disk = Dos.tr("shell.disk", Dos.size(used), Dos.size(capacity), count);
+		String disk = Dos.tr("shell.disk", drive, Dos.size(used), Dos.size(capacity), count);
 		g.put(2, row, disk, DosColours.BODY_FG, DosColours.BODY_BG);
 		g.bar(4 + disk.length(), row, 20, capacity <= 0 ? 0.0D : used / (double)capacity, DosColours.LIGHT_CYAN, DosColours.BODY_BG);
-		g.put(2, row + 1, Dos.tr("shell.drive", Dos.drive(session)), DosColours.BODY_FG, DosColours.BODY_BG);
+		String floppy = Dos.tr("shell.drive", Dos.drive(session));
+		g.put(2, row + 1, floppy, DosColours.BODY_FG, DosColours.BODY_BG);
+		if(session.hasDataFloppy()) // The drive keys, where the floppy is named.
+			g.put(4 + floppy.length(), row + 1, Dos.tr(onFloppy() ? "shell.drive_keys_a" : "shell.drive_keys_c"), DosColours.DIM, DosColours.BODY_BG);
 	}
 
 	/** The session's fresh message on row 23. */
@@ -249,20 +317,29 @@ final class ShellApp extends DosApp {
 		if(!filesFocused)
 			return programs.keyPressed(key);
 		ComputerFiles.Info file = selectedFile();
+		ComputerFiles volume = volume();
 		switch(key) {
 			case GLFW.GLFW_KEY_DELETE -> {
 				if(file != null)
 					showDialog(DosDialog.confirm(Dos.tr("shell.delete_title"), Dos.tr("shell.delete", file.name()),
-							() -> session.files().delete(file.name(), response -> done(response, Dos.tr("shell.deleted", file.name())))));
+							() -> volume.delete(file.name(), response -> done(response, Dos.tr("shell.deleted", file.name())))));
 			}
 			case GLFW.GLFW_KEY_F2, GLFW.GLFW_KEY_F7 -> { // F7: Minecraft keeps F2 for screenshots.
 				if(file != null)
 					showDialog(DosDialog.ask(Dos.tr("shell.rename_title"), Dos.tr("shell.rename", file.name()), DosInput.fileName(file.name()),
-							to -> session.files().rename(file.name(), to, response -> done(response, Dos.tr("shell.renamed", to.toUpperCase(java.util.Locale.ROOT))))));
+							to -> volume.rename(file.name(), to, response -> done(response, Dos.tr("shell.renamed", to.toUpperCase(java.util.Locale.ROOT))))));
 			}
 			case GLFW.GLFW_KEY_F5 -> {
-				if(file != null)
+				if(file != null && onFloppy())
+					session.message(Dos.tr("shell.open_from_a", file.name()), true);
+				else if(file != null)
 					print(file.name());
+			}
+			case GLFW.GLFW_KEY_F3 -> switchDrive();
+			case GLFW.GLFW_KEY_F4 -> labelFloppy();
+			case GLFW.GLFW_KEY_F8 -> {
+				if(file != null)
+					copyAcross(file, false);
 			}
 			default -> {
 				return files.keyPressed(key);
@@ -292,6 +369,8 @@ final class ShellApp extends DosApp {
 			session.message(success, false);
 		else
 			session.message(response.errorText(), true);
+		if(onFloppy())
+			session.refresh(); // The floppy may be a data floppy now, or blank again, or have a new label.
 		refreshFiles();
 	}
 

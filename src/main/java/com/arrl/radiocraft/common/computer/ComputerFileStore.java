@@ -22,7 +22,7 @@ import java.util.UUID;
  * The caps come from the server config ({@code computer_storage_kb}, {@code computer_max_files}); lowering them never
  * deletes files, it only stops new writes until there is room.
  */
-public final class ComputerFileStore extends SavedData {
+public final class ComputerFileStore extends SavedData implements ComputerVolume {
 
 	public static final String SAVE_PREFIX = "radiocraft_computer_";
 	private static final int DEFAULT_STORAGE_KB = 1024, DEFAULT_MAX_FILES = 256;
@@ -66,6 +66,7 @@ public final class ComputerFileStore extends SavedData {
 	}
 
 	/** The files, to read. Change them only through this class, so they are saved. */
+	@Override
 	public ComputerStorage storage() {
 		return storage;
 	}
@@ -74,6 +75,7 @@ public final class ComputerFileStore extends SavedData {
 	 * Writes {@code name}: checked for its kind ({@link ComputerFileFormats#checked}), then within the caps. Null if
 	 * written, else why not.
 	 */
+	@Override
 	@Nullable
 	public ComputerStorage.Problem write(String name, byte[] data) {
 		byte[] checked = ComputerFileFormats.checked(name, data);
@@ -97,6 +99,7 @@ public final class ComputerFileStore extends SavedData {
 		return write(name, ComputerFileFormats.nbt(tag));
 	}
 
+	@Override
 	@Nullable
 	public byte[] read(String name) {
 		return storage.read(name);
@@ -116,6 +119,7 @@ public final class ComputerFileStore extends SavedData {
 		return data == null ? null : ComputerFileFormats.nbt(data);
 	}
 
+	@Override
 	@Nullable
 	public ComputerStorage.Problem delete(String name) {
 		ComputerStorage.Problem problem = storage.delete(name);
@@ -124,6 +128,7 @@ public final class ComputerFileStore extends SavedData {
 		return problem;
 	}
 
+	@Override
 	@Nullable
 	public ComputerStorage.Problem rename(String from, String to) {
 		ComputerStorage.Problem problem = storage.rename(from, to);
@@ -132,8 +137,30 @@ public final class ComputerFileStore extends SavedData {
 		return problem;
 	}
 
+	@Override
 	public List<ComputerStorage.FileEntry> list(@Nullable String extension) {
 		return storage.list(extension);
+	}
+
+	@Override
+	public long totalBytes() {
+		return capacity();
+	}
+
+	@Override
+	public int fileLimit() {
+		return maxFiles();
+	}
+
+	/** C:'s label is the computer's name (SETUP). */
+	@Override
+	public String label() {
+		return settings.name();
+	}
+
+	@Override
+	public char drive() {
+		return DrivePath.COMPUTER;
 	}
 
 	// -------------------- OWNER AND PASSWORD --------------------

@@ -5,6 +5,7 @@ import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerApps;
 import com.arrl.radiocraft.common.computer.ComputerSettings;
 import com.arrl.radiocraft.common.computer.ComputerStorage;
+import com.arrl.radiocraft.common.computer.DrivePath;
 import net.minecraft.client.Minecraft;
 import net.neoforged.fml.ModList;
 import org.lwjgl.glfw.GLFW;
@@ -26,11 +27,15 @@ import java.util.function.Consumer;
  * ({@code EDIT NOTES.TXT}); when it exits, the prompt comes back. Up and down step through the lines typed (as
  * DOSKEY did), Tab completes file and program names, Page Up/Down and the wheel scroll back, Esc clears the line.
  * The words parsed are {@link DosCommands}'.
+ * <p>
+ * Drive A: (computer batch 3A): {@code A:} and {@code C:} change the current drive (A: needs a blank or data floppy in
+ * the drive), and every file command takes a drive in its names ({@link DrivePath}): {@code DIR A:}, {@code TYPE A:X},
+ * {@code DEL A:X}, {@code COPY X A:}, {@code COPY A:*.LOG C:}. {@code LABEL [A:] [name]} names the floppy. Copies run on
+ * the server ({@code fs.copy}); a program is never copied onto a floppy.
  */
 final class ShellPrompt {
 
 	private static final int MAX_LINES = 300, MAX_INPUT = 76;
-	private static final String PROMPT = "C:\\>";
 
 	private record Out(String text, int colour) {}
 
@@ -48,6 +53,8 @@ final class ShellPrompt {
 	/** File names last read from the disk, for Tab. */
 	private final List<String> knownFiles = new ArrayList<>();
 	private boolean greeted = false;
+	/** The current drive: C:, or A: (the floppy). */
+	private char drive = DrivePath.COMPUTER;
 
 	ShellPrompt(ShellApp shell) {
 		this.shell = shell;
@@ -55,6 +62,11 @@ final class ShellPrompt {
 
 	private ComputerSession session() {
 		return shell.session();
+	}
+
+	/** {@code C:\>} or {@code A:\>}. */
+	private String prompt() {
+		return drive + ":\\>";
 	}
 
 	// -------------------- OUTPUT --------------------
@@ -98,7 +110,7 @@ final class ShellPrompt {
 		g.clear(DosColours.LIGHT_GREY, DosColours.BLACK);
 		List<Out> shown = new ArrayList<>(lines);
 		if(!busy)
-			shown.add(new Out(question != null ? Dos.tr("prompt.yes_no") + input : PROMPT + input, DosColours.LIGHT_GREY));
+			shown.add(new Out(question != null ? Dos.tr("prompt.yes_no") + input : prompt() + input, DosColours.LIGHT_GREY));
 		int rows = TextGrid.ROWS;
 		back = Math.max(0, Math.min(back, Math.max(0, shown.size() - rows)));
 		int first = Math.max(0, shown.size() - rows - back);
@@ -107,7 +119,7 @@ final class ShellPrompt {
 			g.put(0, row, out.text(), out.colour(), DosColours.BLACK);
 		}
 		if(!busy && back == 0) {
-			int promptWidth = question != null ? Dos.tr("prompt.yes_no").length() : PROMPT.length();
+			int promptWidth = question != null ? Dos.tr("prompt.yes_no").length() : prompt().length();
 			int row = Math.min(rows, shown.size()) - 1;
 			g.cursor(Math.min(TextGrid.COLS - 1, promptWidth + cursor), row);
 		}
@@ -197,7 +209,7 @@ final class ShellPrompt {
 			asked.accept(typed.trim().toUpperCase(Locale.ROOT).startsWith("Y"));
 			return;
 		}
-		print(PROMPT + typed);
+		print(prompt() + typed);
 		history.add(typed);
 		run(DosCommands.parse(typed));
 	}
@@ -228,11 +240,16 @@ final class ShellPrompt {
 				if(Minecraft.getInstance().screen != null)
 					Minecraft.getInstance().screen.onClose();
 			}
-			case "C:", "CD", "CHDIR" -> {
-				if(!command.equals("C:") && !line.arg(0).isEmpty() && !line.arg(0).equals("\\"))
+			case "CD", "CHDIR" -> {
+				if(!line.arg(0).isEmpty() && !line.arg(0).equals("\\") && !line.arg(0).matches("(?i)[AC]:\\\\?"))
 					print(Dos.tr("prompt.no_directories"));
 			}
-			case "A:" -> print(Dos.tr("prompt.no_drive_a"));
+			case "C:", "C:\\" -> drive = DrivePath.COMPUTER;
+			case "A:", "A:\\" -> {
+				if(floppyReady())
+					drive = DrivePath.FLOPPY;
+			}
+			case "LABEL" -> label(line);
 			default -> program(line);
 		}
 	}
@@ -240,7 +257,7 @@ final class ShellPrompt {
 	private void help() {
 		blank();
 		print(Dos.tr("prompt.help_title"), DosColours.WHITE);
-		for(String key : List.of("dir", "copy", "del", "ren", "type", "print", "cls", "time", "ver", "settings", "exit"))
+		for(String key : List.of("dir", "copy", "del", "ren", "type", "print", "drive", "label", "cls", "time", "ver", "settings", "exit"))
 			print("  " + Dos.tr("prompt.help." + key));
 		print(Dos.tr("prompt.help_programs"));
 		print(Dos.tr("prompt.help_keys"));
@@ -281,22 +298,39 @@ final class ShellPrompt {
 			session().launch(app, file.toUpperCase(Locale.ROOT));
 	}
 
-	/** Reads the disk's file names (for Tab and DIR), then {@code then} with the files. */
+	/** True if drive A: can be used (a blank or data floppy in it); else says why not. */
+	private boolean floppyReady() {
+		if(session().hasDataFloppy())
+			return true;
+		print(session().hasFloppy() ? Dos.tr("shell.program_disk", Dos.drive(session())) : Dos.tr("prompt.no_drive_a"));
+		return false;
+	}
+
+	/** Reads C:'s file names (for Tab and DIR), then {@code then} with the files. */
 	private void withFiles(Consumer<List<ComputerFiles.Info>> then) {
+		withFiles(DrivePath.COMPUTER, (files, data) -> then.accept(files));
+	}
+
+	/** Reads drive {@code on}'s files, then {@code then} with them and the listing's answer (its use and label). */
+	private void withFiles(char on, java.util.function.BiConsumer<List<ComputerFiles.Info>, net.minecraft.nbt.CompoundTag> then) {
 		busy = true;
-		session().files().list("", response -> {
+		session().files(on).list("", response -> {
 			busy = false;
 			if(!response.ok()) {
 				print(response.errorText(), DosColours.LIGHT_RED);
+				if(on == DrivePath.FLOPPY)
+					drive = DrivePath.COMPUTER; // No disk any more.
 				return;
 			}
 			List<ComputerFiles.Info> files = ComputerFiles.infos(response);
-			knownFiles.clear();
-			for(ComputerFiles.Info file : files)
-				knownFiles.add(file.name());
-			shell.used = response.data().getLong("used");
-			shell.capacity = response.data().getLong("capacity");
-			then.accept(files);
+			if(on == DrivePath.COMPUTER) {
+				knownFiles.clear();
+				for(ComputerFiles.Info file : files)
+					knownFiles.add(file.name());
+				shell.used = response.data().getLong("used");
+				shell.capacity = response.data().getLong("capacity");
+			}
+			then.accept(files, response.data());
 		});
 	}
 
@@ -304,21 +338,54 @@ final class ShellPrompt {
 		withFiles(files -> {});
 	}
 
+	/** {@code text} as a path on the current drive; null (and said) if it names a drive there is none of. */
+	private DrivePath path(String text) {
+		DrivePath path = DrivePath.parse(text, drive);
+		if(path == null)
+			print(Dos.tr("prompt.invalid_drive"));
+		else if(path.onFloppy() && !floppyReady())
+			return null;
+		return path;
+	}
+
 	private void dir(DosCommands.Line line) {
-		String pattern = line.names().isEmpty() ? "*.*" : line.names().getFirst();
+		DrivePath path = line.names().isEmpty() ? new DrivePath(drive, "") : DrivePath.parse(line.names().getFirst(), drive);
+		if(path == null) {
+			print(Dos.tr("prompt.invalid_drive"));
+			return;
+		}
+		if(path.onFloppy() && !session().hasFloppy()) {
+			print(Dos.tr("prompt.no_drive_a"));
+			return;
+		}
+		String pattern = path.isDriveOnly() ? "*.*" : path.name();
 		boolean wide = line.has("/W");
-		withFiles(files -> {
-			String name = session().settings().name();
+		// A program's disk: its program, write-protected; no files to list.
+		ComputerApp onDisk = path.onFloppy() ? ComputerApps.get(session().floppy()) : null;
+		if(onDisk != null) {
 			blank();
-			print(Dos.tr(name.isEmpty() ? "prompt.dir_volume_none" : "prompt.dir_volume", name.toUpperCase(Locale.ROOT)));
+			print(Dos.tr("prompt.dir_volume", "A", onDisk.command()));
+			blank();
+			print(Dos.tr("prompt.dir_of", "A"));
+			blank();
+			print(String.format(Locale.ROOT, "%-8s %-3s  %10s  %s", onDisk.command(), "EXE", "<PROG>", Dos.name(onDisk)));
+			print(Dos.tr("prompt.write_protected"));
+			blank();
+			return;
+		}
+		withFiles(path.drive(), (files, listing) -> {
+			String name = path.onFloppy() ? listing.getString("label") : session().settings().name();
+			String letter = String.valueOf(path.drive());
+			blank();
+			print(name.isEmpty() ? Dos.tr("prompt.dir_volume_none", letter) : Dos.tr("prompt.dir_volume", letter, name.toUpperCase(Locale.ROOT)));
 			print(Dos.tr("prompt.dir_serial", session().serial()));
 			blank();
-			print(Dos.tr("prompt.dir_of"));
+			print(Dos.tr("prompt.dir_of", letter));
 			blank();
 			List<String> wideNames = new ArrayList<>();
 			int count = 0;
 			long bytes = 0L;
-			for(ComputerApp app : session().apps())
+			for(ComputerApp app : path.onFloppy() ? List.<ComputerApp>of() : session().apps())
 				if(DosCommands.matches(pattern, app.fileName())) {
 					count++;
 					if(wide)
@@ -349,7 +416,8 @@ final class ShellPrompt {
 			if(count == 0)
 				print(Dos.tr("prompt.file_not_found"));
 			print(Dos.tr("prompt.dir_total", String.format(Locale.ROOT, "%9d", count), String.format(Locale.ROOT, "%,14d", bytes)));
-			print(Dos.tr("prompt.dir_free", String.format(Locale.ROOT, "%,14d", Math.max(0L, shell.capacity - shell.used))));
+			long free = Math.max(0L, listing.getLong("capacity") - listing.getLong("used"));
+			print(Dos.tr("prompt.dir_free", String.format(Locale.ROOT, "%,14d", free)));
 			blank();
 		});
 	}
@@ -373,9 +441,11 @@ final class ShellPrompt {
 	private void type(DosCommands.Line line) {
 		if(!needs(line, 1))
 			return;
-		String name = line.names().getFirst().toUpperCase(Locale.ROOT);
+		DrivePath path = path(line.names().getFirst());
+		if(path == null)
+			return;
 		busy = true;
-		session().files().readText(name, (text, response) -> {
+		session().files(path.drive()).readText(path.name(), (text, response) -> {
 			busy = false;
 			if(!response.ok())
 				print(response.errorText());
@@ -385,54 +455,89 @@ final class ShellPrompt {
 	}
 
 	private void copy(DosCommands.Line line) {
-		if(!needs(line, 2))
+		if(!needs(line, 1))
 			return;
-		String from = line.names().get(0).toUpperCase(Locale.ROOT), to = line.names().get(1).toUpperCase(Locale.ROOT);
-		if(to.equals("C:") || to.equals("C:\\") || to.equals(".")) {
-			print(Dos.tr("prompt.copy_onto_itself"));
+		DrivePath from = path(line.names().get(0));
+		if(from == null)
+			return;
+		// COPY A:NOTES.TXT alone copies to the current drive, as DOS does.
+		DrivePath to = line.names().size() < 2 ? new DrivePath(drive, "") : line.names().get(1).equals(".") ? new DrivePath(drive, "") : path(line.names().get(1));
+		if(to == null)
+			return;
+		if(from.isDriveOnly()) {
+			print(Dos.tr("prompt.required_parameter"));
 			return;
 		}
 		boolean overwrite = line.has("/Y");
-		withFiles(files -> {
-			if(files.stream().noneMatch(f -> f.name().equals(from))) {
-				print(Dos.tr("prompt.file_not_found"));
+		boolean wildcard = from.name().contains("*") || from.name().contains("?");
+		if(wildcard && !to.isDriveOnly()) {
+			print(Dos.tr("prompt.copy_to_drive"));
+			return;
+		}
+		withFiles(from.drive(), (files, listing) -> {
+			List<String> names = new ArrayList<>();
+			for(ComputerFiles.Info file : files)
+				if(DosCommands.matches(from.name(), file.name()))
+					names.add(file.name());
+			if(names.isEmpty()) {
+				boolean program = !from.onFloppy() && session().apps().stream().anyMatch(app -> DosCommands.matches(from.name(), app.fileName()));
+				print(Dos.tr(program ? to.onFloppy() ? "prompt.program_not_copied" : "prompt.access_denied" : "prompt.file_not_found"));
 				return;
 			}
-			if(files.stream().anyMatch(f -> f.name().equals(to)) && !overwrite) {
-				print(Dos.tr("prompt.copy_exists", to));
+			if(!wildcard && from.drive() == to.drive() && (to.isDriveOnly() || to.name().equals(names.getFirst()))) {
+				print(Dos.tr("prompt.copy_onto_itself"));
 				return;
 			}
-			busy = true;
-			session().files().read(from, read -> {
-				if(!read.ok()) {
-					busy = false;
-					print(read.errorText());
-					return;
-				}
-				session().files().write(to, read.data().getByteArray("data"), written -> {
-					busy = false;
-					print(written.ok() ? Dos.tr("prompt.copied") : written.errorText());
-					shell.refreshFiles();
-				});
-			});
+			copyAll(names, 0, from.drive(), to, overwrite, 0);
+		});
+	}
+
+	/** Copies {@code names} from drive {@code fromDrive} to {@code to} one after the other, then says how many went. */
+	private void copyAll(List<String> names, int index, char fromDrive, DrivePath to, boolean overwrite, int copied) {
+		if(index >= names.size()) {
+			print(Dos.tr("prompt.files_copied", String.format(Locale.ROOT, "%9d", copied)));
+			shell.refreshFiles();
+			session().refresh(); // A blank floppy is a data floppy now.
+			refreshNames();
+			return;
+		}
+		String name = names.get(index);
+		String target = to.isDriveOnly() ? to.drive() + ":" : to.toString();
+		busy = true;
+		session().files(fromDrive).copy(fromDrive + ":" + name, target, overwrite, response -> {
+			busy = false;
+			int done = copied;
+			if(response.ok()) {
+				done++;
+				if(names.size() > 1)
+					print(fromDrive + ":" + name);
+			}
+			else if("exists".equals(response.error()))
+				print(Dos.tr("prompt.copy_exists", to.isDriveOnly() ? to.drive() + ":" + name : to.toString()));
+			else
+				print(name + ": " + response.errorText());
+			copyAll(names, index + 1, fromDrive, to, overwrite, done);
 		});
 	}
 
 	private void delete(DosCommands.Line line) {
 		if(!needs(line, 1))
 			return;
-		String pattern = line.names().getFirst();
-		Runnable go = () -> withFiles(files -> {
+		DrivePath path = path(line.names().getFirst());
+		if(path == null)
+			return;
+		String pattern = path.isDriveOnly() ? "*.*" : path.name();
+		Runnable go = () -> withFiles(path.drive(), (files, listing) -> {
 			List<String> doomed = new ArrayList<>();
 			for(ComputerFiles.Info file : files)
 				if(DosCommands.matches(pattern, file.name()))
 					doomed.add(file.name());
 			if(doomed.isEmpty()) {
-				boolean program = session().apps().stream().anyMatch(app -> DosCommands.matches(pattern, app.fileName()));
+				boolean program = !path.onFloppy() && session().apps().stream().anyMatch(app -> DosCommands.matches(pattern, app.fileName()));
 				print(Dos.tr(program ? "prompt.access_denied" : "prompt.file_not_found"));
 				return;
 			}
-			deleteAll(doomed, 0);
+			deleteAll(path.drive(), doomed, 0);
 		});
 		if(pattern.equals("*.*") || pattern.equals("*")) {
 			print(Dos.tr("prompt.delete_all"));
@@ -445,25 +550,33 @@ final class ShellPrompt {
 			go.run();
 	}
 
-	private void deleteAll(List<String> names, int index) {
+	private void deleteAll(char on, List<String> names, int index) {
 		if(index >= names.size()) {
 			shell.refreshFiles();
+			if(on == DrivePath.FLOPPY)
+				session().refresh(); // An emptied floppy is a blank one again.
 			return;
 		}
 		busy = true;
-		session().files().delete(names.get(index), response -> {
+		session().files(on).delete(names.get(index), response -> {
 			busy = false;
 			if(!response.ok())
 				print(names.get(index) + ": " + response.errorText());
-			deleteAll(names, index + 1);
+			deleteAll(on, names, index + 1);
 		});
 	}
 
 	private void rename(DosCommands.Line line) {
 		if(!needs(line, 2))
 			return;
+		DrivePath path = path(line.names().get(0));
+		if(path == null)
+			return;
+		String to = line.names().get(1).toUpperCase(Locale.ROOT);
+		if(to.length() >= 2 && to.charAt(1) == ':')
+			to = to.substring(2); // REN keeps a file on its drive.
 		busy = true;
-		session().files().rename(line.names().get(0).toUpperCase(Locale.ROOT), line.names().get(1).toUpperCase(Locale.ROOT), response -> {
+		session().files(path.drive()).rename(path.name(), to, response -> {
 			busy = false;
 			if(!response.ok())
 				print(response.errorText());
@@ -472,10 +585,53 @@ final class ShellPrompt {
 		});
 	}
 
+	/** {@code LABEL [A:] [name]}: names the floppy; with no name, says its label. C:'s label is SETUP's computer name. */
+	private void label(DosCommands.Line line) {
+		List<String> words = new ArrayList<>(line.names());
+		char on = drive;
+		if(!words.isEmpty() && words.getFirst().matches("(?i)[A-Z]:.*")) { // LABEL A: NAME, or LABEL A:NAME
+			String first = words.removeFirst();
+			on = Character.toUpperCase(first.charAt(0));
+			if(first.length() > 2)
+				words.addFirst(first.substring(2));
+			if(on != DrivePath.COMPUTER && on != DrivePath.FLOPPY) {
+				print(Dos.tr("prompt.invalid_drive"));
+				return;
+			}
+		}
+		if(on == DrivePath.COMPUTER) {
+			print(Dos.tr("prompt.label_c"));
+			return;
+		}
+		if(!floppyReady())
+			return;
+		String label = String.join(" ", words);
+		if(label.isEmpty()) {
+			String now = session().floppyLabel();
+			print(now.isEmpty() ? Dos.tr("prompt.dir_volume_none", "A") : Dos.tr("prompt.dir_volume", "A", now));
+			print(Dos.tr("prompt.label_usage"));
+			return;
+		}
+		busy = true;
+		session().floppyFiles().label(label, response -> {
+			busy = false;
+			if(!response.ok())
+				print(response.errorText());
+			shell.refreshFiles();
+		});
+	}
+
 	private void printFile(DosCommands.Line line) {
 		if(!needs(line, 1))
 			return;
-		String name = line.names().getFirst().toUpperCase(Locale.ROOT);
+		DrivePath path = path(line.names().getFirst());
+		if(path == null)
+			return;
+		if(path.onFloppy()) {
+			print(Dos.tr("prompt.print_from_c"));
+			return;
+		}
+		String name = path.name();
 		String extension = ComputerStorage.extension(name);
 		Consumer<ComputerResponse> done = response -> {
 			busy = false;

@@ -154,6 +154,17 @@ public class RadiocraftDataComponent {
                     .networkSynchronized(ComputerData.STREAM_CODEC)
     );
 
+    /**
+     * A data floppy's id (which names its files in the world save), label and how full it is (computer batch 3A, see
+     * {@link com.arrl.radiocraft.common.datacomponents.FloppyData}). Only blank floppies get one, when files go on them.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.datacomponents.FloppyData>> FLOPPY_DATA = DATA_COMPONENTS.registerComponentType(
+            "floppy_data",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.datacomponents.FloppyData.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.datacomponents.FloppyData.STREAM_CODEC)
+    );
+
     /** An FCC badge's agent and number (1.12, see {@link FccBadge}); set by {@code /radiocraft fcc badge}. */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<FccBadge>> FCC_BADGE = DATA_COMPONENTS.registerComponentType(
             "fcc_badge",

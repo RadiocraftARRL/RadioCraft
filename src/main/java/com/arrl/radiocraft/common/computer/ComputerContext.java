@@ -17,7 +17,7 @@ import java.util.List;
  * What a program's server side works with for one request: the computer, the player at it, and the ways to the rest
  * of the station. Server thread only.
  * <ul>
- * <li>{@link #files()}: the computer's disk.</li>
+ * <li>{@link #files()}: the computer's disk; {@link #floppy()}: drive A:, the floppy in its drive.</li>
  * <li>{@link #scanner()}: the scanner beside it or on its data wire, or null (no scanning or printing then).</li>
  * <li>{@link #linked(Class)}: any block entity touching the computer or on its data wire, nearest first: a radio
  * ({@code RadioBlockEntity}), a direction finder, an ADS-B receiver... ({@link DataWire#linked}).</li>
@@ -40,6 +40,20 @@ public record ComputerContext(RadioComputerBlockEntity computer, ServerPlayer pl
 
 	public ComputerFileStore files() {
 		return ComputerFileStore.of(server(), computer.getComputerId());
+	}
+
+	/**
+	 * Drive A:, the floppy in the computer's drive (computer batch 3A): writes fail with
+	 * {@link ComputerStorage.Problem#NO_DISK} while the drive is empty and {@link ComputerStorage.Problem#WRITE_PROTECTED}
+	 * for a program's disk; programs are never written to it ({@link FloppyDisk}).
+	 */
+	public ComputerVolume floppy() {
+		return FloppyDrive.volume(computer);
+	}
+
+	/** The volume for drive {@code drive}: {@link DrivePath#FLOPPY} or the computer's own disk. */
+	public ComputerVolume volume(char drive) {
+		return drive == DrivePath.FLOPPY ? floppy() : files();
 	}
 
 	@Nullable

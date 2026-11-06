@@ -60,7 +60,8 @@ public final class ComputerSession {
 	private final ClientLevel level;
 	private final Deque<DosApp> stack = new ArrayDeque<>();
 	private final Map<Integer, Consumer<ComputerResponse>> pending = new LinkedHashMap<>();
-	private final ComputerFiles files = new ComputerFiles(this);
+	private final ComputerFiles files = new ComputerFiles(this, com.arrl.radiocraft.common.computer.DrivePath.COMPUTER);
+	private final ComputerFiles floppyFiles = new ComputerFiles(this, com.arrl.radiocraft.common.computer.DrivePath.FLOPPY);
 	private final ComputerScanner scanner = new ComputerScanner(this);
 	private int nextRid = 1;
 	private boolean open = false;
@@ -70,6 +71,8 @@ public final class ComputerSession {
 	// What the server last said.
 	private final List<String> apps = new ArrayList<>();
 	private String floppy = "";
+	/** The floppy's volume label (a data floppy's), "" for none. */
+	private String floppyLabel = "";
 	private String serial = "";
 	private boolean helloReceived = false;
 	/** SETUP's settings (launcher view, scheme, name, clock), as the server last sent them. */
@@ -208,8 +211,34 @@ public final class ComputerSession {
 		request("app", wrapped, done);
 	}
 
+	/** C:, the computer's own disk. */
 	public ComputerFiles files() {
 		return files;
+	}
+
+	/** A:, the floppy in the drive (computer batch 3A). */
+	public ComputerFiles floppyFiles() {
+		return floppyFiles;
+	}
+
+	/** The drive {@code drive} ({@code 'A'} or the computer's own). */
+	public ComputerFiles files(char drive) {
+		return drive == com.arrl.radiocraft.common.computer.DrivePath.FLOPPY ? floppyFiles : files;
+	}
+
+	/** True if drive A: has a disk with files or room for them (a blank or data floppy, not a program's disk). */
+	public boolean hasDataFloppy() {
+		return floppy.equals("blank") || floppy.equals("data");
+	}
+
+	/** True if any floppy is in the drive. */
+	public boolean hasFloppy() {
+		return !floppy.isEmpty();
+	}
+
+	/** The floppy's volume label, "" for none. */
+	public String floppyLabel() {
+		return floppyLabel;
 	}
 
 	public ComputerScanner scanner() {
@@ -254,6 +283,8 @@ public final class ComputerSession {
 		}
 		if(answer.contains("floppy", Tag.TAG_STRING))
 			floppy = answer.getString("floppy");
+		if(answer.contains("floppyLabel", Tag.TAG_STRING))
+			floppyLabel = answer.getString("floppyLabel");
 		if(answer.contains("serial", Tag.TAG_STRING))
 			serial = answer.getString("serial");
 		if(answer.contains("settings", Tag.TAG_COMPOUND))
@@ -286,7 +317,7 @@ public final class ComputerSession {
 		return app.builtIn() || apps.contains(app.id());
 	}
 
-	/** What is in the drive: "" for nothing, "blank", or a program's id. */
+	/** What is in the drive: "" for nothing, "blank", "data" (a data floppy), or a program's id. */
 	public String floppy() {
 		return floppy;
 	}

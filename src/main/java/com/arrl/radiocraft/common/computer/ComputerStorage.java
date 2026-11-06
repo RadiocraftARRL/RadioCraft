@@ -37,9 +37,13 @@ public final class ComputerStorage {
 		}
 	}
 
-	/** Why a change was refused. {@link #key()} is the lang key suffix under {@code screen.radiocraft.computer.err.}. */
+	/**
+	 * Why a change was refused. {@link #key()} is the lang key suffix under {@code screen.radiocraft.computer.err.}.
+	 * The last three are drive A:'s (computer batch 3A): no disk in the drive, a program's own disk (write-protected),
+	 * and a program refused on a data floppy.
+	 */
 	public enum Problem {
-		BAD_NAME, TOO_BIG, DISK_FULL, TOO_MANY_FILES, NOT_FOUND, EXISTS, BAD_CONTENTS;
+		BAD_NAME, TOO_BIG, DISK_FULL, TOO_MANY_FILES, NOT_FOUND, EXISTS, BAD_CONTENTS, NO_DISK, WRITE_PROTECTED, PROGRAM;
 
 		public String key() {
 			return name().toLowerCase(Locale.ROOT);

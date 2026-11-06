@@ -42,7 +42,7 @@ final class ShellIcons {
 		boolean files = shell.filesFocused;
 		Dos.frame(g, Dos.tr(files ? "shell.files_title" : "shell.icons_title"),
 				Dos.tr(files ? "shell.keys_files" : "shell.keys_icons"));
-		String title = Dos.tr(files ? "shell.file_manager" : "shell.program_manager");
+		String title = files ? Dos.tr("shell.file_manager") + " - " + shell.drive + ":\\" : Dos.tr("shell.program_manager");
 		g.box(WIN_COL, WIN_ROW, WIN_W, WIN_H, true, title, DosColours.TEXT_FG, DosColours.BODY_BG);
 		if(files)
 			renderFiles(g);
@@ -90,7 +90,7 @@ final class ShellIcons {
 	private void renderFiles(TextGrid g) {
 		DosList files = shell.filesList();
 		if(shell.fileList.isEmpty())
-			g.put(WIN_COL + 3, WIN_ROW + 2, Dos.tr("shell.no_files"), DosColours.BODY_FG, DosColours.BODY_BG);
+			g.put(WIN_COL + 3, WIN_ROW + 2, Dos.tr(shell.onFloppy() ? "shell.no_files_a" : "shell.no_files"), DosColours.BODY_FG, DosColours.BODY_BG);
 		else
 			files.render(g, WIN_COL + 2, WIN_ROW + 1, WIN_W - 4, WIN_H - 2, DosColours.TEXT_FG, DosColours.BODY_BG, true);
 		ComputerFiles.Info file = shell.selectedFile();

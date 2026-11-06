@@ -118,6 +118,8 @@ public final class Dos {
 			return tr("drive.empty");
 		if(floppy.equals("blank"))
 			return tr("drive.blank");
+		if(floppy.equals("data"))
+			return session.floppyLabel().isEmpty() ? tr("drive.data") : tr("drive.data_label", session.floppyLabel());
 		ComputerApp app = com.arrl.radiocraft.common.computer.ComputerApps.get(floppy);
 		return app == null ? floppy : name(app) + " (" + app.fileName() + ")";
 	}

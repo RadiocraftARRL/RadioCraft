@@ -32,8 +32,8 @@ public class ItemTooltipEvents {
 			for(String alias : SearchAliases.of(event.getItemStack().getHoverName().getString()))
 				event.getToolTip().add(Component.literal(alias));
 		String key = Radiocraft.translationKey("tooltip", id.getPath());
-		if(!I18n.exists(key))
-			return;
+		if(!I18n.exists(key) || event.getItemStack().has(com.arrl.radiocraft.common.init.RadiocraftDataComponent.FLOPPY_DATA.value()))
+			return; // A data floppy (computer batch 3A) is not blank: FloppyDiskItem says what is on it.
 		for(Component line : event.getToolTip())
 			if(line.getContents() instanceof TranslatableContents t && t.getKey().equals(key))
 				return;

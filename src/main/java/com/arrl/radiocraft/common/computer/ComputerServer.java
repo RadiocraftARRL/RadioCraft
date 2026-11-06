@@ -43,7 +43,12 @@ import java.util.UUID;
  * {@code sys.eject}, {@code sys.install} / {@code sys.uninstall} ({@code app}).</li>
  * <li>{@code fs.list} ({@code ext}), {@code fs.read} ({@code name}: answers {@code data}), {@code fs.write}
  * ({@code name}, {@code part}, {@code parts}, {@code data}: see {@link ComputerUploads}), {@code fs.delete}
- * ({@code name}), {@code fs.rename} ({@code from}, {@code to}).</li>
+ * ({@code name}), {@code fs.rename} ({@code from}, {@code to}). Each takes {@code drive}: "A" for the floppy in the
+ * drive ({@link FloppyDrive}; refused with {@code no_disk} while it is empty), anything else (or none) for C:, the
+ * computer's disk. {@code fs.list} answers the drive's {@code label} too.</li>
+ * <li>{@code fs.copy} ({@code from}, {@code to}: paths such as {@code A:NOTES.TXT}, {@link DrivePath}; {@code to} may be
+ * a drive alone; {@code overwrite}): copies a file on the server, between drives or on one. A program can never be
+ * copied onto a floppy ({@code program}). {@code fs.label} ({@code label}): the floppy's volume label.</li>
  * <li>{@code scan.read} (what is on the scanner's glass: {@code kind} image or book, {@code title}, {@code image} or
  * {@code pages}), {@code scan.save} ({@code name}: the glass into {@code NAME.IMG} or {@code NAME.TXT}),
  * {@code print.image} ({@code name} of an {@code .IMG}), {@code print.text} ({@code name} of a {@code .TXT}, or
@@ -100,11 +105,35 @@ public final class ComputerServer {
 			case "sys.eject" -> eject(computer, player, reply);
 			case "sys.install" -> install(computer, data.getString("app"), reply);
 			case "sys.uninstall" -> uninstall(computer, data.getString("app"), reply);
-			case "fs.list" -> reply.ok(list(context.files(), data.getString("ext")));
-			case "fs.read" -> read(context.files(), data.getString("name"), reply);
+			case "fs.list" -> {
+				ComputerVolume volume = volume(context, data, reply);
+				if(volume != null)
+					reply.ok(list(volume, data.getString("ext")));
+			}
+			case "fs.read" -> {
+				ComputerVolume volume = volume(context, data, reply);
+				if(volume != null)
+					read(volume, data.getString("name"), reply);
+			}
 			case "fs.write" -> write(context, data, reply);
-			case "fs.delete" -> answer(reply, context.files().delete(data.getString("name")));
-			case "fs.rename" -> answer(reply, context.files().rename(data.getString("from"), data.getString("to")));
+			case "fs.delete" -> {
+				ComputerVolume volume = volume(context, data, reply);
+				if(volume != null)
+					answer(reply, volume.delete(data.getString("name")));
+			}
+			case "fs.rename" -> {
+				ComputerVolume volume = volume(context, data, reply);
+				if(volume != null)
+					answer(reply, volume.rename(data.getString("from"), data.getString("to")));
+			}
+			case "fs.copy" -> copy(context, data.getString("from"), data.getString("to"), data.getBoolean("overwrite"), reply);
+			case "fs.label" -> {
+				ComputerStorage.Problem problem = FloppyDrive.setLabel(computer, data.getString("label"));
+				if(problem != null)
+					reply.error(problem);
+				else
+					reply.ok(hello(computer));
+			}
 			case "scan.read" -> scanRead(context, reply);
 			case "scan.save" -> scanSave(context, data.getString("name"), reply);
 			case "print.image" -> printImage(context, data.getString("name"), reply);
@@ -148,19 +177,18 @@ public final class ComputerServer {
 		return out;
 	}
 
-	/** What the drive holds: "" for nothing, "blank", or the program's id. */
+	/** What the drive holds: "" for nothing, "blank", "data" (a data floppy, computer batch 3A), or the program's id. */
 	public static String driveContents(RadioComputerBlockEntity computer) {
 		ItemStack floppy = computer.getFloppy();
-		if(floppy.isEmpty())
-			return "";
 		ComputerApp app = FloppyDiskItem.app(floppy);
-		return app == null ? "blank" : app.id();
+		return app != null ? app.id() : FloppyDrive.kind(floppy).word();
 	}
 
 	private static CompoundTag hello(RadioComputerBlockEntity computer) {
 		CompoundTag out = new CompoundTag();
 		out.put("apps", appIds(computer));
 		out.putString("floppy", driveContents(computer));
+		out.putString("floppyLabel", FloppyDrive.label(computer.getFloppy()));
 		out.putString("serial", computer.getComputerId().toString().substring(0, 8).toUpperCase(java.util.Locale.ROOT));
 		return out;
 	}
@@ -208,7 +236,8 @@ public final class ComputerServer {
 			ComputerApp app = FloppyDiskItem.app(stack);
 			CompoundTag entry = new CompoundTag();
 			entry.putInt("slot", slot);
-			entry.putString("app", app == null ? "blank" : app.id());
+			entry.putString("app", app != null ? app.id() : FloppyDrive.kind(stack).word());
+			entry.putString("label", FloppyDrive.label(stack));
 			list.add(entry);
 		}
 		CompoundTag out = new CompoundTag();
@@ -229,6 +258,7 @@ public final class ComputerServer {
 		computer.insertFloppy(disk);
 		CompoundTag out = new CompoundTag();
 		out.putString("floppy", driveContents(computer));
+		out.putString("floppyLabel", FloppyDrive.label(computer.getFloppy()));
 		reply.ok(out);
 	}
 
@@ -240,7 +270,10 @@ public final class ComputerServer {
 		}
 		if(!player.getInventory().add(disk))
 			player.drop(disk, false);
-		reply.ok();
+		CompoundTag out = new CompoundTag();
+		out.putString("floppy", "");
+		out.putString("floppyLabel", "");
+		reply.ok(out);
 	}
 
 	private static void install(RadioComputerBlockEntity computer, String id, ComputerReply reply) {
@@ -314,7 +347,72 @@ public final class ComputerServer {
 
 	// -------------------- FILES --------------------
 
-	private static CompoundTag list(ComputerFileStore files, String extension) {
+	/**
+	 * The drive a file request names ({@code drive} "A" is the floppy), or null after answering {@code no_disk} when
+	 * that is the floppy drive and it is empty.
+	 */
+	@Nullable
+	private static ComputerVolume volume(ComputerContext context, CompoundTag data, ComputerReply reply) {
+		char drive = DrivePath.driveOf(data.getString("drive"));
+		if(drive == DrivePath.FLOPPY && FloppyDrive.kind(context.computer().getFloppy()) == FloppyDrive.Kind.NONE) {
+			reply.error(ComputerStorage.Problem.NO_DISK);
+			return null;
+		}
+		return context.volume(drive);
+	}
+
+	/**
+	 * Copies {@code fromText} to {@code toText} ({@link DrivePath}s; C: unless they say A:) on the server, so a picture
+	 * never crosses the network. A destination that is a drive alone keeps the name. Answers the new file's
+	 * {@code name} (with its drive) and {@code size}.
+	 */
+	public static void copy(ComputerContext context, String fromText, String toText, boolean overwrite, ComputerReply reply) {
+		DrivePath from = DrivePath.parse(fromText, DrivePath.COMPUTER), to = DrivePath.parse(toText, DrivePath.COMPUTER);
+		if(from == null || to == null || from.isDriveOnly()) {
+			reply.error(ComputerStorage.Problem.BAD_NAME);
+			return;
+		}
+		String target = to.isDriveOnly() ? from.name() : to.name();
+		if(to.onFloppy() && FloppyDisk.isProgramName(target)) {
+			reply.error(ComputerStorage.Problem.PROGRAM);
+			return;
+		}
+		for(DrivePath path : new DrivePath[] { from, to })
+			if(path.onFloppy() && FloppyDrive.kind(context.computer().getFloppy()) == FloppyDrive.Kind.NONE) {
+				reply.error(ComputerStorage.Problem.NO_DISK);
+				return;
+			}
+		ComputerVolume source = context.volume(from.drive()), destination = context.volume(to.drive());
+		ComputerStorage.FileEntry entry = source.storage().entry(from.name());
+		if(entry == null) {
+			reply.error(ComputerStorage.isValidName(from.name()) ? ComputerStorage.Problem.NOT_FOUND : ComputerStorage.Problem.BAD_NAME);
+			return;
+		}
+		String normalised = ComputerStorage.normalise(target);
+		if(normalised == null) {
+			reply.error(ComputerStorage.Problem.BAD_NAME);
+			return;
+		}
+		if(from.drive() == to.drive() && entry.name().equals(normalised)) {
+			reply.error("copy_onto_itself");
+			return;
+		}
+		if(!overwrite && destination.storage().exists(normalised)) {
+			reply.error(ComputerStorage.Problem.EXISTS);
+			return;
+		}
+		ComputerStorage.Problem problem = destination.write(normalised, entry.data());
+		if(problem != null) {
+			reply.error(problem);
+			return;
+		}
+		CompoundTag out = hello(context.computer());
+		out.putString("name", to.drive() + ":" + normalised);
+		out.putInt("size", entry.size());
+		reply.ok(out);
+	}
+
+	private static CompoundTag list(ComputerVolume files, String extension) {
 		ListTag list = new ListTag();
 		for(ComputerStorage.FileEntry entry : files.list(extension)) {
 			CompoundTag file = new CompoundTag();
@@ -326,13 +424,15 @@ public final class ComputerServer {
 		CompoundTag out = new CompoundTag();
 		out.put("files", list);
 		out.putLong("used", files.storage().used());
-		out.putLong("capacity", ComputerFileStore.capacity());
+		out.putLong("capacity", files.totalBytes());
 		out.putInt("count", files.storage().count());
-		out.putInt("maxFiles", ComputerFileStore.maxFiles());
+		out.putInt("maxFiles", files.fileLimit());
+		out.putString("drive", String.valueOf(files.drive()));
+		out.putString("label", files.label());
 		return out;
 	}
 
-	private static void read(ComputerFileStore files, String name, ComputerReply reply) {
+	private static void read(ComputerVolume files, String name, ComputerReply reply) {
 		ComputerStorage.FileEntry entry = files.storage().entry(name);
 		if(entry == null) {
 			reply.error(ComputerStorage.isValidName(name) ? ComputerStorage.Problem.NOT_FOUND : ComputerStorage.Problem.BAD_NAME);
@@ -363,14 +463,19 @@ public final class ComputerServer {
 				reply.ok(out);
 			}
 			case DONE -> {
-				ComputerStorage.Problem problem = context.files().write(name, result.data());
+				ComputerVolume volume = volume(context, data, reply);
+				if(volume == null)
+					return;
+				ComputerStorage.Problem problem = volume.write(name, result.data());
 				if(problem != null) {
 					reply.error(problem);
 					return;
 				}
 				CompoundTag out = new CompoundTag();
 				out.putString("name", name);
-				out.putLong("used", context.files().storage().used());
+				out.putLong("used", volume.storage().used());
+				if(volume.drive() == DrivePath.FLOPPY)
+					out.putString("floppy", driveContents(context.computer())); // A blank floppy may be a data floppy now.
 				reply.ok(out);
 			}
 		}

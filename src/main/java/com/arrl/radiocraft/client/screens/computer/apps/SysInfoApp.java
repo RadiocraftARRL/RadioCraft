@@ -72,6 +72,7 @@ public final class SysInfoApp extends DosApp {
 		String floppy = info.getString("floppy");
 		ComputerApp onDisk = ComputerApps.get(floppy);
 		g.put(3, r++, Dos.fit(floppy.isEmpty() ? Dos.tr("drive.empty") : floppy.equals("blank") ? Dos.tr("drive.blank")
+				: floppy.equals("data") ? Dos.drive(session)
 				: onDisk != null ? Dos.name(onDisk) + " (" + onDisk.fileName() + ")" : floppy, 35), fg, bg);
 		r++;
 		g.put(3, r++, Dos.tr("sysinfo.programs"), head, bg);

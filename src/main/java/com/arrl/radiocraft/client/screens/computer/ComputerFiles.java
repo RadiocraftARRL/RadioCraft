@@ -1,6 +1,7 @@
 package com.arrl.radiocraft.client.screens.computer;
 
 import com.arrl.radiocraft.common.computer.ComputerStorage;
+import com.arrl.radiocraft.common.computer.DrivePath;
 import com.arrl.radiocraft.common.computer.ComputerUploads;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -11,10 +12,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * A program's way to the computer's disk from the screen (the {@code fs.*} requests of
- * {@link com.arrl.radiocraft.common.computer.ComputerServer}). Every call answers once, on the client thread, with the
- * server's {@link ComputerResponse}. Writes go up in parts ({@link ComputerUploads}), one after the other; the answer
- * is the last part's.
+ * A program's way to one of the computer's drives from the screen (the {@code fs.*} requests of
+ * {@link com.arrl.radiocraft.common.computer.ComputerServer}): {@link ComputerSession#files()} is C:, the computer's
+ * disk, and {@link ComputerSession#floppyFiles()} is A:, the floppy in its drive (computer batch 3A; every request then
+ * fails with {@code no_disk} while the drive is empty, and writes with {@code write_protected} on a program's disk and
+ * {@code program} for a program's name). Every call answers once, on the client thread, with the server's
+ * {@link ComputerResponse}. Writes go up in parts ({@link ComputerUploads}), one after the other; the answer is the
+ * last part's.
  */
 public final class ComputerFiles {
 
@@ -22,16 +26,31 @@ public final class ComputerFiles {
 	public record Info(String name, int size, long modified) {}
 
 	private final ComputerSession session;
+	/** {@link DrivePath#COMPUTER} or {@link DrivePath#FLOPPY}. */
+	private final char drive;
 
-	ComputerFiles(ComputerSession session) {
+	ComputerFiles(ComputerSession session, char drive) {
 		this.session = session;
+		this.drive = drive;
+	}
+
+	/** This drive's letter. */
+	public char drive() {
+		return drive;
+	}
+
+	/** {@code data} with this drive named in it (C: is the default, so only A: says so). */
+	private CompoundTag on(CompoundTag data) {
+		if(drive == DrivePath.FLOPPY)
+			data.putString("drive", "A");
+		return data;
 	}
 
 	/** Lists the files with {@code extension} (all if empty); read them with {@link #infos}. */
 	public void list(String extension, Consumer<ComputerResponse> done) {
 		CompoundTag data = new CompoundTag();
 		data.putString("ext", extension);
-		session.request("fs.list", data, done);
+		session.request("fs.list", on(data), done);
 	}
 
 	/** The files in an {@link #list} answer. */
@@ -49,7 +68,7 @@ public final class ComputerFiles {
 	public void read(String name, Consumer<ComputerResponse> done) {
 		CompoundTag data = new CompoundTag();
 		data.putString("name", name);
-		session.request("fs.read", data, done);
+		session.request("fs.read", on(data), done);
 	}
 
 	/** Reads a text file; {@code done} gets its text, or null and the answer if it failed. */
@@ -72,7 +91,7 @@ public final class ComputerFiles {
 		data.putInt("part", part);
 		data.putInt("parts", parts);
 		data.putByteArray("data", ComputerUploads.part(bytes, part));
-		session.request("fs.write", data, response -> {
+		session.request("fs.write", on(data), response -> {
 			if(response.ok() && part + 1 < parts)
 				writePart(name, bytes, part + 1, parts, done);
 			else
@@ -83,13 +102,37 @@ public final class ComputerFiles {
 	public void delete(String name, Consumer<ComputerResponse> done) {
 		CompoundTag data = new CompoundTag();
 		data.putString("name", name);
-		session.request("fs.delete", data, done);
+		session.request("fs.delete", on(data), done);
 	}
 
 	public void rename(String from, String to, Consumer<ComputerResponse> done) {
 		CompoundTag data = new CompoundTag();
 		data.putString("from", from);
 		data.putString("to", to);
-		session.request("fs.rename", data, done);
+		session.request("fs.rename", on(data), done);
+	}
+
+	/**
+	 * Copies {@code from} to {@code to} on the server: paths such as {@code A:NOTES.TXT} or {@code NOTES.TXT} (this
+	 * drive's), {@code to} may be a drive alone ({@code A:}). Refused if {@code to} exists unless {@code overwrite}.
+	 */
+	public void copy(String from, String to, boolean overwrite, Consumer<ComputerResponse> done) {
+		CompoundTag data = new CompoundTag();
+		data.putString("from", path(from));
+		data.putString("to", path(to));
+		data.putBoolean("overwrite", overwrite);
+		session.request("fs.copy", data, done);
+	}
+
+	/** {@code name} with this drive's letter if it has none. */
+	private String path(String name) {
+		return name.length() >= 2 && name.charAt(1) == ':' ? name : drive + ":" + name;
+	}
+
+	/** Sets the floppy's volume label ("" removes it); the answer says what is in the drive now. */
+	public void label(String label, Consumer<ComputerResponse> done) {
+		CompoundTag data = new CompoundTag();
+		data.putString("label", label);
+		session.request("fs.label", data, done);
 	}
 }

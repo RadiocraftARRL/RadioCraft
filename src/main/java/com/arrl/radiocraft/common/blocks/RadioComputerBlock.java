@@ -84,7 +84,9 @@ public class RadioComputerBlock extends BaseEntityBlock {
 		if(computer.insertFloppy(stack)) {
 			stack.consume(1, player);
 			ComputerApp app = FloppyDiskItem.app(computer.getFloppy());
-			player.displayClientMessage(app == null ? message("floppy_blank") : message("floppy_inserted", Component.translatable(app.nameKey())), true);
+			com.arrl.radiocraft.common.datacomponents.FloppyData data = computer.getFloppy().get(com.arrl.radiocraft.common.init.RadiocraftDataComponent.FLOPPY_DATA.value());
+			player.displayClientMessage(app != null ? message("floppy_inserted", Component.translatable(app.nameKey()))
+					: data != null ? message("floppy_data", data.files()) : message("floppy_blank"), true);
 			player.level().playSound(null, computer.getBlockPos(), SoundEvents.CHISELED_BOOKSHELF_INSERT, SoundSource.BLOCKS, 0.6F, 1.6F);
 		}
 	}

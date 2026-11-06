@@ -78,12 +78,16 @@ public final class InstallApp extends DosApp {
 			entries.add(new Entry(Dos.tr("install.already", Dos.name(onDisk)), null, null));
 		else if(floppy.equals("blank"))
 			entries.add(new Entry(Dos.tr("install.blank"), null, null));
+		else if(floppy.equals("data")) // Computer batch 3A: files, not a program.
+			entries.add(new Entry(Dos.tr("install.data", Dos.drive(session)), null, null));
 		if(!floppy.isEmpty())
 			entries.add(new Entry(Dos.tr("install.eject"), this::eject, null));
 		else {
 			for(CompoundTag disk : floppies) {
 				ComputerApp app = ComputerApps.get(disk.getString("app"));
-				String name = app == null ? Dos.tr("drive.blank") : Dos.name(app);
+				String label = disk.getString("label");
+				String name = app != null ? Dos.name(app) : !"data".equals(disk.getString("app")) ? Dos.tr("drive.blank")
+						: label.isEmpty() ? Dos.tr("drive.data") : Dos.tr("drive.data_label", label);
 				int slot = disk.getInt("slot");
 				entries.add(new Entry(Dos.tr("install.insert", name), () -> insert(slot), null));
 			}
