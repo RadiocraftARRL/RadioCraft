@@ -7,9 +7,9 @@ import java.util.Locale;
 /**
  * The radio computer's MUSIC program's track list (1.12 step 8): {@code assets/radiocraft/computer/music/tracks.txt},
  * a {@code file|title|composer|seconds} line per MIDI file in that folder, in play order; {@code #} starts a comment.
- * Every file is public domain (see {@code doc/Credits-Music.md}). Pure (no game classes), so it is unit tested; the
- * client reads the resource and plays the files with {@code javax.sound.midi}. A resource pack can replace the list
- * and the files.
+ * Every file is public domain, CC0 or CC BY (see {@code doc/Credits-Music.md}). Pure (no game classes), so it is
+ * unit tested; the client reads the resource and plays the files with {@code javax.sound.midi}. A resource pack can
+ * replace the list and the files.
  */
 public final class MusicTracks {
 

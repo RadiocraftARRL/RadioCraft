@@ -1,5 +1,6 @@
-# The music player's tracks, in play order: file|title|composer|seconds. All public domain, from the Mutopia Project
-# (see doc/Credits-Music.md for each file's page and licence).
+# The music player's tracks, in play order: file|title|composer|seconds. The classical pieces are public domain, from
+# the Mutopia Project; the newer tunes are CC0 or CC BY 4.0 from OpenGameArt.org (the CC BY ones credit their author
+# here, which the player shows). See doc/Credits-Music.md for each file's page and licence.
 entertainer.mid|The Entertainer|Scott Joplin|253
 maple_leaf_rag.mid|Maple Leaf Rag|Scott Joplin|144
 fur_elise.mid|Fur Elise|Ludwig van Beethoven|130
@@ -12,3 +13,23 @@ jesu_meine_freude.mid|Jesu, meine Freude (BWV 610)|J. S. Bach|38
 minuet_b_flat.mid|Minuet in B-flat (BWV Anh. 118)|J. S. Bach|78
 belle_qui_tiens.mid|Belle qui tiens ma vie|Thoinot Arbeau|24
 air.mid|Air (Suite No. 3, BWV 1068)|J. S. Bach|63
+airship.mid|Airship|Aureolus_Omicron|91
+neon_flames.mid|Neon Flames|Ivan Stanton|120
+headscratcher.mid|Headscratcher|congusbongus|210
+c64_style.mid|C64 Style 3|Tozan|145
+osanpo_rag.mid|Osanpo Rag|Yubatake (OpenGameArt)|196
+icy_garden.mid|Icy Garden|Roppy Chop Studios|128
+saxophone_jazz.mid|Saxophone 1|Tozan|135
+long_away_home.mid|Long Away Home|nene|121
+steel_drums.mid|Caribbean Steel Drums|Tozan|118
+xenon_phoenix.mid|Xenon Phoenix|Ivan Stanton|124
+casual_afternoon.mid|Casual Afternoon|Roppy Chop Studios|86
+huge_jazz_battle.mid|Huge Jazz Battle|Katana|59
+steal_the_moon.mid|Steal the Moon|Daniel Michel|116
+rainy_streets.mid|Rainy Streets|Aureolus_Omicron|95
+piano_blues.mid|Piano Blues with Drums|Tozan|115
+quantum_2.mid|Quantum 2|Ivan Stanton|144
+roll_up.mid|Roll Up|Yubatake (OpenGameArt)|174
+acoustic_guitar_solo.mid|Acoustic Guitar Solo|Tozan|146
+airport_attack.mid|Airport Attack|Ivan Stanton|90
+aftermath.mid|Aftermath|Ivan Stanton|198
