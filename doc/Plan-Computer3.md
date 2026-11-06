@@ -47,6 +47,10 @@ This batch starts after the launcher/SETUP agent finishes. Before starting, read
      - No QSL bureau, no eQSL service, no confirmation matching ("easy to fake irl paper ones").
    - **QSL album:** an item that holds cards and pages through them.
 7. **Data floppies**: copy files to a blank floppy and carry them between computers.
+   - **Where:** from the File Manager (the Program Manager's Tab view), the classic Files tab, and RC-DOS (`COPY X A:`, `DIR A:`).
+   - **Drive:** inserting a blank or data floppy in the computer's drive shows it as drive A:.
+   - **What it holds:** **data files only**: documents, logs, pictures, codeplugs, `.FRQ` and so on. **Programs cannot be copied to a floppy.** They are installed only from their own program floppies.
+   - **The item:** a data floppy keeps its files on the item, with a small capacity (about 1.44 MB in game terms) and a label shown in the tooltip.
 8. **Screensaver**: a starfield or a scrolling callsign after a few idle minutes, which also cuts the power draw.
    - Needs its program installed.
    - The floppy is **found in the world** (loot), not crafted.
