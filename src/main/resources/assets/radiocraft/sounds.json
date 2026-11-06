@@ -107,5 +107,389 @@
         "volume": 0.55
       }
     ]
+  },
+  "weather_alert.tone": {
+    "subtitle": "subtitles.radiocraft.weather_alert.tone",
+    "sounds": [
+      "radiocraft:weather_alert/tone"
+    ]
+  },
+  "weather_alert.word_intro": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_intro"
+    ]
+  },
+  "weather_alert.word_tornado_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_tornado_warning"
+    ]
+  },
+  "weather_alert.word_tornado_watch": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_tornado_watch"
+    ]
+  },
+  "weather_alert.word_severe_thunderstorm_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_severe_thunderstorm_warning"
+    ]
+  },
+  "weather_alert.word_severe_thunderstorm_watch": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_severe_thunderstorm_watch"
+    ]
+  },
+  "weather_alert.word_flash_flood_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_flash_flood_warning"
+    ]
+  },
+  "weather_alert.word_high_wind_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_high_wind_warning"
+    ]
+  },
+  "weather_alert.word_hurricane_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_hurricane_warning"
+    ]
+  },
+  "weather_alert.word_tropical_storm_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_tropical_storm_warning"
+    ]
+  },
+  "weather_alert.word_blizzard_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_blizzard_warning"
+    ]
+  },
+  "weather_alert.word_dust_storm_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_dust_storm_warning"
+    ]
+  },
+  "weather_alert.word_dense_fog_advisory": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_dense_fog_advisory"
+    ]
+  },
+  "weather_alert.word_excessive_heat_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_excessive_heat_warning"
+    ]
+  },
+  "weather_alert.word_extreme_cold_warning": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_extreme_cold_warning"
+    ]
+  },
+  "weather_alert.word_for_the_area": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_for_the_area"
+    ]
+  },
+  "weather_alert.word_the_storm_is": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_the_storm_is"
+    ]
+  },
+  "weather_alert.word_over_your_location": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_over_your_location"
+    ]
+  },
+  "weather_alert.word_blocks": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_blocks"
+    ]
+  },
+  "weather_alert.word_to_the": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_to_the"
+    ]
+  },
+  "weather_alert.word_moving": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_moving"
+    ]
+  },
+  "weather_alert.word_category": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_category"
+    ]
+  },
+  "weather_alert.word_north": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_north"
+    ]
+  },
+  "weather_alert.word_northeast": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_northeast"
+    ]
+  },
+  "weather_alert.word_east": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_east"
+    ]
+  },
+  "weather_alert.word_southeast": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_southeast"
+    ]
+  },
+  "weather_alert.word_south": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_south"
+    ]
+  },
+  "weather_alert.word_southwest": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_southwest"
+    ]
+  },
+  "weather_alert.word_west": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_west"
+    ]
+  },
+  "weather_alert.word_northwest": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_northwest"
+    ]
+  },
+  "weather_alert.word_take_shelter_now": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_take_shelter_now"
+    ]
+  },
+  "weather_alert.word_stay_indoors": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_stay_indoors"
+    ]
+  },
+  "weather_alert.word_move_to_higher_ground": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_move_to_higher_ground"
+    ]
+  },
+  "weather_alert.word_end_of_message": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_end_of_message"
+    ]
+  },
+  "weather_alert.word_zero": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_zero"
+    ]
+  },
+  "weather_alert.word_one": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_one"
+    ]
+  },
+  "weather_alert.word_two": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_two"
+    ]
+  },
+  "weather_alert.word_three": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_three"
+    ]
+  },
+  "weather_alert.word_four": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_four"
+    ]
+  },
+  "weather_alert.word_five": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_five"
+    ]
+  },
+  "weather_alert.word_six": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_six"
+    ]
+  },
+  "weather_alert.word_seven": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_seven"
+    ]
+  },
+  "weather_alert.word_eight": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_eight"
+    ]
+  },
+  "weather_alert.word_nine": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_nine"
+    ]
+  },
+  "weather_alert.word_ten": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_ten"
+    ]
+  },
+  "weather_alert.word_eleven": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_eleven"
+    ]
+  },
+  "weather_alert.word_twelve": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_twelve"
+    ]
+  },
+  "weather_alert.word_thirteen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_thirteen"
+    ]
+  },
+  "weather_alert.word_fourteen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_fourteen"
+    ]
+  },
+  "weather_alert.word_fifteen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_fifteen"
+    ]
+  },
+  "weather_alert.word_sixteen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_sixteen"
+    ]
+  },
+  "weather_alert.word_seventeen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_seventeen"
+    ]
+  },
+  "weather_alert.word_eighteen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_eighteen"
+    ]
+  },
+  "weather_alert.word_nineteen": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_nineteen"
+    ]
+  },
+  "weather_alert.word_twenty": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_twenty"
+    ]
+  },
+  "weather_alert.word_thirty": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_thirty"
+    ]
+  },
+  "weather_alert.word_forty": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_forty"
+    ]
+  },
+  "weather_alert.word_fifty": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_fifty"
+    ]
+  },
+  "weather_alert.word_sixty": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_sixty"
+    ]
+  },
+  "weather_alert.word_seventy": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_seventy"
+    ]
+  },
+  "weather_alert.word_eighty": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_eighty"
+    ]
+  },
+  "weather_alert.word_ninety": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_ninety"
+    ]
+  },
+  "weather_alert.word_hundred": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_hundred"
+    ]
+  },
+  "weather_alert.word_thousand": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_thousand"
+    ]
   }
 }
