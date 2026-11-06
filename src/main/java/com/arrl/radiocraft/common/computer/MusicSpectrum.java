@@ -50,8 +50,11 @@ public final class MusicSpectrum {
 	private final float[] ring = new float[FFT];
 	private int write, sinceLast;
 	private double reference = REFERENCE_FLOOR;
-	/** Hops' bars kept until they are heard: enough for {@link #HISTORY} hops (1.5 s at 44.1 kHz). */
-	public static final int HISTORY = 64;
+	/**
+	 * Hops' bars kept until they are heard: {@link #HISTORY} hops (4.5 s at 44.1 kHz; the sound card renders up to 3 s
+	 * ahead of the ears).
+	 */
+	public static final int HISTORY = 192;
 	private final float[][] history;
 	private final long[] historyAt = new long[HISTORY];
 	private int historyNext;

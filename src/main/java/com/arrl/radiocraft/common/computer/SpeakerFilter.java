@@ -23,21 +23,62 @@ public final class SpeakerFilter {
 	/** Make-up gain for the bass the cones lose. */
 	private static final double MAKEUP = 1.1D;
 
+	/**
+	 * How a speaker colours the sound: its high-pass and low-pass corners (Hz), its resonance bump (dB at
+	 * {@link #BUMP}), how hard its amplifier is driven into the soft clip ({@code drive}, 0 for no clipping, just a
+	 * limit at full scale) and its make-up gain.
+	 */
+	public record Voicing(double lowCut, double highCut, double bumpDb, double drive, double makeup) {
+		/** The computer's own pair of small PC speakers (the voicing MUSIC always had). */
+		public static final Voicing PC = new Voicing(LOW_CUT, HIGH_CUT, BUMP_DB, DRIVE, MAKEUP);
+		/** A desk speaker beside it: more bass and top, a little clipping. */
+		public static final Voicing DESK = new Voicing(150.0D, 7000.0D, 2.0D, 1.2D, 1.05D);
+		/** A premium speaker: nearly the whole band, flat, clean. */
+		public static final Voicing PREMIUM = new Voicing(50.0D, 15000.0D, 0.0D, 0.0D, 1.0D);
+		/** A wall speaker on the wire: small and buzzy. */
+		public static final Voicing WALL = new Voicing(300.0D, 5000.0D, 3.0D, DRIVE * 1.6D, 1.1D);
+		/** A PA horn: no bass, a honking middle, driven hard. */
+		public static final Voicing HORN = new Voicing(450.0D, 4000.0D, 5.0D, DRIVE * 2.2D, 1.2D);
+
+		/**
+		 * The voicing for a radio speaker kind, in step with how radios treat them ({@code SpeakerKind}: built in 80 %
+		 * of the band, standard 90 %, premium all of it, wall and loudspeaker narrow and driven harder).
+		 */
+		public static Voicing of(com.arrl.radiocraft.common.radio.voice.SpeakerKind kind) {
+			return switch(kind) {
+				case BUILT_IN -> PC;
+				case STANDARD -> DESK;
+				case PREMIUM -> PREMIUM;
+				case WALL -> WALL;
+				case LOUDSPEAKER -> HORN;
+			};
+		}
+	}
+
 	private final Biquad highPass, bump, lowPass;
+	private final double drive, makeup;
 
+	/** The computer's own speakers ({@link Voicing#PC}). */
 	public SpeakerFilter(double sampleRate) {
-		highPass = Biquad.highPass(sampleRate, LOW_CUT, 0.707D);
-		bump = Biquad.peak(sampleRate, BUMP, 1.0D, BUMP_DB);
-		lowPass = Biquad.lowPass(sampleRate, HIGH_CUT, 0.75D);
+		this(sampleRate, Voicing.PC);
 	}
 
-	/** One sample in (about -1 to 1), one out (always inside -1 to 1, in fact +-1/{@link #DRIVE}). */
+	public SpeakerFilter(double sampleRate, Voicing voicing) {
+		double nyquist = sampleRate * 0.45D;
+		highPass = Biquad.highPass(sampleRate, voicing.lowCut(), 0.707D);
+		bump = Biquad.peak(sampleRate, BUMP, 1.0D, voicing.bumpDb());
+		lowPass = Biquad.lowPass(sampleRate, Math.min(voicing.highCut(), nyquist), 0.75D);
+		drive = voicing.drive();
+		makeup = voicing.makeup();
+	}
+
+	/** One sample in (about -1 to 1), one out (always inside -1 to 1; with the PC voicing +-1/{@link #DRIVE}). */
 	public float process(float sample) {
-		double y = lowPass.apply(bump.apply(highPass.apply(sample)));
-		return (float)softClip(y * MAKEUP);
+		double y = lowPass.apply(bump.apply(highPass.apply(sample))) * makeup;
+		return (float)(drive > 0.0D ? Math.tanh(y * drive) / drive : Math.max(-1.0D, Math.min(1.0D, y)));
 	}
 
-	/** The amplifier's soft clip: about {@code x} for small {@code x}, rounding off towards +-1/{@link #DRIVE}. */
+	/** The PC amplifier's soft clip: about {@code x} for small {@code x}, rounding off towards +-1/{@link #DRIVE}. */
 	public static double softClip(double x) {
 		return Math.tanh(x * DRIVE) / DRIVE;
 	}

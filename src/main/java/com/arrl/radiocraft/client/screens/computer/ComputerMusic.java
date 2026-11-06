@@ -32,17 +32,15 @@ import java.util.concurrent.ThreadLocalRandom;
  * before any comes again, never the same twice in a row, and goes on round ({@link MusicShuffle}); without it the
  * list plays down once.
  * <p>
- * While it plays it is tied to its computer: every client tick it fades with the player's distance from it (full
- * within {@link #FULL_RANGE} blocks, silent at {@link #MAX_RANGE}) and stops when the player goes further than that,
- * changes dimension or logs out, or the computer is broken or loses power. The computer keeps drawing power while a
+ * While it plays it is tied to its computer: the sound comes from the computer (a positional sound, fading with
+ * distance to silence at {@link #MAX_RANGE} blocks, see {@link ComputerMidi}), and it stops when the player goes further
+ * than that, changes dimension or logs out, or the computer is broken or loses power. The computer keeps drawing power while a
  * player listens (the server is told with the {@code music} request, see {@link RadioComputerBlockEntity#listen}), and
  * tells the client its power with the block's update.
  */
 @EventBusSubscriber(modid = Radiocraft.MOD_ID, value = Dist.CLIENT)
 public final class ComputerMusic {
 
-	/** Full volume this close to the computer, blocks. */
-	public static final double FULL_RANGE = 6.0D;
 	/** Silent and stopped this far from it, blocks (the server forgets a listener past it too). */
 	public static final double MAX_RANGE = RadioComputerBlockEntity.MUSIC_RANGE;
 
@@ -164,8 +162,8 @@ public final class ComputerMusic {
 		problem = "";
 		playing = index;
 		paused = false;
-		ComputerMidi.play(midi);
 		applyVolume();
+		ComputerMidi.play(midi, outlets(pos));
 	}
 
 	/** Stops and lets go of the computer. */
@@ -226,7 +224,8 @@ public final class ComputerMusic {
 			stop();
 			return;
 		}
-		applyVolume();
+		ComputerMidi.setOutlets(outlets(pos));
+		ComputerMidi.tick();
 		if(!paused && ComputerMidi.finished()) {
 			List<MusicTracks.Track> list = tracks();
 			if(repeat)
@@ -255,12 +254,15 @@ public final class ComputerMusic {
 		return mc.player == null || pos == null ? 0.0D : Math.sqrt(mc.player.getEyePosition().distanceToSqr(pos.getCenter()));
 	}
 
-	/** The game's music volume times MUSIC's own volume and the fade with distance ({@link ComputerMidi#updateVolume(float)}). */
+	/** MUSIC's own volume onto the sound (the game's Master and Records sliders apply to it as to any sound). */
 	private static void applyVolume() {
-		double d = distance();
-		float fade = d <= FULL_RANGE ? 1.0F : (float)Math.max(0.0D, 1.0D - (d - FULL_RANGE) / (MAX_RANGE - FULL_RANGE));
 		float own = volume / (float)VOLUME_STEPS;
-		ComputerMidi.updateVolume(fade * fade * own * own); // Squared, as the fade: each step sounds about as big.
+		ComputerMidi.setVolume(own * own); // Squared: each step sounds about as big.
+	}
+
+	/** Where the music on the computer at {@code at} comes out: the computer's own speaker. */
+	private static List<ComputerMidi.Outlet> outlets(BlockPos at) {
+		return List.of(new ComputerMidi.Outlet(at.getCenter(), com.arrl.radiocraft.common.radio.voice.SpeakerKind.BUILT_IN, (float)MAX_RANGE));
 	}
 
 	/** Tells the computer at {@code at} this player listens ({@code on}) or has stopped. */
