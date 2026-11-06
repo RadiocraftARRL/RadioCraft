@@ -353,7 +353,7 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
     the right column; B and C switch zones), side PTT, belt clip, battery. 128x128 `upgraded_commercial_handheld.png`
     (8 px per unit): case regions light grey and tinted, everything else untinted; region map in the script, which the
     screen (`CommercialHandheldScreen`) also reads. A proper model and texture in the same layout are welcome.
-  - **Commercial Mobile Radio** and **Low Band Mobile Radio**: dash-mount mobiles (blocks), a box with a front panel,
+  - **Commercial Mobile Radio** and **Commercial Low Band Radio**: dash-mount mobiles (blocks), a box with a front panel,
     display (the element named `DISPLAY` is where the channel text is drawn), channel knob, TX/RX lamps (positions in
     `RadioDisplays`), a mic hook on the side. The low band one older and plainer. Models `commercial_mobile`,
     `low_band_mobile`; textures `commercial_mobile_case`, `commercial_mobile_front`, `low_band_mobile_front`.

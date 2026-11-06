@@ -702,7 +702,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.addItem(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD, "Basic Commercial Handheld");
 		provider.addItem(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD, "Upgraded Commercial Handheld");
 		provider.addBlock(RadiocraftBlocks.COMMERCIAL_MOBILE, "Commercial Mobile Radio");
-		provider.addBlock(RadiocraftBlocks.LOW_BAND_MOBILE, "Low Band Mobile Radio");
+		provider.addBlock(RadiocraftBlocks.LOW_BAND_MOBILE, "Commercial Low Band Radio");
 		provider.add(Radiocraft.translationKey("tooltip", "basic_commercial_handheld"), "16-channel 150-174 MHz FM brick. Sneak and use for the knob; hold right click to talk. Dyeable.");
 		provider.add(Radiocraft.translationKey("tooltip", "upgraded_commercial_handheld"), "Fire-service handheld: 150-174 MHz and 2m, digital voice and encryption, a channel display. Dyeable.");
 		provider.add(Radiocraft.translationKey("tooltip", "commercial_mobile"), "16-channel 150-174 MHz mobile, analog and digital. Sneak and use for its hand mic. Needs a VHF antenna and power. Dyeable.");

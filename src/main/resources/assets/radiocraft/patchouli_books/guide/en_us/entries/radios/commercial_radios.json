@@ -34,7 +34,7 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:commercial_mobile",
       "title": "Mobile Radios",
-      "text": "The $(item)Commercial Mobile Radio$() (150-174 MHz, analog and digital) and the $(item)Low Band Mobile Radio$() (30-50 MHz, analog) sit on a desk, in a vehicle or on a ship, with a hand mic on a cord: sneak and use to take it. They need power and an antenna for their band, like the base stations."
+      "text": "The $(item)Commercial Mobile Radio$() (150-174 MHz, analog and digital) and the $(item)Commercial Low Band Radio$() (30-50 MHz, analog) sit on a desk, in a vehicle or on a ship, with a hand mic on a cord: sneak and use to take it. They need power and an antenna for their band, like the base stations."
     },
     {
       "type": "patchouli:text",

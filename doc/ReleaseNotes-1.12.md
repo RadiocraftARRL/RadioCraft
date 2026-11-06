@@ -37,7 +37,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Upgraded Commercial Handheld**: the fire-service radio, crafted from the brick: **40 channels**, digital voice
     and encryption, and the 2m ham band too. Like 1990s fire radios it keeps the 16-position knob and adds a **zone
     switch** (A = channels 1-16, B = 17-32, C = 33-40); its display shows the channel name, zone and channel.
-  - **Commercial Mobile Radio** (150-174 MHz, analog and digital) and **Low Band Mobile Radio** (30-50 MHz, analog):
+  - **Commercial Mobile Radio** (150-174 MHz, analog and digital) and **Commercial Low Band Radio** (30-50 MHz, analog):
     desk, vehicle and ship radios with a hand mic, powered and wired to an antenna like the base stations.
 - **Digital voice** has no static: clean until the signal would be 70% static on FM, a short warble, then nothing.
   An **encrypted** channel sounds like garbled digital noise without the key, and any digital signal is a harsh buzz

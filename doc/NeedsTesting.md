@@ -151,7 +151,7 @@ No lang change; nothing to regenerate.
 
 Data already regenerated (`runData`); restart the client (lang, packets, screen layout, structure templates).
 
-- [ ] Commercial radios ship blank: a new Basic/Upgraded handheld, Commercial Mobile and Low Band Mobile from the
+- [ ] Commercial radios ship blank: a new Basic/Upgraded handheld, Commercial Mobile and Commercial Low Band Radio from the
   creative tab have no channels (the display and handheld screen show a blank/dead position, no receive, no TX).
   Program one with CPS and it works. CPS F8 asks to "erase ... back to factory blank" and leaves it empty.
 - [ ] Band Plan Sheet and BANDPLAN: no "Server-wide net" tick at 7.060 any more (an old server config that still has
@@ -309,7 +309,7 @@ clients) with Simple Voice Chat for the audio checks.
   ham handheld or base station on 155.500 hears a harsh buzz. Is the buzz too loud / too soft? Is the scramble
   convincing?
 - [ ] `/rcdebug commercial hand` lists the channels; the key on channel 2 reads -1 (hidden).
-- [ ] Commercial Mobile Radio and Low Band Mobile Radio: placeholder model (tinted box with a front panel, display,
+- [ ] Commercial Mobile Radio and Commercial Low Band Radio: placeholder model (tinted box with a front panel, display,
   knob). The display shows the channel name (low band: "CH 1") and "1 FM 151.8200" when on; the TX/RX lamps light
   left of the display (lamp positions are guesses: say if they float). Right click opens the panel (PWR, CH -/+, VOL,
   PTT, display, lamps). Sneak and use takes the hand mic; the cord draws. Sneak and scroll steps channels.
@@ -683,7 +683,7 @@ model or name, so use `/setblock ~ ~ ~ radiocraft_example:low_band_radio` and `r
 
 - [ ] The game starts with the example registered: no registry or "unknown namespace" error for `radiocraft_example`
   in the log, and joining a world syncs (client and server both have the blocks).
-- [ ] An example low band radio (missing-texture cube) next to a Low Band Mobile on the same channel: hold the PTT on
+- [ ] An example low band radio (missing-texture cube) next to a Commercial Low Band Radio on the same channel: hold the PTT on
   the mobile and talk; nothing is heard yet from the example (it has no screen), but `/rcdebug radio <pos>` on it shows
   it heard the signal. Static: the example is FM, so no background hiss.
 - [ ] Coax and power wire join the example radio and the example ground plane without any tag (the wire draws its
