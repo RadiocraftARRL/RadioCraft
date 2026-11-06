@@ -59,6 +59,8 @@ public final class ComputerAppScreens {
 		registerOpener(ComputerFileFormats.FREQUENCIES, ComputerApps.FREQUENCY_MANAGER);
 		registerOpener(ComputerFileFormats.CODEPLUG, ComputerApps.PROGRAMMER);
 		registerOpener(ComputerFileFormats.ADIF, ComputerApps.EDITOR); // ADIF is text: read it in EDIT.
+		registerOpener(com.arrl.radiocraft.common.qsl.QslCards.EXTENSION, ComputerApps.QSL); // Computer batch 3C: QSL cards and nets.
+		registerOpener(com.arrl.radiocraft.client.screens.computer.apps.NetControlApp.EXTENSION, ComputerApps.NET_CONTROL);
 
 		// Radio programs (step 7). Pictures (.IMG) stay with the shell's viewer; SSTV and WEFAX list them all.
 		register(ComputerApps.APRS, com.arrl.radiocraft.client.screens.computer.apps.AprsApp::new);
@@ -83,6 +85,9 @@ public final class ComputerAppScreens {
 		register(ComputerApps.SCHEDULER, com.arrl.radiocraft.client.screens.computer.apps.SchedulerApp::new);
 		register(ComputerApps.RIG_CONTROL, com.arrl.radiocraft.client.screens.computer.apps.RigControlApp::new); // Computer batch 3B.
 		register(ComputerApps.FT8, com.arrl.radiocraft.client.screens.computer.apps.Ft8App::new);
+		register(ComputerApps.NET_CONTROL, com.arrl.radiocraft.client.screens.computer.apps.NetControlApp::new); // Computer batch 3C.
+		register(ComputerApps.AWARDS, com.arrl.radiocraft.client.screens.computer.apps.AwardsApp::new);
+		register(ComputerApps.QSL, com.arrl.radiocraft.client.screens.computer.apps.QslDesignerApp::new);
 
 		// Floppy labels (0xRRGGBB): office programs blue, radio programs red, the secret ones gold, ADS-B green.
 		label(ComputerApps.BOOK_EDITOR, 0x3A6FD8);
@@ -108,6 +113,9 @@ public final class ComputerAppScreens {
 		label(ComputerApps.SCHEDULER, 0x2F8F8F); // Teal: a station utility, between office blue and radio red.
 		label(ComputerApps.RIG_CONTROL, 0xC04020); // Computer batch 3B: radio programs, red.
 		label(ComputerApps.FT8, 0x8A40C8); // The waterfall's violet.
+		label(ComputerApps.NET_CONTROL, 0xC04020); // Computer batch 3C: radio programs red; the awards gold; QSL cards an office blue.
+		label(ComputerApps.AWARDS, 0xD4A017);
+		label(ComputerApps.QSL, 0x3A6FD8);
 	}
 
 	private ComputerAppScreens() {}

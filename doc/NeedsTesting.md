@@ -8,6 +8,42 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 computer batch 3C: net control, awards, QSL cards (added 2026-11-06)
+- [ ] Net Control: craft it (blank floppy + lectern), install. F4: name "Tuesday Net", 147.180, FM, your call; the
+  header goes green "OPEN since". Ins checks in three stations (one with T=Y, one with Short time=Y); the list shows
+  time in, flags TFC/ST. Ins the same call again: "rechecked". O checks one out (OUT time), N steps the roll call
+  (arrow; short time first, traffic next), Ctrl+Up/Down moves rows. F5 with paper in the scanner prints a written book
+  report; F6 writes NETLOG.TXT (TYPE it). F8 "Close and log": LOGBOOK gains the check-ins (grid column for a typed
+  grid). F9 with SCHEDULE installed: "at 20:00" makes a reminder job (open SCHEDULE: it is there).
+- [ ] Awards: craft it (blank floppy + item frame). With a LOGBOOK.LOG of a few contacts (FT8 ones, ones filled with
+  F6 from a radio, typed grids), the list shows each award with * levels, count/next and a bar; Enter shows worked and
+  missing (biome names readable, e.g. "Dark Forest"); F6 records. F5 on an earned award prints a certificate on
+  paper: frame the map and look at it (blue DOS window, CERTIFICATE, your call large, the award, the level, a gold
+  seal). Does it look good? Try photo paper too.
+- [ ] Logbook: the GRID column and the "Grid square" field (bad grids refused). F6 "from a radio" on a station heard:
+  the grid fills in from where its antenna was (never coordinates anywhere on screen).
+- [ ] QSL Designer: craft it (blank floppy + ink sac). Ins "MYQSL": the editor with the live preview on the right
+  (2x). Change each property: callsign, lines, every colour, border styles, a picture from an SSTV/photo .IMG (it is
+  shrunk to a small picture, bottom left; side right moves it), back heading, layout table/lines, back lines; Tab
+  turns the preview. Esc, F5 "16" with paper in the scanner: 16 cards stack in the output; with photo paper too.
+- [ ] QSL card in hand: held like a map one-handed (beside the arm) and two-handed (main hand, empty off hand: big
+  in front, both hands showing). Is it readable? Right click a blank card: the fill-in screen with the back preview
+  updating as you type; Done keeps it unsigned (tooltip "Not signed yet"); Sign without To complains; Sign locks it.
+  A stack of blanks: filling one takes one off the stack. Right click a signed card: it turns over (sneak + right
+  click turns a blank one). Tooltip: From, To, date, band and mode, Signed by.
+- [ ] Item frame: a card shows its front, the right way up, at each rotation; glow frame bright.
+- [ ] A template with a blank callsign, a stack given to a second player with no computer: they write their call in
+  ("Your callsign" field) and sign; the front shows it in blue ink.
+- [ ] QSL Album: craft it (book, leather, two paper). In the inventory: right click the album with cards on the
+  cursor puts them in, with an empty cursor takes the last out; right click it in hand: page with arrows/wheel,
+  click the card or Space to turn it, "Take out". Tooltip "N of 48 cards".
+- [ ] Fax: a signed card in a radio fax's document slot sent to another fax with paper: it prints a QSL card marked
+  COPY on the back. With only empty maps there: a printout of the front. The computer FAX sends a .QSL (scan a card
+  with QSL's F6 first) and keeps one received as FAX00001.QSL (Enter opens it in QSL; F5 prints).
+- [ ] BBS: a BBS online at W1BTR-1; from another computer QSL F7 sends a signed card to W1BTR-1: the BBS log says
+  "QSL CARD SAVED AS MSG n FOR <to>". The station it is for: BBS terminal `R n` shows "[QSL CARD ATTACHED - D n]",
+  `D n` sends it; their QSL program says "QSL card received: QSL00001.QSL" and F5 prints it.
+
 ## 1.12 computer batch 3B: rig control, waterfall, FT8 (added 2026-11-06)
 - [ ] Rig Control: craft it (blank floppy + lever), install it on a computer touching a radio interface with the
   All-Band radio beside it. The display shows the radio's name in the title, the frequency as 28.000.00 MHz, mode,

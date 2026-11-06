@@ -85,6 +85,12 @@ public class RadiocraftItems {
 	 * {@link com.arrl.radiocraft.common.computer.ComputerApps}). The secret ones (found in structures) are rare.
 	 */
 	public static final Map<String, DeferredHolder<Item, FloppyDiskItem>> FLOPPIES = floppies();
+	/** A QSL card (computer batch 3C): printed by the scanner from a QSL Designer template, filled in and signed by hand. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.QslCardItem> QSL_CARD = ITEMS.register("qsl_card",
+			() -> new com.arrl.radiocraft.common.items.QslCardItem(new Properties()));
+	/** A QSL album (computer batch 3C): keeps QSL cards and pages through them. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.QslAlbumItem> QSL_ALBUM = ITEMS.register("qsl_album",
+			() -> new com.arrl.radiocraft.common.items.QslAlbumItem(new Properties().stacksTo(1)));
 	// FCC field gear (1.12): a 1970s field agent's hat and jacket (leather's protection), the seal banner pattern, and
 	// the badge only operators hand out (/radiocraft fcc badge; see com.arrl.radiocraft.common.fcc.FccGear).
 	public static final DeferredHolder<Item, net.minecraft.world.item.ArmorItem> FCC_HAT = ITEMS.register("fcc_hat",

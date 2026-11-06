@@ -626,6 +626,9 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.SchedulerLang.add(provider); // Computer batch 3A: the scheduler.
 			com.arrl.radiocraft.datagen.lang.RigControlLang.add(provider); // Computer batch 3B: rig control and the waterfall.
 			com.arrl.radiocraft.datagen.lang.Ft8Lang.add(provider); // Computer batch 3B: FT8.
+			com.arrl.radiocraft.datagen.lang.NetControlLang.add(provider); // Computer batch 3C: net control,
+			com.arrl.radiocraft.datagen.lang.AwardsLang.add(provider); // awards,
+			com.arrl.radiocraft.datagen.lang.QslLang.add(provider); // and QSL cards.
 			addAdsb(provider);
 			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
 			addFccGear(provider);
@@ -1667,7 +1670,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			Map.entry("music", "Music Player"), Map.entry("bible", "Bible"), Map.entry("adsb", "ADS-B"),
 			Map.entry("rtty", "RTTY"), Map.entry("bbs", "Packet BBS"), Map.entry("propagation", "Propagation Predictor"),
 			Map.entry("repeaters", "Repeater Directory"), Map.entry("saver", "Screensaver"),
-			Map.entry("scheduler", "Scheduler"), Map.entry("rigctl", "Rig Control"), Map.entry("ft8", "FT8"));
+			Map.entry("scheduler", "Scheduler"), Map.entry("rigctl", "Rig Control"), Map.entry("ft8", "FT8"),
+			Map.entry("netlog", "Net Control"), Map.entry("awards", "Awards Tracker"), Map.entry("qsl", "QSL Designer"));
 
 	/** FCC field gear (1.12 step 10): the hat, jacket, seal banner pattern and banner names, the badge, its tooltips, messages and command. */
 	private static void addFccGear(LanguageProvider provider) {

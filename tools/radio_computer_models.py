@@ -249,7 +249,8 @@ def floppy_model(name):
 
 # Every program on a floppy (ComputerApps, kinds CRAFTED and SECRET).
 PROGRAMS = ['bookedit', 'logbook', 'freqman', 'programmer', 'solar', 'aprs', 'wefax', 'radiofax', 'sstv', 'df',
-            'snake', 'falling_blocks', 'music', 'bible', 'adsb', 'rtty', 'bbs', 'propagation', 'repeaters', 'saver', 'scheduler', 'rigctl', 'ft8']
+            'snake', 'falling_blocks', 'music', 'bible', 'adsb', 'rtty', 'bbs', 'propagation', 'repeaters', 'saver', 'scheduler', 'rigctl', 'ft8',
+            'netlog', 'awards', 'qsl']
 floppy_model('floppy_disk')
 for program in PROGRAMS:
     floppy_model('floppy_' + program)

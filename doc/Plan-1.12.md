@@ -2615,3 +2615,121 @@ Client parts: NeedsTesting "1.12 computer batch 3B".
   it through the Real-World Interface.
 - The waterfall's span is the band (its tuning range while the dial is outside it), with zoom x4/x16/x64 round the
   dial; on 2m a bin is 52 kHz at x1, so it takes the zoom to see 2m simplex channels apart.
+
+### Computer batch 3C: net control, awards, QSL cards (2026-11-06)
+Items 4, 5 and 6 of `doc/Plan-Computer3.md`. Built in the main tree: `compileJava compileTestJava compileGametestJava`
+clean (no new warning), `runData` (lang, four recipes and advancements), `test` 794/794, `runGameTestServer` (see the
+session report for the run results), `build`. Committed locally per feature; nothing pushed. As in 3A/3B the per-feature
+commits do not compile alone: the shared registration (`ComputerApps`, `RadioApps`, `ComputerAppScreens`, items, data
+components, networking, datagen, `src/generated`) is the last commit.
+
+**Privacy fix (coordinator, during the batch)**: the first draft of the logbook's "heard" looked up the heard
+player's live position and sent raw x/z to the client. Now:
+- `StationsHeard` keeps, server side only, a snapshot of where the **transmitting antenna** was when the frame was
+  heard (`Heard.hasPos/x/z/dimension`; `RadioBlockEntity.stationsHeard(packet, strength)` from
+  `IAntenna.getAntennaPos().world()`, no allocation per frame for a known station). No live lookup of any player.
+- `LogbookHandler.where(server, heard, here, level)` turns it into a **coarse** `Logbook.Where`: grid square
+  (`Ft8.grid`, 256-block squares), dimension, the biome at the grid square's centre (`biomeAtGrid`: the level's
+  `getNoiseBiome`, no chunk loads) and the distance from the computer **rounded to 100 blocks** (`Where.coarse`,
+  computed server side). `Logbook.Where` has **no coordinate fields at all** (record `grid, dimension, biome,
+  distance`), so nothing exact can reach a log file or the client. Tests: `LogbookTest.whereIsCoarseAndCarriesNoCoordinates`
+  (tag keys are exactly grid/dim/biome/dist), `StationsHeardTest.keepsTheSnapshotOfWhereTheStationWasHeardFrom`,
+  GameTest `QslAwardsNetGameTests.heardStationsCarryNoCoordinates` (a real voice packet into a radio; the "heard"
+  answer has no x/z/pos anywhere and the grid is the antenna's).
+
+**Logbook** (`Logbook.Entry` gained a ninth component `where`; the old 8-argument constructor stays): `.LOG` files
+keep `where` only when known; the screen has a GRID column and a "Grid square" field; F6 from a radio fills `where`;
+FT8 contacts get `Where.grid(qso.grid())`; ADIF writes GRIDSQUARE. `LogbookHandler.LOG_FILE` and `append(computer,
+entries)` (one write, pushes `reload` to LOGBOOK like FT8) are the shared way to log from a program. `Ft8.gridCentre`.
+
+**Net Control** (`ComputerApps.NET_CONTROL`, id `netlog`, NETLOG.EXE, CRAFTED; proposed recipe blank floppy + lectern):
+pure `common/computer/NetLog` (name, frequency, mode, NCS, opened/closed; check-ins `CheckIn(call, name, location,
+traffic, shortTime, inUtc, outUtc, rechecks)`, 100 at most; `checkIn` answers ADDED/RECHECKED/BACK_IN/FULL/NO_CALL;
+`rollCall` = still in, short time first, then traffic, then the rest, list order; `nextInRollCall`, `move`,
+`toggleOut/Traffic/ShortTime`, `recheck`, `close` checks everyone out; `summary` lines; `asContacts(gameTime)`:
+one contact per check-in at its time in, the net's frequency/mode, 59/599, notes "NET name, op, location", a typed
+grid as the grid). File `.NET` (NBT), opener NET -> NETLOG. Client `NetControlApp` (keys in its Javadoc: Ins, Enter,
+Del, O, T, S, R, N, Ctrl+Up/Down, F3-F9). F5 prints the report with `session.scanner().printText` (a written book),
+F6 writes `<net>.TXT`, F8 closes and (asked) logs through `NetControlHandler` (`log` {net}). **Net reminder hook**:
+F9 asks a time (`Schedule.parseWhen`) and calls the Scheduler's own `save` with a `REMINDER` job ("NET name ON freq
+mode NCS call"); needs SCHEDULE installed, and the owner (the scheduler's rule). No new job kind was needed.
+
+**Awards** (`ComputerApps.AWARDS`, id `awards`, AWARDS.EXE, CRAFTED; proposed recipe blank floppy + item frame): pure
+`common/computer/Awards` (`Contact`, `Universe`, `Progress(id, count, tiers, level, worked, missing)`, `compute`,
+`records`, `modeClass`, `gameHour`, `isNight`, `title/unit/levelText` for certificates) and `AwardCertificate`
+(128 x 128 map picture via the new pure `PixelCanvas`: blue DOS window, title bar, double cyan frame, CERTIFICATE,
+the call large, award, level, detail, date, gold seal). **Every logbook contact counts.** Awards: biomes (all biomes
+of every dimension's biome source; tiers 5/10/25/40/all), dimensions (all `server.levelKeys()`), bands (80/40/20/10/2m),
+modes (phone, CW, RTTY, FT8, SSTV), contacts (10..2000), stations, grids, distance (500..10000 blocks), night
+(game 19:00-05:00), and a ladder per mode. Server `AwardsHandler` (`status` {file}, `certificate` {file, award}: prints
+on the scanner with `printImage(..., plainPaper = true)`, a new overload that lets plain paper take a printout).
+**Biome derivation** (documented in the handler): the log's `where.biome`, else the biome at the centre of
+`where.grid` in its dimension (`biomeAtGrid`), else unknown; dimension = `where.dimension`, else the computer's own
+(radio does not cross dimensions); distance = `where.distance`, else computer to grid centre (rounded), else unknown.
+Only coarse logged data is used, never positions.
+
+**QSL cards** (`common/qsl/`):
+- `QslCard(Design, Fill, copy)` record: the template (`Design`: call (blank allowed), 4 lines, background, border,
+  style, call and text colours, picture, side, back header, back layout table/lines, 2 back lines) and the hand
+  writing (`Fill`: from (only when the design has no call), to, band, frequency, mode, report, notes, utc, game,
+  signer, signed). `Design.equals/hashCode` compare the picture array, so identical prints stack. Rules
+  `problem(written, sign)`: "signed" (locked), "need_to", "need_from"; `filled(...)` sets the server's time and the
+  signer. Caps keep a card under `MAX_BYTES` 2560 (unit tested with every field at its limit).
+- **Picture storage decision**: the picture is **embedded in the card**, downscaled to 48 x 32 map colour ids
+  (1,536 bytes; `QslArt.picture`: middle band, box average, nearest palette colour), not a map reference. Reason: a
+  map's data only syncs to clients holding that map, so other players' cards would show blank; embedding needs no
+  sync and works for a card handed to anyone. The rest is template data, drawn on each side by `QslArt.front/back`
+  (128 x 80 map colour ids, `PixelFont`); a full album (48 cards) is at most ~120 KB on the network.
+- Items: `qsl_card` (`QslCardItem`: use on an unsigned card opens `client/screens/QslFillScreen`; use on a signed one,
+  or sneak-use, flips (`radiocraft:qsl_flipped`); tooltip from/to/date/band/signed/copy), `qsl_album`
+  (`QslAlbumItem`, `radiocraft:qsl_album` = `ItemContainerContents`, 48 cards, bundle-style inventory clicks,
+  `client/screens/QslAlbumScreen`). Packets `SQslCardPacket` (fill/sign; a stack of blanks gives one card off it;
+  `apply(player, hand, fill, sign)` for tests) and `SQslAlbumPacket` (take one out). Data component
+  `radiocraft:qsl_card` (CompoundTag codecs, `QslCards`).
+- Client: `client/qsl/QslTextures` (a texture per card side, LRU 48), `QslCardRenderer`: `RenderHandEvent` draws the
+  card like a map (vanilla one-handed and two-handed transforms copied from `ItemInHandRenderer`, arms included) and
+  `RenderItemInFrameEvent` the front (glow frames full bright). The inventory icon is a plain placeholder texture.
+- Printing: `ScannerBlockEntity.printCards(card, count, printed)` (paper, photo paper or colour photo paper, one sheet a
+  card, as many as the tray has, 64 at most; the output tray must be empty), `scanQsl()`; the glass takes QSL cards
+  (`isScannable`); platform `scan.read` shows a card's front and `scan.save` keeps it as `.QSL`.
+- Program `ComputerApps.QSL` (id `qsl`, QSL.EXE, CRAFTED; proposed recipe blank floppy + ink sac): `QslDesignerApp`
+  (list of `.QSL` files with a 2x live preview, editor of 16 properties saved at every change) + `QslHandler`
+  (`print` {name, count}: a template prints `count` blanks, a filled card one copy; `scan` {name}; `bbs` {name, bbs};
+  `receive`: a QSL card in a FILE packet to this station's call (not its own BBS's) is kept as `QSL00001.QSL`, pushed
+  `received`). Opener QSL -> QSL.
+- **Exchange**: by hand; by **radio fax** (`FileTransfer.canSend/copy/describe/audio/frameCount` take QSL cards: the
+  card's front as SSTV tones; `copy` marks it a copy, front up; the fax machine prints it on paper, or with no paper but
+  an empty map a printout of the front named "QSL card of <call>"; the computer FAX sends `.QSL` and keeps a received
+  card as `FAX00001.QSL`, opening/printing it through QSL); by **Packet BBS**: `PacketBbs.Message` gained an
+  `attachment` (the card tag, saved in BBS.DAT as `qsl`), `postCard`, a `D n` command (addressee or sender only) and
+  `takeDownloads()`; `BbsHandler` stores a QSL FILE sent to its call as a message to the card's To and answers the
+  sender, and sends `D n` cards back to the caller's call with SSID as a FILE packet, which the caller's QSL program
+  keeps. No bureau, no eQSL, no confirmation matching.
+- Recipe: QSL Album shapeless book + leather + 2 paper (proposed). QSL cards are printed only.
+
+**Shared**: lang classes `datagen/lang/NetControlLang`, `AwardsLang` (also the logbook's grid keys), `QslLang`;
+`FLOPPY_NAMES` netlog/awards/qsl; floppy models copied; icons `netlog.png`, `awards.png`, `qsl.png`
+(`tools/computer_icons.py`); item textures `tools/qsl_assets.py`; labels red/gold/blue; Handbook
+`computer/net_control`, `computer/awards`, `computer/qsl_cards`; creative tab gets a plain blank card and the album.
+
+**Tests**: unit `AwardsTest`, `NetLogTest`, `qsl/QslCardTest` (codec, size cap, stacking equality, signing rules,
+drawing, picture shrink, colours = map colours), additions to `LogbookTest`, `StationsHeardTest`, `PacketBbsTest`,
+`Ft8Test`. GameTests `QslAwardsNetGameTests`: `printARunOfBlankCards`, `fillingAndSigningLocksTheCard`,
+`albumHoldsCards`, `faxedCardPrintsACopy` (batch `fax`, 145.410 MHz), `netReportPrintsAndCheckInsAreLogged`,
+`awardsCountTheLogAndPrintACertificate`, `heardStationsCarryNoCoordinates` (146.470 MHz, injected),
+`cardPictureIsAMapPicture`. Client parts: NeedsTesting "1.12 computer batch 3C".
+
+**Gotchas / left**: the BBS path over the air has no GameTest (pure `PacketBbsTest` covers the mailbox; the transport
+is the FILE packet every picture uses). A card's FILE packet goes out as SSTV tones of its front (about 27 s). The
+fill-in screen previews the back only; the front of a blank-call card shows the written call after Done. Item frame
+rotation uses the 8 steps of a plain item (two clicks per quarter turn). `QslDesignerApp` reads every `.QSL` file on
+open to label the list. Website wiki not touched.
+
+**Open questions (batch 3C)**:
+- Recipes: NETLOG blank floppy + **lectern** (free since STUDY went built in; alternative a name tag), AWARDS + **item
+  frame** (a framed certificate; alternative a gold ingot), QSL + **ink sac** (printing; alternative any dye), QSL Album
+  = book + leather + 2 paper.
+- Album cap 48 cards (network size); raise it?
+- Should a faxed or BBS card be a full card (now, marked COPY on its back and in the tooltip) or only a printout?
+- Worked All Biomes counts the biomes of every dimension (Nether and End too): keep, or Overworld only?
+- Certificates print on plain paper too (as a printout); photo paper gives a photo. OK?

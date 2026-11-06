@@ -59,6 +59,9 @@ public class RadiocraftNetworking {
         registrar.playToServer(SDuplexerScrewPacket.TYPE, SDuplexerScrewPacket.STREAM_CODEC, SDuplexerScrewPacket::handle);
         registrar.playToServer(SChargeControllerTogglePacket.TYPE, SChargeControllerTogglePacket.STREAM_CODEC, SChargeControllerTogglePacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CPhotoShutterPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CPhotoShutterPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CPhotoShutterPacket::handle);
+        // QSL cards (computer batch 3C): writing on a card, taking one out of an album.
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SQslCardPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SQslCardPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SQslCardPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SQslAlbumPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SQslAlbumPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SQslAlbumPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SPhotoChunkPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SPhotoChunkPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SPhotoChunkPacket::handle);
     }
 }

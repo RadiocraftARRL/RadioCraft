@@ -143,6 +143,30 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     yourself: the program sequences the contact by itself, sends what was missed again, and logs the finished contact
     in LOGBOOK.LOG with both reports and the grid. Your grid square comes from where the computer stands. A radio tuned
     to FT8 plays the real eight-tone warble.
+  - **Net Control** (NETLOG, a floppy: blank floppy + lectern): run a directed net as net control. Set up the net
+    (name, frequency, mode, NCS), check stations in (call, name, location or grid, traffic and short-time flags, time
+    in and out; a station already in is rechecked), step the **roll call** (short time first, then traffic, then the
+    rest), print the **net report** on the scanner or save it as a text file, and on closing put every check-in in the
+    logbook as a contact. F9 sets a Scheduler reminder for the next net.
+  - **Awards** (AWARDS, a floppy: blank floppy + item frame): operating awards from the logbook, **every contact
+    counting** (no confirmation needed): Worked All Biomes, Worked All Dimensions, Worked All Bands, Worked All Modes
+    (phone, CW, RTTY, FT8, SSTV), a contact ladder, stations worked, grid squares, Long Haul (the longest contact),
+    Night Owl (contacts at night) and a ladder per mode, each with levels and a page of what is worked and what is
+    still missing, plus distance records per band and mode. Prints a **certificate** in the computer's DOS look on
+    paper, an empty map or photo paper. Where a station was comes from its grid square only (the one it was heard
+    from, FT8's, or a typed one), never an exact position.
+  - **QSL Designer** (QSL, a floppy: blank floppy + ink sac) and **QSL cards**: design card templates (your callsign
+    large, or blank for a card anyone writes their call on; colours, border, four lines, a picture from any .IMG file;
+    the back's heading, layout and lines), print **runs of identical blank cards** on the scanner (one paper or photo
+    paper each; they stack). Right click a blank card to fill it in like a book and quill (to, band, frequency, mode,
+    report, notes; the date and time go in by themselves) and **sign** it, which locks it. Cards are held like a map,
+    turn over with a right click, show the front in an item frame and say from, to, date and band in the tooltip.
+    Exchange them by hand, by **radio fax** (the far machine prints a copy on paper, or a printout of the front with
+    only maps), or through a **Packet BBS** (the card waits as a message for its station, who types D and the number;
+    their computer keeps it to print). A **QSL Album** (book, leather, two paper) holds 48 cards and pages through
+    them. No bureau and no confirmation matching, by design.
+  - The **Logbook** has a grid square column; contacts filled in from a radio note the grid square, dimension and
+    biome the station was heard from (coarse only, never coordinates), and ADIF exports carry GRIDSQUARE.
 - **Scanner**: set it beside the computer. It scans maps, photos and books into files, and prints pictures (on color
   photo paper, an empty map or photo paper) and documents (as a written book, a sheet of paper a page).
 - **Office programs**:

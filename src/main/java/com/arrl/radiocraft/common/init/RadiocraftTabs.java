@@ -181,6 +181,8 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.SCANNER.get());
         output.accept(RadiocraftItems.FLOPPY_DISK.get());
         RadiocraftItems.FLOPPIES.values().forEach(floppy -> output.accept(floppy.get()));
+        output.accept(RadiocraftItems.QSL_CARD.get()); // Computer batch 3C: a blank card of the plain design, and the album.
+        output.accept(RadiocraftItems.QSL_ALBUM.get());
         // ADS-B (1.12 step 9): the beacon for craft, the receiver and its antenna.
         output.accept(RadiocraftItems.ADSB_BEACON.get());
         output.accept(RadiocraftItems.ADSB_RECEIVER.get());

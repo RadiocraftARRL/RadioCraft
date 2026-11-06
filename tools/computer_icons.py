@@ -336,9 +336,37 @@ def ft8():
     i.save('ft8')
 
 
+def netlog():
+    """A clipboard with a roll of check-ins, one ticked, and a microphone (computer batch 3C)."""
+    i = Icon(); i.rect(5, 4, 24, 29, fill=N); i.rect(7, 7, 22, 27, fill=W, outline=None)
+    i.rect(11, 2, 18, 5, fill=L)
+    for r in range(5):
+        y = 10 + r * 4
+        i.rect(9, y, 10, y + 1, fill=G if r < 3 else D, outline=None)
+        i.line([(12, y), (20 - (r % 2) * 3, y)], D)
+    i.ellipse(23, 15, 29, 22, fill=D); i.line([(26, 22), (26, 27)], K); i.save('netlog')
+
+
+def awards():
+    """A gold medal on a red ribbon (computer batch 3C)."""
+    i = Icon(); i.poly([(9, 2), (14, 2), (17, 13), (13, 13)], fill=R); i.poly([(18, 2), (23, 2), (19, 13), (15, 13)], fill=LR)
+    i.ellipse(7, 12, 25, 30, fill=Y); i.ellipse(10, 15, 22, 27, fill=None, outline=N)
+    i.poly([(16, 17), (18, 21), (14, 21)], fill=N); i.poly([(16, 25), (18, 21), (14, 21)], fill=N); i.save('awards')
+
+
+def qsl():
+    """A QSL card: a white card, a big red callsign bar, a little picture and lines (computer batch 3C)."""
+    i = Icon(); i.rect(1, 7, 30, 25, fill=W); i.rect(3, 9, 28, 23, fill=None, outline=B)
+    i.rect(6, 11, 25, 14, fill=LR, outline=None)
+    i.rect(5, 16, 13, 21, fill=LC, outline=None); i.rect(5, 20, 13, 21, fill=G, outline=None)
+    for r in range(3):
+        i.line([(15, 16 + r * 2), (26 - r * 2, 16 + r * 2)], D)
+    i.save('qsl')
+
+
 ALL = [edit, sysinfo, bandplan, install, setup, about, license_study, bookedit, logbook, freqman, programmer, solar,
        aprs, wefax, radiofax, sstv, df, snake, pileup, music, bible, adsb, rtty, bbs, propagation, repeaters, saver,
-       scheduler, rigctl, ft8]
+       scheduler, rigctl, ft8, netlog, awards, qsl]
 
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)

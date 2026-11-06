@@ -99,6 +99,14 @@ public final class ComputerApps {
 	/** FT8: the automated weak-signal mode in 15 s slots, auto-sequenced, contacts logged to the logbook. */
 	public static final ComputerApp FT8 = add("ft8", "FT8", ComputerApp.Kind.CRAFTED);
 
+	// Computer batch 3C (2026-11-06).
+	/** The Net Control logger: run a directed net, its check-ins and roll call, print the net report, log the check-ins. */
+	public static final ComputerApp NET_CONTROL = add("netlog", "NETLOG", ComputerApp.Kind.CRAFTED);
+	/** Operating awards from the logbook (every contact counts): progress pages and printed certificates. */
+	public static final ComputerApp AWARDS = add("awards", "AWARDS", ComputerApp.Kind.CRAFTED);
+	/** The QSL Designer: QSL card templates, printed runs of blank cards, cards received by fax or from a BBS. */
+	public static final ComputerApp QSL = add("qsl", "QSL", ComputerApp.Kind.CRAFTED);
+
 	private ComputerApps() {}
 
 	/**

@@ -1497,11 +1497,23 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.REPEATERS, Items.REPEATER);
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SCHEDULER, Items.BELL); // Computer batch 3A: it rings the hours (proposed).
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.RIG_CONTROL, Items.LEVER); // Computer batch 3B: the rig's controls (proposed).
+        // Computer batch 3C (proposed): the net control station reads the roll from a lectern; certificates go in a frame;
+        // QSL cards are printed in ink.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.NET_CONTROL, Items.LECTERN);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.AWARDS, Items.ITEM_FRAME);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.QSL, Items.INK_SAC);
         programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())
                 .requires(ingredient)
                 .unlockedBy("has_floppy_disk", has(RadiocraftItems.FLOPPY_DISK.get()))
                 .save(recipeOutput));
+        // The QSL album (computer batch 3C, proposed): a book bound with leather and two more sheets.
+        net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, RadiocraftItems.QSL_ALBUM.get())
+                .requires(Items.BOOK)
+                .requires(Items.LEATHER)
+                .requires(Items.PAPER, 2)
+                .unlockedBy("has_book", has(Items.BOOK))
+                .save(recipeOutput);
         // FT8 (computer batch 3B, approved): a blank floppy and any pressure plate. Vanilla 1.21.1 has no item tag
         // for every pressure plate (minecraft:pressure_plates is a block tag only), so: the wooden ones' tag and the rest.
         net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(com.arrl.radiocraft.common.computer.ComputerApps.FT8)))

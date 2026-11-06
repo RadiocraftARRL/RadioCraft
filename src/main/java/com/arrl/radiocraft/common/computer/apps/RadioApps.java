@@ -28,5 +28,9 @@ public final class RadioApps {
 		// Computer batch 3B.
 		ComputerAppHandlers.register(ComputerApps.RIG_CONTROL, new RigControlHandler());
 		ComputerAppHandlers.register(ComputerApps.FT8, new Ft8Handler());
+		// Computer batch 3C.
+		ComputerAppHandlers.register(ComputerApps.NET_CONTROL, new NetControlHandler());
+		ComputerAppHandlers.register(ComputerApps.AWARDS, new AwardsHandler());
+		ComputerAppHandlers.register(ComputerApps.QSL, new QslHandler());
 	}
 }

@@ -180,4 +180,30 @@ public class RadiocraftDataComponent {
                     .networkSynchronized(HandheldRadioState.STREAM_CODEC)
     );
 
+
+    // QSL cards (computer batch 3C).
+    /** A QSL card's template and what is written on it (see {@link com.arrl.radiocraft.common.qsl.QslCard}); small, no pixels but the one picture. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.qsl.QslCard>> QSL_CARD = DATA_COMPONENTS.registerComponentType(
+            "qsl_card",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.qsl.QslCards.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.qsl.QslCards.STREAM_CODEC)
+    );
+
+    /** A QSL card turned over: it shows its back in the hand. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> QSL_FLIPPED = DATA_COMPONENTS.registerComponentType(
+            "qsl_flipped",
+            builder -> builder
+                    .persistent(com.mojang.serialization.Codec.BOOL)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.BOOL)
+    );
+
+    /** The cards in a QSL album ({@link com.arrl.radiocraft.common.items.QslAlbumItem}). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.minecraft.world.item.component.ItemContainerContents>> QSL_ALBUM = DATA_COMPONENTS.registerComponentType(
+            "qsl_album",
+            builder -> builder
+                    .persistent(net.minecraft.world.item.component.ItemContainerContents.CODEC)
+                    .networkSynchronized(net.minecraft.world.item.component.ItemContainerContents.STREAM_CODEC)
+                    .cacheEncoding()
+    );
 }
