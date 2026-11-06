@@ -8,6 +8,32 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 weather alert generator and receiver (added 2026-11-06)
+- [ ] Models: the generator (grey cabinet) and the receiver (small white radio with a whip) look right on all four
+  facings, in the hand and in the inventory; the generator's green READY lamp lights while it is on the air and its
+  red TX lamp while it sends; the receiver's red lamp lights when it flashes. Placeholders, see ModelDesignBounty.
+- [ ] Generator status: right click it (and look at it with Jade) as you build: no APRS station, "Hears 0 weather
+  beacons", too close together (two weather stations near each other), no antenna, then "On the air on 162.500
+  MHz". Use three H19s with weather stations at least 150 blocks apart, beaconing, and an H19 (or a computer running
+  APRS) touching the generator that hears them.
+- [ ] With Another Weather Mod, bring a tornado over the area (`/awm approach tornado 2`, or `/awm spawn`): the receiver
+  near it flashes red (every half second), plays the 1050 Hz tone (5 s, not too loud, not clipped), then reads the
+  alert: "Radio craft weather alert. Tornado warning for the area. The storm is three hundred twenty blocks to the
+  northwest, moving east. Take shelter now. End of message." Listen for gaps or overlaps between the spliced words
+  (the timing comes from each clip's length), odd pronunciation, and whether the voice is loud enough at 10-20
+  blocks. The chat line "WEATHER ALERT: ..." reaches players within 24 blocks.
+- [ ] One redstone pulse per new alert (a redstone lamp or a piston beside it flicks once), not again when the
+  generator repeats the alert a minute later; again when a severe storm becomes a tornado warning.
+- [ ] Right click a flashing receiver: it stops flashing and talking ("Alert silenced").
+- [ ] Battery: shift + right click with a Small Alkaline Battery puts it in (and gives back the old one); shift + right
+  click empty-handed takes it out; breaking the receiver drops it. Right click shows the battery %, days left, the
+  generator it hears and the last alert. A battery under 10 % blinks the lamp once every 10 seconds; a flat one is
+  dark and hears nothing.
+- [ ] Antenna: a receiver far from the generator hears nothing on its built-in whip, but does with a J-pole or Ringo
+  on coax. Two generators: it follows the nearer one.
+- [ ] A marine radio (or any radio that tunes 162.500 MHz, WX6) hears the generator's data burst every two minutes,
+  and after a new warning the 1050 Hz tone.
+
 ## 1.12 live monitor, CPS by hand, MUSIC volume and sound, knobs on the radio, 64 channels (added 2026-11-06, evening)
 - [ ] Live monitor: open the computer, start MUSIC, Close (C). Within 16 blocks the monitor in the world keeps moving:
   the top bar's clock, the time and bar, the visualizer (about 5 times a second while music plays, twice a second

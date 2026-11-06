@@ -40,6 +40,26 @@ What was done for the parrot controller, as the pattern for the next one:
 
 ## Open bounties
 
+### Models and sounds: weather alert generator and receiver (2026-11-06)
+
+Placeholders from `tools/weather_alert_models.py` (32x32 textures; blockstates hand-made in `src/main/resources`
+with lit parts):
+
+- `radiocraft:weather_alert_generator` (`models/block/weather_alert_generator.json`, `_ready.json`, `_tx.json`,
+  `textures/block/weather_alert_generator.png`): the box that turns a weather station network into alerts. Placeholder:
+  a grey full-block cabinet with a dark status window ("WX"), a green READY lamp, a red TX lamp and vents. Wanted: a
+  rack-mount or wall-mount equipment cabinet (a 1980s-90s broadcast encoder: a small LCD or LED readout, a row of
+  status lamps, a keypad or toggle switches). Keep the two lamps as their own full-bright parts (`ready=true` while it
+  is on the air, `transmitting=true` while it sends).
+- `radiocraft:weather_alert_receiver` (`weather_alert_receiver.json`, `weather_alert_receiver_lamp.json`,
+  `textures/block/weather_alert_receiver.png`): a table-top weather radio. Placeholder: a 12 x 6 x 8 pixel white box with
+  a speaker grille, a small green display, a red ALERT lamp on top and a short whip at the back. Wanted: the classic
+  home weather alert radio (a white or grey wedge, a big speaker grille, a large red WEATHER/ALERT button-lamp on top,
+  a pull-up whip, a little LCD), keeping the lamp lit model (`lit=true`, full bright) and a size that sits on a desk.
+- Sounds (optional): the voice is generated with Piper and the public-domain LJ Speech voice (see
+  `doc/Credits-WeatherVoice.md`); a recorded human voice (CC0/CC BY, every word in `tools/weather_voice.py`'s list)
+  would sound better. The 1050 Hz tone is fine as it is.
+
 ### Item: Radio Cloner (2026-11-05)
 
 `radiocraft:radio_cloner` (`models/item/radio_cloner.json`, `textures/item/radio_cloner.png`, from

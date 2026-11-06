@@ -217,6 +217,24 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   blocks at sea level (`adsb_full_range_y`, `adsb_min_range`, `adsb_max_range`, 0 = twice the horn). Lightning and
   solar weather do not touch it.
 
+#### Weather alerts
+
+- There is no weather service until players build one. The **Simple Weather Alert Generator** touches an APRS
+  station (an H19, or a radio computer running APRS; or is cabled to one by data wire) that hears weather beacons from
+  **at least three weather stations, each 150 blocks or more from the others**. It covers the area round them (200
+  blocks past the outer ones) and, with Another Weather Mod, issues **tornado, severe thunderstorm, hurricane, tropical
+  storm, blizzard, dust storm, high wind, dense fog, heat and cold** alerts for the storms there, and **tornado and
+  severe thunderstorm watches** for storms forecast to arrive; a station reporting an inch of rain in an hour gives a
+  flash flood warning. It broadcasts them on **162.500 MHz** (marine WX6) through a VHF antenna on its coax, so range
+  and antennas matter like any other station. It needs a little power, more while sending. Right click it (or Jade)
+  to see what it is missing.
+- The **Simple Weather Alert Receiver** listens to the nearest generator it hears, on its built-in whip or an antenna
+  on coax. On an alert for where it stands it **flashes red, sounds the 1050 Hz alert tone, reads the alert out**
+  (what it is, how far and which way the storm is and where it is heading, spliced from recorded words like the real
+  weather radio voice), shows it in chat nearby and gives **one redstone pulse**. It runs about three weeks of game
+  time on a **Small Alkaline Battery** (shift + right click to change it) and blinks every 10 seconds when the battery
+  is low. Right click silences it.
+
 #### FCC field gear
 
 - The **FCC Field Agent Hat** and **Jacket** (1970s felt and corduroy, with a wide tie) are armour that protects like
@@ -277,7 +295,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   data), and it does not hear commercial radio modules' broadcasts or the WEFAX coast station in Everywhere mode.
 - **ADS-B**: hills and buildings do not block 1090 MHz yet (only the craft's height sets the range). It is built on Sable;
   Create Aeronautics craft, which are built on Sable too, have not been tried yet.
-- **Marine radios**: no DSC distress button, and nothing broadcasts NOAA weather on the WX channels yet.
+- **Marine radios**: no DSC distress button. A weather alert generator's data and alert tone can be heard on WX6, but
+  no spoken weather broadcast yet.
 - The **Music Player** is heard only by the player who started it, not by other players.
 - Another Weather Mod's new sirens and recorded siren sounds are still to come.
 

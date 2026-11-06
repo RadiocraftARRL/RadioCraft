@@ -2349,3 +2349,56 @@ only sessions this client has (a computer opened since the game started). The ol
 handheld dials and the B/C zone keys are superseded by the new section.
 
 **Status (wrap-up):** items 1-9 all done and committed (1 live monitor, 2 CPS by hand, 3 MUSIC volume, 4 knobs on the radio, 5 64 channels and A-D keys, 6 rename, 7 MUSIC list scrolling, 8 MUSIC through the sound engine, 9 MUSIC through connected speakers); none left unstarted. compileJava compileTestJava compileGametestJava clean; runData, test and runGameTestServer still to run.
+
+### Weather alert blocks (2026-11-06)
+Built and tested: `runData`, `test` (730 pass; 35 new in `common/radio/wxalert`), `runGameTestServer` (515 required
+pass, 3 new in `WeatherAlertGameTests`), `build`. Committed locally; nothing pushed. Spec: `doc/Plan-Computer3.md`
+"Weather alerts". Another Weather Mod was **not** changed: everything goes through RadioCraft's own `WeatherSource`
+(`AwmWeatherSource` already exposes storms with kind, category, tracks, hazards, tornado watch).
+
+- **Pure logic** (`common/radio/wxalert`): `WeatherNetwork` (the rule: >= 3 weather beacons, each pair >= 150 blocks;
+  exact search for a spread triple, greedy beyond; statuses READY/TOO_FEW/TOO_CLOSE), `AlertArea` (convex hull of the
+  stations + `DEFAULT_MARGIN` 200; `distance`, `contains`, `touches`, centre and bounding radius), `WeatherAlert`
+  (event code after SAME: TOR HUW SVR BZW FFW TRW HWW DSW TOA SVA EHW ECW FGY, worst first; key, circle, storm core,
+  expiry, category, heading; one line on the air, `encode`/`decode`), `AlertBuilder` (storm over the area -> warning
+  circle round it and its position 5 min on, tornado only once `WeatherReports.tornadoDown`, a tornadic storm before
+  that is SVR, supercell over snow/desert -> BZW/DSW; forecast tornadic/severe storm reaching the area within 15 min ->
+  TOA/SVA for the whole area; `tornadoWatch` day -> TOA; a station's own report: rain >= 1.00 in/h -> FFW, wind >= 40
+  mph or gusts >= 58 -> HWW, 150 blocks round it; at most 12, worst first; keys stable per storm and event, so a
+  touchdown is a new alert), `AlertMemory` (keys sounded until they expire), `AlertAnnouncement` (clip list, text
+  line, start ticks from the running ms total), `WeatherVoiceClip` (63 clips with lengths, number and compass words),
+  `ReceiverSignals` (battery 21 days per `small_battery_capacity`, x20 while speaking, low < 10 %; lamp flash 10 ticks,
+  low blink 4 ticks every 200; `Pulse` 4 ticks), `WeatherAlertPacket` (`TncPacket.Kind.WX_ALERT`, new; text = alert
+  lines, position = the generator; 162.500 MHz +/- 1 kHz), `BuiltInAntenna` (receive-only IAntenna on the VHF network,
+  rubber-duck type, x0.5).
+- **Generator** (`WeatherAlertGeneratorBlock`/`BlockEntity`, FACING/READY/TRANSMITTING): `RadioNetworkObject` 12 FE/t
+  sending, 1 idle, always switched on. Every 20 ticks it reads `StationBus.find` from itself: each `AprsTerminalBlockEntity`
+  (`getBeacons`) and each `RadioComputerBlockEntity` with APRS installed (`AprsHandler.state(..).stations()`); beacons
+  younger than 30 min with a position and `AprsWeather.parse` data, one per callsign. States NO_POWER, NO_APRS,
+  TOO_FEW, TOO_CLOSE, NO_ANTENNA, TWO_ANTENNAS, READY (`statusLines()`: right-click chat and Jade). Alerts rebuilt every
+  100 ticks; a new key sends at once, otherwise every 1200 ticks, routine (no alerts) every 2400. A broadcast is the
+  `Afsk.burst` frames as voice on 162.5 through the one coax antenna (data voice id), then
+  `transmitDataPacket` (and `RadioModeration.data`), then for a new warning 3 s of 1050 Hz tone frames. Band
+  `MarineRadios.band()` (commercial VHF). `setWeatherOverride` and `broadcastNow` for GameTests. DATA/POWER/COAX tags.
+- **Receiver** (`WeatherAlertReceiverBlock`/`BlockEntity`, FACING/LIT/POWERED, a signal source): implements
+  `IAntennaReceiver` and puts a 0-draw `RadioNetworkObject` on its coax; the built-in whip is on the air while it has a
+  charged battery and no coax antenna. Takes a WX_ALERT that decodes (`RadioBlockEntity.decodes` against
+  `vhf_noise_floor`) from the nearest generator, keeping the current one unless a nearer one is heard or it has been
+  quiet 7200 ticks. Alerts whose circle (+32) holds it and that `AlertMemory` has not had -> flash 5 min, one pulse,
+  tone then up to two spoken alerts (server-scheduled `playSound` per clip with direct holders: the clips are only in
+  sounds.json, not the sound registry), a red chat line to players within 24 blocks. Right-click silences, else
+  status; sneak + empty hand takes the battery out; sneak + battery swaps it (`common/events/WeatherAlertReceiverEvents`,
+  as vanilla skips the block for a sneaking player holding an item). The battery drops when broken.
+- **Voice**: Piper 1.8.0 + en_US-ljspeech-high (MIT model, public-domain LJ Speech data), `tools/weather_voice.py`,
+  credits in `doc/Credits-WeatherVoice.md`. Tone: numpy 1050 Hz, 5 s.
+- **Art**: `tools/weather_alert_models.py` placeholders, on ModelDesignBounty. Handbook `sky/weather_alert_generator`,
+  `sky/weather_alert_receiver`; release notes; NeedsTesting "1.12 weather alert generator and receiver".
+- **Recipes (proposed, for review)**: Generator `IDI / CXC / IRI` (iron, daylight detector, comparator, any encased VHF
+  crystal, redstone). Receiver ` L / SXT / III` (lightning rod, radio speaker, encased VHF crystal, redstone torch,
+  iron).
+
+**Open questions**: should the APRS station's own weather station count as one of the three (now only beacons it
+heard)? The numbers (150-block spacing, 200-block margin, 30-min beacon age, flood 1.00 in/h, wind 40/58 mph, 21-day
+battery, 5-min flash, one-minute repeats) are constants, not config. No spoken audio goes out over the air (a marine
+radio on WX6 hears the data burst and the tone only); decoding the clips on the server (`tape/OggDecoder`) could add it.
+Two receivers' voices overlap if they alert together. Website wiki not updated.
