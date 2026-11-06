@@ -91,6 +91,22 @@ class MusicSpectrumTest {
 		assertEquals(0.0F, spectrum.level(bar));
 	}
 
+	@Test
+	void barsShowWhatHasBeenHeardNotWhatWasFed() {
+		MusicSpectrum spectrum = new MusicSpectrum(24, RATE, 55.0D, 5500.0D);
+		int bar = spectrum.bandOf(bin(440.0D));
+		spectrum.played(0L); // Nothing heard yet: the bars wait for the sound card.
+		feed(spectrum, RATE * 0.3D, t -> 0.3D * Math.sin(2.0D * Math.PI * 440.0D * t));
+		assertEquals(0.0F, spectrum.level(bar), "ran ahead of the sound");
+		spectrum.played((long)(RATE * 0.3D)); // The tone has reached the ears.
+		float lit = spectrum.level(bar);
+		assertTrue(lit > 0.9F, "only " + lit);
+		feed(spectrum, RATE * 0.3D, t -> 0.0D); // Silence handed over but not heard yet: the tone still shows.
+		assertEquals(lit, spectrum.level(bar));
+		spectrum.played((long)(RATE * 0.6D));
+		assertTrue(spectrum.level(bar) < lit - 0.3F, "still " + spectrum.level(bar));
+	}
+
 	private static int bin(double hz) {
 		return (int)Math.round(hz * MusicSpectrum.FFT / RATE);
 	}

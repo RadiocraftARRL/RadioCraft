@@ -44,12 +44,18 @@ public final class ComputerMidi {
 	private static final double TAIL_SECONDS = 1.5D;
 	/** Frames per chunk written to the line (23 ms at 44.1 kHz). */
 	private static final int CHUNK = 1024;
-	/** The line's buffer, frames: the delay from the visualizer to the ears (93 ms), and the cushion against stalls. */
-	private static final int LINE_FRAMES = 4096;
+	/**
+	 * The line's buffer, seconds: the cushion against stalls. The synth renders far faster than real time, so the line
+	 * is kept this far ahead of the ears, and a hitch in the game (a slow frame or tick, a busy CPU) shorter than this
+	 * is not heard. (It was 93 ms, and MUSIC skipped whenever the world lagged.) The visualizer is told what has been
+	 * heard ({@link MusicSpectrum#played}), so its bars do not run this far ahead of the sound.
+	 */
+	private static final double LINE_SECONDS = 0.4D;
 
 	private static final ExecutorService THREAD = Executors.newSingleThreadExecutor(runnable -> {
 		Thread thread = new Thread(runnable, "RadioCraft computer MIDI");
 		thread.setDaemon(true);
+		thread.setPriority(Thread.MAX_PRIORITY); // Audio: a starved line is heard at once.
 		return thread;
 	});
 
@@ -172,7 +178,7 @@ public final class ComputerMidi {
 					return;
 				AudioFormat out = new AudioFormat(rate, 16, 2, true, false);
 				line = AudioSystem.getSourceDataLine(out);
-				line.open(out, LINE_FRAMES * out.getFrameSize());
+				line.open(out, (int)(LINE_SECONDS * rate) * out.getFrameSize());
 				MusicSpectrum s = spectrum;
 				if(s == null || rate != frameRate) {
 					s = new MusicSpectrum(BARS, rate, LOW_HZ, HIGH_HZ);
@@ -225,8 +231,27 @@ public final class ComputerMidi {
 					line.write(output, 0, n * 4);
 					read += n;
 					heardFrames = Math.max(0L, read - (line.getBufferSize() - line.available()) / 4);
+					s.played(heardFrames); // The bars follow the ears, not the synth.
 				}
 				if(mine == generation) {
+					// The last of the tune is still in the line: keep the bars and the clock with it as it plays out.
+					long until = System.nanoTime() + (long)((LINE_SECONDS + 0.5D) * 1.0E9D);
+					while(mine == generation && line.available() < line.getBufferSize() && System.nanoTime() < until) {
+						if(paused) {
+							if(line.isRunning())
+								line.stop();
+							until += 20_000_000L;
+							Thread.sleep(20L);
+							continue;
+						}
+						if(!line.isRunning())
+							line.start();
+						heardFrames = Math.max(0L, read - (line.getBufferSize() - line.available()) / 4);
+						s.played(heardFrames);
+						Thread.sleep(20L);
+					}
+					if(mine != generation)
+						return; // Stopped or another tune started while the end played out.
 					line.drain();
 					heardFrames = read;
 					finished = true;

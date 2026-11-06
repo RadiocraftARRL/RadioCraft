@@ -12,6 +12,12 @@ package com.arrl.radiocraft.common.computer;
  * lately (an automatic gain, so a quiet tune moves the bars as much as a loud one). Bars jump up and fall back at
  * {@link #FALL} per hop. Pure (no game classes), so it is unit tested. Written by the audio thread, read by the render
  * thread (a torn read is a bar one frame late, nothing worse).
+ * <p>
+ * The sound is analysed as it is handed to the sound card, but heard only once it has worked through the card's buffer
+ * (about 0.4 s with the cushion MUSIC keeps against stalls). So each hop's bars are kept with the sample count they
+ * were taken at, and {@link #played} says how far the listener has got: {@link #level} shows the newest hop already
+ * heard, and the bars move with the music rather than ahead of it. Until {@link #played} is first called, the newest
+ * hop shows (as the unit tests feed it).
  */
 public final class MusicSpectrum {
 
@@ -44,11 +50,23 @@ public final class MusicSpectrum {
 	private final float[] ring = new float[FFT];
 	private int write, sinceLast;
 	private double reference = REFERENCE_FLOOR;
+	/** Hops' bars kept until they are heard: enough for {@link #HISTORY} hops (1.5 s at 44.1 kHz). */
+	public static final int HISTORY = 64;
+	private final float[][] history;
+	private final long[] historyAt = new long[HISTORY];
+	private int historyNext;
+	/** Samples fed so far. */
+	private long fed;
+	/** What {@link #level} shows: the newest hop heard (or the newest of all while nothing says what was heard). */
+	private final float[] shown;
+	private boolean following;
 
 	public MusicSpectrum(int bars, double sampleRate, double low, double high) {
 		this.bars = bars;
 		edges = bandEdges(bars, sampleRate, FFT, low, high);
 		levels = new float[bars];
+		shown = new float[bars];
+		history = new float[HISTORY][bars];
 		power = new double[bars];
 		tilt = new double[bars];
 		for(int b = 0; b < bars; b++)
@@ -91,14 +109,32 @@ public final class MusicSpectrum {
 		return bars;
 	}
 
-	/** Band {@code bar}'s level, 0-1. */
+	/** Band {@code bar}'s level, 0-1, as heard (see the class comment). */
 	public float level(int bar) {
-		return levels[bar];
+		return shown[bar];
+	}
+
+	/**
+	 * The listener has heard the first {@code samples} samples fed: from now on {@link #level} shows the newest hop taken
+	 * at or before that point. Audio thread.
+	 */
+	public void played(long samples) {
+		following = true;
+		int best = -1;
+		long bestAt = Long.MIN_VALUE;
+		for(int i = 0; i < HISTORY; i++)
+			if(historyAt[i] > 0L && historyAt[i] <= samples && historyAt[i] > bestAt) {
+				best = i;
+				bestAt = historyAt[i];
+			}
+		if(best >= 0)
+			System.arraycopy(history[best], 0, shown, 0, bars);
 	}
 
 	/** Takes {@code count} mono samples (about -1 to 1) as they are played. */
 	public void feed(float[] samples, int count) {
 		for(int i = 0; i < count; i++) {
+			fed++;
 			ring[write] = samples[i];
 			write = (write + 1) % FFT;
 			if(++sinceLast >= HOP) {
@@ -110,14 +146,21 @@ public final class MusicSpectrum {
 
 	/** Lets every bar fall one step (no sound is being fed: paused or stopped). */
 	public void fall() {
-		for(int b = 0; b < bars; b++)
+		for(int b = 0; b < bars; b++) {
 			levels[b] = Math.max(0.0F, levels[b] - FALL);
+			shown[b] = Math.max(0.0F, shown[b] - FALL);
+		}
 	}
 
 	/** Empties the bars and the history (a new tune). */
 	public void reset() {
 		java.util.Arrays.fill(levels, 0.0F);
+		java.util.Arrays.fill(shown, 0.0F);
 		java.util.Arrays.fill(ring, 0.0F);
+		java.util.Arrays.fill(historyAt, 0L);
+		historyNext = 0;
+		fed = 0L;
+		following = false;
 		write = sinceLast = 0;
 		reference = REFERENCE_FLOOR;
 	}
@@ -143,6 +186,11 @@ public final class MusicSpectrum {
 					: (float)Math.max(0.0D, Math.min(1.0D, 1.0D + (10.0D * Math.log10(power[b]) - referenceDb) / RANGE_DB));
 			levels[b] = Math.max(level, levels[b] - FALL);
 		}
+		System.arraycopy(levels, 0, history[historyNext], 0, bars);
+		historyAt[historyNext] = fed;
+		historyNext = (historyNext + 1) % HISTORY;
+		if(!following)
+			System.arraycopy(levels, 0, shown, 0, bars);
 	}
 
 	/** In-place iterative radix-2 FFT ({@code re.length} a power of two). */
