@@ -478,6 +478,8 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             }
             else if(sendingData.isFax())
                 dataFrames = com.arrl.radiocraft.common.radio.voice.FaxAudio.frames(sendingData);
+            else if(sendingData.kind() == TncPacket.Kind.FT8) // 12.64 s of eight-tone FSK at the station's offset.
+                dataFrames = com.arrl.radiocraft.common.radio.ft8.Ft8Audio.frames(sendingData.ft8Message(), sendingData.ft8Offset());
             else if(sendingData.kind() == TncPacket.Kind.SOLAR) {
                 // A bulletin is a weather fax sheet: the picture's tones, for as long as the server says. Receivers
                 // learn of it as it starts and print it line by line as the tones come in.
@@ -556,6 +558,12 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         double noise = getNoiseFloor(skip);
         double quality = strength / copyThreshold(noise);
         TncPacket payload = packet.getPayload();
+        boolean ft8 = payload.kind() == TncPacket.Kind.FT8;
+        if(ft8) { // FT8 digs far below the copy threshold, and the decoder notes how far above the noise it was.
+            if(!com.arrl.radiocraft.common.radio.ft8.Ft8.decodes(quality))
+                return false;
+            payload = payload.withFt8Snr(com.arrl.radiocraft.common.radio.ft8.Ft8.snr(quality));
+        }
         if(payload.kind() == TncPacket.Kind.RTTY) {
             double collision = rttyCollision(payload.from(), strength, level.getGameTime());
             if(collision < 0.0D)
@@ -565,7 +573,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         }
         if(payload.kind() == TncPacket.Kind.RTTY && quality >= RTTY_GARBLE_FLOOR && quality < 1.0D)
             payload = payload.withText(Rtty.garble(payload.text(), (1.0D - quality) / (1.0D - RTTY_GARBLE_FLOOR), new java.util.Random(level.getRandom().nextLong())));
-        else if(!decodes(strength, noise))
+        else if(!ft8 && !decodes(strength, noise))
             return false;
         if((payload.kind() == TncPacket.Kind.FAX_PACKET || payload.kind() == TncPacket.Kind.FAX_ACK) // A weak signal drops fax packets now and then: they are sent again.
                 && level.getRandom().nextDouble() < com.arrl.radiocraft.common.radio.data.FaxRates.lossChance(strength, noise))
@@ -591,6 +599,89 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
                 if(processor != null && fed.add(processor))
                     processor.receive(payload); // Requests for the solar weather.
             }
+        }
+        return true;
+    }
+
+    // -------------------- BAND SCOPE AND CARRIER (computer batch 3B) --------------------
+
+    /** The band scope while the rig control program's waterfall watches this radio, else null. */
+    private volatile com.arrl.radiocraft.common.radio.BandScope scope;
+    private volatile double carrierStrength = 0.0D;
+    private volatile long carrierGameTime = -1L;
+
+    /**
+     * The band scope on this radio, watching {@code lowHz} to {@code highHz} for {@code leaseTicks} more ticks: made
+     * if there is none, else moved and renewed. It drops itself once the lease runs out. Server thread.
+     */
+    public com.arrl.radiocraft.common.radio.BandScope scope(double lowHz, double highHz, int leaseTicks) {
+        long until = (level == null ? 0L : level.getGameTime()) + leaseTicks;
+        com.arrl.radiocraft.common.radio.BandScope current = scope;
+        if(current == null) {
+            current = new com.arrl.radiocraft.common.radio.BandScope(lowHz, highHz, until);
+            scope = current;
+        }
+        else {
+            current.span(lowHz, highHz);
+            current.renew(until);
+        }
+        return current;
+    }
+
+    /** True while a band scope watches this radio (tests). */
+    public boolean hasScope() {
+        return scope != null;
+    }
+
+    public void dropScope() {
+        scope = null;
+    }
+
+    /** Taps a signal reaching the antenna for the band scope, if one is watching; one null check if not. */
+    public void scopeHear(float hz, double strength) {
+        com.arrl.radiocraft.common.radio.BandScope watching = scope;
+        if(watching == null)
+            return;
+        if(level != null && level.getGameTime() > watching.leaseUntil()) {
+            scope = null; // Nobody looked for a while.
+            return;
+        }
+        watching.hear(hz, strength);
+    }
+
+    /** A signal on this radio's frequency reached it: the squelch would open, whatever the speaker is set to. */
+    protected void recordCarrier(double strength) {
+        if(level == null || !(strength > 0.0D))
+            return;
+        carrierStrength = strength;
+        carrierGameTime = level.getGameTime();
+    }
+
+    /** Strength of the last signal heard on frequency (voice, data tones or CW), in any mode. */
+    public double getCarrierStrength() {
+        return carrierStrength;
+    }
+
+    /** Game time it was heard, -1 if never. */
+    public long getCarrierGameTime() {
+        return carrierGameTime;
+    }
+
+    /**
+     * Tunes the radio to {@code hz} as typed on its keypad: put on its step grid, inside what it tunes (its band, or
+     * the band's tuning range on ham radios). False if {@code hz} is outside that, and nothing changes. Server side.
+     */
+    public boolean tuneTo(float hz) {
+        if(band == null || !Float.isFinite(hz))
+            return false;
+        boolean inRange = tunesOutOfBand() ? com.arrl.radiocraft.common.radio.BandEdges.canTune(band, hz) : band.contains(hz);
+        if(!inRange)
+            return false;
+        float stepped = snapToTuningRange(hz, 0);
+        if(stepped != frequency) {
+            frequency = stepped;
+            setChanged();
+            updateBlock();
         }
         return true;
     }
@@ -1172,6 +1263,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
      * @return True if the radio was listening and the packet is heard.
      */
     public boolean receiveVoice(AntennaVoicePacket packet) {
+        scopeHear(packet.getFrequency(), packet.getStrength()); // The band scope sees every frequency (computer batch 3B).
         Detuning.Effect effect = getDetuning(packet.getFrequency(), packet.getSplatterReach());
         if(effect.isNone() || isDeafNow())
             return false;
@@ -1179,6 +1271,8 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         double strength = packet.getStrength() * desense(packet);
         if(skip && level != null) // Skip signals swell and fade (QSB); line of sight holds steady.
             strength *= ReceiverMix.fading(level.getGameTime() / 20.0D, pathSeed(packet), RadiocraftServerConfig.SKIP_FADING_DEPTH.get());
+        if(effect.audible())
+            recordCarrier(strength * effect.strength()); // A scanner's squelch opens whatever the speaker mode is.
         // A modem beside the radio copies the tones whatever mode the radio's speaker is in, as packets decode.
         if(level != null && isPowered() && effect.audible() && effect.pitchShiftHz() == 0.0D && effect.splatter() <= 0.0D
                 && decodes(strength * effect.strength(), getNoiseFloor(skip)))

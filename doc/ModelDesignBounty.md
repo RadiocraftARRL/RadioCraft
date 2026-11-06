@@ -420,8 +420,8 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
     component).
   - **Scanner screen**: the lid-up panel is plain fills (`ScannerScreen`); wants a texture.
   - **Program Manager icons** (1.12 launcher work, placeholders from `tools/computer_icons.py`): one 32 x 32 PNG per
-    program in `textures/gui/computer/icons/<program id>.png` (28 now: the built-in ones, every floppy program and the
+    program in `textures/gui/computer/icons/<program id>.png` (30 now: the built-in ones, every floppy program and the
     secret ones, SETUP and ABOUT; `saver` (a monitor with stars) and `scheduler` (a clock with a bell) since computer
-    batch 3A). Wanted: Windows 3.1 / DOS Shell style pictograms, readable at 32 x 32. **Keep to
+    batch 3A; `rigctl` (a transceiver under a waterfall) and `ft8` (a stair of eight tones) since batch 3B). Wanted: Windows 3.1 / DOS Shell style pictograms, readable at 32 x 32. **Keep to
     the sixteen EGA colours exactly** (`DosColours.PALETTE`; no anti-aliasing, transparency allowed): the colour
     schemes recolour icons by matching those colours, and `ComputerIconsTest` fails on any other colour.

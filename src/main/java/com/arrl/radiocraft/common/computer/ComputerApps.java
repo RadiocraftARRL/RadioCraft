@@ -90,6 +90,15 @@ public final class ComputerApps {
 	 */
 	public static final ComputerApp SCHEDULER = add("scheduler", "SCHEDULE", ComputerApp.Kind.CRAFTED);
 
+	// Computer batch 3B (2026-11-06).
+	/**
+	 * Rig control (CAT) through the radio interface: tune, band, mode, power and PTT from the keyboard, scan a range or
+	 * the memory channels with squelch-stop, and a live waterfall of the band.
+	 */
+	public static final ComputerApp RIG_CONTROL = add("rigctl", "RIGCTL", ComputerApp.Kind.CRAFTED);
+	/** FT8: the automated weak-signal mode in 15 s slots, auto-sequenced, contacts logged to the logbook. */
+	public static final ComputerApp FT8 = add("ft8", "FT8", ComputerApp.Kind.CRAFTED);
+
 	private ComputerApps() {}
 
 	/**

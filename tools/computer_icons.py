@@ -314,9 +314,31 @@ def scheduler():
     i.poly([(12, 5), (16, 1), (20, 5)], fill=Y); i.save('scheduler')
 
 
+def rigctl():
+    """A transceiver under a waterfall: signals falling down a dark band scope (computer batch 3B)."""
+    i = Icon(); i.rect(3, 2, 28, 14, fill=K)
+    for (x, c) in [(8, LC), (9, C), (17, Y), (18, W), (24, LB)]:
+        i.line([(x, 3), (x, 13)], c)
+    for (x, y) in [(5, 5), (13, 9), (21, 4), (26, 11), (11, 12)]:
+        i.px(x, y, B)
+    i.rect(17, 0, 18, 1, fill=LR, outline=None)
+    radio(i, y0=16, y1=29); i.save('rigctl')
+
+
+def ft8():
+    """Eight-tone FSK: a stair of tones on a dark passband, the Costas sync in yellow (computer batch 3B)."""
+    i = Icon(); i.rect(2, 3, 29, 28, fill=K)
+    tones = [3, 1, 4, 0, 6, 5, 2, 7, 2, 5, 1, 6, 3]
+    for n, t in enumerate(tones):
+        x = 4 + n * 2
+        y = 25 - t * 3
+        i.rect(x, y, x + 1, y + 1, fill=Y if n < 7 else LG, outline=None)
+    i.save('ft8')
+
+
 ALL = [edit, sysinfo, bandplan, install, setup, about, license_study, bookedit, logbook, freqman, programmer, solar,
        aprs, wefax, radiofax, sstv, df, snake, pileup, music, bible, adsb, rtty, bbs, propagation, repeaters, saver,
-       scheduler]
+       scheduler, rigctl, ft8]
 
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)

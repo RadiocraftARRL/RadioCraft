@@ -2507,3 +2507,111 @@ touched.
 - Screensaver draw: a quarter of `computer_power_use`, default wait 5 minutes once installed. Make either config?
 - Should a scheduled job need the owner online, or a separate "operator" permission for transmitting jobs? Now any
   job the owner saved runs unattended for as long as the computer is powered and loaded.
+
+### Computer batch 3B: rig control, waterfall, FT8 (2026-11-06)
+Items 1 and 2 of `doc/Plan-Computer3.md`. Built in the main tree: `compileJava compileTestJava compileGametestJava`
+clean (no new warning), `runData` (lang, two recipes and advancements), `test` 772/772, `runGameTestServer` 523 tests (second run: all required
+passed but the known-flaky `RadioFaxGameTests.weakSignalSendsPacketsAgain`, which passed on the first), `build` successful.
+Committed locally per feature; nothing pushed. The rig control and FT8 commits do not compile alone: the shared
+registration (`ComputerApps`, `RadioApps`, `ComputerAppScreens`, `RadioBlockEntity`, datagen, `src/generated`) is the
+last commit. Note: installing RIGCTL or FT8 makes the computer "in use" (it draws power) because their handlers tick,
+as RTTY, BBS and SCHEDULE do.
+
+**Rig Control** (`ComputerApps.RIG_CONTROL`, id `rigctl`, RIGCTL.EXE, CRAFTED; proposed recipe blank floppy + **lever**):
+- Server `common/computer/apps/RigControlHandler` (ticks; state `State`: picked radio by position, `RigScan`, squelch
+  0-9, zoom, memory file + memories, PTT ownership, mirror watchers). The rig is a radio on the **radio interfaces of the
+  computer's bus** (`RadioStation.radios`), as for every radio program; no interface = `station_no_interface`. Requests
+  `status select step tune band mode power ptt scan hold squelch memories store zoom scope leave`. `tune(rig, hz)`
+  turns the all-band radio's knob when the frequency is on another of its bands; `modes/mode/modeShown/setMode` are
+  reused by FT8. Channel radios (`ChannelDisplay`: commercial, marine) refuse tuning and scanning (`rig_channelized`).
+  The PTT is let go on `leave`, on screen close, on a power toggle and after 3 min (a time-out timer).
+- New on `RadioBlockEntity`: `tuneTo(hz)` (snapped to the step grid inside what the radio tunes; false outside),
+  the **carrier** (`recordCarrier`, `getCarrierStrength/GameTime`: any on-frequency signal, voice and data tones in
+  `receiveVoice` when the detuning is audible, CW in `HFRadioBlockEntity.receiveCW`, whatever the speaker mode; the
+  scanner's squelch reads it), and the **band scope** (`scope(lo, hi, leaseTicks)`, `scopeHear`, `dropScope`,
+  `hasScope`).
+- **Waterfall sampling cost**: `common/radio/BandScope` (76 bins, peak per bin, a lease). The radio taps every voice
+  packet at the top of `receiveVoice` (before the detuning check), and `AntennaNetworkObject.receiveCWPacket` taps CW
+  before its 1 kHz filter: these are the packets whose strength the antenna network already computed, on every
+  frequency, so the waterfall adds no propagation work at all. No scope = one volatile null check per packet. A scope
+  exists only while leased: each `scope` request (the client asks every 250 ms while RIGCTL is in front) renews it for
+  40 ticks; two viewers within 4 ticks share one drained row. A player who closes the screen with the waterfall in
+  front (asked within the last second) becomes a **mirror watcher**: `tick` pushes `scope` events every 10 ticks while
+  they are within 16 blocks, for up to 10 min, so the live monitor scrolls; reopening or `leave` ends it. Pure helpers
+  in `common/computer/Waterfall` (bins, level = 3 dB steps from -21 dB over the noise, zoom spans, next-signal jump).
+- Scanner `common/computer/RigScan` (pure): a range at the radio's step (max 4000 channels) or the memory channels the
+  radio tunes; dwell 4 ticks, stop when `carrierGameTime > stepAt` and strength >= squelch/9, resume 60 ticks after the
+  last signal, hold, wrap. **Memories** = the Frequency Manager's `.FRQ` (default `CHANNELS.FRQ`; F5 loads another, F4
+  appends the dial with `FrequencyList.Entry.simplex`). Base radios have no memory channels of their own (the 1.11
+  memories live on handheld items, which cannot be on a computer's bus): see the open questions.
+- Client `RigControlApp`: big display, S-meter, the waterfall in text cells (`TextGrid.FULL`/`SHADE_DARK` in the 16
+  logical colours, so every SETUP scheme themes it; noise as `SHADE_LIGHT` snow seeded per row), band plan markers on
+  the scale, click or Ctrl+arrows to tune; keys in the class Javadoc. Lang `datagen/lang/RigControlLang`.
+
+**FT8** (`ComputerApps.FT8`, id `ft8`, FT8.EXE, CRAFTED; recipe approved: blank floppy + any pressure plate):
+- Pure protocol in `common/radio/ft8/`: `Ft8` (slots, thresholds, dial frequencies `DIAL_HZ`, grid squares),
+  `Ft8Message` (CQ / GRID / REPORT / R_REPORT / RR73 / SIGNOFF, `encode`/`parse`; RR73 is never a grid; calls lose an
+  APRS SSID), `Ft8Decode` (slot, snr, offset, text; `resolve`: the same message twice keeps the best, an overlap under
+  50 Hz keeps one 3 dB stronger, else both are lost), `Ft8Sequencer` (auto-sequencing, resends, `MAX_TRIES` 5,
+  `acted()`, NBT), `Ft8Audio` (79-symbol 8-FSK with Costas arrays, phasor synthesis, an LRU of 4 transmissions, 632
+  frames each).
+- **Slot timing: game time**, 300 ticks from tick 0, even/odd by slot parity; TX starts at tick 0 of the slot (the 632
+  frames go out at 2.5 a tick, so the packet arrives at about tick 253), decodes are made at tick 270. Chosen over real
+  UTC so every station on a server agrees even when it lags, and GameTests are repeatable. The decode list's clock is
+  game ticks / 20 as HHMMSS (000015, 000030...).
+- **Threshold**: the same SNR model as every data mode (`RadioBlockEntity.copyThreshold(noise)`, the
+  `tnc_min_snr`/`tnc_min_signal` config). FT8 decodes **12 dB** under it (`Ft8.DECODE_SHARE`, 0.063 of the copy
+  threshold); RTTY prints garbled down to -3 dB (`RTTY_GARBLE_FLOOR` 0.5) and voice and packet need 0 dB. The SNR
+  shown = 10 log10(strength / copy threshold) - 8 dB, so the weakest decode shows -20 dB.
+- Packet: new `TncPacket.Kind.FT8` (`TncPacket.ft8(id, from, message, offset)`, text "message|offset"); the decoding
+  radio's `receiveData` adds "|snr" (`withFt8Snr`; read with `ft8Message/ft8Offset/ft8Snr`). New cases in
+  `RadioModeration.data` ("[FT8 14.074] W1BTR: CQ ...") and `ModerationLog.summary`; hearers are logged through
+  `ModerationHooks` as for any data. `RadioBlockEntity.tickDataFrames` plays `Ft8Audio.frames`. Not digipeated; APRS
+  terminals ignore it.
+- Server `Ft8Handler` (ticks, but returns at once unless the tick is 0 or 270 of a slot): collects `receive`d FT8 into
+  the slot (max 40), decodes at 270, runs the sequencer, and transmits through `RadioStation.transmit` at the start of
+  our slots. Requests `status cq answer halt tx offset parity dial clear`; pushes `decodes`, `tx`, `logged`.
+  `startCq(computer, minutes)` is the API the scheduler uses. Our grid = `Ft8.grid(computer pos)`; the offset is picked
+  at random (600-2400 Hz) once.
+- **How QSOs reach the logbook** (for the logging/QSL agent): `Ft8Handler.log` builds `Ft8Handler.entry(utcMillis,
+  WeatherReports.timestamp(dayTime), qso, mhz)` = `Logbook.Entry(real UTC now, the game day, call, dial + offset MHz,
+  "FT8", rstSent "-12", rstReceived "+05", notes "FT8 grid JJ00")`, and `appendToLog(computer, entry)` reads
+  `LOGBOOK.LOG` from C: (`computer.files()`), `Logbook.add`s it (time order, 2000 at most: `ft8_log_full`) and writes it
+  back. The CQ caller logs when it sends RR73 (on getting the R-report), the answerer when it gets RR73. Then it pushes
+  `reload` {file} to the LOGBOOK program, whose `LogbookApp.event` reads the file again if it is the one open (so an
+  open Logbook does not overwrite FT8's entry on its next save). ADIF export passes mode FT8 through (`adifMode`). The
+  program also keeps the last 20 contacts as lines and a count in its state.
+- Scheduler: `Schedule.Kind.FT8_CQ` (lang `sched.kind.ft8_cq`, a details line); `SchedulerHandler.run` calls
+  `Ft8Handler.startCq(computer, SCHEDULED_CQ_MINUTES = 10)`; a contact already under way is left running.
+- Band plan: markers "3.573|FT8", "7.074|FT8", "14.074|FT8", "28.074|FT8", "144.174|FT8" in `BandPlan.DEFAULT_MARKERS`
+  (existing server configs keep their own list).
+- Client `Ft8App` (band activity list, click a CQ or a call to us to answer, a panel with step, next and last TX, a
+  passband strip 0-3000 Hz, the slot clock with its progress). Lang `datagen/lang/Ft8Lang`.
+
+**Shared**: floppy models `floppy_rigctl.json`, `floppy_ft8.json`; `tools/radio_computer_models.py` and
+`tools/computer_icons.py` (icons `rigctl.png`, `ft8.png`, placeholders on ModelDesignBounty); labels red and violet in
+`ComputerAppScreens`; Handbook `computer/rig_control`, `computer/ft8`, and `computer/scheduler` (FT8 CQ). The FT8
+recipe uses one vanilla ingredient list (`#minecraft:wooden_pressure_plates` + stone, polished blackstone, light and
+heavy weighted) because vanilla 1.21.1 has **no item tag** `minecraft:pressure_plates` (only a block tag).
+
+**Tests**: unit `Ft8Test`, `Ft8MessageTest`, `Ft8SequencerTest`, `Ft8AudioTest`, `WaterfallTest`, `RigScanTest`;
+GameTests `RigControlGameTests` (`rigControlTunesTheRadio`; `scanStopsOnActivity`, with the waterfall showing the
+station) and `Ft8GameTests` (`twoComputersCompleteAnFt8Qso`, 145.270 MHz, both log it; `ft8DecodesWhereRttyIsLost`,
+seven blocks over bare connectors, 145.290 MHz; `theFloppyTakesAnyPressurePlate`; `theSchedulerCallsCq`, 145.310 MHz).
+Client parts: NeedsTesting "1.12 computer batch 3B".
+
+**Open questions (batch 3B)**:
+- Rig Control recipe: blank floppy + **lever** (the rig's controls; no other floppy uses it). Alternatives: an
+  observer (watching the band), a tripwire hook.
+- Memory channels: the scanner uses the Frequency Manager's `.FRQ` list as the memory bank, since base radios have no
+  memories and 1.11's are on handheld items. Should base radios get memory channels of their own (RIGCTL would then
+  read them), or should a handheld on the scanner's glass be read in?
+- FT8 slots on game time, not UTC (above): keep? A real-clock option would drift from the other stations on a lagging
+  server.
+- FT8 at -12 dB under the copy threshold: on long HF paths that is close to "whenever the band is open at all" (the
+  strength falls linearly to the edges of the skip zone). Too generous? It is one constant (`Ft8.DECODE_FLOOR_DB`).
+- No free-text FT8 messages and no automatic answer to a CQ (you click it); a caller answering our CQ is taken
+  automatically (the strongest). No FT4. The audio is FT8-like (Costas sync, 6.25 Hz tones) but WSJT-X could not decode
+  it through the Real-World Interface.
+- The waterfall's span is the band (its tuning range while the dial is outside it), with zoom x4/x16/x64 round the
+  dial; on 2m a bin is 52 kHz at x1, so it takes the zoom to see 2m simplex channels apart.

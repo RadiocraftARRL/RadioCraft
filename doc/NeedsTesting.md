@@ -8,6 +8,41 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## 1.12 computer batch 3B: rig control, waterfall, FT8 (added 2026-11-06)
+- [ ] Rig Control: craft it (blank floppy + lever), install it on a computer touching a radio interface with the
+  All-Band radio beside it. The display shows the radio's name in the title, the frequency as 28.000.00 MHz, mode,
+  band, PWR ON/OFF and RX/TX. Left/Right tune a step, Shift ten, the wheel too; F (or Enter) and "14.074" turns the
+  radio's band knob to 20m (look at the radio's own screen); PgUp/PgDn change band; M cycles SSB, CW, FM; P switches
+  it off and on; T keys the PTT (TX in red, the radio's TX lamp) and Esc lets it go. A VHF base station says "one
+  band" / "one mode"; a commercial mobile says it is a channel radio.
+- [ ] Waterfall: with a second station transmitting (a handheld keyed nearby, a CW beacon, an APRS terminal beaconing)
+  its column lights up and scrolls down four times a second; stronger is brighter (blue, cyan, green, yellow, red,
+  white); the noise shows as faint snow, more in a solar storm. The dial's column has a yellow down arrow on the scale
+  and dots down the waterfall; band plan spots (FT8, PSK31, SSTV) show as magenta +. Z zooms (x1, x4, x16, x64) round the
+  dial; click a signal to tune to it; Ctrl+Left/Right jump to the next signal. Try every SETUP colour scheme,
+  monochrome ones too: the waterfall should still read faint to strong.
+- [ ] Walk away from the screen with RIGCTL in front and stay near: the monitor in the world keeps scrolling the
+  waterfall (twice a second); 17+ blocks away, or after reopening, it stops pushing.
+- [ ] Scan: S with the shown span (or type 145.500 to 145.700 on a VHF radio) steps at five channels a second (SCANNING
+  blinks) and stops on a station keyed in that range (STOPPED ON SIGNAL), goes on three seconds after it unkeys; Q
+  raises the squelch (S1-S9) so weak stations are skipped; Space holds, X stops. F4 stores the dial in CHANNELS.FRQ
+  (open FREQMAN: the entry is there), F5 loads another .FRQ, F3 scans the memories, Up/Down tune them one by one.
+- [ ] FT8: craft it (blank floppy + any pressure plate: oak, crimson, stone, gold/iron weighted all work). Two
+  computers with HF radios on 14.074 (F6 tunes there) and radio interfaces with callsigns, some distance apart on
+  real antennas. The slot clock top right counts each 15 s slot (even/odd; red when it is ours). A: F3 calls CQ; at
+  the end of the slot B's list shows "CQ <A> <grid>" in green with its SNR and offset; click it on B. Watch the
+  exchange run by itself (grid, report, R-report, RR73, 73), the yellow TX lines, "Logged ..." on both, and both
+  LOGBOOK.LOG files gaining the contact (mode FT8, reports like -12, the grid in the notes). Open LOGBOOK on a
+  computer while it logs: the list reloads.
+- [ ] FT8 sound: a third radio tuned to 14.074 in USB hears the slow eight-tone warble for 12.6 s of each slot, at the
+  offsets the stations use (F7 changes ours; the passband strip shows where). Does it sound like FT8?
+- [ ] FT8 reach: a station too far for RTTY or SSB (they garble or are lost) still decodes on FT8 at -15 to -20 dB.
+- [ ] Scheduler's new FT8 CQ job (FT8 installed): it calls CQ for ten minutes and logs what answers.
+- [ ] Band plan: the new FT8 markers on 80/40/20/10/2m in the Band Plan Sheet and BANDPLAN do not crowd 14.070 PSK31
+  unreadably (a server with an old config keeps its old marker list; delete `band_plan_markers` to get them).
+- [ ] Item art: the Rig Control (red) and FT8 (violet) floppy labels and their Program Manager icons (placeholders,
+  see ModelDesignBounty).
+
 ## 1.12 weather alert generator and receiver (added 2026-11-06)
 - [ ] Models: the generator (grey cabinet) and the receiver (small white radio with a whip) look right on all four
   facings, in the hand and in the inventory; the generator's green READY lamp lights while it is on the air and its

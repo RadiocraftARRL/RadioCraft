@@ -126,7 +126,23 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     minutes, a net reminder (in chat to players nearby and on the screen, or as an APRS message). Times are typed:
     `every 30`, `at 20:00` (the world's clock) or `at 20:00 real`. Jobs go out under the station's usual rules
     (radio interface, transmit switch, WEFAX or APRS installed); only the owner edits them; they are kept on the disk
-    as SCHEDULE.DAT.
+    as SCHEDULE.DAT. A fifth job, **FT8 CQ**, calls CQ on FT8 for ten minutes and logs what it works.
+  - **Rig Control** (RIGCTL, a floppy: blank floppy + lever): drives the radio on the computer's radio interface from
+    the keyboard, as CAT software does: tune a step or ten, type a frequency (the all-band radio turns its band knob
+    for you), change band, mode (SSB/CW, FM on the all-band), power and PTT. A **live waterfall** of the band scrolls
+    under the display four times a second, brighter for stronger signals, with the band plan's spots and the dial
+    marked; zoom in up to 64 times round the dial, click a signal or Ctrl+arrow to tune to it. **Scan** a range
+    or the **memory channels** (the Frequency Manager's CHANNELS.FRQ: store the dial with F4, load another .FRQ with
+    F5): the scan stops on a signal over the squelch and goes on three seconds after it drops. The waterfall shows what
+    the antenna really hears, and costs nothing while nobody watches it.
+  - **FT8** (a floppy: blank floppy + any pressure plate): the weak-signal digital mode. 15 second slots on game time,
+    even and odd; short structured messages (CQ with a grid square, reply, signal report, R-report, RR73, 73) on the
+    band's FT8 frequency (3.573, 7.074, 14.074, 28.074, 144.174 MHz, now on the band plan too), each station at its own
+    audio offset. It decodes **12 dB below** where RTTY and voice copy; the decode list shows time, SNR, offset and
+    message for every station heard in a slot, CQs green and calls to you red. Click a CQ to answer, or call CQ
+    yourself: the program sequences the contact by itself, sends what was missed again, and logs the finished contact
+    in LOGBOOK.LOG with both reports and the grid. Your grid square comes from where the computer stands. A radio tuned
+    to FT8 plays the real eight-tone warble.
 - **Scanner**: set it beside the computer. It scans maps, photos and books into files, and prints pictures (on color
   photo paper, an empty map or photo paper) and documents (as a written book, a sheet of paper a page).
 - **Office programs**:
