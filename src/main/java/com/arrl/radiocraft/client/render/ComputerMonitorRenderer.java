@@ -1,22 +1,25 @@
 package com.arrl.radiocraft.client.render;
 
 import com.arrl.radiocraft.client.screens.computer.ComputerSession;
+import com.arrl.radiocraft.client.screens.computer.MonitorMirror;
 import com.arrl.radiocraft.common.blockentities.ComputerMonitorBlockEntity;
 import com.arrl.radiocraft.common.blocks.ComputerMonitorBlock;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 
 /**
- * The radio computer's monitor showing its screen (1.12 step 5): the text screen as this player last left it (see
- * {@link ComputerSession#monitorPicture}), lit by itself, stretched over the CRT's glass as a real monitor fills its
+ * The radio computer's monitor showing its screen (1.12 step 5): the text screen of this player's programs (see
+ * {@link ComputerSession#monitorPicture}; kept live while they are near, so clocks and MUSIC move), lit by itself, stretched over the CRT's glass as a real monitor fills its
  * tube. Without one (another player's computer, or one left long ago) the glass shows the model's own DOS screen.
  */
 public class ComputerMonitorRenderer implements BlockEntityRenderer<ComputerMonitorBlockEntity> {
@@ -32,7 +35,10 @@ public class ComputerMonitorRenderer implements BlockEntityRenderer<ComputerMoni
 
 	@Override
 	public void render(ComputerMonitorBlockEntity monitor, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
-		ResourceLocation picture = ComputerSession.monitorPicture(monitor.getBlockPos());
+		// Near enough, the picture is kept live while the screen is closed (MonitorMirror redraws it every so often).
+		Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+		boolean near = camera.distanceToSqr(monitor.getBlockPos().getCenter()) <= MonitorMirror.RANGE * MonitorMirror.RANGE;
+		ResourceLocation picture = ComputerSession.monitorPicture(monitor.getBlockPos(), near);
 		if(picture == null)
 			return;
 		// Facing north, the viewer's left is east (+x).

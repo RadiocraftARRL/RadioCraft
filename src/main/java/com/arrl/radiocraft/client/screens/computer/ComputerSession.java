@@ -92,6 +92,13 @@ public final class ComputerSession {
 	@Nullable
 	private ResourceLocation mirrorId;
 	private int frames = 0;
+	/** The frame ({@link MonitorMirror}'s count) the monitor was last drawn in, near enough to keep its picture live. */
+	int seenFrame = -1;
+	/** When the picture was last redrawn without the screen open, ms. */
+	long lastRedraw = 0L;
+	/** The grid the picture is redrawn into while the screen is closed (made on first use, then kept). */
+	@Nullable
+	TextGrid monitorGrid;
 
 	private ComputerSession(BlockPos pos, BlockPos monitorPos, ClientLevel level) {
 		this.pos = pos.immutable();
@@ -412,14 +419,88 @@ public final class ComputerSession {
 
 	// -------------------- THE MONITOR --------------------
 
-	/** The picture left on the monitor at {@code monitor}, or null if none (it shows the model's own screen). */
+	/**
+	 * The picture on the monitor at {@code monitor}, or null if none (it shows the model's own screen). The monitor's
+	 * renderer asks every frame; {@code near} (within {@link MonitorMirror#RANGE} blocks) keeps the picture live: it is
+	 * redrawn from the programs every so often while the screen is closed ({@link MonitorMirror}).
+	 */
 	@Nullable
-	public static ResourceLocation monitorPicture(BlockPos monitor) {
+	public static ResourceLocation monitorPicture(BlockPos monitor, boolean near) {
 		forget();
 		for(ComputerSession session : SESSIONS.values())
-			if(session.monitorPos.equals(monitor))
+			if(session.monitorPos.equals(monitor)) {
+				if(near)
+					session.seenFrame = MonitorMirror.frame();
 				return session.mirrorId;
+			}
 		return null;
+	}
+
+	/** Every session (for {@link MonitorMirror}). */
+	static Iterable<ComputerSession> all() {
+		return SESSIONS.values();
+	}
+
+	/** True while this computer's screen is open. */
+	boolean isOpen() {
+		return open;
+	}
+
+	/** True if this session's picture texture exists (the screen was open at least once). */
+	boolean hasMirror() {
+		return mirror != null;
+	}
+
+	/** The picture's render target (made if missing), for {@link MonitorMirror} to draw into. */
+	TextureTarget mirrorTarget() {
+		ensureMirror();
+		return mirror;
+	}
+
+	private void ensureMirror() {
+		if(mirror != null)
+			return;
+		Minecraft minecraft = Minecraft.getInstance();
+		mirror = new TextureTarget(TextGrid.WIDTH, TextGrid.HEIGHT, false, Minecraft.ON_OSX);
+		mirror.setFilterMode(GL11.GL_LINEAR);
+		mirrorId = Radiocraft.id("computer_monitor/" + mirrors++);
+		minecraft.getTextureManager().register(mirrorId, new MirrorTexture(mirror.getColorTextureId()));
+	}
+
+	/** The top bar's right-hand words: SETUP's computer name and clock ("SHACK PC  13:05"). */
+	String statusText() {
+		com.arrl.radiocraft.common.computer.ComputerSettings settings = this.settings;
+		String clock = "";
+		if(settings.clock() == com.arrl.radiocraft.common.computer.ComputerSettings.Clock.REAL) {
+			java.time.LocalTime time = java.time.LocalTime.now();
+			clock = settings.time(time.getHour(), time.getMinute());
+		}
+		else if(settings.clock() == com.arrl.radiocraft.common.computer.ComputerSettings.Clock.GAME && Minecraft.getInstance().level != null) {
+			int[] time = com.arrl.radiocraft.common.computer.ComputerSettings.gameTime(Minecraft.getInstance().level.getDayTime());
+			clock = settings.time(time[0], time[1]);
+		}
+		String name = settings.name();
+		return name.isEmpty() ? clock : clock.isEmpty() ? name : name + "  " + clock;
+	}
+
+	/** True while MUSIC plays on this computer and another page is in front (the top bar then shows a note). */
+	boolean showsMusicNote() {
+		return ComputerMusic.isPlayingAt(pos) && current().app() != ComputerApps.MUSIC;
+	}
+
+	/** The music note's first column in the top bar, and its width (" \u266B "). */
+	static final int MUSIC_COL = TextGrid.COLS - 4, MUSIC_W = 3;
+
+	/**
+	 * Draws the program in front into {@code grid} as the screen shows it: the top bar's name and clock, the program
+	 * (and its dialog), the music note. Needs no open screen (the monitor's picture is drawn this way while it is closed).
+	 */
+	void drawPrograms(TextGrid grid, long now) {
+		boolean note = showsMusicNote();
+		Dos.setStatus(statusText(), note ? MUSIC_COL - 1 : TextGrid.COLS - 1);
+		current().draw(grid, now);
+		if(note) // Music on in the background: a note in the top bar goes back to it.
+			grid.put(MUSIC_COL, 0, " \u266B ", DosColours.YELLOW, DosColours.BLUE);
 	}
 
 	/** Copies the text screen (at {@code x, y}, {@code w} by {@code h} GUI pixels) into the monitor's picture, every few frames. */
@@ -429,12 +510,7 @@ public final class ComputerSession {
 		g.flush();
 		Minecraft minecraft = Minecraft.getInstance();
 		RenderTarget main = minecraft.getMainRenderTarget();
-		if(mirror == null) {
-			mirror = new TextureTarget(TextGrid.WIDTH, TextGrid.HEIGHT, false, Minecraft.ON_OSX);
-			mirror.setFilterMode(GL11.GL_LINEAR);
-			mirrorId = Radiocraft.id("computer_monitor/" + mirrors++);
-			minecraft.getTextureManager().register(mirrorId, new MirrorTexture(mirror.getColorTextureId()));
-		}
+		ensureMirror();
 		double scale = minecraft.getWindow().getGuiScale();
 		int x0 = (int)Math.round(x * scale), x1 = (int)Math.round((x + w) * scale);
 		int y0 = (int)Math.round(y * scale), y1 = (int)Math.round((y + h) * scale);

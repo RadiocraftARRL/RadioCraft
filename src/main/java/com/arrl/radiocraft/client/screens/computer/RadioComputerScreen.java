@@ -2,7 +2,6 @@ package com.arrl.radiocraft.client.screens.computer;
 
 import com.arrl.radiocraft.client.screens.TerminalWhirr;
 import com.arrl.radiocraft.client.screens.moderation.ModerationLayout;
-import com.arrl.radiocraft.common.computer.ComputerSettings;
 import com.arrl.radiocraft.common.menus.RadioComputerMenu;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
@@ -26,8 +25,8 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	private static final int BEZEL = 8;
 	private static final int BEZEL_COLOUR = 0xFF2A2A2C, BEZEL_LIGHT = 0xFF4A4A4E, GLASS_EDGE = 0xFF0A0A0C;
-	/** The music note in the top bar while MUSIC plays here: first column, and its width (" ♫ "). */
-	private static final int MUSIC_COL = TextGrid.COLS - 4, MUSIC_W = 3;
+	/** The music note in the top bar while MUSIC plays here: first column, and its width. */
+	private static final int MUSIC_COL = ComputerSession.MUSIC_COL, MUSIC_W = ComputerSession.MUSIC_W;
 
 	private final ComputerSession session;
 	private final TextGrid grid = new TextGrid();
@@ -137,7 +136,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		g.fill(leftPos, topPos, leftPos + imageWidth, topPos + imageHeight, BEZEL_COLOUR);
 		g.fill(gridX - 2, gridY - 2, gridX + TextGrid.WIDTH + 2, gridY + TextGrid.HEIGHT + 2, GLASS_EDGE);
 		long now = System.currentTimeMillis();
-		Dos.setStatus(status(), showsMusicNote() ? MUSIC_COL - 1 : TextGrid.COLS - 1);
+		Dos.setStatus(session.statusText(), showsMusicNote() ? MUSIC_COL - 1 : TextGrid.COLS - 1);
 		if(!menu.isPowered()) { // Dark glass, and why.
 			grid.clear(DosColours.BLACK, DosColours.BLACK);
 			grid.center(TextGrid.ROWS / 2, Dos.tr("no_power"), DosColours.DARK_GREY, DosColours.BLACK);
@@ -148,29 +147,11 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 			renderLock(now);
 		else {
 			boot = null;
-			session.current().draw(grid, now);
-			if(showsMusicNote()) // Music on in the background: a note in the top bar goes back to it.
-				grid.put(MUSIC_COL, 0, " \u266B ", DosColours.YELLOW, DosColours.BLUE);
+			session.drawPrograms(grid, now);
 		}
 		DosRenderer.render(g, font, grid, gridX, gridY, now / 400L % 2L == 0L, session.scheme());
 		g.pose().popPose();
 		session.capture(g, gridX * scale, gridY * scale, TextGrid.WIDTH * scale, TextGrid.HEIGHT * scale);
-	}
-
-	/** The top bar's right-hand words: SETUP's computer name and clock ("SHACK PC  13:05"). */
-	private String status() {
-		ComputerSettings settings = session.settings();
-		String clock = "";
-		if(settings.clock() == ComputerSettings.Clock.REAL) {
-			java.time.LocalTime time = java.time.LocalTime.now();
-			clock = settings.time(time.getHour(), time.getMinute());
-		}
-		else if(settings.clock() == ComputerSettings.Clock.GAME && Minecraft.getInstance().level != null) {
-			int[] time = ComputerSettings.gameTime(Minecraft.getInstance().level.getDayTime());
-			clock = settings.time(time[0], time[1]);
-		}
-		String name = settings.name();
-		return name.isEmpty() ? clock : clock.isEmpty() ? name : name + "  " + clock;
 	}
 
 	/** The password prompt: nothing else shows until it is typed. */
@@ -261,7 +242,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	/** True while MUSIC plays on this computer and another page is in front. */
 	private boolean showsMusicNote() {
-		return ComputerMusic.isPlayingAt(session.pos()) && session.current().app() != com.arrl.radiocraft.common.computer.ComputerApps.MUSIC;
+		return session.showsMusicNote();
 	}
 
 	@Override
