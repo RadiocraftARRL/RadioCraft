@@ -141,14 +141,21 @@ public class RadioInterfaceBlockEntity extends BlockEntity implements MenuProvid
 	/**
 	 * True if this interface repeats {@code packet}: digipeating and transmitting are on, it is a beacon, message or ack,
 	 * it has been through fewer than {@link RadiocraftServerConfig#TNC_DIGIPEAT_MAX_HOPS} digipeaters, and it is not a
-	 * message or ack for this station.
+	 * message or ack for this station (its callsign with any SSID).
 	 */
 	private boolean shouldDigipeat(TncPacket packet) {
 		if(!digipeatEnabled || !transmitEnabled || packet.hops() >= RadiocraftServerConfig.TNC_DIGIPEAT_MAX_HOPS.get())
 			return false;
 		if(packet.kind() == TncPacket.Kind.BEACON)
 			return true;
-		return (packet.kind() == TncPacket.Kind.MESSAGE || packet.kind() == TncPacket.Kind.ACK) && (callsign.isEmpty() || !packet.to().equals(callsign));
+		// Not a message or ack for this station, under any SSID of its call (a BBS on this computer answers as W1BTR-1).
+		return (packet.kind() == TncPacket.Kind.MESSAGE || packet.kind() == TncPacket.Kind.ACK) && (callsign.isEmpty() || !baseCall(packet.to()).equals(baseCall(callsign)));
+	}
+
+	/** {@code call} without its SSID (W1BTR-1 is W1BTR). */
+	private static String baseCall(String call) {
+		int dash = call.indexOf('-');
+		return dash < 0 ? call : call.substring(0, dash);
 	}
 
 	/** True while the RPT lamp is lit: a packet heard is waiting to go back out, or just went. */

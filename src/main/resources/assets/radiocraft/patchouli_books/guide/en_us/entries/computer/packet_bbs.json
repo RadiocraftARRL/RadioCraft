@@ -1,0 +1,37 @@
+{
+  "name": "Packet BBS",
+  "icon": "radiocraft:floppy_bbs",
+  "category": "radiocraft:computer",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "A Mailbox on the Air",
+      "text": "The $(item)Packet BBS$() program turns the computer into a packet mailbox. Stations leave messages for each other and bulletins for everyone, and call in to read them when they like.$(br2)To host one, cable a $(l:radiocraft:computer/aprs)radio interface$() with a callsign to the computer and switch on a $(thing)VHF radio$() beside it, as for APRS. The mailbox answers the station's callsign with its own $(thing)SSID$(): W1BTR-1 by default."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Calling In",
+      "text": "Callers send the mailbox $(thing)APRS messages$(), one command each: from an H19 terminal, the APRS program, an APRS handheld, or the BBS program's terminal page. The answers come back as messages.$(br2)$(li)? help$(li)L list, LM yours, LB bulletins$(li)R 12 read message 12$(li)SP W1ABC subject: send one$(li)SB ALL subject: a bulletin$(li)K 12 kill (yours only)$(li)B log off"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "After SP or SB the mailbox asks for a subject if you left it out, then takes the text a line per message until $(thing)/EX$(); $(thing)/AB$() gives up. A message holds up to 1000 characters; the mailbox up to 200 messages. A caller quiet for ten minutes is logged off and loses a half-written message."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Sysop",
+      "text": "At the hosting computer the SYSOP page lists every message and shows the traffic as it comes. Enter reads, N writes a message and B a bulletin from the station's callsign. Only the computer's owner (or an operator) may delete messages (Del) or change the SSID or take the mailbox off the air (F7).$(br2)The messages are kept on the computer's disk as BBS.DAT, so they go with the computer when it is picked up."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Terminal",
+      "text": "Tab turns to the TERMINAL page, for calling someone else's mailbox from this computer. F7 sets its callsign (W1BTR-1); each line you type goes out as a message and its answers print below. Start with ? for its commands.$(br2)Packets can be lost on a weak path: if nothing comes back, send the line again."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_bbs",
+      "text": "A blank floppy and a chest."
+    }
+  ]
+}
