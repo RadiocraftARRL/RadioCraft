@@ -1,0 +1,33 @@
+{
+  "name": "Scheduler",
+  "icon": "radiocraft:floppy_scheduler",
+  "category": "radiocraft:computer",
+  "sortnum": 18,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "SCHEDULE",
+      "text": "The $(item)Scheduler$() runs jobs on time with nobody at the screen, as long as the computer has power and its chunk is loaded:$(li)a $(thing)station ID$(): your callsign in Morse through the radio;$(li)a $(thing)WEFAX chart$() from the disk;$(li)an $(thing)APRS beacon$();$(li)a $(thing)reminder$() for a net."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "When",
+      "text": "Ins adds a job: pick what it does, then type when. $(thing)every 30$() (minutes, or $(thing)every 2h$()), $(thing)at 20:00$() on the world's clock, or $(thing)at 20:00 real$() on the server's clock. Enter edits, Del deletes, Space turns a job off and on, F5 runs it now.$(br2)The list counts down to each job; the bottom shows the last runs and how they went."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The Rules",
+      "text": "Jobs that transmit go out like the station's other programs: through a $(l:radiocraft:radios/station_accessories)radio interface$() with its transmit switch on and a radio switched on, under the interface's callsign. WEFAX jobs need $(thing)WEFAX$() installed, beacons $(thing)APRS$().$(br2)A reminder goes to chat for players within 16 blocks and onto the screen, or as an APRS message if you give a callsign."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "On the Disk",
+      "text": "The jobs are kept on C: as $(thing)SCHEDULE.DAT$(), so they stay with the computer, and can be copied to a $(l:radiocraft:computer/data_floppies)data floppy$() for another one. Only the computer's owner (or an operator) can change them; anyone can look.$(br2)A computer with the scheduler installed is always in use, so it always draws power."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_scheduler",
+      "text": "A blank floppy and a bell."
+    }
+  ]
+}

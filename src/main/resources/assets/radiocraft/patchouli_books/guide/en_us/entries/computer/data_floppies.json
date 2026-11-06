@@ -1,0 +1,28 @@
+{
+  "name": "Data Floppies",
+  "icon": "radiocraft:floppy_disk",
+  "category": "radiocraft:computer",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Drive A:",
+      "text": "A blank $(item)Floppy Disk$() in the computer's drive is drive $(thing)A:$(). Copy files onto it and it becomes a $(item)Data Floppy$(): carry it to another computer and copy them off again. Its tooltip shows its label and how full it is.$(br2)It holds 1.44 MB, up to 64 files: documents, logbooks, pictures, frequency lists, codeplugs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "File Manager",
+      "text": "In the shell's files list (or the Program Manager's File Manager, Tab), $(thing)F3$() shows the floppy's files instead of C:'s and back, $(thing)F8$() copies the file in the list to the other drive (it asks before replacing one), $(thing)F4$() labels the floppy. Del and F7 delete and rename on the drive shown.$(br2)Programs open files on C:: copy a file there first."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "At the Prompt",
+      "text": "$(thing)A:$() and $(thing)C:$() change drive. $(thing)DIR A:$(), $(thing)TYPE A:NOTES.TXT$(), $(thing)DEL A:OLD.TXT$(), $(thing)COPY LOG.LOG A:$(), $(thing)COPY A:*.IMG C:$() (with /Y to replace), and $(thing)LABEL A: FIELD DAY$().$(br2)Empty and without a label, a data floppy is a plain blank disk again and stacks with the others."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Programs Stay Put",
+      "text": "Programs never go on a data floppy: COPY refuses them, and no file named like one (.EXE, .COM, .BAT) can be written there. A program comes only on its own disk, which is write-protected: INSTALL it.$(br2)The files live with the disk wherever it goes. Lose the disk and they are lost."
+    }
+  ]
+}

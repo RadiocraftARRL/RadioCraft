@@ -25,12 +25,12 @@
     {
       "type": "patchouli:text",
       "title": "The Prompt",
-      "text": "Type a program's name to run it ($(thing)RTTY$(), or $(thing)EDIT NOTES.TXT$() to open a file); it comes back to the prompt when it exits. Commands: DIR, TYPE, COPY, DEL, REN, PRINT, CLS, TIME, VER, HELP and EXIT. Up and down bring back lines, Tab completes names.$(br2)$(thing)SETTINGS$() or $(thing)SETUP$() opens SETUP to switch back."
+      "text": "Type a program's name to run it ($(thing)RTTY$(), or $(thing)EDIT NOTES.TXT$() to open a file); it comes back to the prompt when it exits. Commands: DIR, TYPE, COPY, DEL, REN, PRINT, CLS, TIME, VER, HELP and EXIT; A: and LABEL for $(l:radiocraft:computer/data_floppies)data floppies$(). Up and down bring back lines, Tab completes names.$(br2)$(thing)SETTINGS$() or $(thing)SETUP$() opens SETUP to switch back."
     },
     {
       "type": "patchouli:text",
       "title": "SETUP",
-      "text": "$(thing)SETUP$(), built into every computer, has four pages: $(thing)Launcher$(), $(thing)Colours$(), $(thing)Password$() and $(thing)Name and Clock$().$(br2)Colour schemes recolour every program: Classic Blue, RC-DOS Teal, High Contrast, and the monochrome Green Phosphor, Amber, Paper White and Gas Plasma. Moving through the list shows the whole screen in that scheme; Enter keeps it. Pictures (SSTV, maps, photos) keep their own colours."
+      "text": "$(thing)SETUP$(), built into every computer, has five pages: $(thing)Launcher$(), $(thing)Colours$(), $(thing)Password$(), $(thing)Name and Clock$() and $(thing)Screensaver$() (it needs a rare disk).$(br2)Colour schemes recolour every program: Classic Blue, RC-DOS Teal, High Contrast, and the monochrome Green Phosphor, Amber, Paper White and Gas Plasma. Moving through the list shows the whole screen in that scheme; Enter keeps it. Pictures (SSTV, maps, photos) keep their own colours."
     },
     {
       "type": "patchouli:text",

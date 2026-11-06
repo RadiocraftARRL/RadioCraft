@@ -116,6 +116,17 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   - **Password**: whoever places the computer owns it and can set a password in SETUP (empty removes
     it). Everyone who sits at it is then asked for it, owner included; server operators are never asked. The password
     goes with the computer when it is broken and placed again.
+  - **Data floppies**: a blank floppy in the drive is drive **A:**. Copy files onto it and it becomes a **Data
+    Floppy** (1.44 MB, up to 64 files, with a label in its tooltip) that carries them to another computer. In the
+    shell's files list and the File Manager, F3 shows A: or C:, F8 copies a file to the other drive, F4 labels the
+    floppy; at the prompt, `A:`/`C:`, `DIR A:`, `COPY X A:`, `COPY A:*.LOG C:`, `TYPE A:X`, `DEL A:X`, `LABEL A: NAME`.
+    Data only: programs never go on a floppy (they install only from their own write-protected disks).
+  - **Scheduler** (SCHEDULE, a floppy): timed jobs with nobody at the screen while the computer has power: an
+    automatic station ID (the callsign in Morse through the radio), a WEFAX chart broadcast, an APRS beacon every N
+    minutes, a net reminder (in chat to players nearby and on the screen, or as an APRS message). Times are typed:
+    `every 30`, `at 20:00` (the world's clock) or `at 20:00 real`. Jobs go out under the station's usual rules
+    (radio interface, transmit switch, WEFAX or APRS installed); only the owner edits them; they are kept on the disk
+    as SCHEDULE.DAT.
 - **Scanner**: set it beside the computer. It scans maps, photos and books into files, and prints pictures (on color
   photo paper, an empty map or photo paper) and documents (as a written book, a sheet of paper a page).
 - **Office programs**:
@@ -181,7 +192,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 
 #### Disks never sold, and ham shacks
 
-- Four rare floppies for the radio computer turn up in old chests (ancient cities, stronghold libraries, mansions,
+- Five rare floppies for the radio computer turn up in old chests (ancient cities, stronghold libraries, mansions,
   trial chamber vaults, shipwrecks, dungeons, temples, village houses and more) and in ham shacks:
   - **Snake**, with a high score table on each computer.
   - **Pileup**: RadioCraft's own falling-blocks game. Callers pile into the band; fill a row to work them (a QSO).
@@ -198,6 +209,9 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     player open for next time; only you hear it, and it stops out of earshot, in another dimension, or when the
     computer is broken or loses power. The track list can be scrolled while a tune plays.
   - **Bible**: the four gospels of the World English Bible (public domain): read by chapter, go to a verse, search.
+  - **Screensaver**: after a few idle minutes (SETUP: never, 1, 3, 5 or 10) the screen shows a starfield, your
+    callsign in big letters or a band waterfall keying your call in Morse, also on the monitor in the world, and the
+    computer draws a quarter of its power until a key, click or mouse move wakes it.
 - **Ham shacks**: a little timber house with a J-pole on the roof, found dark: a VHF base station on 146.520 MHz,
   switched off, its battery flat (charge it or run a new power line), a radio computer and a chest of radio parts, out in the country, and now and then in a plains, taiga,
   snowy, savanna or desert village (in that village's wood, with a villager living in it).

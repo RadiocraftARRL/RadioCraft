@@ -34,6 +34,42 @@ it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 - [ ] A marine radio (or any radio that tunes 162.500 MHz, WX6) hears the generator's data burst every two minutes,
   and after a new warning the 1050 Hz tone.
 
+## 1.12 computer batch 3A: data floppies, screensaver, scheduler (added 2026-11-06)
+- [ ] Data floppy, list view: a blank floppy in the drive, Tab to the files, F3: the pane says "Files on A:" and
+  "No files on the floppy yet". F3 back to C:, F8 on a file: "copied to A:". The drive line reads "Data disk"; eject
+  it (sneak + right click): the item is now "Data Floppy" with "1 files, ... of 1.44 MB" in its tooltip. F8 again on
+  the same file asks before replacing it.
+- [ ] F4 labels the floppy (FIELD DAY): the tooltip shows "Label: FIELD DAY", the drive line "Data disk FIELD DAY".
+  Put it in a second computer: its files are there; F8 copies one to that C:. Enter on a picture on A: shows it;
+  Enter on a text file on A: says to copy it to C: first. Delete every file and clear the label: it stacks with blank
+  floppies again.
+- [ ] File Manager (SETUP: Program Manager, then Tab): the same keys; the window title shows A:\ or C:\.
+- [ ] Prompt (SETUP: command line): `A:` changes the prompt to `A:\>`; `DIR`, `DIR A:*.TXT`, `COPY C:NOTES.TXT A:`,
+  `COPY *.LOG A:` (one line per file, then "n file(s) copied"), `COPY A:NOTES.TXT` (to the current drive), `TYPE
+  A:NOTES.TXT`, `DEL A:*.*` (asks Y/N), `REN A:X.TXT Y.TXT`, `LABEL A: SHACK`, `LABEL` (says the label). `COPY
+  LOGBOOK.EXE A:` says programs cannot be copied. With no floppy: `A:` says not ready; with a program's disk, `DIR A:`
+  shows its program, write-protected.
+- [ ] Screensaver: `/give @s radiocraft:floppy_saver`, INSTALL it. SETUP has a Screensaver page: Start after 1 min,
+  each of the three styles (Starfield; Callsign: the radio interface's callsign, or the computer's name with none;
+  Band waterfall: drifting signals, one keying "CQ DE <call>" in Morse), Preview (Enter). Wait a minute without
+  touching anything: it comes on; a key, click, wheel or mouse move wakes it and that key does not type anything.
+- [ ] Walk away from a computer whose screensaver shows (or let one with SCHEDULE installed sit a minute after you
+  get up): the monitor in the world shows the screensaver moving (about five times a second within 16 blocks).
+  Watch its power: it draws 2 FE/t (a quarter of 8) while the screensaver shows (Jade, or a battery's drain).
+  With MUSIC playing it never comes on. SAVER (or SAVER.EXE at the prompt) blanks the screen at once.
+- [ ] Scheduler: craft it (blank floppy + bell), install it on a computer touching a radio interface with a VHF radio
+  on and a callsign. Ins: Station ID, `every 1`: a minute later a handheld on that frequency hears "DE <call>" in
+  Morse; the log at the bottom says "done"; the countdown runs down. Space turns it off; F5 runs it now.
+- [ ] WEFAX job (WEFAX installed, a chart saved with WEFAX F-keys as WXRADAR.IMG): `at 6:00` world time, then `/time
+  set 23900` (5:54): the chart goes out at 6:00 and a second computer with WEFAX receives it. Beacon job `every 2`:
+  another station's APRS shows the beacon every two minutes.
+- [ ] Reminder `at 20:00` with text "Net on 146.52 tonight": at 20:00 world time players within 16 blocks get
+  "[<computer name>] Net on ..." in chat, and the computer's screen (any program) shows "Reminder: ..." on its status
+  line. With a callsign in To it goes as an APRS message instead (APRS installed). A guest (not the owner) can look but
+  not change the jobs. Copy SCHEDULE.DAT to a floppy and onto another computer with SCHEDULE: the jobs come along.
+- [ ] Item art: the Screensaver and Scheduler floppies' label colours (violet, teal) and their Program Manager icons
+  (placeholders, see ModelDesignBounty).
+
 ## 1.12 live monitor, CPS by hand, MUSIC volume and sound, knobs on the radio, 64 channels (added 2026-11-06, evening)
 - [ ] Live monitor: open the computer, start MUSIC, Close (C). Within 16 blocks the monitor in the world keeps moving:
   the top bar's clock, the time and bar, the visualizer (about 5 times a second while music plays, twice a second

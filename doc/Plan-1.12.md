@@ -2402,3 +2402,108 @@ heard)? The numbers (150-block spacing, 200-block margin, 30-min beacon age, flo
 battery, 5-min flash, one-minute repeats) are constants, not config. No spoken audio goes out over the air (a marine
 radio on WX6 hears the data burst and the tone only); decoding the clips on the server (`tape/OggDecoder`) could add it.
 Two receivers' voices overlap if they alert together. Website wiki not updated.
+
+### Computer batch 3A: data floppies, screensaver, scheduler (2026-11-06)
+Items 3, 7 and 8 of `doc/Plan-Computer3.md`. Built in an isolated worktree (the weather-alert agent was working in the
+main tree at the same time): `compileJava compileTestJava compileGametestJava` clean (no new warning), `runData`
+(lang, the scheduler floppy's recipe and advancement), `test` all passed, `runGameTestServer` 514 tests with every new
+one passing; the only failures were the four `ModerationLogGameTests` (`retentionDeletesOldFiles`,
+`voiceIsLoggedOnceWithItsHearer`, `dataIsLoggedAsData`, `metadataOnlyKeepsNoAudio`), which fail the same way on a
+clean worktree of HEAD (see the session report), so not this batch's. Committed locally per feature; nothing pushed.
+
+**Data floppies** (`common/computer/`):
+- **Storage choice**: a data floppy's files are **not** in the item. The item gets a `radiocraft:floppy_data` component
+  (`datacomponents/FloppyData`: id, label, file count, bytes used, for the tooltip) and the files live in a
+  `FloppyFileStore` SavedData `radiocraft_floppy_<id>` in the overworld's data folder, exactly as a radio computer's
+  item names its disk (`ComputerData`). Reason: 1.44 MB in a component is synced in every inventory and container
+  packet (a chest of full floppies, or a full inventory at login, would pass the 2 MB packet frame and kick the player
+  for good); a cap small enough to be safe would not be a floppy. The files still go wherever the item goes; a
+  creative copy shares them (as computers do); a lost item orphans its file (as computers do). **Open question** for
+  the maintainer if he wants them literally in the item.
+- **Blank vs data**: one item. A blank floppy written to gets the component and shows as **"Data Floppy"**
+  (`FloppyDiskItem.getName`, lang `item.radiocraft.floppy_disk.data`); emptied and unlabelled it loses the component
+  and stacks with blanks again. Program floppies are write-protected (`write_protected`) and never get data.
+- Rules (`FloppyDisk`, pure): `CAPACITY` 1,457,664 bytes, `MAX_FILES` 64, 256 KB per file (the computer's), label 11
+  DOS characters (`cleanLabel`), **programs never** (`isProgramName`: EXE COM BAT SYS BIN DLL OVL; the server refuses
+  them on write, rename and copy with `Problem.PROGRAM`; programs are not files anyway, so `COPY X.EXE A:` of a
+  program is refused client side too).
+- Drives: `ComputerVolume` (interface: `storage write read delete rename list totalBytes fileLimit label drive`);
+  `ComputerFileStore` is C:, `FloppyDrive.volume(computer)` is A: (looks at the drive on every call; `kind()` NONE/
+  BLANK/DATA/PROGRAM; `setLabel`). `ComputerContext.floppy()` / `volume(char)`. `ComputerStorage.Problem` gained
+  `NO_DISK`, `WRITE_PROTECTED`, `PROGRAM`. Paths: `DrivePath.parse("A:NOTES.TXT", current)` (pure; A and C only).
+- Requests: every `fs.*` takes `drive` "A" (C: default); `fs.list` answers `drive` and `label`; new `fs.copy`
+  {from, to, overwrite} copies on the server between or within drives (paths; `to` may be a drive alone) and answers
+  the hello fields (so the client learns a blank became data); `fs.label` {label}. The hello and `sys.floppies` say
+  `floppy` "data" and `floppyLabel` / `label`.
+- Client: `ComputerSession.files()` (C:), `floppyFiles()` (A:), `files(char)`, `hasDataFloppy()`, `floppyLabel()`;
+  `ComputerFiles.copy/label`. Shell list and File Manager: F3 drive, F8 copy across (asks before replacing), F4 label;
+  Enter on A: views pictures only (programs open files from C:; they say to copy first), F5 print only from C:.
+  Prompt: current drive (`A:`/`C:`, prompt `A:\>`), DIR/TYPE/DEL/REN/COPY take drives, COPY wildcards to a drive,
+  `COPY A:X` alone copies to the current drive, `LABEL [A:] [name]` (C:'s label is SETUP's name).
+- **For the next agents** (radio programs, logging/QSL): to read or write a floppy from a handler use
+  `context.floppy()` (or `FloppyDrive.volume(computer)` with no player) exactly like `context.files()`; check
+  `FloppyDrive.kind(computer.getFloppy())`. To export something onto a floppy from a screen, write it to C: and
+  `session.files().copy("NAME.EXT", "A:", false, cb)`, or write straight with `session.floppyFiles().write(...)`.
+  A QSL card or an exported log on a floppy needs nothing more. Do not give a data floppy a program's extension.
+
+**Screensaver** (`ComputerApps.SCREENSAVER`, id `saver`, SAVER.EXE, SECRET: loot only, added to
+`loot_table/chests/secret_floppies.json` beside the other four; `SecretAppsGameTests` now expects five):
+- Settings: `ComputerSettings` gained `saverMinutes` (one of `SAVER_MINUTES` 0/1/3/5/10, default 5; 0 never) and
+  `saverStyle` (default `starfield`); a 5-argument constructor keeps old callers; old tags read as the defaults.
+  SETUP's fifth page **Screensaver**: Start after, Show (style), Preview (anyone may preview; changes are the owner's).
+- Client: `client/screens/computer/Screensaver` (pure but for `TextGrid`; styles `starfield`, `marquee` (the callsign
+  in 5x5 block letters crossing the screen, a new row and colour each pass), `waterfall` (band noise falling, four
+  drifting stations, one keying "CQ DE <call>" from `RepeaterAudio.morseUnits`)). `ComputerSession` keeps the idle
+  time (`touch()` on every key/click/wheel, `moved()` on mouse moves; a waking input goes to no program),
+  `updateSaver` in `drawPrograms` (so the live monitor shows it too, redrawn every 200 ms like MUSIC), never while MUSIC
+  plays there. `SaverApp` (SAVER.EXE) blanks at once (`blankNow`). The text is the bus callsign the server answers to
+  `sys.saver`, else the computer's name, else RC-DOS.
+- Server: `sys.saver` {on} per viewer; every other request counts as use (`RadioComputerBlockEntity.activity`).
+  `saverDue` (every 10 ticks with the viewer check): installed, wait not never, no MUSIC listener or CPS hand session,
+  then all viewers report it, or with no viewers the game time since the last use passed the wait.
+  `RadioComputerNetworkObject.saving` -> `drawPerTick()` = config / `SAVER_SHARE_DIVISOR` 4 (at least 1). It only
+  matters for computers in use: one nobody sits at draws nothing unless a background program is installed, so the
+  saving is mostly for SCHEDULE/BBS/APRS computers. `isSaving()`, `idleSince(t)` for tests.
+
+**Scheduler** (`ComputerApps.SCHEDULER`, id `scheduler`, SCHEDULE.EXE, CRAFTED; proposed recipe blank floppy + **bell**):
+- Pure `Schedule`: `Job(id, kind STATION_ID/WEFAX/BEACON/REMINDER, when EVERY/DAILY_GAME/DAILY_REAL, minutes, enabled,
+  file, text, to, anchor)`, at most 16, on C: as `SCHEDULE.DAT` (NBT `{jobs:[...]}`). Timing by **occurrence
+  numbers** (`occurrence`, `step`): a job runs when the number goes up since its last look, so a chunk unloaded for
+  hours runs a missed job once, and `/time set` back runs nothing; the first look only notes the number. EVERY counts
+  real minutes (1200 ticks) from the job's save (`anchor`), so computers do not all fire on one tick; DAILY_GAME is
+  the world's clock (SETUP's: 0 ticks = 6:00); DAILY_REAL the **server's** clock (its time zone). Typed times:
+  `parseWhen` ("every 30", "2h", "at 20:00", "at 8:05p real"), `typed`, `secondsToNext`.
+- `SchedulerHandler` (registered in `RadioApps`): ticks; looks once a second staggered by position (`(gameTime + pos)
+  % 20`), re-reads the file only when its `FileEntry` object changed (any write replaces it), runs due jobs:
+  station ID = `RadioBlockEntity.sendMorseId(call)` (new: "DE <call>" at 20 wpm through the DTMF frame queue, same
+  checks as DTMF) on the first radio of a radio interface with transmit on; WEFAX = `PictureHandler.send(computer,
+  name)` (new public overload, no player needed), WEFAX installed; beacon = `AprsHandler.beacon`, APRS installed and
+  `cannotSend` clear; reminder = chat to players within 16 blocks or at the screen (`message.radiocraft.computer.reminder`)
+  plus a `notice` event every screen shows on its status line, or `AprsHandler.send` to a callsign. Log of 20 runs and
+  each job's last occurrence in the program state (block save). Requests `status`, `save`, `delete`, `toggle`, `run`;
+  everything but `status` is the owner's/an operator's (`not_owner_sched`). Pushes `ran`.
+- **For the next agents**: add a job kind in `Schedule.Kind` + a case in `SchedulerHandler.run` + lang
+  `sched.kind.<id>` and form fields in `SchedulerApp.form`. The radio-programs agent can reuse `sendMorseId` for a CW
+  ID; the logging agent can schedule an export the same way. `runAndLog(computer, state, job)` runs one now.
+- Client `SchedulerApp`: list with countdowns, Ins (choose kind, then a form), Enter, Del, Space, F5; the log.
+
+**Lang** in `datagen/lang/FloppyLang`, `SaverLang`, `SchedulerLang` (one call each in the provider), plus edited keys:
+`shell.files` and `shell.disk` take the drive, `shell.keys_files` (F8, F3), `prompt.dir_volume(_none)`/`dir_of` take the
+drive, `prompt.no_drive_a`, `prompt.help.copy/dir`, `tooltip.radiocraft.floppy_disk`; `FLOPPY_NAMES` saver and
+scheduler. Icons `saver.png`, `scheduler.png` (`tools/computer_icons.py`), floppy models copied (script lists updated).
+Handbook: new `computer/data_floppies`, `computer/scheduler`; `secret_programs` (five, Screensaver spotlight),
+`radio_computer` (prompt, SETUP's five pages).
+
+**Gotchas / left**: client-only parts (screens, the screensaver drawing and waking, the live monitor) need runClient
+(NeedsTesting "1.12 computer batch 3A"). The server only knows the client's idle time through `sys.saver`, and its own
+(game ticks) when nobody is at the screen. Reminders to "here" reach real players only (fake players are not in the
+level's list). A scheduled CW ID on an HF SSB radio is a tone on SSB, as the DTMF encoder's tones are. Website wiki not
+touched.
+
+**Open questions (batch 3A)**:
+- Floppy files on the server by id (above) rather than in the item: keep?
+- Scheduler recipe: blank floppy + **bell** (it rings the hours; unused by other floppies: clock, repeater, daylight
+  detector, note block, chest, comparator are taken). Alternatives: an observer, a target block.
+- Screensaver draw: a quarter of `computer_power_use`, default wait 5 minutes once installed. Make either config?
+- Should a scheduled job need the owner online, or a separate "operator" permission for transmitting jobs? Now any
+  job the owner saved runs unattended for as long as the computer is powered and loaded.
