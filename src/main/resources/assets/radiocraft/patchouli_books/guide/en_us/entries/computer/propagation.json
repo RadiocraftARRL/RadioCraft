@@ -1,0 +1,31 @@
+{
+  "name": "Propagation Predictor",
+  "icon": "radiocraft:floppy_propagation",
+  "category": "radiocraft:computer",
+  "sortnum": 15,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "PREDICT",
+      "text": "The $(item)Propagation Predictor$() says which HF bands should be open to a place over the next 24 in-game hours: a band by hour grid like the real VOACAP's.$(br2)Tab picks the target: $(thing)coordinates$() (X and Z), a $(thing)callsign$() (a player online, or an APRS station this computer heard; F5 lists them), or a $(thing)distance and bearing$() (4000 90 is 4000 blocks east). Enter predicts."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "It works out each hour with the same sums your radios use: the band's line of sight and its $(l:radiocraft:propagation/bands)skip ranges$() by day or night, the band's $(l:radiocraft:propagation/solar_weather)condition$() in the solar weather, and the noise floor. It reads the sky as the $(l:radiocraft:computer/solar_weather)Solar Weather$() program does: an Ionospheric Processor, or a radio with a real antenna."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Reading the grid",
+      "text": "$(2)G$() good, $(e)F$() fair, $(c)P$() poor (data and CW get through, voice hardly), - closed. $(3)c$(): closed to voice but open to CW, which carries half as far again. $(thing)L$() means line of sight (ground wave): no sky needed.$(br2)The top rows give the clock hour, ** for day and .. for night. Below the grid: the best band now and each band's best hour."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The current solar event is known until it ends, and the next one once the forecast has it. Past that the predictor guesses the sky stays as it is: those hours are dimmed, in lower case.$(br2)It assumes a dipole at each end at full power, and leaves out hills and your real antennas, so treat it as a guide. F6 prints the grid, F7 saves it as PREDICT.TXT. It refreshes every 20 seconds."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_propagation",
+      "text": "A blank floppy and a clock."
+    }
+  ]
+}
