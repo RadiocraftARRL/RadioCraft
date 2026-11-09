@@ -44,6 +44,8 @@ public record SCWBufferPacket(BlockPos pos, List<CWBuffer> buffers) implements C
 
     public static void handle(final SCWBufferPacket packet, final IPayloadContext context) {
         context.enqueueWork(() -> {
+                        if(!com.arrl.radiocraft.common.network.PacketChecks.nearAndLoaded(context.player(), packet.pos()))
+                return;
             if(!(context.player().level().getBlockEntity(packet.pos()) instanceof HFRadioBlockEntity radio))
                 return;
             if(!(context.player().containerMenu instanceof RadioMenu<?> menu) || menu.blockEntity != radio)

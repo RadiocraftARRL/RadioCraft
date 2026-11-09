@@ -18,6 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 public class FiveBtvAntennaType extends NonDirectionalAntennaType<EmptyAntennaData> {
 
     public static final double SWR = 1.3D;
+    /** On CB, just below the 10m section: about what the CB ground plane manages on 10m. */
+    public static final double CB_SWR = 1.9D;
     public static final double HF_LOS_SCALE = 0.5D;
     public static final double HF_SKIP_SCALE = 1.25D;
 
@@ -44,6 +46,8 @@ public class FiveBtvAntennaType extends NonDirectionalAntennaType<EmptyAntennaDa
 
     @Override
     public double getSWR(EmptyAntennaData data, float frequencyHertz) {
+        if(Band.isCbFrequency(frequencyHertz))
+            return CB_SWR; // Just below its 10m trap: usable on CB, not great (maintainer, 2026-11-08).
         Band band = Band.getBand(frequencyHertz); // A ham trap vertical: matched on (and around) the ham bands only.
         return band != null && band.isAmateur() ? SWR : 10.0D;
     }

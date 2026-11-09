@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * nearest Simple Weather Alert Generator it hears, through the antenna on its coax or its own short whip
  * ({@link BuiltInAntenna}). On a new alert for where it stands it flashes red, sounds the 1050 Hz attention tone,
  * announces the alert in spliced word clips ({@link AlertAnnouncement}), shows it in chat to players near it, and gives
- * one redstone pulse. A Small Alkaline Battery (shift + right-click to change it) lasts about three weeks of game time
+ * one redstone pulse. A Small Alkaline (or NiCd) Battery (shift + right-click to change it) lasts about three weeks of game time
  * ({@link ReceiverSignals}); when it runs low the lamp blinks every 10 seconds. Right-click silences an alert, or gives
  * the receiver's status.
  */
@@ -137,7 +137,7 @@ public class WeatherAlertReceiverBlockEntity extends BlockEntity implements INet
 		return battery;
 	}
 
-	/** Puts {@code stack} (one Small Alkaline Battery, or empty) in and gives back the one that was there. */
+	/** Puts {@code stack} (one Small Alkaline or NiCd Battery, or empty) in and gives back the one that was there. */
 	public ItemStack swapBattery(ItemStack stack) {
 		ItemStack old = battery;
 		battery = stack.isEmpty() ? ItemStack.EMPTY : stack.copyWithCount(1);
@@ -147,7 +147,7 @@ public class WeatherAlertReceiverBlockEntity extends BlockEntity implements INet
 
 	@Nullable
 	private IEnergyStorage energy() {
-		return battery.isEmpty() || battery.getItem() != RadiocraftItems.SMALL_BATTERY.get() ? null : battery.getCapability(Capabilities.EnergyStorage.ITEM);
+		return battery.isEmpty() || !com.arrl.radiocraft.common.items.SmallAlkalineBatteryItem.fitsWeatherRadio(battery) ? null : battery.getCapability(Capabilities.EnergyStorage.ITEM);
 	}
 
 	/** FE left in the battery (0 with none). */

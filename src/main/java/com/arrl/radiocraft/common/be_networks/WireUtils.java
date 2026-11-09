@@ -294,6 +294,32 @@ public class WireUtils {
 	 * @param connection A {@link Predicate} determining if a {@link BENetworkObject} is a valid connection or not.
 	 * @param wires List of valid {@link WireBlock}s
 	 */
+		/**
+	 * Set while a walk must not load chunks (2026-11-09: the wire fault recheck, once a second): the walk stops at an
+	 * unloaded block as if the wire ended there. Network building walks the whole run as before.
+	 */
+	private static final ThreadLocal<Boolean> LOADED_ONLY = new ThreadLocal<>();
+
+	/** Runs {@code walk} with walks stopping at unloaded chunks. */
+	public static void loadedOnly(Runnable walk) {
+		Boolean was = LOADED_ONLY.get();
+		LOADED_ONLY.set(true);
+		try {
+			walk.run();
+		}
+		finally {
+			if(was == null)
+				LOADED_ONLY.remove();
+			else
+				LOADED_ONLY.set(was);
+		}
+	}
+
+	/** True inside {@link #loadedOnly}, where {@code pos} must be loaded to be walked into. */
+	public static boolean skipUnloaded(Level level, BlockPos pos) {
+		return Boolean.TRUE.equals(LOADED_ONLY.get()) && !level.isLoaded(pos);
+	}
+
 	public static Map<BENetworkObject, Direction> getConnections(Level level, BlockPos pos, Predicate<BENetworkObject> connection, WireBlock... wires) {
 		return enter(new HashMap<>(), new HashSet<>(), level, pos, null, connection, Set.of(wires));
 	}
@@ -321,8 +347,12 @@ public class WireUtils {
 		if(wire == null || state == null)
 			return connections;
 
-		for(Map.Entry<BlockPos, Direction> link : wire.getLinks(level, strand.pos(), state).entrySet()) {
+				for(Map.Entry<BlockPos, Direction> link : wire.getLinks(level, strand.pos(), state).entrySet()) {
+			if(skipUnloaded(level, link.getKey()))
+				continue;
 			BlockPos checkPos = linkTarget(level, link.getKey(), link.getValue());
+			if(skipUnloaded(level, checkPos))
+				continue;
 			if(blackList.contains(Strand.device(checkPos)))
 				continue;
 

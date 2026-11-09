@@ -2,6 +2,7 @@ package com.arrl.radiocraft.common.radio;
 
 import com.arrl.radiocraft.Radiocraft;
 import com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket;
+import com.arrl.radiocraft.common.radio.voice.LinkAudio;
 import com.arrl.radiocraft.common.radio.voice.RadioVoiceProcessor;
 import com.arrl.radiocraft.common.radio.voice.RadiocraftVoicePlugin;
 import com.arrl.radiocraft.common.radio.voice.SpeakerKind;
@@ -27,6 +28,10 @@ import java.util.UUID;
  * The radio plays through its own speaker, or a better one touching it ({@link #setSpeaker}), and also through every
  * wired speaker on its wire ({@link #setWiredSpeakers}): each of those is its own channel where the speaker stands,
  * with its own processor (filters carry state) and Opus encoder (so the streams do not share encoder state).
+ * <p>
+ * A radio computer driving the radio with RIGCTL in REMOTE audio plays it too ({@link #setRemoteSpeakers}, 2026-11-09):
+ * the computer is one more wired speaker of the radio, wherever the computer stands, with what its link to the rig
+ * does to the audio ({@link LinkAudio}: clean over data wire, delayed and rough over microwave).
  * <p>
  * Stations heard at the same time are mixed into one stream ({@link VoiceMix}): SSB adds them up, FM captures the
  * stronger. Everything here runs under this receiver's lock: voice arrives on the voice chat thread, and parrot echoes
@@ -56,6 +61,17 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 	private final Map<WiredSpeaker, SpeakerOutput> outputs = new HashMap<>();
 	private final SquelchTail tail = new SquelchTail();
 	private List<WiredSpeaker> outputsFor = List.of();
+
+	/**
+	 * A radio computer playing this radio (RIGCTL remote audio, 2026-11-09): one of the computer's speakers (or the
+	 * computer itself), and what the link between the computer and the rig does to the audio.
+	 */
+	public record RemoteSpeaker(WiredSpeaker speaker, LinkAudio.Impairment impairment) {}
+
+	private volatile List<RemoteSpeaker> remoteSpeakers = List.of();
+	// Under this receiver's lock: each remote speaker's channel, processor, encoder and link line.
+	private final Map<RemoteSpeaker, SpeakerOutput> remoteOutputs = new HashMap<>();
+	private List<RemoteSpeaker> remoteFor = List.of();
 
 	/**
 	 * Where a receiver with no speaker of its own sends what it plays (the Real-World Interface's sound card): each
@@ -126,6 +142,30 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		return wiredSpeakers;
 	}
 
+	/** The radio computers playing this radio remotely (RIGCTL REMOTE audio); game thread. */
+	public void setRemoteSpeakers(List<RemoteSpeaker> speakers) {
+		if(!speakers.equals(remoteSpeakers))
+			remoteSpeakers = List.copyOf(speakers);
+	}
+
+	public List<RemoteSpeaker> getRemoteSpeakers() {
+		return remoteSpeakers;
+	}
+
+	/**
+	 * Sends what waits on the remote speakers' links once its delay is up (between voice frames, so the end of an
+	 * over is not held until the next one). Game thread, once a tick; nothing to do costs one volatile read.
+	 */
+	public void tickRemote() {
+		if(remoteSpeakers.isEmpty() || RadiocraftVoicePlugin.API == null)
+			return;
+		long now = System.nanoTime();
+		synchronized(this) {
+			for(SpeakerOutput output : remoteOutputs.values())
+				output.drain(now);
+		}
+	}
+
 	/** Plays the packet's audio at the radio at its own strength, with no noise to sit against. */
 	public void receive(AntennaVoicePacket antennaPacket) {
 		receive(antennaPacket, antennaPacket.getStrength(), 0.0D);
@@ -172,12 +212,17 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 	 * scrambled without the key, or an analog receiver's buzz, see {@link com.arrl.radiocraft.common.radio.voice.DigitalVoice}).
 	 */
 	public void receive(AntennaVoicePacket antennaPacket, short[] pcm, double level, double rasp, double pitchShiftHz, double splatter, double qrm, double fmSignal, double onAir, double multipath) {
+		receive(antennaPacket, pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath, -1.0D);
+	}
+
+	/** As above, for an AM receiver when {@code amHiss} is 0 or more: the hiss under the voice ({@link VoiceMix.Signal#amHiss}). */
+	public void receive(AntennaVoicePacket antennaPacket, short[] pcm, double level, double rasp, double pitchShiftHz, double splatter, double qrm, double fmSignal, double onAir, double multipath, double amHiss) {
 		if(!isReceiving)
 			return;
 		Tap out = tap;
 		if(out != null) {
 			tapPlay(new VoiceMix.Signal(VoiceMix.key(antennaPacket.getSourcePlayer(), antennaPacket.getSource()),
-					antennaPacket.getSourcePlayer(), pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath), out);
+					antennaPacket.getSourcePlayer(), pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath, amHiss), out);
 			return;
 		}
 		if(RadiocraftVoicePlugin.API == null) {
@@ -189,7 +234,7 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		}
 
 		play(antennaPacket.getLevel(), new VoiceMix.Signal(VoiceMix.key(antennaPacket.getSourcePlayer(), antennaPacket.getSource()),
-				antennaPacket.getSourcePlayer(), pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath));
+				antennaPacket.getSourcePlayer(), pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath, amHiss));
 	}
 
 	/**
@@ -224,16 +269,28 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 				return; // Another station is leading: this frame goes out mixed with its next one.
 
 			VoiceMix.Mixed mixed = renderer.render(slot, speaker.apply(settings), 1.0D, now);
+			List<RemoteSpeaker> remote = remoteSpeakers;
+			boolean routed = !remote.isEmpty(); // A computer plays it (RIGCTL REMOTE audio): the radio and its speakers are quiet.
 			follow(receiveChannel, this.frame, x, y, z);
-			receiveChannel.send(encoder().encode(mixed.pcm()));
+			if(!routed)
+				receiveChannel.send(encoder().encode(mixed.pcm()));
+			else
+				encoder().encode(mixed.pcm()); // Keeps the encoder's state running, so nothing clicks when it comes back.
 			VoiceMix.Signal loudest = mixed.loudest();
 			if(loudest.fm())
 				tail.heard(loudest.fmSignal(), loudest.level(), loudest.source(), now);
 
 			syncOutputs(wired);
-			for(WiredSpeaker target : wired) {
-				SpeakerOutput output = outputs.computeIfAbsent(target, t -> new SpeakerOutput(voiceLevel, t));
-				output.play(slot, target.kind().apply(settings), target.kind().loudness, this.frame, now);
+			if(!routed)
+				for(WiredSpeaker target : wired) {
+					SpeakerOutput output = outputs.computeIfAbsent(target, t -> new SpeakerOutput(voiceLevel, t));
+					output.play(slot, target.kind().apply(settings), target.kind().loudness, this.frame, now);
+				}
+			syncRemote(remote);
+			for(RemoteSpeaker target : remote) { // A computer elsewhere: not on this radio's ship.
+				SpeakerOutput output = remoteOutputs.computeIfAbsent(target, t -> new SpeakerOutput(voiceLevel, t.speaker(),
+						t.impairment().clean() ? null : new LinkAudio.Line(t.impairment())));
+				output.play(slot, target.speaker().kind().apply(settings), target.speaker().kind().loudness, Sublevels.Frame.GROUND, now);
 			}
 		}
 	}
@@ -267,6 +324,9 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		outputs.values().forEach(SpeakerOutput::close);
 		outputs.clear();
 		outputsFor = List.of();
+		remoteOutputs.values().forEach(SpeakerOutput::close);
+		remoteOutputs.clear();
+		remoteFor = List.of();
 	}
 
 	/**
@@ -281,13 +341,21 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 			Sublevels.Frame ship = this.frame;
 			follow(receiveChannel, ship, x, y, z);
 			OpusEncoder encoder = encoder(); // Carries on from the voice.
-			for(short[] frame : frames)
-				receiveChannel.send(encoder.encode(frame));
-			for(Map.Entry<WiredSpeaker, SpeakerOutput> entry : outputs.entrySet()) {
+			boolean routed = !remoteSpeakers.isEmpty(); // Played at a computer: only there.
+			for(short[] frame : frames) {
+				byte[] encoded = encoder.encode(frame);
+				if(!routed)
+					receiveChannel.send(encoded);
+			}
+			for(Map.Entry<WiredSpeaker, SpeakerOutput> entry : routed ? java.util.Set.<Map.Entry<WiredSpeaker, SpeakerOutput>>of() : outputs.entrySet()) {
 				entry.getValue().follow(ship);
 				for(short[] frame : frames)
 					entry.getValue().send(scaled(frame, entry.getKey().kind().loudness));
 			}
+			long now = System.nanoTime();
+			for(Map.Entry<RemoteSpeaker, SpeakerOutput> entry : remoteOutputs.entrySet())
+				for(short[] frame : frames)
+					entry.getValue().through(scaled(frame, entry.getKey().speaker().kind().loudness), now);
 		}
 	}
 
@@ -319,14 +387,37 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		isReceiving = value;
 	}
 
-	/** One wired speaker's audio: a channel where it stands, heard as far as its kind carries. */
+	/** Lets go of the outputs of remote speakers no longer playing; holding the lock. */
+	private void syncRemote(List<RemoteSpeaker> remote) {
+		if(remote == remoteFor)
+			return;
+		remoteFor = remote;
+		remoteOutputs.entrySet().removeIf(entry -> {
+			if(remote.contains(entry.getKey()))
+				return false;
+			entry.getValue().close();
+			return true;
+		});
+	}
+
+	/**
+	 * One wired speaker's audio: a channel where it stands, heard as far as its kind carries. A remote computer's
+	 * speaker has a {@link LinkAudio.Line} its frames go through first.
+	 */
 	private static final class SpeakerOutput {
 		private final LocationalAudioChannel channel;
 		private final BlockPos pos;
 		private final VoiceMix.Renderer renderer = new VoiceMix.Renderer();
 		private final OpusEncoder encoder;
+		@org.jetbrains.annotations.Nullable
+		private final LinkAudio.Line line;
 
 		SpeakerOutput(ServerLevel level, WiredSpeaker speaker) {
+			this(level, speaker, null);
+		}
+
+		SpeakerOutput(ServerLevel level, WiredSpeaker speaker, @org.jetbrains.annotations.Nullable LinkAudio.Line line) {
+			this.line = line;
 			pos = speaker.pos();
 			channel = RadiocraftVoicePlugin.API.createLocationalAudioChannel(UUID.randomUUID(), level,
 					RadiocraftVoicePlugin.API.createPosition(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D));
@@ -344,7 +435,24 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 			if(channel == null)
 				return;
 			follow(ship);
-			channel.send(encoder.encode(renderer.render(slot, settings, loudness, nanos).pcm()));
+			through(renderer.render(slot, settings, loudness, nanos).pcm(), nanos);
+		}
+
+		/** Sends {@code pcm} now, or over the link: into its line, and out whatever is due. */
+		void through(short[] pcm, long nanos) {
+			if(line == null) {
+				send(pcm);
+				return;
+			}
+			line.offer(pcm, nanos);
+			drain(nanos);
+		}
+
+		/** Sends what is due on the link. */
+		void drain(long nanos) {
+			if(line != null)
+				for(short[] frame : line.due(nanos))
+					send(frame);
 		}
 
 		/** Sends a frame as it is (the squelch tail, already at its level). */

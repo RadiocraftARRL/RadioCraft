@@ -1,0 +1,238 @@
+{
+  "texture": "radiocraft:textures/gui/hf_panels/hf_radio_80m.png",
+  "width": 224,
+  "height": 216,
+  "controls": [
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 16,
+      "y": 16,
+      "w": 84,
+      "h": 48,
+      "pivot": [
+        58,
+        61
+      ],
+      "radius": 34,
+      "zero_deg": -50.0,
+      "full_deg": 50.0,
+      "s9_fraction": 0.6,
+      "needle_colour": "#341816"
+    },
+    {
+      "name": "meter_select",
+      "type": "switch",
+      "x": 40,
+      "y": 75,
+      "w": 38,
+      "h": 7,
+      "positions": [
+        "PO",
+        "SWR"
+      ],
+      "handles": [
+        [
+          42,
+          76,
+          16,
+          5
+        ],
+        [
+          60,
+          76,
+          16,
+          5
+        ]
+      ],
+      "handle_colour": "#DDCDA7",
+      "handle_shadow": "#B3A780"
+    },
+    {
+      "name": "display",
+      "type": "display",
+      "x": 121,
+      "y": 20,
+      "w": 82,
+      "h": 26,
+      "ink": "#FFC860"
+    },
+    {
+      "name": "af_gain",
+      "type": "knob",
+      "x": 10,
+      "y": 107,
+      "w": 28,
+      "h": 28,
+      "cx": 24,
+      "cy": 121,
+      "pointer_from": 2,
+      "pointer_r": 8,
+      "pointer_width": 1,
+      "pointer_colour": "#DDCDA7",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 44,
+      "y": 107,
+      "w": 28,
+      "h": 28,
+      "cx": 58,
+      "cy": 121,
+      "pointer_from": 2,
+      "pointer_r": 8,
+      "pointer_width": 1,
+      "pointer_colour": "#DDCDA7",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "mic_gain",
+      "type": "knob",
+      "x": 78,
+      "y": 107,
+      "w": 28,
+      "h": 28,
+      "cx": 92,
+      "cy": 121,
+      "pointer_from": 2,
+      "pointer_r": 8,
+      "pointer_width": 1,
+      "pointer_colour": "#DDCDA7",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "mode_lever",
+      "type": "lever",
+      "x": 135,
+      "y": 120,
+      "w": 27,
+      "h": 27,
+      "cx": 148,
+      "cy": 134,
+      "positions": [
+        "SSB",
+        "CW",
+        "AM"
+      ],
+      "angles_deg": [
+        -45,
+        0,
+        45
+      ],
+      "length": 11,
+      "width": 3,
+      "colour": "#613B39",
+      "tip_colour": "#744C49",
+      "tip_size": 4
+    },
+    {
+      "name": "agc",
+      "type": "switch",
+      "x": 180,
+      "y": 108,
+      "w": 7,
+      "h": 32,
+      "positions": [
+        "FAST",
+        "SLOW",
+        "OFF"
+      ],
+      "handles": [
+        [
+          181,
+          110,
+          5,
+          8
+        ],
+        [
+          181,
+          120,
+          5,
+          8
+        ],
+        [
+          181,
+          130,
+          5,
+          8
+        ]
+      ],
+      "handle_colour": "#DDCDA7",
+      "handle_shadow": "#B3A780"
+    },
+    {
+      "name": "tuning",
+      "type": "dial",
+      "x": 34,
+      "y": 150,
+      "w": 52,
+      "h": 52,
+      "cx": 60,
+      "cy": 176,
+      "mark_r": 11,
+      "mark_size": 5,
+      "mark_colour": "#4D2A28",
+      "mark_shadow": "#341816"
+    },
+    {
+      "name": "power",
+      "type": "button",
+      "x": 118,
+      "y": 172,
+      "w": 20,
+      "h": 16
+    },
+    {
+      "name": "pilot_lamp",
+      "type": "lamp",
+      "x": 120,
+      "y": 195,
+      "w": 4,
+      "h": 4,
+      "colour": "#F8DD72"
+    },
+    {
+      "name": "ptt",
+      "type": "button",
+      "x": 150,
+      "y": 184,
+      "w": 60,
+      "h": 18
+    },
+    {
+      "name": "coarse",
+      "type": "button",
+      "x": 110,
+      "y": 142,
+      "w": 21,
+      "h": 11,
+      "lit": [
+        112,
+        146,
+        3,
+        3,
+        "#F8DD72"
+      ]
+    },
+    {
+      "name": "quick",
+      "type": "button",
+      "x": 142,
+      "y": 150,
+      "w": 29,
+      "h": 11,
+      "lit": [
+        144,
+        154,
+        3,
+        3,
+        "#F8DD72"
+      ]
+    }
+  ]
+}

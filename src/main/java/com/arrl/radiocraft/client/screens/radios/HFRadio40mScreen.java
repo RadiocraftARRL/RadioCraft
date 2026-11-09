@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class HFRadio40mScreen extends HFRadioScreen<HFRadio40mMenu> {
 
 	public HFRadio40mScreen(HFRadio40mMenu menu, Inventory playerInventory, Component title) {
-		super(menu, playerInventory, title, guiTexture(menu, "hf_radio_40m", ""), guiTexture(menu, "hf_radio_40m", "_widgets"));
+		super(menu, playerInventory, title, guiTexture(menu, "hf_radio_40m", "_old"), guiTexture(menu, "hf_radio_40m", "_widgets_old"));
 
 		this.imageWidth = 250;
 		this.imageHeight = 130;
@@ -26,10 +26,10 @@ public class HFRadio40mScreen extends HFRadioScreen<HFRadio40mMenu> {
 		addRenderableWidget(new ToggleButton(menu.isPowered(), leftPos + 23, topPos + 26, 20, 21, 0, 0, widgetsTexture, 256, 256, this::onPressPower).withPowerClick()); // Power button
 		addRenderableWidget(new ValueButton(leftPos + 161, topPos + 34, 34, 19, 0, 42, widgetsTexture, 256, 256, () -> menu.blockEntity.getCWEnabled(), this::onPressCW)); // CW Button
 		addRenderableWidget(new ValueButton(leftPos + 161, topPos + 15, 34, 19, 0, 80, widgetsTexture, 256, 256, () -> menu.blockEntity.getSSBEnabled(), this::onPressSSB)); // SSB button
-		addRenderableWidget(new HoldButton(leftPos + 172, topPos + 99, 51, 19, 0, 118, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT)); // PTT button
+		addRenderableWidget(ptt(new HoldButton(leftPos + 172, topPos + 99, 51, 19, 0, 118, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT))); // PTT button
 		addRenderableWidget(new Dial(leftPos + 103, topPos + 63, 42, 45, 102, 0, widgetsTexture, 256, 256, this::onFrequencyDialUp, this::onFrequencyDialDown)); // Frequency dial
 		speakerGainDial = addRenderableWidget(new Dial(leftPos + 56, topPos + 58, 28, 30, 102, 90, widgetsTexture, 256, 256, this::onGainUp, this::onGainDown)); // Gain dial
-		addRenderableWidget(new Dial(leftPos + 56, topPos + 23, 28, 30, 102, 90, widgetsTexture, 256, 256, this::doNothing, this::doNothing)); // dial1
+		squelchDial = addRenderableWidget(new Dial(leftPos + 56, topPos + 23, 28, 30, 102, 90, widgetsTexture, 256, 256, this::onSquelchUp, this::onSquelchDown)); // Squelch
 		addRenderableWidget(new Dial(leftPos + 56, topPos + 93, 28, 30, 102, 90, widgetsTexture, 256, 256, this::doNothing, this::doNothing)); // dial2
 		micGainDial = addRenderableWidget(new Dial(leftPos + 200, topPos + 58, 28, 30, 102, 90, widgetsTexture, 256, 256, this::onMicGainUp, this::onMicGainDown)); // Mic gain dial
 		addRenderableWidget(new ToggleButton(false, leftPos + 22, topPos + 62, 22, 22, 0, 200, widgetsTexture, 256, 256, (btn) -> {})); // SPK 

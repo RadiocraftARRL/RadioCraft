@@ -1,0 +1,256 @@
+{
+  "texture": "radiocraft:textures/gui/hf_panels/vhf_base_station.png",
+  "width": 256,
+  "height": 128,
+  "controls": [
+    {
+      "name": "power",
+      "type": "button",
+      "x": 8,
+      "y": 10,
+      "w": 18,
+      "h": 11
+    },
+    {
+      "name": "on_lamp",
+      "type": "lamp",
+      "x": 14,
+      "y": 34,
+      "w": 7,
+      "h": 7,
+      "colour": "#FFB020"
+    },
+    {
+      "name": "display",
+      "type": "display",
+      "x": 40,
+      "y": 12,
+      "w": 92,
+      "h": 28,
+      "ink": "#FF8098"
+    },
+    {
+      "name": "tone_down",
+      "type": "button",
+      "x": 60,
+      "y": 49,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "tone_up",
+      "type": "button",
+      "x": 77,
+      "y": 49,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 140,
+      "y": 9,
+      "w": 64,
+      "h": 36,
+      "pivot": [
+        172.0,
+        40
+      ],
+      "radius": 19,
+      "zero_deg": -55.0,
+      "full_deg": 55.0,
+      "s9_fraction": 0.62,
+      "needle_colour": "#202020"
+    },
+    {
+      "name": "meter_po",
+      "type": "button",
+      "x": 150,
+      "y": 49,
+      "w": 13,
+      "h": 8,
+      "lit": [
+        151,
+        50,
+        11,
+        5,
+        "#F8DD72"
+      ]
+    },
+    {
+      "name": "meter_swr",
+      "type": "button",
+      "x": 182,
+      "y": 49,
+      "w": 13,
+      "h": 8,
+      "lit": [
+        183,
+        50,
+        11,
+        5,
+        "#F8DD72"
+      ]
+    },
+    {
+      "name": "busy_lamp",
+      "type": "lamp",
+      "x": 210,
+      "y": 12,
+      "w": 7,
+      "h": 7,
+      "colour": "#3BFF6A"
+    },
+    {
+      "name": "tx_lamp",
+      "type": "lamp",
+      "x": 210,
+      "y": 32,
+      "w": 7,
+      "h": 7,
+      "colour": "#FF3020"
+    },
+    {
+      "name": "af_gain",
+      "type": "knob",
+      "x": 230,
+      "y": 25,
+      "w": 19,
+      "h": 19,
+      "cx": 238.5,
+      "cy": 33.5,
+      "pointer_from": 2,
+      "pointer_r": 7,
+      "pointer_width": 1,
+      "pointer_colour": "#262626",
+      "min_deg": -135.0,
+      "max_deg": 135.0
+    },
+    {
+      "name": "offset",
+      "type": "knob3",
+      "x": 14,
+      "y": 86,
+      "w": 21,
+      "h": 21,
+      "cx": 23.5,
+      "cy": 95.5,
+      "pointer_from": 3,
+      "pointer_r": 8,
+      "pointer_width": 2,
+      "pointer_colour": "#BFBFBF",
+      "min_deg": -135.0,
+      "max_deg": 135.0,
+      "positions": [
+        "-",
+        "S",
+        "+"
+      ],
+      "angles_deg": [
+        -90,
+        0,
+        90
+      ]
+    },
+    {
+      "name": "tuning",
+      "type": "dial",
+      "x": 52,
+      "y": 67,
+      "w": 56,
+      "h": 56,
+      "cx": 79.5,
+      "cy": 94.5,
+      "mark_r": 14.6,
+      "mark_size": 7,
+      "mark_colour": "#262626",
+      "mark_shadow": "#202020"
+    },
+    {
+      "name": "step_down",
+      "type": "button",
+      "x": 112,
+      "y": 77,
+      "w": 14,
+      "h": 9
+    },
+    {
+      "name": "step_up",
+      "type": "button",
+      "x": 129,
+      "y": 77,
+      "w": 14,
+      "h": 9
+    },
+    {
+      "name": "coarse",
+      "type": "button",
+      "x": 112,
+      "y": 111,
+      "w": 15,
+      "h": 8,
+      "lit": [
+        113,
+        112,
+        13,
+        5,
+        "#F8DD72"
+      ]
+    },
+    {
+      "name": "quick",
+      "type": "button",
+      "x": 134,
+      "y": 111,
+      "w": 15,
+      "h": 8,
+      "lit": [
+        135,
+        112,
+        13,
+        5,
+        "#F8DD72"
+      ]
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 154,
+      "y": 89,
+      "w": 19,
+      "h": 19,
+      "cx": 162.5,
+      "cy": 97.5,
+      "pointer_from": 2,
+      "pointer_r": 7,
+      "pointer_width": 1,
+      "pointer_colour": "#BFBFBF",
+      "min_deg": -135.0,
+      "max_deg": 135.0
+    },
+    {
+      "name": "mic_gain",
+      "type": "knob",
+      "x": 184,
+      "y": 89,
+      "w": 19,
+      "h": 19,
+      "cx": 192.5,
+      "cy": 97.5,
+      "pointer_from": 2,
+      "pointer_r": 7,
+      "pointer_width": 1,
+      "pointer_colour": "#BFBFBF",
+      "min_deg": -135.0,
+      "max_deg": 135.0
+    },
+    {
+      "name": "ptt",
+      "type": "button",
+      "x": 220,
+      "y": 87,
+      "w": 23,
+      "h": 23
+    }
+  ]
+}

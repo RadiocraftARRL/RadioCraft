@@ -36,5 +36,4 @@ public class HFRadio40mBlockEntity extends HFRadioBlockEntity {
 	public BENetworkObject createNetworkObject() {
 		return new RadioNetworkObject(level, worldPosition, CommonConfig.HF_RADIO_40M_TRANSMIT_TICK.get(), CommonConfig.HF_RADIO_40M_RECEIVE_TICK.get());
 	}
-
 }

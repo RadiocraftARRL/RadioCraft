@@ -42,6 +42,12 @@ public final class RadioDisplays {
 					new Lamp(4.5F, 5.5F, 2.75F, 3.75F, 1.75F, 0xFFFF3B30, true), // TX, red, right of the display's left edge.
 					new Lamp(6.5F, 7.5F, 2.75F, 3.75F, 1.75F, 0xFF3BFF6A, false)), // RX, green.
 			"commercial_mobile", commercialLamps(),
+			"cb_mobile_5875", java.util.List.of( // ON AIR: the TX_LED cube's face (maintainer's model, 2026-11-08).
+					new Lamp(3.5F, 4.0F, 4.0F, 4.5F, 0.6F, 0xFFFF3B30, true),
+					new Lamp(6.75F, 7.25F, 4.0F, 4.5F, 0.6F, 0xFFFFB020, false)), // AWI, amber: lit while a signal comes in.
+			"cb_mobile_pc68", java.util.List.of( // The red and green LEDs painted beside the channel window.
+					new Lamp(5.5F, 6.0F, 1.5F, 2.0F, 0.75F, 0xFFFF3B30, true),
+					new Lamp(5.5F, 6.0F, 2.5F, 3.0F, 0.75F, 0xFF3BFF6A, false)),
 			"low_band_mobile", commercialLamps(),
 			"marine_radio", java.util.List.of( // TX and RX lamps right of the display (placeholder model, see ModelDesignBounty).
 					new Lamp(2.75F, 3.75F, 3.0F, 3.75F, 3.75F, 0xFFFF3B30, true),
@@ -64,6 +70,46 @@ public final class RadioDisplays {
 	/** Forgets what was read, after a resource reload. */
 	public static void clear() {
 		CACHE.clear();
+		NAMED.clear();
+	}
+
+	private static final Map<String, java.util.List<Display>> NAMED = new ConcurrentHashMap<>();
+
+	/**
+	 * Every element named {@code name} (any case) in the block model {@code blockPath}, in model pixels as
+	 * {@link Display}, in the order the model has them; empty if none. The CB 5875 has two DISPLAY windows (the clock
+	 * and the channel) and two SIG_TX_METER meters.
+	 */
+	public static java.util.List<Display> named(String blockPath, String name) {
+		String model = blockPath.replaceAll("_(pure|poor)$", "");
+		return NAMED.computeIfAbsent(model + "#" + name, key -> readNamed(model, name));
+	}
+
+	private static java.util.List<Display> readNamed(String model, String name) {
+		Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(Radiocraft.id("models/block/" + model + ".json"));
+		if(resource.isEmpty())
+			return java.util.List.of();
+		try(Reader reader = resource.get().openAsReader()) {
+			JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+			java.util.List<Display> out = new java.util.ArrayList<>();
+			float top = 0.0F;
+			for(JsonElement element : json.getAsJsonArray("elements"))
+				top = Math.max(top, element.getAsJsonObject().getAsJsonArray("to").get(1).getAsFloat());
+			for(JsonElement element : json.getAsJsonArray("elements")) {
+				JsonObject object = element.getAsJsonObject();
+				if(!object.has("name") || !object.get("name").getAsString().equalsIgnoreCase(name))
+					continue;
+				var from = object.getAsJsonArray("from");
+				var to = object.getAsJsonArray("to");
+				out.add(new Display(from.get(0).getAsFloat(), to.get(0).getAsFloat(), from.get(1).getAsFloat(), to.get(1).getAsFloat(),
+						Math.min(from.get(2).getAsFloat(), to.get(2).getAsFloat()), 16.0F - Math.min(16.0F, top)));
+			}
+			return java.util.List.copyOf(out);
+		}
+		catch(Exception e) {
+			Radiocraft.LOGGER.warn("Cannot read the {} elements of radio model {}: {}", name, model, e.toString());
+			return java.util.List.of();
+		}
 	}
 
 	/** The screen of the radio block {@code blockPath} ("hf_radio_20m_pure"), or null if its model has none. */

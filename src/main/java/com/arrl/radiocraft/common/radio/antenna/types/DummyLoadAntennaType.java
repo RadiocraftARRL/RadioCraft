@@ -38,9 +38,10 @@ public class DummyLoadAntennaType implements IAntennaType<EmptyAntennaData> {
 	}
 
 	private static double distance(IAntennaPacket packet, BlockPos other) {
-		if(packet.getSource() == null || packet.getSource().getAntennaPos() == null || packet.getSource().getAntennaPos().level() != packet.getLevel())
+		com.arrl.radiocraft.api.antenna.IAntenna.AntennaPos from = packet.getSource() == null ? null : packet.getSource().getAntennaPos(); // Read once: the voice thread races the server.
+		if(from == null || from.level() != packet.getLevel())
 			return Double.MAX_VALUE;
-		return Math.sqrt(com.arrl.radiocraft.compat.sable.Sublevels.distSqr(packet.getLevel(), packet.getSource().getAntennaPos().position(), other));
+		return Math.sqrt(com.arrl.radiocraft.compat.sable.Sublevels.distSqr(packet.getLevel(), from.position(), other));
 	}
 
 	@Override

@@ -177,25 +177,6 @@ public class TeletypeGameTests {
                 .thenSucceed();
     }
 
-    /** SOLAR WX prints the report on the roll, a line per entry, as WX. */
-    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 40)
-    public static void solarWxPrintsOnThePaper(GameTestHelper helper) {
-        BlockPos pos = new BlockPos(4, 2, 4);
-        helper.setBlock(pos, RadiocraftBlocks.TELETYPE.get());
-        TeletypeBlockEntity teletype = teletype(helper, pos);
-        teletype.insertPaper(paper());
-        boolean needsRadio = com.arrl.radiocraft.RadiocraftServerConfig.TELETYPE_NEEDS_RADIO.get();
-        com.arrl.radiocraft.RadiocraftServerConfig.TELETYPE_NEEDS_RADIO.set(false); // The server-wide report: no processor needed.
-        try {
-            teletype.printReport();
-            helper.assertTrue(teletype.getRttyLines().size() >= teletype.getReportLines().size(), "Printed " + teletype.getRttyLines()); // Long lines wrap.
-        }
-        finally {
-            com.arrl.radiocraft.RadiocraftServerConfig.TELETYPE_NEEDS_RADIO.set(needsRadio);
-        }
-        helper.succeed();
-    }
-
     /** The printed roll tears off as an item with its lines, the machine starts fresh, and the roll feeds back in. */
     @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 40)
     public static void rollTearsOffAndFeedsBackIn(GameTestHelper helper) {
@@ -204,7 +185,7 @@ public class TeletypeGameTests {
         TeletypeBlockEntity teletype = teletype(helper, pos);
         helper.assertTrue(teletype.tearOff().isEmpty(), "A blank machine gave a roll");
         teletype.insertPaper(paper());
-        teletype.printReport();
+        teletype.receive(com.arrl.radiocraft.common.radio.data.TncPacket.rtty(1L, "N0CALL", "CQ CQ DE N0CALL\nQRZ?\n"));
         java.util.List<String> printed = teletype.getRttyLines();
         int fed = teletype.getFedLines();
         ItemStack roll = teletype.tearOff();

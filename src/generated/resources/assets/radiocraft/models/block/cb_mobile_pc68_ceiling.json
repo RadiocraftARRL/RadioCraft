@@ -1,0 +1,10 @@
+{
+  "parent": "radiocraft:block/cb_mobile_pc68",
+  "transform": {
+    "translation": [
+      0.0,
+      0.78125,
+      0.0
+    ]
+  }
+}

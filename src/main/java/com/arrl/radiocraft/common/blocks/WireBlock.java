@@ -392,6 +392,11 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 				int set = turnsOutTowards(level, pos.relative(dir), dir.getOpposite());
 				if(set > 0)
 					stubs = WireLook.Look.withStub(stubs, dir, -set);
+				else if(!isCeiling(state)) {
+					int inset = deviceInset(level, pos.relative(dir), dir.getOpposite());
+					if(inset > 0) // A device whose body is set back in its block: the stub runs in to meet it (2026-11-09).
+						stubs = WireLook.Look.withStub(stubs, dir, inset);
+				}
 			}
 		return new WireLook.Look(hug, arrive, end, climb == Climb.BOTH, hugReach, arriveReach, backReach, feed, feedSide, reachBottom, reachTop, stubs);
 	}
@@ -900,6 +905,31 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		}
 		return new WireLook.Faces(at[Direction.DOWN.ordinal()], at[Direction.UP.ordinal()], at[Direction.NORTH.ordinal()],
 				at[Direction.SOUTH.ordinal()], at[Direction.WEST.ordinal()], at[Direction.EAST.ordinal()]);
+	}
+
+	/** The most a stub reaches into a device's block to meet its body, pixels. */
+	private static final int MAX_DEVICE_INSET = 8;
+
+	/**
+	 * How far, in pixels, the device at {@code pos} sits back from its {@code face} (the face towards the wire) at floor
+	 * level (2026-11-09: the all-band radio's body is 3 pixels in, and a stub ending at the block face hung in the air).
+	 * 0 for wire, a full face, or a device that is not on the floor.
+	 */
+	private static int deviceInset(BlockGetter level, BlockPos pos, Direction face) {
+		BlockState state = level.getBlockState(pos);
+		if(state.getBlock() instanceof WireBlock || state.getBlock() instanceof WireBundleBlock || state.isAir())
+			return 0;
+		net.minecraft.world.phys.shapes.VoxelShape shape = state.getShape(level, pos);
+		if(shape.isEmpty() || shape.min(Direction.Axis.Y) > 2.0D / 16.0D)
+			return 0;
+		double gap = switch(face) {
+			case NORTH -> shape.min(Direction.Axis.Z);
+			case SOUTH -> 1.0D - shape.max(Direction.Axis.Z);
+			case WEST -> shape.min(Direction.Axis.X);
+			case EAST -> 1.0D - shape.max(Direction.Axis.X);
+			default -> 0.0D;
+		};
+		return Math.max(0, Math.min(MAX_DEVICE_INSET, (int)Math.round(gap * 16.0D)));
 	}
 
 	/**

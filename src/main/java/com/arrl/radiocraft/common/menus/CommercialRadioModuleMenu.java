@@ -47,7 +47,7 @@ public class CommercialRadioModuleMenu extends AbstractContainerMenu implements 
 			player.displayClientMessage(Component.translatable("screen.radiocraft.commercial_radio_module.no_band"), true);
 			return;
 		}
-		blockEntity.configure(StationProgram.Kind.byName(data.getString("program")), band, hz);
+		blockEntity.configure(StationProgram.Kind.byName(data.getString("program")), band, hz, data.getString("mode"));
 	}
 
 	@Override

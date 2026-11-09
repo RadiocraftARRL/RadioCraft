@@ -47,6 +47,11 @@ public class RadiocraftCapabilities {
 	public static void registerCapabilities(RegisterCapabilitiesEvent event) {
 		event.registerBlock(BE_NETWORKS, (level, pos, state, be, side) -> BENetworksCapability.get(level),
 				RadiocraftBlocks.WIRE_JUNCTION.get(),
+				RadiocraftBlocks.POWER_SWITCH_ON_OFF.get(), RadiocraftBlocks.POWER_SWITCH_LEFT_RIGHT.get(), // 2026-11-09.
+				RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get(),
+				RadiocraftBlocks.BATTERY_METER.get(),
+				RadiocraftBlocks.LIGHTNING_ARRESTOR.get(),
+				RadiocraftBlocks.GROUND_ROD.get(),
 				RadiocraftBlocks.CHARGE_CONTROLLER.get(),
 				RadiocraftBlocks.SOLAR_PANEL.get(),
 				RadiocraftBlocks.LARGE_BATTERY.get(),
@@ -65,6 +70,8 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.COMMERCIAL_MOBILE.get(),
 				RadiocraftBlocks.LOW_BAND_MOBILE.get(),
 				RadiocraftBlocks.MARINE_RADIO.get(),
+				RadiocraftBlocks.CB_MOBILE_5875.get(),
+				RadiocraftBlocks.CB_MOBILE_PC68.get(),
 				RadiocraftBlocks.DUPLEXER.get(),
 				RadiocraftBlocks.ANTENNA_SPLITTER.get(),
 				RadiocraftBlocks.ANTENNA_SWITCH.get(),
@@ -78,6 +85,7 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get(),
 				RadiocraftBlocks.IONOSONDE.get(),
 				RadiocraftBlocks.FIVE_BTV_ANTENNA.get(),
+				RadiocraftBlocks.CB_GROUND_PLANE_ANTENNA.get(),
 				RadiocraftBlocks.DUMMY_LOAD.get(),
 				RadiocraftBlocks.SLIM_JIM_ANTENNA.get(),
 				RadiocraftBlocks.YAGI_ANTENNA.get(),
@@ -124,6 +132,11 @@ public class RadiocraftCapabilities {
 			// Use custom BATTERY_ENERGY component for energy storage with random initial charge
 			return new RandomInitialEnergyStorage(itemStack, com.arrl.radiocraft.common.init.RadiocraftDataComponent.BATTERY_ENERGY.get(), capacity);
 		}, RadiocraftItems.SMALL_BATTERY.get());
+
+		// The Small Alkaline Battery (2026-11-08): full until used, never recharged.
+		event.registerItem(Capabilities.EnergyStorage.ITEM, (itemStack, context) -> new com.arrl.radiocraft.common.capabilities.AlkalineEnergyStorage(
+				itemStack, com.arrl.radiocraft.common.init.RadiocraftDataComponent.BATTERY_ENERGY.get(), com.arrl.radiocraft.CommonConfig.SMALL_BATTERY_CAPACITY.get()),
+				RadiocraftItems.SMALL_ALKALINE_BATTERY.get());
 		
 		// Register VHF Handheld with energy storage capability (uses same capacity as small battery)
 		event.registerItem(Capabilities.EnergyStorage.ITEM, (itemStack, context) -> {
@@ -134,6 +147,11 @@ public class RadiocraftCapabilities {
 				capacity
 			);
 		}, handhelds());
+
+		// The CB portable's cells (2026-11-08): a small battery's capacity, so it swaps charge with one like a handheld.
+		event.registerItem(Capabilities.EnergyStorage.ITEM, (itemStack, context) -> new net.neoforged.neoforge.energy.ComponentEnergyStorage(
+				itemStack, com.arrl.radiocraft.common.init.RadiocraftDataComponent.CB_ENERGY.get(), com.arrl.radiocraft.CommonConfig.SMALL_BATTERY_CAPACITY.get()),
+				RadiocraftItems.CB_PORTABLE.get());
 
 		// Register block energy capability for Desk Charger (small buffer)
 		event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, RadiocraftBlockEntities.DESK_CHARGER.get(), (be, side) -> {

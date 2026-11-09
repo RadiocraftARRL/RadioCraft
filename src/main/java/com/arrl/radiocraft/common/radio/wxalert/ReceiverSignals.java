@@ -3,7 +3,7 @@ package com.arrl.radiocraft.common.radio.wxalert;
 /**
  * The Simple Weather Alert Receiver's battery, lamp and redstone, as pure arithmetic over game ticks.
  * <ul>
- * <li><b>Battery</b>: a Small Alkaline Battery lasts {@link #BATTERY_DAYS} in-game days of listening; sounding an alert
+ * <li><b>Battery</b>: a Small Alkaline (or NiCd) Battery lasts {@link #BATTERY_DAYS} in-game days of listening; sounding an alert
  * draws {@link #ALARM_DRAW_FACTOR} times as much while it plays. It is low below {@link #LOW_FRACTION} of a full one.</li>
  * <li><b>Lamp</b>: during an alert it flashes red, {@link #ALERT_FLASH_TICKS} on and off; with a low battery it blinks
  * for {@link #LOW_BLINK_TICKS} every {@link #LOW_BLINK_PERIOD} ticks (10 s).</li>

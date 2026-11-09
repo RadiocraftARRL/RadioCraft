@@ -32,8 +32,11 @@ public record ComputerSettings(View view, String scheme, String name, Clock cloc
 	public static final int[] SAVER_MINUTES = { 0, 1, 3, 5, 10 };
 	public static final int DEFAULT_SAVER_MINUTES = 5;
 	public static final String DEFAULT_SAVER_STYLE = "starfield";
-	/** A new computer's: the list, Classic Blue, no name, the in-game clock in 24-hour time, the starfield after 5 minutes. */
-	public static final ComputerSettings DEFAULT = new ComputerSettings(View.LIST, DEFAULT_SCHEME, "", Clock.GAME, true);
+	/**
+	 * A new computer's: the Program Manager's icons (2026-11-09, was the list), Classic Blue, no name, the in-game clock in
+	 * 24-hour time, the starfield after 5 minutes.
+	 */
+	public static final ComputerSettings DEFAULT = new ComputerSettings(View.ICONS, DEFAULT_SCHEME, "", Clock.GAME, true);
 
 	/** How the shell shows the programs. */
 	public enum View {
@@ -56,7 +59,7 @@ public record ComputerSettings(View view, String scheme, String name, Clock cloc
 	}
 
 	public ComputerSettings {
-		view = view == null ? View.LIST : view;
+		view = view == null ? View.ICONS : view;
 		scheme = scheme == null || !scheme.matches("[a-z0-9_]{1,24}") ? DEFAULT_SCHEME : scheme;
 		name = cleanName(name);
 		clock = clock == null ? Clock.GAME : clock;

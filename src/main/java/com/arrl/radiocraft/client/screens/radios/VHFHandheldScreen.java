@@ -56,7 +56,7 @@ public class VHFHandheldScreen extends Screen {
     protected static final int imageWidth = 157;
     protected static final int imageHeight = 248;
     /** The battery pack drawn under the radio, as on the model in the hand. */
-    private static final int BATTERY_HEIGHT = 14;
+        private static final int BATTERY_HEIGHT = 80; // The model's battery is 3.5 of the body's 8.5 px (2026-11-09: was 14, too small).
     protected int leftPos;
     protected int topPos;
 

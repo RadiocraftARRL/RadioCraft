@@ -28,6 +28,21 @@ final class DosBoot {
 		skipped = true;
 	}
 
+	/** Whether the welcome has played (once, when the boot is done or skipped). */
+	boolean welcomed = false;
+
+	/**
+	 * Plays once the computer has booted (2026-11-09): a short welcome, four rising notes (root, third, fifth, octave)
+	 * on the chime, a few ticks apart. Only the player at the screen hears it.
+	 */
+	static void welcome() {
+		var sounds = Minecraft.getInstance().getSoundManager();
+		float[] pitches = { 0.794F, 1.0F, 1.189F, 1.587F }; // D, F#, A, D: a major arpeggio in note block pitch.
+		int[] delays = { 0, 3, 6, 10 };
+		for(int i = 0; i < pitches.length; i++)
+			sounds.playDelayed(SimpleSoundInstance.forUI(SoundEvents.NOTE_BLOCK_CHIME.value(), pitches[i], 0.3F), delays[i]);
+	}
+
 	private long elapsed() {
 		return System.currentTimeMillis() - start;
 	}

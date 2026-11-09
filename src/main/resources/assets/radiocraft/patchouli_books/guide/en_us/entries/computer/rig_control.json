@@ -21,6 +21,11 @@
     },
     {
       "type": "patchouli:text",
+      "title": "Signal Shapes",
+      "text": "Zoomed in, each mode has its own shape.$(li)$(thing)SSB$(): the voice beside its frequency (above it for USB, below for LSB), coming and going with the words.$(li)$(thing)AM$(): a steady carrier line with sidebands that swell as someone talks.$(li)$(thing)FM$(): a carrier that spreads wider with speech."
+    },
+    {
+      "type": "patchouli:text",
       "title": "Scanning",
       "text": "S scans a range at the radio's step; F3 scans the memory channels. The scan stops on a signal over the squelch (Q sets it, 0 to 9) and goes on three seconds after it drops. Space holds it, X stops it.$(br2)The memories are the $(l:radiocraft:computer/frequency_manager)Frequency Manager's$() list, CHANNELS.FRQ: F4 stores the dial in it, F5 loads another .FRQ, Up and Down step through them."
     },
@@ -28,6 +33,26 @@
       "type": "patchouli:text",
       "title": "Cheap to Watch",
       "text": "The waterfall shows what the antenna really hears: every signal the radio is handed, on any frequency, at the strength it arrived. It only runs while someone has the program on screen, or for a player who walked away from the screen and is still near the monitor."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Remote Audio",
+      "text": "F6 opens the $(thing)Remote$() page. L switches the audio from LOCAL (heard at the rig's speaker, spoken at its mic) to REMOTE: the computer becomes one more speaker of the rig, heard by everyone near it (through its own speakers if it has any), and while you hold T's PTT your voice goes into the rig as the hand mic's would, mic gain and all."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Network Names",
+      "text": "Computers joined by $(l:radiocraft:radios/data_wire)data wire$() (or through a radio interface on their bus) or by a $(l:radiocraft:microwave/microwave_radio)microwave link$() form a network. Each needs a name the others there do not use: one that has none, or boots onto a network where its name is taken, asks for one before the desktop (NAME IN USE ON THIS NETWORK). Only its owner may name it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Remote Control",
+      "text": "On the Remote page the owner turns $(thing)remote access$() on (A), picks OWNER or ANYONE WITH CODE (W) and sets a code (C). Another computer on the network lists it with its link (WIRE, MW GOOD/FAIR/POOR); Enter connects, and every key then drives that rig. One remote user at a time: the host shows who, and K or F8 there takes it back."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Over the Link",
+      "text": "With REMOTE audio at your end, your computer is the remote rig's speaker and mic. Wire is clean; microwave adds a little delay and, as the link's grade falls, a rough voice and dropped words.$(br2)The session ends when you disconnect (D) or the link drops (a wire broken, a microwave link at NO SIGNAL): the PTT is let go. Closing the screen leaves it running."
     },
     {
       "type": "patchouli:crafting",

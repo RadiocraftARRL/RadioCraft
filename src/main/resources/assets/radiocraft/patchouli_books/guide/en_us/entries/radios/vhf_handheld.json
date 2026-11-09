@@ -24,7 +24,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "It runs on a $(item)small battery$(): a few days of normal use. Hold the handheld in your off hand and sneak-use a battery in your main hand to swap them, or charge it in a $(item)desk charger$() (run power wire to it). In the charger it stays on: you hear it from there, its screen lights when a signal comes in, and its APRS module keeps beaconing, but it uses its battery as in the hand.$(br2)Range is a few hundred blocks by line of sight; a $(l:radiocraft:repeaters/repeater)repeater$(/l) on a hill extends it.",
+      "text": "It runs on a $(l:radiocraft:power/small_batteries)small NiCd or alkaline cell$(/l): a few days of normal use. Hold the handheld in your off hand and sneak-use a battery in your main hand to swap them, or charge it in a $(item)desk charger$() (run power wire to it). In the charger it stays on: you hear it from there, its screen lights when a signal comes in, and its APRS module keeps beaconing, but it uses its battery as in the hand.$(br2)Range is a few hundred blocks by line of sight; a $(l:radiocraft:repeaters/repeater)repeater$(/l) on a hill extends it.",
       "title": "Battery"
     },
     {

@@ -32,3 +32,7 @@ forge*changelog.txt
 # Caches for generated files
 src/generated/resources/.cache
 __pycache__/
+
+# Claude Code local data (worktrees, settings): never commit
+.claude/
+logs/

@@ -1,0 +1,32 @@
+{
+  "name": "Grounding",
+  "icon": "radiocraft:ground_rod",
+  "category": "radiocraft:safety",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "An HF station works without a ground, but a good one makes it $(thing)quieter$(): most of the local hash from redstone and nearby lightning rides in on the coax shield, and a ground drains it off, along with some of the band noise.$(br2)A ground is $(item)ground rods$() driven into the earth, bonded to the station with $(item)ground wire$() (green wire). No other colour bonds a rod."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Where to bond",
+      "text": "Run ground wire from a ground rod to the radio itself, or better, to the $(l:radiocraft:safety/lightning#arrestor)lightning arrestor$(/l)'s ground lug where the coax comes in. A grounded arrestor grounds every radio on its coax, as professional sites do it (single point grounding), and it needs that ground to stop every strike."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A good ground",
+      "text": "It depends on the soil, the depth and the wet. $(thing)Mud and damp clay$() are best, then ordinary dirt. $(thing)Sand, gravel, rock and frozen ground$() are poor: go deeper or drive more rods. Stack rods down a hole and fill the soil back round them; bond rods together for more. Rain, water nearby and a wet biome all help.$(br2)Use a rod to have its ground measured."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ground faults",
+      "text": "A ground run carries $(thing)no power$(). A battery, solar panel or charge controller on the same green wire as a rod is a ground fault: the rod sparks and the batteries drain into the earth. Keep power on other wire."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:ground_rod",
+      "text": "Copper-clad steel, like the real thing."
+    }
+  ]
+}

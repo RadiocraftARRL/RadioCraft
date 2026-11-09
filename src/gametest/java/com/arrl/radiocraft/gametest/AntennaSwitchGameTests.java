@@ -71,4 +71,39 @@ public class AntennaSwitchGameTests {
 				})
 				.thenSucceed();
 	}
+
+	/**
+	 * A redstone signal turns the switch once, as it rises, to the next output with coax on it (2026-11-09): from output
+	 * 1 (north) to 2 (east), then past 3 (south, no coax) back to 1.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 120)
+	public static void redstoneStepsToTheNextWiredOutput(GameTestHelper helper) {
+		BlockPos redstone = SWITCH.above();
+		helper.setBlock(SWITCH, RadiocraftBlocks.ANTENNA_SWITCH.get().defaultBlockState().setValue(AntennaSwitchBlock.FACING, Direction.WEST));
+		jPole(helper, NORTH_POLE);
+		jPole(helper, EAST_POLE);
+		GameTestUtil.placeWire(helper, SWITCH.north(), RadiocraftBlocks.COAX_WIRE.get());
+		GameTestUtil.placeWire(helper, SWITCH.east(), RadiocraftBlocks.COAX_WIRE.get());
+		helper.setBlock(RADIO, RadiocraftBlocks.VHF_BASE_STATION.get());
+		GameTestUtil.placeWire(helper, RADIO.east(), RadiocraftBlocks.COAX_WIRE.get());
+		helper.startSequence()
+				.thenWaitUntil(() -> assertOnlyAntenna(helper, NORTH_POLE)) // Output 1.
+				.thenExecute(() -> helper.setBlock(redstone, net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK))
+				.thenExecuteAfter(1, () -> {
+					helper.assertTrue(helper.getBlockState(SWITCH).getValue(AntennaSwitchBlock.OUTPUT) == 2,
+							"A signal did not turn it to output 2: " + helper.getBlockState(SWITCH).getValue(AntennaSwitchBlock.OUTPUT));
+					assertOnlyAntenna(helper, EAST_POLE);
+					helper.setBlock(redstone, net.minecraft.world.level.block.Blocks.AIR); // Falling: nothing.
+				})
+				.thenExecuteAfter(1, () -> {
+					helper.assertTrue(helper.getBlockState(SWITCH).getValue(AntennaSwitchBlock.OUTPUT) == 2, "The signal going off turned it");
+					helper.setBlock(redstone, net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK);
+				})
+				.thenExecuteAfter(1, () -> {
+					helper.assertTrue(helper.getBlockState(SWITCH).getValue(AntennaSwitchBlock.OUTPUT) == 1,
+							"It did not skip output 3 (no coax) back to 1: " + helper.getBlockState(SWITCH).getValue(AntennaSwitchBlock.OUTPUT));
+					assertOnlyAntenna(helper, NORTH_POLE);
+				})
+				.thenSucceed();
+	}
 }

@@ -10,7 +10,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
- * Shift + right-click on a Simple Weather Alert Receiver with a Small Alkaline Battery in the main hand swaps its
+ * Shift + right-click on a Simple Weather Alert Receiver with a Small Alkaline (or NiCd) Battery in the main hand swaps its
  * battery. Vanilla never asks the block when a sneaking player holds an item, so it is done here.
  */
 @EventBusSubscriber
@@ -21,7 +21,7 @@ public final class WeatherAlertReceiverEvents {
 	@SubscribeEvent
 	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		if(event.getHand() != InteractionHand.MAIN_HAND || !event.getEntity().isSecondaryUseActive()
-				|| event.getItemStack().getItem() != RadiocraftItems.SMALL_BATTERY.get()
+				|| !com.arrl.radiocraft.common.items.SmallAlkalineBatteryItem.fitsWeatherRadio(event.getItemStack())
 				|| !(event.getLevel().getBlockEntity(event.getPos()) instanceof WeatherAlertReceiverBlockEntity))
 			return;
 		WeatherAlertReceiverBlock.swapBattery(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack());

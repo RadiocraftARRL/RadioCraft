@@ -26,7 +26,8 @@ public class SlimJimAntennaType extends NonDirectionalAntennaType<EmptyAntennaDa
     @Override
     public double getTransmitEfficiency(IAntennaPacket packet, EmptyAntennaData data, BlockPos destination, boolean isCW) {
         ServerLevel level = packet.getLevel();
-        if(WeatherSources.isThundering(level, packet.getSource().getAntennaPos().position()))
+        com.arrl.radiocraft.api.antenna.IAntenna.AntennaPos at = sourcePos(packet);
+        if(at == null || WeatherSources.isThundering(level, at.position()))
             return 0.0D;
 
         return super.getTransmitEfficiency(packet, data, destination, isCW);

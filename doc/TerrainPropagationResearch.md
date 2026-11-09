@@ -1,7 +1,7 @@
 # Research: terrain-aware propagation (line of sight and sky view)
 
 Status: phases 1 and 2 implemented (2026-10-24) in `common/radio/terrain` (`TerrainAtlas`, `TerrainMath`,
-`TerrainPropagation`, `ExpiringCache`); the atlas is saved with the world and the scaling note below is done (2026-10-24); the rest of phase 3 is open. Tests: `TerrainMathTest`, `TerrainBenchmarkTest` (timings,
+`TerrainPropagation`, `ExpiringCache`); the atlas is saved with the world and the scaling note below is done (2026-10-24); worldgen fill for never-loaded chunks is done too (2026-11-07: `TerrainAtlas#takeWanted`, `TerrainPropagation#fillFromWorldgen`); only the antenna analyzer's report is open. Tests: `TerrainMathTest`, `TerrainBenchmarkTest` (timings,
 printed), `TerrainGameTests` (a floating wall south of a station, and the cost in game). `/rcdebug terrain` shows the
 map size and the cost so far; `/rcdebug terrain path <from> <to> <band>` what terrain does to one path.
 

@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "ceiling=false,facing=east": {
+      "model": "radiocraft:block/cb_mobile_pc68",
+      "y": 90
+    },
+    "ceiling=false,facing=north": {
+      "model": "radiocraft:block/cb_mobile_pc68"
+    },
+    "ceiling=false,facing=south": {
+      "model": "radiocraft:block/cb_mobile_pc68",
+      "y": 180
+    },
+    "ceiling=false,facing=west": {
+      "model": "radiocraft:block/cb_mobile_pc68",
+      "y": 270
+    },
+    "ceiling=true,facing=east": {
+      "model": "radiocraft:block/cb_mobile_pc68_ceiling",
+      "y": 90
+    },
+    "ceiling=true,facing=north": {
+      "model": "radiocraft:block/cb_mobile_pc68_ceiling"
+    },
+    "ceiling=true,facing=south": {
+      "model": "radiocraft:block/cb_mobile_pc68_ceiling",
+      "y": 180
+    },
+    "ceiling=true,facing=west": {
+      "model": "radiocraft:block/cb_mobile_pc68_ceiling",
+      "y": 270
+    }
+  }
+}

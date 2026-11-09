@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-/** The teletype's screen: the paper roll, typing, its callsign and SOLAR WX. No slots; paper goes in by hand or hopper. */
+/** The teletype's screen: the paper roll, typing, and its callsign. No slots; paper goes in by hand or hopper. */
 public final class TeletypeMenu extends AbstractContainerMenu implements StationMenu {
 
 	public final TeletypeBlockEntity blockEntity;
@@ -48,7 +48,6 @@ public final class TeletypeMenu extends AbstractContainerMenu implements Station
 					player.displayClientMessage(Component.translatable(blockEntity.getRadios().stream().anyMatch(RadioBlockEntity::isPowered) ? "screen.radiocraft.teletype.send_failed"
 							: "screen.radiocraft.teletype.no_radio"), true);
 			}
-			case "solar" -> blockEntity.printReport();
 			case "load" -> blockEntity.loadPaper();
 			case "callsign" -> {
 				if(!TncPacket.sanitizeCallsign(data.getString("callsign")).isEmpty())

@@ -46,6 +46,8 @@ public final class RadioBands {
 	public static final String M2 = "2m";
 	/** Commercial low band, 30-50 MHz: between 10m and VHF in how it travels, on the HF antenna network. */
 	public static final String LOW_BAND = Band.LOW_BAND;
+	/** Citizens Band, 26.965-27.405 MHz: 40 AM channels, no licence. */
+	public static final String CB = Band.CB;
 	/** Commercial VHF (high band), 150-174 MHz, like 2m; the marine channels are inside it. */
 	public static final String VHF_COMMERCIAL = Band.VHF_COMMERCIAL;
 

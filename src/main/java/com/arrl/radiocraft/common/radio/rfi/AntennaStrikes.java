@@ -9,7 +9,9 @@ import com.arrl.radiocraft.api.benetworks.PowerBENetwork;
 import com.arrl.radiocraft.common.be_networks.BatteryFires;
 import com.arrl.radiocraft.common.be_networks.WireUtils;
 import com.arrl.radiocraft.common.be_networks.network_objects.AntennaNetworkObject;
+import com.arrl.radiocraft.common.be_networks.ICoaxNetworkObject;
 import com.arrl.radiocraft.common.be_networks.network_objects.BatteryNetworkObject;
+import com.arrl.radiocraft.common.be_networks.network_objects.LightningArrestorNetworkObject;
 import com.arrl.radiocraft.common.be_networks.network_objects.RadioNetworkObject;
 import com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity;
 import com.arrl.radiocraft.common.blocks.WireBlock;
@@ -17,6 +19,7 @@ import com.arrl.radiocraft.common.blocks.radios.RadioBlock;
 import com.arrl.radiocraft.common.capabilities.BENetworksCapability;
 import com.arrl.radiocraft.common.radio.antenna.networks.AntennaNetworkManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -30,16 +33,19 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * Lightning striking an antenna (maintainer, 2026-10-24): the surge comes down the coax, burning out stretches of it
  * ({@code lightning_coax_burn_chance} per block, always the block at the antenna), blows every radio on the run
  * (SWR protection does not help), and now and then ({@code lightning_battery_ignite_chance}) sets the batteries those
- * radios run on alight. A lightning arrestor on the coax will stop it, once there is one.
+ * radios run on alight. A lightning arrestor on the coax stops it: the coax between the antenna and the arrestor can
+ * still burn out, but radios (and their batteries) the surge would only reach through an arrestor come to no harm.
  */
 @EventBusSubscriber(modid = Radiocraft.MOD_ID)
 public final class AntennaStrikes {
@@ -77,9 +83,17 @@ public final class AntennaStrikes {
 
 	/** The antenna at {@code antennaPos} was hit. */
 	public static void surge(ServerLevel level, BlockPos antennaPos) {
-		List<RadioNetworkObject> radios = BENetworksCapability.get(level).getObject(antennaPos) instanceof AntennaNetworkObject antenna ? antenna.getRadios() : List.of();
+		BENetworkObject struck = BENetworksCapability.get(level).getObject(antennaPos);
+		List<RadioNetworkObject> radios = struck instanceof AntennaNetworkObject antenna ? antenna.getRadios() : List.of();
+		Set<BlockPos> arrestors = struck == null ? Set.of() : arrestorsOn(struck);
+		Set<BlockPos> exposed = arrestors.isEmpty() ? null : exposedDevices(level, antennaPos, arrestors);
 		boolean ignite = level.random.nextDouble() < RadiocraftServerConfig.LIGHTNING_BATTERY_IGNITE_CHANCE.get();
+		for(BlockPos arrestor : arrestors)
+			if(exposed.contains(arrestor)) // It took the surge: a flash and a crack.
+				arrestorFlash(level, arrestor);
 		for(RadioNetworkObject radio : radios) {
+			if(exposed != null && !exposed.contains(radio.getPos()))
+				continue; // Behind an arrestor.
 			if(level.getBlockEntity(radio.getPos()) instanceof RadioBlockEntity be && be.getBlockState().hasProperty(RadioBlock.BLOWN))
 				be.blow(level);
 			if(ignite) {
@@ -94,6 +108,61 @@ public final class AntennaStrikes {
 			}
 		}
 		burnCoax(level, antennaPos);
+	}
+
+	/** The lightning arrestors on the struck antenna's coax networks. */
+	private static Set<BlockPos> arrestorsOn(BENetworkObject antenna) {
+		Set<BlockPos> out = new HashSet<>();
+		for(BENetwork network : antenna.getNetworks().values())
+			for(BENetworkObject object : network.getNetworkObjects())
+				if(object instanceof LightningArrestorNetworkObject)
+					out.add(object.getPos());
+		return out;
+	}
+
+	/**
+	 * The coax devices the surge reaches from the antenna at {@code antennaPos}: the coax walk out of the antenna, going
+	 * through tuners and the like but not through an arrestor. The arrestors it meets are in the set; what lies beyond
+	 * them is not.
+	 */
+	/**
+	 * The chance a strike gets past an arrestor that has no ground (no rod on its ground lug, or too poor a one):
+	 * with nowhere to go, the surge arcs over (2026-11-08). A grounded arrestor always stops it.
+	 */
+	public static final double UNGROUNDED_ARC_CHANCE = 0.5D;
+
+	public static Set<BlockPos> exposedDevices(ServerLevel level, BlockPos antennaPos, Set<BlockPos> arrestors) {
+		Set<WireBlock> coax = Set.of(WireUtils.coaxWires());
+		Set<com.arrl.radiocraft.common.blocks.Strand> blackList = new HashSet<>();
+		blackList.add(com.arrl.radiocraft.common.blocks.Strand.device(antennaPos));
+		Map<BENetworkObject, Direction> reached = new HashMap<>();
+		for(BlockPos link : WireUtils.wireLinksOf(level, antennaPos, coax).keySet())
+			WireUtils.enter(reached, blackList, level, link, null, o -> o instanceof ICoaxNetworkObject && !blocked(o, arrestors, reached), coax);
+		Set<BlockPos> out = new HashSet<>();
+		for(BENetworkObject object : reached.keySet())
+			out.add(object.getPos());
+		return out;
+	}
+
+	/**
+	 * True for an arrestor, which it records in {@code reached} first. Refused as a connection, the walk does not pass
+	 * through it as it does a tuner, and it is no wire to carry on along, so the walk ends there.
+	 */
+	private static boolean blocked(BENetworkObject object, Set<BlockPos> arrestors, Map<BENetworkObject, Direction> reached) {
+		if(object instanceof LightningArrestorNetworkObject && !object.getLevel().isClientSide
+				&& !com.arrl.radiocraft.common.radio.ground.Grounding.arrestorGrounded(object.getLevel(), object.getPos())
+				&& object.getLevel().random.nextDouble() < UNGROUNDED_ARC_CHANCE)
+			return false; // No ground to send it to: the surge arcs across and carries on down the coax.
+		if(object instanceof LightningArrestorNetworkObject) {
+			reached.put(object, Direction.UP);
+			return true;
+		}
+		return false;
+	}
+
+	private static void arrestorFlash(ServerLevel level, BlockPos pos) {
+		level.sendParticles(ParticleTypes.ELECTRIC_SPARK, pos.getX() + 0.5D, pos.getY() + 0.4D, pos.getZ() + 0.5D, 20, 0.3D, 0.2D, 0.3D, 0.3D);
+		level.playSound(null, pos, SoundEvents.LIGHTNING_BOLT_IMPACT, SoundSource.BLOCKS, 0.6F, 1.8F);
 	}
 
 	/** Burns out coax on the run from the antenna: the block at the antenna always, the rest by chance. */

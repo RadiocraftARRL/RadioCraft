@@ -25,6 +25,8 @@ public class RadioBlockEntityClientHandler {
 
 	public static void startStaticSoundInstance(RadioBlockEntity radio) {
 		play(radio, new RadioStaticSoundInstance(radio));
+		if(radio instanceof HFRadioBlockEntity)
+			play(radio, new RadioStaticSoundInstance(radio, null, true)); // The narrow copy, for CW.
 	}
 
 	public static void startMorseSoundInstance(HFRadioBlockEntity radio) {
@@ -47,13 +49,14 @@ public class RadioBlockEntityClientHandler {
 	private static void syncSpeakerStatic(RadioBlockEntity radio, List<SoundInstance> sounds) {
 		if(sounds.stream().noneMatch(sound -> sound instanceof RadioStaticSoundInstance stat && stat.getSpeaker() == null))
 			return; // This radio has no static of its own.
-		sounds.removeIf(sound -> sound instanceof RadioStaticSoundInstance stat && stat.getSpeaker() != null && !radio.getWiredSpeakers().contains(stat.getSpeaker()));
-		for(com.arrl.radiocraft.common.radio.BEVoiceReceiver.WiredSpeaker speaker : radio.getWiredSpeakers())
-			if(sounds.stream().noneMatch(sound -> sound instanceof RadioStaticSoundInstance stat && speaker.equals(stat.getSpeaker()))) {
-				RadioStaticSoundInstance sound = new RadioStaticSoundInstance(radio, speaker);
-				sounds.add(sound);
-				Minecraft.getInstance().getSoundManager().play(sound);
-			}
+		sounds.removeIf(sound -> sound instanceof RadioStaticSoundInstance stat && stat.getSpeaker() != null && !radio.getStaticSpeakers().contains(stat.getSpeaker()));
+		for(com.arrl.radiocraft.common.radio.BEVoiceReceiver.WiredSpeaker speaker : radio.getStaticSpeakers()) // Or the computers playing it.
+			for(boolean cw : radio instanceof HFRadioBlockEntity ? new boolean[] { false, true } : new boolean[] { false })
+				if(sounds.stream().noneMatch(sound -> sound instanceof RadioStaticSoundInstance stat && speaker.equals(stat.getSpeaker()) && stat.isCw() == cw)) {
+					RadioStaticSoundInstance sound = new RadioStaticSoundInstance(radio, speaker, cw);
+					sounds.add(sound);
+					Minecraft.getInstance().getSoundManager().play(sound);
+				}
 	}
 
 	/** Restarts any of the radio's sounds the engine dropped, and forgets radios that are gone. */

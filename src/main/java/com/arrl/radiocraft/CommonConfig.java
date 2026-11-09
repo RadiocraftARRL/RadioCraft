@@ -18,6 +18,8 @@ public class CommonConfig {
 
 	public static final ModConfigSpec.ConfigValue<Integer> HF_RADIO_10M_RECEIVE_TICK;
 	public static final ModConfigSpec.ConfigValue<Integer> HF_RADIO_10M_TRANSMIT_TICK;
+	public static final ModConfigSpec.ConfigValue<Integer> CB_RADIO_RECEIVE_TICK;
+	public static final ModConfigSpec.ConfigValue<Integer> CB_RADIO_TRANSMIT_TICK;
 	public static final ModConfigSpec.ConfigValue<Integer> HF_RADIO_20M_RECEIVE_TICK;
 	public static final ModConfigSpec.ConfigValue<Integer> HF_RADIO_20M_TRANSMIT_TICK;
 	public static final ModConfigSpec.ConfigValue<Integer> HF_RADIO_40M_RECEIVE_TICK;
@@ -62,6 +64,8 @@ public class CommonConfig {
 		BUILDER.push("Radio Options ( * = Restart game to take effect)");
 		HF_RADIO_10M_RECEIVE_TICK = BUILDER.comment("*HF Radio (10m) power consumption per tick (while receiving) #default 8").define("hf_radio_10m_receive", 8);
 		HF_RADIO_10M_TRANSMIT_TICK = BUILDER.comment("*HF Radio (10m) power consumption per tick (while transmitting) #default 26").define("hf_radio_10m_transmit", 26);
+		CB_RADIO_RECEIVE_TICK = BUILDER.comment("*CB mobile power consumption per tick (while receiving), as an SSB rig #default 8").define("cb_radio_receive", 8);
+		CB_RADIO_TRANSMIT_TICK = BUILDER.comment("*CB mobile power consumption per tick (while transmitting): only 5 W, a little over receiving #default 10").define("cb_radio_transmit", 10);
 		HF_RADIO_20M_RECEIVE_TICK = BUILDER.comment("*HF Radio (20m) power consumption per tick (while receiving) #default 8").define("hf_radio_20m_receive", 8);
 		HF_RADIO_20M_TRANSMIT_TICK = BUILDER.comment("*HF Radio (20m) power consumption per tick (while transmitting) #default 26").define("hf_radio_20m_transmit", 26);
 		HF_RADIO_40M_RECEIVE_TICK = BUILDER.comment("*HF Radio (40m) power consumption per tick (while receiving) #default 8").define("hf_radio_40m_receive", 8);

@@ -54,6 +54,11 @@
       "text": "Duplexer on the repeater, coax from behind it to the J-pole, solar power."
     },
     {
+      "type": "patchouli:text",
+      "title": "Loops",
+      "text": "Two repeaters on each other's frequencies, each listening where the other transmits, $(thing)lock each other up$() as real ones do. A call goes round and round the pair under a growing feedback howl until their timeout timers drop them.$(br2)A server can turn on $(thing)repeater_loop_protection$() to stop loops starting at all."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "radiocraft:vhf_repeater"
     }

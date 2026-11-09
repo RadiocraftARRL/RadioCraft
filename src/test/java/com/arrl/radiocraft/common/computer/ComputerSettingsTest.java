@@ -25,7 +25,7 @@ class ComputerSettingsTest {
 		tag.putString("scheme", "Bad Scheme!");
 		tag.putString("clock", "sundial");
 		ComputerSettings read = ComputerSettings.fromTag(tag);
-		assertEquals(ComputerSettings.View.LIST, read.view());
+		assertEquals(ComputerSettings.View.ICONS, read.view()); // The default: the Program Manager (2026-11-09).
 		assertEquals("classic", read.scheme());
 		assertEquals(ComputerSettings.Clock.GAME, read.clock());
 		assertTrue(read.hour24());

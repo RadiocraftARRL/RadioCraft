@@ -48,6 +48,8 @@ public class RadioNetworkObject extends PowerNetworkObject implements ICoaxNetwo
     /** Whether the radio is actually running. Read everywhere; written only by {@link #resolvePower}. */
     public boolean isPowered = false;
     private int brownoutTicks = 0;
+    /** Game time this radio last paid for its tick, so a tick is only paid once. */
+    private long paidAt = Long.MIN_VALUE;
 
     protected final Set<AntennaNetworkObject> antennas = Collections.synchronizedSet(new HashSet<>());
     protected boolean isTransmitting = false;
@@ -99,8 +101,12 @@ public class RadioNetworkObject extends PowerNetworkObject implements ICoaxNetwo
             brownoutTicks = 0;
             return;
         }
+        long now = level == null ? Long.MIN_VALUE : level.getGameTime();
+        if(level != null && isPowered && now == paidAt)
+            return; // Already paid for this tick (switched on from a packet, then ticked): paying twice browned it out for 3 s.
         if(isPowered || brownoutTicks % BROWNOUT_CYCLE_TICKS == 0) {
             if(tryConsumeEnergy(isTransmitting ? transmitUse : receiveUse, false)) {
+                paidAt = now;
                 isPowered = true;
                 brownoutTicks = 0;
                 return;
@@ -121,6 +127,18 @@ public class RadioNetworkObject extends PowerNetworkObject implements ICoaxNetwo
             return PHASE_OFF;
         int t = brownoutTicks % BROWNOUT_CYCLE_TICKS;
         return t < BROWNOUT_PWR_FROM ? PHASE_ON : t < BROWNOUT_DARK_FROM ? PHASE_PWR : PHASE_OFF;
+    }
+
+    /** True if a battery with charge in it sits on any power network this radio is wired to (CB clock, 2026-11-08). */
+    public boolean hasCharge() {
+        for(BENetwork network : networks.values()) {
+            if(network instanceof PowerBENetwork) {
+                for(BENetworkObject object : network.getNetworkObjects())
+                    if(object instanceof BatteryNetworkObject battery && battery.getStorage().getEnergyStored() > 0)
+                        return true;
+            }
+        }
+        return false;
     }
 
     /** True if a battery sits on any power network this radio is wired to. */

@@ -37,7 +37,10 @@ import java.util.UUID;
  * <li>{@code sys.settings} ({@code settings}, a {@link ComputerSettings} tag): SETUP's launcher view, colour scheme, name
  * and clock; the same people as the password may change them ({@code not_owner_settings}). Answers and pushes (to
  * everyone at the computer, as a {@link ComputerApps#SETUP} event {@code settings}) the settings kept. {@code open}
- * answers them too.</li>
+ * answers them too. On a network ({@link ComputerNetwork}) a new name must be one no reachable computer has
+ * ({@code netname_in_use}), and not empty ({@code netname_needed}).</li>
+ * <li>{@code sys.netname} ({@code name}): the NETWORK NAME prompt's answer (2026-11-09): the same rule and the same
+ * people as SETUP's name; answers and pushes the settings as {@code sys.settings} does, and the prompt goes.</li>
  * <li>{@code sys.info}: storage, the drive, the scanner and its paper, the linked devices and the station callsign.</li>
  * <li>{@code sys.saver} ({@code on}): the screensaver came on or went off on this player's screen; the computer
  * draws less power while it shows for everyone at it. Answers {@code text}, the station's callsign, for it to show.
@@ -104,6 +107,7 @@ public final class ComputerServer {
 			}
 			case "sys.password" -> password(computer, player, data.getString("password"), reply);
 			case "sys.settings" -> settings(computer, player, data.getCompound("settings"), reply);
+			case "sys.netname" -> netName(computer, player, data.getString("name"), reply);
 			case "sys.info" -> reply.ok(info(context));
 			case "sys.floppies" -> reply.ok(floppies(player));
 			case "sys.insert" -> insert(computer, player, data.getInt("slot"), reply);
@@ -278,6 +282,17 @@ public final class ComputerServer {
 			reply.error("no_floppy");
 			return;
 		}
+		if(com.arrl.radiocraft.common.items.AllAppsFloppyItem.is(player.getInventory().getItem(slot))) { // Creative: every program, and it comes back out.
+			for(ComputerApp app : ComputerApps.onFloppies())
+				if(app.kind() != ComputerApp.Kind.SECRET && !computer.isInstalled(app)) // The secret ones stay to be found (2026-11-09).
+					computer.install(app);
+			CompoundTag out = new CompoundTag();
+			out.put("apps", appIds(computer));
+			out.putString("floppy", "");
+			out.putString("floppyLabel", "");
+			reply.ok(out);
+			return;
+		}
 		ItemStack disk = player.getInventory().removeItem(slot, 1);
 		computer.insertFloppy(disk);
 		CompoundTag out = new CompoundTag();
@@ -362,6 +377,35 @@ public final class ComputerServer {
 			return;
 		}
 		ComputerSettings kept = ComputerSettings.fromTag(settings);
+		if(!kept.name().equals(computer.files().settings().name())) { // A new name: unique on its network.
+			String refused = ComputerNetwork.nameRefused(computer, kept.name());
+			if(refused != null) {
+				reply.error(refused);
+				return;
+			}
+			computer.setNeedsNetworkName(false);
+		}
+		keep(computer, kept, reply);
+	}
+
+	/** The NETWORK NAME prompt's answer: SETUP's name, by the same rules. */
+	private static void netName(RadioComputerBlockEntity computer, ServerPlayer player, String name, ComputerReply reply) {
+		if(!computer.mayChangePassword(player)) {
+			reply.error("not_owner_settings");
+			return;
+		}
+		String clean = ComputerSettings.cleanName(name);
+		String refused = clean.isEmpty() ? "netname_needed" : ComputerNetwork.nameRefused(computer, clean);
+		if(refused != null) {
+			reply.error(refused);
+			return;
+		}
+		computer.setNeedsNetworkName(false);
+		keep(computer, computer.files().settings().withName(clean), reply);
+	}
+
+	/** Keeps {@code kept} on the disk, answers with it and shows it on every screen at the computer. */
+	private static void keep(RadioComputerBlockEntity computer, ComputerSettings kept, ComputerReply reply) {
 		computer.files().setSettings(kept);
 		CompoundTag out = new CompoundTag();
 		out.put("settings", kept.toTag());

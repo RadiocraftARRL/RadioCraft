@@ -29,6 +29,7 @@ public class RadiocraftMenuTypes {
 	public static final Supplier<MenuType<VHFBaseStationMenu>> VHF_BASE_STATION = MENU_TYPES.register("vhf_base_station", () -> IMenuTypeExtension.create(VHFBaseStationMenu::new));
 	public static final Supplier<MenuType<CommercialMobileMenu>> COMMERCIAL_MOBILE = MENU_TYPES.register("commercial_mobile", () -> IMenuTypeExtension.create(CommercialMobileMenu::new));
 	public static final Supplier<MenuType<MarineRadioMenu>> MARINE_RADIO = MENU_TYPES.register("marine_radio", () -> IMenuTypeExtension.create(MarineRadioMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.CbRadioMenu>> CB_RADIO = MENU_TYPES.register("cb_radio", () -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.CbRadioMenu::new));
 
 	public static final Supplier<MenuType<VHFReceiverMenu>> VHF_RECEIVER = MENU_TYPES.register("vhf_receiver", () -> IMenuTypeExtension.create(VHFReceiverMenu::new));
 	public static final Supplier<MenuType<DeskChargerMenu>> DESK_CHARGER = MENU_TYPES.register("desk_charger", () -> IMenuTypeExtension.create(DeskChargerMenu::new));

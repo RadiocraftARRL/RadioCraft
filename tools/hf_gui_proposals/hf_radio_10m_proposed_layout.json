@@ -1,0 +1,401 @@
+{
+ "panel": "hf_radio_10m_proposed",
+ "width": 256,
+ "height": 150,
+ "controls": [
+  {
+   "name": "power",
+   "type": "button",
+   "x": 6,
+   "y": 19,
+   "w": 14,
+   "h": 9
+  },
+  {
+   "name": "mode_ssb",
+   "type": "button",
+   "x": 26,
+   "y": 19,
+   "w": 14,
+   "h": 9
+  },
+  {
+   "name": "mode_cw",
+   "type": "button",
+   "x": 42,
+   "y": 19,
+   "w": 14,
+   "h": 9
+  },
+  {
+   "name": "mode_am",
+   "type": "button",
+   "x": 58,
+   "y": 19,
+   "w": 14,
+   "h": 9
+  },
+  {
+   "name": "meter",
+   "type": "meter",
+   "x": 9,
+   "y": 37,
+   "w": 82,
+   "h": 38,
+   "scales": [
+    "S",
+    "PO",
+    "SWR"
+   ],
+   "pivot_x": 50,
+   "pivot_y": 84,
+   "needle_r": 38,
+   "swing_deg": [
+    220,
+    320
+   ],
+   "clip_to_face": true
+  },
+  {
+   "name": "meter_po",
+   "type": "button",
+   "x": 33,
+   "y": 91,
+   "w": 12,
+   "h": 8
+  },
+  {
+   "name": "meter_swr",
+   "type": "button",
+   "x": 51,
+   "y": 91,
+   "w": 12,
+   "h": 8
+  },
+  {
+   "name": "af_gain",
+   "type": "knob",
+   "x": 6,
+   "y": 110,
+   "w": 28,
+   "h": 28,
+   "size": 20,
+   "centre": [
+    20,
+    124
+   ],
+   "rest": 0.5
+  },
+  {
+   "name": "mic_gain",
+   "type": "knob",
+   "x": 36,
+   "y": 110,
+   "w": 28,
+   "h": 28,
+   "size": 20,
+   "centre": [
+    50,
+    124
+   ],
+   "rest": 0.5
+  },
+  {
+   "name": "squelch",
+   "type": "knob",
+   "x": 66,
+   "y": 110,
+   "w": 28,
+   "h": 28,
+   "size": 20,
+   "centre": [
+    80,
+    124
+   ],
+   "rest": 0.0
+  },
+  {
+   "name": "tuning",
+   "type": "dial",
+   "x": 106,
+   "y": 29,
+   "w": 50,
+   "h": 50,
+   "size": 50,
+   "centre": [
+    131,
+    54
+   ]
+  },
+  {
+   "name": "coarse",
+   "type": "button",
+   "x": 101,
+   "y": 20,
+   "w": 14,
+   "h": 7
+  },
+  {
+   "name": "step_down",
+   "type": "button",
+   "x": 102,
+   "y": 95,
+   "w": 14,
+   "h": 9
+  },
+  {
+   "name": "quick",
+   "type": "button",
+   "x": 122,
+   "y": 95,
+   "w": 19,
+   "h": 9
+  },
+  {
+   "name": "step_up",
+   "type": "button",
+   "x": 147,
+   "y": 95,
+   "w": 14,
+   "h": 9
+  },
+  {
+   "name": "agc",
+   "type": "switch3",
+   "x": 108,
+   "y": 118,
+   "w": 46,
+   "h": 10,
+   "positions": [
+    "OFF",
+    "SLOW",
+    "FAST"
+   ],
+   "rest": 1,
+   "stops_x": [
+    113,
+    131,
+    149
+   ]
+  },
+  {
+   "name": "busy_lamp",
+   "type": "lamp",
+   "x": 239,
+   "y": 11,
+   "w": 6,
+   "h": 6,
+   "colour": "green"
+  },
+  {
+   "name": "display",
+   "type": "display",
+   "x": 170,
+   "y": 23,
+   "w": 80,
+   "h": 26
+  },
+  {
+   "name": "ptt",
+   "type": "button",
+   "x": 214,
+   "y": 119,
+   "w": 36,
+   "h": 20
+  }
+ ],
+ "labels": [
+  {
+   "name": "label:PWR",
+   "type": "label",
+   "x": 8,
+   "y": 12,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:SSB",
+   "type": "label",
+   "x": 28,
+   "y": 12,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:CW",
+   "type": "label",
+   "x": 46,
+   "y": 12,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "name": "label:AM",
+   "type": "label",
+   "x": 62,
+   "y": 12,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "name": "label:MODE",
+   "type": "label",
+   "x": 77,
+   "y": 21,
+   "w": 15,
+   "h": 5
+  },
+  {
+   "name": "label:METER",
+   "type": "label",
+   "x": 8,
+   "y": 93,
+   "w": 19,
+   "h": 5
+  },
+  {
+   "name": "label:PO",
+   "type": "label",
+   "x": 36,
+   "y": 84,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "name": "label:SWR",
+   "type": "label",
+   "x": 52,
+   "y": 84,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:AF",
+   "type": "label",
+   "x": 17,
+   "y": 103,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "name": "label:MIC",
+   "type": "label",
+   "x": 45,
+   "y": 103,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:SQL",
+   "type": "label",
+   "x": 75,
+   "y": 103,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:TUNING",
+   "type": "label",
+   "x": 120,
+   "y": 15,
+   "w": 23,
+   "h": 5
+  },
+  {
+   "name": "label:10X",
+   "type": "label",
+   "x": 101,
+   "y": 13,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:DN",
+   "type": "label",
+   "x": 106,
+   "y": 88,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "name": "label:QUICK",
+   "type": "label",
+   "x": 122,
+   "y": 88,
+   "w": 19,
+   "h": 5
+  },
+  {
+   "name": "label:UP",
+   "type": "label",
+   "x": 151,
+   "y": 88,
+   "w": 7,
+   "h": 5
+  },
+  {
+   "name": "label:AGC",
+   "type": "label",
+   "x": 126,
+   "y": 111,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:OFF",
+   "type": "label",
+   "x": 108,
+   "y": 131,
+   "w": 11,
+   "h": 5
+  },
+  {
+   "name": "label:SLOW",
+   "type": "label",
+   "x": 124,
+   "y": 131,
+   "w": 15,
+   "h": 5
+  },
+  {
+   "name": "label:FAST",
+   "type": "label",
+   "x": 142,
+   "y": 131,
+   "w": 15,
+   "h": 5
+  },
+  {
+   "name": "label:BUSY",
+   "type": "label",
+   "x": 222,
+   "y": 12,
+   "w": 15,
+   "h": 5
+  },
+  {
+   "name": "label:RC-10",
+   "type": "label",
+   "x": 170,
+   "y": 119,
+   "w": 19,
+   "h": 5
+  },
+  {
+   "name": "label:SSB CW AM",
+   "type": "label",
+   "x": 170,
+   "y": 127,
+   "w": 35,
+   "h": 5
+  },
+  {
+   "name": "label:PTT",
+   "type": "label",
+   "x": 226,
+   "y": 112,
+   "w": 11,
+   "h": 5
+  }
+ ]
+}

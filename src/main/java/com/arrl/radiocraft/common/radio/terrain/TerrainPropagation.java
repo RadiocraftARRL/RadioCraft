@@ -202,7 +202,7 @@ public final class TerrainPropagation {
     /** Takeoff angle of a band's skip signal, in degrees. */
     public static double takeoffDegrees(Band band) {
         return switch(band.name()) {
-            case "10m", com.arrl.radiocraft.common.radio.Band.LOW_BAND -> RadiocraftServerConfig.TERRAIN_TAKEOFF_10M.get(); // Low band skips at a low angle like 10m.
+            case "10m", com.arrl.radiocraft.common.radio.Band.LOW_BAND, com.arrl.radiocraft.common.radio.Band.CB -> RadiocraftServerConfig.TERRAIN_TAKEOFF_10M.get(); // Low band skips at a low angle like 10m.
             case "20m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_20M.get();
             case "40m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_40M.get();
             default -> RadiocraftServerConfig.TERRAIN_TAKEOFF_80M.get();
@@ -274,18 +274,49 @@ public final class TerrainPropagation {
             return;
         }
         int budget = RadiocraftServerConfig.TERRAIN_REFRESH_CHUNKS_PER_TICK.get();
-        if(budget <= 0)
-            return;
+        int fill = RadiocraftServerConfig.TERRAIN_WORLDGEN_FILL.get() ? RadiocraftServerConfig.TERRAIN_WORLDGEN_CHUNKS_PER_TICK.get() : 0;
         for(ServerLevel level : event.getServer().getAllLevels()) {
             TerrainAtlas atlas = ATLASES.get(level.dimension());
             if(atlas == null)
                 continue;
-            for(long key : atlas.nextToRefresh(budget)) {
-                LevelChunk chunk = level.getChunkSource().getChunkNow(TerrainAtlas.keyX(key), TerrainAtlas.keyZ(key));
-                if(chunk != null)
-                    atlas.put(chunk.getPos().x, chunk.getPos().z, TerrainAtlas.sample(chunk), maxChunks());
-            }
+            if(budget > 0)
+                for(long key : atlas.nextToRefresh(budget)) {
+                    LevelChunk chunk = level.getChunkSource().getChunkNow(TerrainAtlas.keyX(key), TerrainAtlas.keyZ(key));
+                    if(chunk != null)
+                        atlas.put(chunk.getPos().x, chunk.getPos().z, TerrainAtlas.sample(chunk), maxChunks());
+                }
+            if(fill > 0)
+                fillFromWorldgen(level, atlas, fill);
         }
+    }
+
+    /** Gives up to {@code count} of the chunks paths asked for their heights: the real ones if loaded, else worldgen's. */
+    public static void fillFromWorldgen(ServerLevel level, TerrainAtlas atlas, int count) {
+        for(long key : atlas.takeWanted(count)) {
+            int cx = TerrainAtlas.keyX(key), cz = TerrainAtlas.keyZ(key);
+            LevelChunk chunk = level.getChunkSource().getChunkNow(cx, cz);
+            if(chunk != null)
+                atlas.put(cx, cz, TerrainAtlas.sample(chunk), maxChunks());
+            else
+                atlas.putEstimate(cx, cz, estimate(level, cx, cz), maxChunks());
+        }
+    }
+
+    /**
+     * What the world generator would put at the middle of each 4 x 4 cell of a chunk that is not loaded and not in the
+     * atlas: its natural surface, no trees or buildings. Never loads or generates the chunk.
+     */
+    public static short[] estimate(ServerLevel level, int chunkX, int chunkZ) {
+        net.minecraft.world.level.chunk.ChunkGenerator generator = level.getChunkSource().getGenerator();
+        net.minecraft.world.level.levelgen.RandomState random = level.getChunkSource().randomState();
+        short[] cells = new short[16];
+        for(int cx = 0; cx < 4; cx++)
+            for(int cz = 0; cz < 4; cz++) {
+                int x = (chunkX << 4) + cx * TerrainMath.CELL + TerrainMath.CELL / 2;
+                int z = (chunkZ << 4) + cz * TerrainMath.CELL + TerrainMath.CELL / 2;
+                cells[cx * 4 + cz] = (short)generator.getBaseHeight(x, z, net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, level, random);
+            }
+        return cells;
     }
 
     @SubscribeEvent

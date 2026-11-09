@@ -80,6 +80,15 @@ public class RadiocraftItems {
 	public static final Supplier<Item> COLOR_PHOTO_PAPER = simpleItem("color_photo_paper", null);
 	/** A blank 3.5" floppy disk (1.12): crafted into a program's disk for the radio computer. */
 	public static final DeferredHolder<Item, FloppyDiskItem> FLOPPY_DISK = ITEMS.register("floppy_disk", () -> new FloppyDiskItem(new Properties().stacksTo(16), null));
+	/** Creative only: installs every floppy program at once (2026-11-08). */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.AllAppsFloppyItem> ALL_APPS_FLOPPY = ITEMS.register("all_apps_floppy",
+			() -> new com.arrl.radiocraft.common.items.AllAppsFloppyItem(new Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC)));
+	/** A throwaway cell that cannot be recharged (2026-11-08); the rechargeable one is the Small NiCd Battery, {@link #SMALL_BATTERY}. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SmallAlkalineBatteryItem> SMALL_ALKALINE_BATTERY = ITEMS.register("small_alkaline_battery",
+			() -> new com.arrl.radiocraft.common.items.SmallAlkalineBatteryItem(new Properties().stacksTo(16)));
+	/** A spent alkaline cell, out of a portable radio (2026-11-09): crafted alone, a little of its steel comes back. */
+	public static final Supplier<Item> DEAD_ALKALINE_BATTERY = simpleItem("dead_alkaline_battery",
+			Component.translatable("tooltip.radiocraft.dead_alkaline_battery").withStyle(net.minecraft.ChatFormatting.GRAY));
 	/**
 	 * One floppy disk per radio computer program that is not built in, by app id ({@code floppy_<id>}; see
 	 * {@link com.arrl.radiocraft.common.computer.ComputerApps}). The secret ones (found in structures) are rare.
@@ -127,6 +136,7 @@ public class RadiocraftItems {
 	}
 	public static final Supplier<BlockItem> SOLAR_PANEL = simpleBlockItem("solar_panel", RadiocraftBlocks.SOLAR_PANEL);
 	public static final Supplier<BlockItem> LARGE_BATTERY = simpleBlockItem("large_battery", RadiocraftBlocks.LARGE_BATTERY);
+	public static final Supplier<BlockItem> STABLE_CHEMICAL_BATTERY = simpleBlockItem("stable_chemical_battery", RadiocraftBlocks.STABLE_CHEMICAL_BATTERY);
 	public static final Supplier<BlockItem> CHARGE_CONTROLLER = simpleBlockItem("charge_controller", RadiocraftBlocks.CHARGE_CONTROLLER);
 
 	public static final CrystalVariants<Item, BlockItem> VHF_BASE_STATION_VARIANTS = crystalBlockItems("vhf_base_station", RadiocraftBlocks.VHF_BASE_STATION_VARIANTS);
@@ -136,6 +146,13 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> COMMERCIAL_MOBILE = ITEMS.register("commercial_mobile", () -> new BlockItem(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), new Properties().stacksTo(1)));
 	public static final Supplier<BlockItem> LOW_BAND_MOBILE = ITEMS.register("low_band_mobile", () -> new BlockItem(RadiocraftBlocks.LOW_BAND_MOBILE.get(), new Properties().stacksTo(1)));
 	public static final Supplier<BlockItem> MARINE_RADIO = ITEMS.register("marine_radio", () -> new BlockItem(RadiocraftBlocks.MARINE_RADIO.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> CB_MOBILE_5875 = ITEMS.register("cb_mobile_5875", () -> new BlockItem(RadiocraftBlocks.CB_MOBILE_5875.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> CB_MOBILE_PC68 = ITEMS.register("cb_mobile_pc68", () -> new BlockItem(RadiocraftBlocks.CB_MOBILE_PC68.get(), new Properties().stacksTo(1)));
+	/** The TRC-217 style CB portable (2026-11-08). */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.CbPortableItem> CB_PORTABLE = ITEMS.register("cb_portable",
+			() -> new com.arrl.radiocraft.common.items.CbPortableItem(new Properties()
+					.component(RadiocraftDataComponent.CB_RADIO.value(), com.arrl.radiocraft.common.radio.cb.CbRadioState.DEFAULT)
+					.component(RadiocraftDataComponent.CB_ENERGY.value(), 0)));
 	public static final Supplier<BlockItem> COMMERCIAL_REPEATER = simpleBlockItem("commercial_repeater", RadiocraftBlocks.COMMERCIAL_REPEATER);
 	public static final Supplier<BlockItem> COMMERCIAL_RADIO_MODULE = simpleBlockItem("commercial_radio_module", RadiocraftBlocks.COMMERCIAL_RADIO_MODULE);
 	public static final Supplier<BlockItem> TAPE_PLAYER = simpleBlockItem("tape_player", RadiocraftBlocks.TAPE_PLAYER);
@@ -166,6 +183,11 @@ public class RadiocraftItems {
 	// TODO: This may be supposed to be a BlockItem, but this compiles so meh?
 	public static final DeferredHolder<Item, AntennaPoleItem> ANTENNA_POLE = ITEMS.register("antenna_pole", () -> new AntennaPoleItem(RadiocraftBlocks.ANTENNA_POLE.get(), new Item.Properties()));
 	public static final Supplier<BlockItem> WIRE_JUNCTION = simpleBlockItem("wire_junction", RadiocraftBlocks.WIRE_JUNCTION);
+	public static final Supplier<BlockItem> BATTERY_METER = simpleBlockItem("battery_meter", RadiocraftBlocks.BATTERY_METER);
+	public static final Supplier<BlockItem> POWER_SWITCH_ON_OFF = simpleBlockItem("power_switch_on_off", RadiocraftBlocks.POWER_SWITCH_ON_OFF);
+	public static final Supplier<BlockItem> POWER_SWITCH_LEFT_RIGHT = simpleBlockItem("power_switch_left_right", RadiocraftBlocks.POWER_SWITCH_LEFT_RIGHT);
+	public static final Supplier<BlockItem> LIGHTNING_ARRESTOR = simpleBlockItem("lightning_arrestor", RadiocraftBlocks.LIGHTNING_ARRESTOR);
+	public static final Supplier<BlockItem> GROUND_ROD = simpleBlockItem("ground_rod", RadiocraftBlocks.GROUND_ROD);
 	public static final Supplier<BlockItem> DUPLEXER = simpleBlockItem("duplexer", RadiocraftBlocks.DUPLEXER);
 	public static final Supplier<BlockItem> ANTENNA_SPLITTER = simpleBlockItem("antenna_splitter", RadiocraftBlocks.ANTENNA_SPLITTER);
 	public static final Supplier<BlockItem> ANTENNA_SWITCH = simpleBlockItem("antenna_switch", RadiocraftBlocks.ANTENNA_SWITCH);
@@ -191,6 +213,7 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> FOLDED_DIPOLE_ANTENNA = simpleBlockItem("folded_dipole_antenna", RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA);
 	public static final Supplier<BlockItem> IONOSONDE = simpleBlockItem("ionosonde", RadiocraftBlocks.IONOSONDE);
 	public static final Supplier<BlockItem> FIVE_BTV_ANTENNA = simpleBlockItem("5btv_antenna", RadiocraftBlocks.FIVE_BTV_ANTENNA);
+	public static final Supplier<BlockItem> CB_GROUND_PLANE_ANTENNA = simpleBlockItem("cb_ground_plane_antenna", RadiocraftBlocks.CB_GROUND_PLANE_ANTENNA);
 	public static final Supplier<BlockItem> IONOSPHERIC_PROCESSOR = simpleBlockItem("ionospheric_processor", RadiocraftBlocks.IONOSPHERIC_PROCESSOR);
 	public static final Supplier<BlockItem> SLIM_JIM_ANTENNA = simpleBlockItem("slim_jim_antenna", RadiocraftBlocks.SLIM_JIM_ANTENNA);
 

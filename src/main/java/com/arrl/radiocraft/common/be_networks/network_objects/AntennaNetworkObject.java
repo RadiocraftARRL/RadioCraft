@@ -156,9 +156,13 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
             overdraw(level);
     }
 
-    public void overdraw(Level level) {
-        for(BENetworkObject obj : radios) {
-            if(level.isLoaded(pos)) {
+        public void overdraw(Level level) {
+        java.util.List<RadioNetworkObject> copy;
+        synchronized(radios) { // Called on the voice thread; radios join and leave on the server thread.
+            copy = new java.util.ArrayList<>(radios);
+        }
+        for(BENetworkObject obj : copy) {
+            if(level.isLoaded(obj.getPos())) {
                 BlockEntity be = level.getBlockEntity(obj.getPos());
                 if(be instanceof RadioBlockEntity radio)
                     radio.overdraw();

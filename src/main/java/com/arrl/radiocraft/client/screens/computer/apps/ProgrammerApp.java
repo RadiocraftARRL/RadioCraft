@@ -211,6 +211,11 @@ public final class ProgrammerApp extends DosApp {
 		});
 	}
 
+	@Override
+	public boolean holdsUnsavedWork() {
+		return modified;
+	}
+
 	private void whenSafe(Runnable then) {
 		if(!modified) {
 			then.run();

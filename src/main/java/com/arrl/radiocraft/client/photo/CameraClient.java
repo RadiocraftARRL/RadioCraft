@@ -7,10 +7,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.LivingEntity;
+import com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.RenderHandEvent;
@@ -20,7 +21,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * The camera on the client: while the player holds right click with a camera (aiming), a viewfinder marks the square the
  * photo will be (the middle of the screen, as {@link PhotoCapture} takes it), the hand is hidden, and the scroll wheel
  * zooms from 1x to 3x in half steps by narrowing the field of view, so the photo is exactly what the viewfinder shows.
- * After the button is let go the zoom is held until the frame is grabbed (the server answers within a moment), then
+ * A left click (the attack key, whatever it is bound to) takes the photo instead of swinging; letting go of right click
+ * lowers the camera. After the shutter the zoom is held even if the camera is lowered at once until the frame is grabbed (the server answers within a moment), then
  * drops back. The zoom is remembered for the next photo.
  */
 @EventBusSubscriber(modid = Radiocraft.MOD_ID, value = Dist.CLIENT)
@@ -45,10 +47,22 @@ public final class CameraClient {
 		return player != null && player.isUsingItem() && player.getUseItem().getItem() instanceof CameraItem;
 	}
 
-	/** The local player let go of the camera: keep the zoom until the photo is grabbed. */
-	public static void shutterReleased(LivingEntity entity) {
-		if(entity == Minecraft.getInstance().player)
-			holdUntil = Util.getMillis() + HOLD_MILLIS;
+	/**
+	 * While aiming, the attack key takes the photo. Read before the game handles its keys: while an item is in use
+	 * the game throws attack clicks away, so they never reach an interaction event.
+	 */
+	@SubscribeEvent
+	public static void onClientTick(ClientTickEvent.Pre event) {
+		Minecraft minecraft = Minecraft.getInstance();
+		if(minecraft.screen != null || !aiming())
+			return;
+		boolean clicked = false;
+		while(minecraft.options.keyAttack.consumeClick())
+			clicked = true;
+		if(clicked && minecraft.player != null && !minecraft.player.getCooldowns().isOnCooldown(minecraft.player.getUseItem().getItem())) {
+			holdUntil = Util.getMillis() + HOLD_MILLIS; // Keep the zoom until the photo is grabbed.
+			SCameraShutterPacket.send();
+		}
 	}
 
 	/** The frame for the photo was grabbed: the zoom may drop back. */

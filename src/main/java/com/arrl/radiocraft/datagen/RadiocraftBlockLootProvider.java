@@ -47,6 +47,10 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                 .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(FiveBtvAntennaBlock.SEGMENT, 0)))))));
+            else if(block.defaultBlockState().hasProperty(com.arrl.radiocraft.common.blocks.antennas.CbGroundPlaneAntennaBlock.SEGMENT)) // Five tall: only the base drops.
+                add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
+                                .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(com.arrl.radiocraft.common.blocks.antennas.CbGroundPlaneAntennaBlock.SEGMENT, 0)))))));
             else if(block instanceof com.arrl.radiocraft.common.blocks.MicrowaveHornBlock) // Sixteen parts, one horn: only the placed part drops.
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
@@ -66,6 +70,11 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                 .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(TowerFootholdBlock.BROKEN, false)))))));
+            else if(block == RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get()) // Keeps its charge and whether its seal is broken.
+                add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
+                                .copyComponents(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.CHEMICAL_CHARGE.get()))))));
             else if(block == RadiocraftBlocks.RADIO_COMPUTER.get()) // A radio computer keeps its id (so its files) and programs.
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction
@@ -78,6 +87,7 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
                                 .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.MARS_MOD.get())
                                 .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.COMMERCIAL_PROGRAM.get()) // A commercial mobile keeps its channels...
                                 .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.MARINE_RADIO.get()) // ...a marine radio its channel and switches...
+                                .include(com.arrl.radiocraft.common.init.RadiocraftDataComponent.CB_RADIO.get()) // ...a CB its channel and switches...
                                 .include(net.minecraft.core.component.DataComponents.DYED_COLOR))))));  // ...and its case colour.
             else
                 dropSelf(block);

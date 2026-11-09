@@ -1,0 +1,145 @@
+{
+  "_comment": "CB PC68 front panel. Positions in GUI pixels from the top left of textures/gui/cb/cb_mobile_pc68.png (the mic's coiled cord hangs below the faceplate). tools/cb_gui_assets.py draws the background from this file; CbPanel reads it for the live parts.",
+  "background": "radiocraft:textures/gui/cb/cb_mobile_pc68.png",
+  "width": 314,
+  "height": 128,
+  "faceplate": [
+    4,
+    6,
+    308,
+    106
+  ],
+  "widgets": [
+    {
+      "type": "meter",
+      "x": 16,
+      "y": 16,
+      "w": 64,
+      "h": 38,
+      "reads": "signal",
+      "label": "",
+      "backlit": true,
+      "label2": "S/RF"
+    },
+    {
+      "type": "ptt",
+      "x": 34,
+      "y": 82,
+      "r": 12,
+      "label": "MIC",
+      "plugged": true
+    },
+    {
+      "type": "toggle",
+      "x": 98,
+      "y": 34,
+      "key": "NB_ANL",
+      "label": "NB/ANL",
+      "up": "NB",
+      "down": "OFF",
+      "style": "updown"
+    },
+    {
+      "type": "toggle",
+      "x": 120,
+      "y": 34,
+      "key": "NONE",
+      "label": "CB/PA",
+      "up": "CB",
+      "down": "PA",
+      "style": "updown"
+    },
+    {
+      "type": "toggle",
+      "x": 142,
+      "y": 34,
+      "key": "NONE",
+      "label": "BRT",
+      "up": "BRT",
+      "down": "DIM",
+      "style": "updown"
+    },
+    {
+      "type": "toggle",
+      "x": 164,
+      "y": 34,
+      "key": "CHANNEL_9",
+      "label": "CH9",
+      "up": "CH9",
+      "down": "OFF",
+      "style": "updown"
+    },
+    {
+      "type": "toggle",
+      "x": 186,
+      "y": 34,
+      "key": "AM_FM",
+      "label": "AM/FM",
+      "up": "AM",
+      "down": "FM",
+      "style": "updown"
+    },
+    {
+      "type": "knob",
+      "x": 102,
+      "y": 82,
+      "size": "chrome_large",
+      "control": "VOLUME",
+      "ring": "SQUELCH",
+      "label": "VOL - SQ"
+    },
+    {
+      "type": "knob",
+      "x": 146,
+      "y": 82,
+      "size": "chrome_large",
+      "control": "MIC_GAIN",
+      "label": "MIC GAIN"
+    },
+    {
+      "type": "knob",
+      "x": 190,
+      "y": 82,
+      "size": "chrome_large",
+      "control": "NONE",
+      "label": "HI CUT"
+    },
+    {
+      "type": "lamp",
+      "x": 228,
+      "y": 22,
+      "lights": "rx_or_tx",
+      "colour": "green_red",
+      "label": "RX/TX",
+      "label_pos": "above"
+    },
+    {
+      "type": "lamp",
+      "x": 228,
+      "y": 40,
+      "lights": "fm",
+      "colour": "red",
+      "label": "FM",
+      "label_pos": "below"
+    },
+    {
+      "type": "digits",
+      "x": 242,
+      "y": 14,
+      "w": 48,
+      "h": 34,
+      "shows": "channel",
+      "colour": "#FF3020",
+      "back": "#1A0303"
+    },
+    {
+      "type": "knob",
+      "x": 266,
+      "y": 80,
+      "size": "chrome_xl",
+      "control": "CHANNEL",
+      "label": "CHANNEL",
+      "bezel": true
+    }
+  ]
+}

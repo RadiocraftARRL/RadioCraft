@@ -113,6 +113,17 @@ public final class SetupLang {
 		s.accept("setup.name_clock.intro", "The top bar shows the computer's name and a clock.");
 		s.accept("setup.name", "Computer name");
 		s.accept("setup.name.none", "(none)");
+		// The NETWORK NAME prompt (2026-11-09).
+		s.accept("netname.title", "NETWORK NAME");
+		s.accept("netname.box", "Network Name");
+		s.accept("netname.intro", "This computer can reach other radio computers.");
+		s.accept("netname.prompt", "Give it a name none of them uses:");
+		s.accept("netname.keys", "Enter=OK  Esc=Leave");
+		s.accept("netname.notice_keys", "Enter=Carry on");
+		s.accept("netname.not_owner", "It needs a name there: ask its owner to give it one.");
+		s.accept("netname.carry_on", "Press Enter to carry on.");
+		s.accept("err.netname_in_use", "NAME IN USE ON THIS NETWORK");
+		s.accept("err.netname_needed", "A computer on a network needs a name");
 		s.accept("setup.name.prompt", "A name for this computer (up to %s characters, empty for none):");
 		s.accept("setup.clock", "Clock");
 		s.accept("setup.clock.game", "World time");
@@ -121,7 +132,7 @@ public final class SetupLang {
 		s.accept("setup.hours", "Hours");
 		s.accept("setup.hours.24", "24-hour");
 		s.accept("setup.hours.12", "12-hour");
-		s.accept("setup.name_clock.about", "World time is the Minecraft day (sunrise at 6:00). Real time is your own computer's clock. The name also labels drive C: in DIR.");
+		s.accept("setup.name_clock.about", "World time is the Minecraft day (sunrise at 6:00). Real time is your own computer's clock. The name also labels drive C: in DIR. On a network it must be one no other computer there uses.");
 
 		// ABOUT: the website's words (radiocraft.w1btr.com), fitted to the text screen.
 		s.accept("about.title", "About RadioCraft");

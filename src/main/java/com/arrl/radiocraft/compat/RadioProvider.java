@@ -43,6 +43,8 @@ public enum RadioProvider implements IBlockComponentProvider, IServerDataProvide
         if(accessor.getBlockState().hasProperty(RadioBlock.BLOWN) && accessor.getBlockState().getValue(RadioBlock.BLOWN))
             tooltip.add(Component.literal("Transmitter: Blown").withStyle(ChatFormatting.RED));
         tooltip.add(Component.literal("Radio: " + (data.getBoolean("radioPowered") ? "On" : "Off")));
+        if(data.contains("channel"))
+            tooltip.add(Component.literal("Channel: " + data.getString("channel")));
         tooltip.add(Component.literal(String.format("Frequency: %.3f MHz", data.getFloat("frequency") / 1_000_000.0F)));
         tooltip.add(Component.literal("Mic Volume: " + Math.round(data.getFloat("micGain") * 100.0F) + "%"));
         tooltip.add(Component.literal("Speaker Volume: " + Math.round(data.getFloat("speakerGain") * 100.0F) + "%"));
@@ -84,6 +86,8 @@ public enum RadioProvider implements IBlockComponentProvider, IServerDataProvide
             return;
 
         data.putFloat("frequency", radio.getFrequency());
+        if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.ChannelDisplay channelized) // CB, commercial, marine: the channel.
+            data.putString("channel", channelized.displayLine() + " (" + channelized.displayStatus() + ")");
         data.putFloat("micGain", radio.getMicGain());
         data.putFloat("speakerGain", radio.getSpeakerGain());
         data.putInt("meter", radio.getMeterReading());

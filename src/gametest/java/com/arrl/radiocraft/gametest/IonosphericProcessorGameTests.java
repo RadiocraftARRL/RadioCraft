@@ -151,34 +151,6 @@ public class IonosphericProcessorGameTests {
 				.thenSucceed();
 	}
 
-	/** SOLAR WX on a far teletype asks over the air too, and prints the report the processor answers with. */
-	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 500, batch = BATCH)
-	public static void teletypeAsksOverTheAir(GameTestHelper helper) {
-		BlockPos lower = new BlockPos(3, 2, 10);
-		airLink(helper, lower, 3, 145_850_000.0F);
-		BlockPos far = lower.east(4);
-		BlockPos teletypePos = far.north();
-		helper.setBlock(teletypePos, RadiocraftBlocks.TELETYPE.get());
-		helper.startSequence()
-				.thenExecute(() -> {
-					powerOn(helper, lower.east());
-					powerOn(helper, far);
-					GameTestUtil.blockEntity(helper, teletypePos, TeletypeBlockEntity.class).insertPaper(new ItemStack(Items.PAPER, 4));
-				})
-				.thenWaitUntil(() -> helper.assertTrue(processorAt(helper, lower).isOnline() && radio(helper, far).isPowered(), "not up yet"))
-				.thenExecute(() -> {
-					TeletypeBlockEntity teletype = GameTestUtil.blockEntity(helper, teletypePos, TeletypeBlockEntity.class);
-					teletype.printReport();
-					helper.assertTrue(teletype.isRequesting(), "SOLAR WX did not ask over the air: " + teletype.getRttyLines());
-				})
-				.thenWaitUntil(() -> {
-					TeletypeBlockEntity teletype = GameTestUtil.blockEntity(helper, teletypePos, TeletypeBlockEntity.class);
-					helper.assertTrue(!teletype.isRequesting() && teletype.getRttyLines().size() > 3, "no report printed: " + teletype.getRttyLines());
-				})
-				.thenExecute(() -> helper.assertFalse(GameTestUtil.blockEntity(helper, teletypePos, TeletypeBlockEntity.class).getRttyLines().contains("NO ANSWER"), "it timed out"))
-				.thenSucceed();
-	}
-
 	/**
 	 * A blackout is forecast: a processor with alerts on warns over the air and the far WEFAX prints it; one with alerts
 	 * switched off says nothing to the WEFAX beside it. Its own batch: the forecast is the whole dimension's.

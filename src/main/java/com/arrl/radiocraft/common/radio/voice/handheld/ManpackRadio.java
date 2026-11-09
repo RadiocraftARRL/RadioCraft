@@ -286,7 +286,9 @@ public class ManpackRadio implements IAntenna {
 		if(current == null || !current.on() || current.cw() || transmitting || here == null || player == null || RadiocraftVoicePlugin.API == null
 				|| packet.getLevel() != here.level())
 			return;
-		Detuning.Effect effect = Detuning.ssb(current.frequency(), packet.getFrequency(), current.frequency() < 10_000_000.0F, packet.getSplatterReach());
+		com.arrl.radiocraft.common.radio.voice.ModeMix.Result mix = com.arrl.radiocraft.common.radio.voice.ModeMix.of(com.arrl.radiocraft.common.radio.voice.Modulation.SSB, packet.getModulation(),
+				Detuning.ssb(current.frequency(), packet.getFrequency(), current.frequency() < 10_000_000.0F, packet.getSplatterReach()), current.frequency(), packet.getFrequency());
+		Detuning.Effect effect = mix.effect();
 		if(!effect.audible())
 			return;
 		double strength = ManpackWhipAntennaType.INSTANCE.getReceiveEfficiency(packet, new EmptyAntennaData(), here.position()) * effect.strength()
@@ -300,7 +302,10 @@ public class ManpackRadio implements IAntenna {
 			lastSignalPeakNanos = heard;
 		}
 		lastSignalNanos = heard;
-		double blocks = Math.sqrt(com.arrl.radiocraft.compat.sable.Sublevels.distSqr(here.level(), packet.getSource().getAntennaPos().position(), here.position()));
+		AntennaPos sentFrom = packet.getSource() == null ? null : packet.getSource().getAntennaPos(); // Read once: cleared on the server thread when the sender puts its radio away (2026-11-09).
+		if(sentFrom == null)
+			return;
+		double blocks = Math.sqrt(com.arrl.radiocraft.compat.sable.Sublevels.distSqr(here.level(), sentFrom.position(), here.position()));
 		boolean skip = packet.getBand() != null && blocks > packet.getBand().losRange();
 		double multipath = skip ? RadiocraftServerConfig.SKIP_MULTIPATH_DEPTH.get() : 0.0D;
 		double level = ReceiverMix.voiceLevel(strength, noiseFloor(here.level(), here.position(), skip)) * current.gain();
@@ -316,7 +321,7 @@ public class ManpackRadio implements IAntenna {
 			long now = System.nanoTime();
 			List<com.arrl.radiocraft.common.radio.voice.VoiceMix.Signal> slot = aligner.offer(new com.arrl.radiocraft.common.radio.voice.VoiceMix.Signal(
 					com.arrl.radiocraft.common.radio.voice.VoiceMix.key(packet.getSourcePlayer(), packet.getSource()), packet.getSourcePlayer(),
-					packet.getRawAudio(), level, 0.0D, effect.pitchShiftHz(), Math.max(effect.splatter(), ReceiverMix.overload(blocks)), 0.0D, -1.0D, strength * ReceiverMix.nearness(blocks), multipath), now);
+					heard(packet.getRawAudio(), mix), level, 0.0D, effect.pitchShiftHz(), Math.max(effect.splatter(), ReceiverMix.overload(blocks)), 0.0D, -1.0D, strength * ReceiverMix.nearness(blocks), multipath), now);
 			if(slot.isEmpty())
 				return; // Another station leads: this frame goes out mixed with its next one.
 			short[] audio = renderer.render(slot, SpeakerKind.BUILT_IN.apply(RadioVoiceProcessor.currentSettings()), 1.0D, now).pcm();
@@ -324,6 +329,14 @@ public class ManpackRadio implements IAntenna {
 				encoder = RadiocraftVoicePlugin.API.createEncoder();
 			channel.send(encoder.encode(audio));
 		}
+	}
+
+	private final com.arrl.radiocraft.common.radio.voice.ModeMix.Tones tones = new com.arrl.radiocraft.common.radio.voice.ModeMix.Tones(); // Under this object's lock.
+
+	/** The voice as an SSB receiver makes of it: an AM carrier's whistle under it, or FM's warble instead of it. */
+	private short[] heard(short[] pcm, com.arrl.radiocraft.common.radio.voice.ModeMix.Result mix) {
+		short[] out = mix.garble() ? com.arrl.radiocraft.common.radio.voice.ModeMix.garble(pcm, tones) : pcm;
+		return mix.carrierHz() > 0.0D ? com.arrl.radiocraft.common.radio.voice.ModeMix.withCarrier(out, mix.carrierHz(), tones) : out;
 	}
 
 	@Override

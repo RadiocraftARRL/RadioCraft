@@ -51,6 +51,12 @@ public class CommercialRadioModuleBlockEntity extends BlockEntity implements net
 
 	/** Sets what it sends and where, as a structure or an operator's command does. */
 	public void configure(StationProgram.Kind kind, Band band, float frequency) {
+		configure(kind, band, frequency, mode);
+	}
+
+	/** {@link #configure(StationProgram.Kind, Band, float)} with its HF mode, "SSB" or "AM" (VHF is always FM). */
+	public void configure(StationProgram.Kind kind, Band band, float frequency, String mode) {
+		this.mode = "AM".equals(mode) ? "AM" : "SSB";
 		this.kind = kind;
 		this.bandName = band.name();
 		this.frequency = frequency;
@@ -89,9 +95,13 @@ public class CommercialRadioModuleBlockEntity extends BlockEntity implements net
 		tag.putLong("seed", random.nextLong());
 		if(tag.getString("callsign").isEmpty())
 			tag.putString("callsign", com.arrl.radiocraft.common.radio.Callsigns.generateRepeater(level, pos, random));
-		tag.putString("program", kinds[random.nextInt(kinds.length)].name().toLowerCase(Locale.ROOT));
+		StationProgram.Kind kind = kinds[random.nextInt(kinds.length)];
+		if(kind == StationProgram.Kind.DEAD_AIR && !band.isVhf()) // Dead air needs a carrier: not on SSB (2026-11-09).
+			kind = StationProgram.Kind.STATIC_BEACON;
+		tag.putString("program", kind.name().toLowerCase(Locale.ROOT));
 		tag.putString("band", band.name());
 		tag.putFloat("frequency", hz);
+		tag.putString("mode", random.nextInt(10) < 3 ? "AM" : "SSB"); // On HF most are SSB, some AM.
 	}
 
 	/** Picks a program, band and frequency at random. */
@@ -101,7 +111,7 @@ public class CommercialRadioModuleBlockEntity extends BlockEntity implements net
 		preset(tag, level, worldPosition, level.getRandom());
 		seed = tag.getLong("seed");
 		callsign = tag.getString("callsign");
-		configure(StationProgram.Kind.byName(tag.getString("program")), Band.getBand(tag.getString("band")), tag.getFloat("frequency"));
+		configure(StationProgram.Kind.byName(tag.getString("program")), Band.getBand(tag.getString("band")), tag.getFloat("frequency"), tag.getString("mode"));
 	}
 
 	/** This module's station, or null before it has a program. */
@@ -109,7 +119,7 @@ public class CommercialRadioModuleBlockEntity extends BlockEntity implements net
 	public CommercialStations.Station station() {
 		if(kind == null || Band.getBand(bandName) == null)
 			return null;
-		return new CommercialStations.Station(worldPosition.immutable(), kind, bandName, frequency, seed, callsign, false);
+		return new CommercialStations.Station(worldPosition.immutable(), kind, bandName, frequency, seed, callsign, false, mode);
 	}
 
 	private void register(ServerLevel level) {
@@ -206,6 +216,14 @@ public class CommercialRadioModuleBlockEntity extends BlockEntity implements net
 		tag.putFloat("frequency", frequency);
 		tag.putLong("seed", seed);
 		tag.putString("callsign", callsign);
+		tag.putString("mode", mode);
+	}
+
+	/** Its mode on HF (2026-11-09): "SSB" or "AM". VHF is FM, and dead air on HF is AM, whatever this says. */
+	private String mode = "SSB";
+
+	public String getMode() {
+		return mode;
 	}
 
 	/** Also how a structure presets one: {@code program} (numbers, static_beacon, dead_air, df_beeper, cw_beacon), {@code band}, {@code frequency} in Hz. */
@@ -217,6 +235,7 @@ public class CommercialRadioModuleBlockEntity extends BlockEntity implements net
 		frequency = tag.getFloat("frequency");
 		seed = tag.contains("seed") ? tag.getLong("seed") : worldPosition.asLong();
 		callsign = tag.getString("callsign");
+		mode = "AM".equals(tag.getString("mode")) ? "AM" : "SSB";
 		registered = false;
 	}
 }

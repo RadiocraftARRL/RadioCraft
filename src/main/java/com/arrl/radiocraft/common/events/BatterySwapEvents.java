@@ -43,18 +43,17 @@ public class BatterySwapEvents {
         ItemStack slotItem = event.getStackedOnItem();
         
         // Check if we're swapping battery and radio
-        boolean batteryOnRadio = carried.getItem() == RadiocraftItems.SMALL_BATTERY.get() && 
-                                 slotItem.getItem() instanceof VHFHandheldItem;
-        boolean radioOnBattery = carried.getItem() instanceof VHFHandheldItem && 
-                                 slotItem.getItem() == RadiocraftItems.SMALL_BATTERY.get();
+                boolean batteryOnRadio = com.arrl.radiocraft.common.items.PortableBatteries.isCell(carried) &&
+                                 VHFHandheldItem.takesSmallBattery(slotItem);
+        boolean radioOnBattery = VHFHandheldItem.takesSmallBattery(carried) &&
+                                 com.arrl.radiocraft.common.items.PortableBatteries.isCell(slotItem);
         
         if (batteryOnRadio || radioOnBattery) {
-            // Determine which is radio and which is battery
-            ItemStack radio = batteryOnRadio ? slotItem : carried;
-            ItemStack battery = batteryOnRadio ? carried : slotItem;
-            
-            // In creative mode, the event only fires client-side
-            VHFHandheldItem.swapBatteryEnergy(radio, battery, event.getPlayer());
+                        // In creative mode, the event only fires client-side. The cell that comes out takes the one put in's place.
+            if (batteryOnRadio)
+                com.arrl.radiocraft.common.items.PortableBatteries.cellOntoRadio(carried, event.getSlot(), event.getPlayer(), event.getCarriedSlotAccess()::set);
+            else
+                com.arrl.radiocraft.common.items.PortableBatteries.radioOntoCell(carried, event.getSlot(), event.getPlayer());
             
             // Cancel the event to prevent default behavior
             event.setCanceled(true);

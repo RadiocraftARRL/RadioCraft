@@ -91,6 +91,29 @@ public class RadioVoiceProcessor {
 	/** Longest late sky path, samples (5 ms). */
 	private static final int MAX_PATH_DELAY = 240;
 
+	/** Loudness of the hiss under a weak AM voice at {@link ReceiverMix#amHiss} 1, as a fraction of full scale. */
+	static final double AM_STATIC = 0.3D;
+	private double amHissNow = -1.0D; // The smoothed AM hiss; below 0 until the first frame.
+
+	/**
+	 * Adds the hiss under a weak AM voice to a processed frame (in place): {@code hiss} from {@link ReceiverMix#amHiss},
+	 * gliding over 50 ms so it does not step between frames. {@code gain} is the output level the frame was made at.
+	 */
+	public short[] amHiss(short[] pcm, double hiss, double gain) {
+		if(amHissNow < 0.0D)
+			amHissNow = hiss;
+		if(hiss <= 0.0D && amHissNow < 1e-4D) {
+			amHissNow = 0.0D;
+			return pcm;
+		}
+		double glide = coefficient(0.05D);
+		for(int i = 0; i < pcm.length; i++) {
+			amHissNow = glide * amHissNow + (1.0D - glide) * hiss;
+			pcm[i] = clamp(pcm[i] + AM_STATIC * amHissNow * fmStatic.next() * gain * 32767.0D);
+		}
+		return pcm;
+	}
+
 	/** Loudness of the static an FM receiver plays with the squelch open on nothing, as a fraction of full scale. */
 	static final double FM_STATIC = 0.3D;
 

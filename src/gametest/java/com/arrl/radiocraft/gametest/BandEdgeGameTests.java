@@ -181,7 +181,10 @@ public class BandEdgeGameTests {
 	@GameTest(template = GameTestUtil.EMPTY, batch = "band_plan")
 	public static void bandPlanFollowsTheServerConfig(GameTestHelper helper) {
 		BandPlan plan = BandPlan.current();
-		helper.assertTrue(plan.segments().size() == BandPlan.DEFAULT_SEGMENTS.size(), "Default segments: " + plan.segments().size());
+		// The config's segments: the defaults on a new config, an older default list on one written before the CB band
+		// was added (2026-11-08; configs keep their own list).
+		helper.assertTrue(plan.segments().size() == BandPlan.parse(RadiocraftServerConfig.BAND_PLAN_SEGMENTS.get(), List.of()).segments().size(),
+				"Config segments: " + plan.segments().size());
 		helper.assertTrue(!plan.markersNear(144_390_000.0D, 1.0D).isEmpty(), "144.390 APRS marker");
 		List<? extends String> before = RadiocraftServerConfig.BAND_PLAN_MARKERS.get();
 		try {
@@ -196,7 +199,7 @@ public class BandEdgeGameTests {
 		// markers were added (computer batch 3B added the FT8 ones; configs keep their own list).
 		helper.assertTrue(BandPlan.current().markers().size() == BandPlan.parse(List.of(), before).markers().size(), "Markers should be back to the config's");
 		List<BandPlan.Row> rows = BandPlan.current().rows(BandPlan.sheetBands());
-		helper.assertTrue(rows.size() == 7, "Seven bands on the sheet, was " + rows.size());
+		helper.assertTrue(rows.size() == 8, "Eight bands on the sheet (with CB), was " + rows.size());
 		helper.succeed();
 	}
 }

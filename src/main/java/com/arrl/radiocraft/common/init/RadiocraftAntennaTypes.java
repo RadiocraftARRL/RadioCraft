@@ -30,6 +30,7 @@ public class RadiocraftAntennaTypes {
 	public static YagiAntennaType YAGI;
 	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.SatelliteDishAntennaType SATELLITE_DISH;
 	public static com.arrl.radiocraft.common.radio.antenna.types.IonosondeAntennaType IONOSONDE;
+	public static com.arrl.radiocraft.common.radio.antenna.types.CbGroundPlaneAntennaType CB_GROUND_PLANE; // CB, and 10m at a push.
 	public static com.arrl.radiocraft.common.radio.antenna.types.FiveBtvAntennaType FIVE_BTV; // Every HF band and VHF. // Every band, badly; for the ionospheric processor.
 
 	public static void register() {
@@ -56,6 +57,7 @@ public class RadiocraftAntennaTypes {
 		SATELLITE_DISH = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.vhf.SatelliteDishAntennaType());
 		IONOSONDE = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.IonosondeAntennaType());
 		FIVE_BTV = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.FiveBtvAntennaType());
+		CB_GROUND_PLANE = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.CbGroundPlaneAntennaType());
 	}
 
 }

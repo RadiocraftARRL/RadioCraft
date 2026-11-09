@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "radiocraft:block/stable_chemical_battery",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "radiocraft:block/stable_chemical_battery"
+    },
+    "facing=south": {
+      "model": "radiocraft:block/stable_chemical_battery",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "radiocraft:block/stable_chemical_battery",
+      "y": 270
+    }
+  }
+}

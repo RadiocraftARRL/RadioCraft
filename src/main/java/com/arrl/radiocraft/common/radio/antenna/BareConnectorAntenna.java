@@ -107,7 +107,10 @@ public class BareConnectorAntenna implements IAntenna {
 
 	@Override
 	public void receiveAudioPacket(AntennaVoicePacket packet) {
-		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(packet.getSource().getAntennaPos().world().distSqr(pos.world()))));
+		AntennaPos from = packet.getSource() == null ? null : packet.getSource().getAntennaPos(); // Read once: cleared on the server thread when a mobile sender is put away (2026-11-09).
+		if(from == null)
+			return;
+		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(from.world().distSqr(pos.world()))));
 		if(packet.getStrength() > 0.0D)
 			radio.receiveVoice(packet);
 	}
@@ -124,7 +127,10 @@ public class BareConnectorAntenna implements IAntenna {
 
 	@Override
 	public void receiveCWPacket(AntennaCWPacket packet) {
-		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(packet.getSource().getAntennaPos().world().distSqr(pos.world()))));
+		AntennaPos from = packet.getSource() == null ? null : packet.getSource().getAntennaPos(); // Read once: cleared on the server thread when a mobile sender is put away (2026-11-09).
+		if(from == null)
+			return;
+		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(from.world().distSqr(pos.world()))));
 		if(packet.getStrength() > 0.0D && radio instanceof HFRadioBlockEntity hf) {
 			if(BandUtils.areFrequenciesEqualWithTolerance(hf.getFrequency(), packet.getFrequency(), 1000.0F))
 				hf.receiveCW(packet);
@@ -148,7 +154,10 @@ public class BareConnectorAntenna implements IAntenna {
 
 	@Override
 	public void receiveDataPacket(AntennaDataPacket packet) {
-		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(packet.getSource().getAntennaPos().world().distSqr(pos.world()))));
+		AntennaPos from = packet.getSource() == null ? null : packet.getSource().getAntennaPos(); // Read once: cleared on the server thread when a mobile sender is put away (2026-11-09).
+		if(from == null)
+			return;
+		packet.setStrength(packet.getStrength() * strengthAt(Math.sqrt(from.world().distSqr(pos.world()))));
 		if(packet.getStrength() > 0.0D)
 			radio.receiveData(packet);
 	}

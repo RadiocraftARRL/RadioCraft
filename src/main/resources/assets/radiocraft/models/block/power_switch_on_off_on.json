@@ -1,0 +1,360 @@
+{
+  "credit": "RadioCraft placeholder (ModelDesignBounty), 2026-11-09",
+  "parent": "block/block",
+  "textures": {
+    "top": "minecraft:block/smooth_stone",
+    "side": "minecraft:block/iron_block",
+    "terminal": "minecraft:block/copper_block",
+    "base": "minecraft:block/cobblestone",
+    "lever": "minecraft:block/lever",
+    "particle": "minecraft:block/iron_block"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        8,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            16,
+            16
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#top"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#top",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "name": "terminal_n",
+      "from": [
+        6,
+        8,
+        0
+      ],
+      "to": [
+        10,
+        10,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            10,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            10,
+            2
+          ],
+          "texture": "#terminal"
+        }
+      }
+    },
+    {
+      "name": "terminal_s",
+      "from": [
+        6,
+        8,
+        14
+      ],
+      "to": [
+        10,
+        10,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#terminal"
+        },
+        "up": {
+          "uv": [
+            6,
+            14,
+            10,
+            16
+          ],
+          "texture": "#terminal"
+        },
+        "down": {
+          "uv": [
+            6,
+            14,
+            10,
+            16
+          ],
+          "texture": "#terminal"
+        }
+      }
+    },
+    {
+      "name": "lever_base",
+      "from": [
+        5,
+        8,
+        4
+      ],
+      "to": [
+        11,
+        9,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            0,
+            11,
+            1
+          ],
+          "texture": "#base"
+        },
+        "south": {
+          "uv": [
+            5,
+            0,
+            11,
+            1
+          ],
+          "texture": "#base"
+        },
+        "east": {
+          "uv": [
+            5,
+            0,
+            11,
+            1
+          ],
+          "texture": "#base"
+        },
+        "west": {
+          "uv": [
+            5,
+            0,
+            11,
+            1
+          ],
+          "texture": "#base"
+        },
+        "up": {
+          "uv": [
+            5,
+            4,
+            11,
+            12
+          ],
+          "texture": "#base"
+        },
+        "down": {
+          "uv": [
+            5,
+            4,
+            11,
+            12
+          ],
+          "texture": "#base"
+        }
+      }
+    },
+    {
+      "name": "lever",
+      "from": [
+        7,
+        9,
+        7
+      ],
+      "to": [
+        9,
+        18,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            6,
+            9,
+            15
+          ],
+          "texture": "#lever"
+        },
+        "south": {
+          "uv": [
+            7,
+            6,
+            9,
+            15
+          ],
+          "texture": "#lever"
+        },
+        "east": {
+          "uv": [
+            7,
+            6,
+            9,
+            15
+          ],
+          "texture": "#lever"
+        },
+        "west": {
+          "uv": [
+            7,
+            6,
+            9,
+            15
+          ],
+          "texture": "#lever"
+        },
+        "up": {
+          "uv": [
+            7,
+            6,
+            9,
+            8
+          ],
+          "texture": "#lever"
+        }
+      },
+      "rotation": {
+        "angle": -45,
+        "axis": "x",
+        "origin": [
+          8,
+          9,
+          8
+        ]
+      }
+    }
+  ]
+}

@@ -46,6 +46,8 @@ public class RadiocraftBlockEntities {
 	/** Both commercial mobiles (the model comes from the block). */
 	public static final Supplier<BlockEntityType<CommercialMobileBlockEntity>> COMMERCIAL_MOBILE = BLOCK_ENTITY_TYPES.register("commercial_mobile",
 			() -> BlockEntityType.Builder.of(CommercialMobileBlockEntity::new, RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.CbRadioBlockEntity>> CB_RADIO = BLOCK_ENTITY_TYPES.register("cb_radio",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.CbRadioBlockEntity::new, RadiocraftBlocks.CB_MOBILE_5875.get(), RadiocraftBlocks.CB_MOBILE_PC68.get()).build(null));
 	public static final Supplier<BlockEntityType<MarineRadioBlockEntity>> MARINE_RADIO = BLOCK_ENTITY_TYPES.register("marine_radio",
 			() -> BlockEntityType.Builder.of(MarineRadioBlockEntity::new, RadiocraftBlocks.MARINE_RADIO.get()).build(null));
 
@@ -73,6 +75,17 @@ public class RadiocraftBlockEntities {
 					RadiocraftBlocks.RADIO_FAXES.values().stream().map(net.neoforged.neoforge.registries.DeferredHolder::get).toArray(Block[]::new)).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.WireJunctionBlockEntity>> WIRE_JUNCTION = BLOCK_ENTITY_TYPES.register("wire_junction",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WireJunctionBlockEntity::new, RadiocraftBlocks.WIRE_JUNCTION.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.PowerSwitchBlockEntity>> POWER_SWITCH = BLOCK_ENTITY_TYPES.register("power_switch",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.PowerSwitchBlockEntity::new,
+					RadiocraftBlocks.POWER_SWITCH_ON_OFF.get(), RadiocraftBlocks.POWER_SWITCH_LEFT_RIGHT.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.StableChemicalBatteryBlockEntity>> STABLE_CHEMICAL_BATTERY = BLOCK_ENTITY_TYPES.register("stable_chemical_battery",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.StableChemicalBatteryBlockEntity::new, RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.BatteryMeterBlockEntity>> BATTERY_METER = BLOCK_ENTITY_TYPES.register("battery_meter",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.BatteryMeterBlockEntity::new, RadiocraftBlocks.BATTERY_METER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.GroundRodBlockEntity>> GROUND_ROD = BLOCK_ENTITY_TYPES.register("ground_rod",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.GroundRodBlockEntity::new, RadiocraftBlocks.GROUND_ROD.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.LightningArrestorBlockEntity>> LIGHTNING_ARRESTOR = BLOCK_ENTITY_TYPES.register("lightning_arrestor",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.LightningArrestorBlockEntity::new, RadiocraftBlocks.LIGHTNING_ARRESTOR.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.AntennaSwitchBlockEntity>> ANTENNA_SWITCH = BLOCK_ENTITY_TYPES.register("antenna_switch",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.AntennaSwitchBlockEntity::new, RadiocraftBlocks.ANTENNA_SWITCH.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.AntennaSplitterBlockEntity>> ANTENNA_SPLITTER = BLOCK_ENTITY_TYPES.register("antenna_splitter",
@@ -105,6 +118,7 @@ public class RadiocraftBlockEntities {
 					RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get(),
 					RadiocraftBlocks.IONOSONDE.get(),
 					RadiocraftBlocks.FIVE_BTV_ANTENNA.get(),
+					RadiocraftBlocks.CB_GROUND_PLANE_ANTENNA.get(),
 					RadiocraftBlocks.DUMMY_LOAD.get(),
 					RadiocraftBlocks.YAGI_ANTENNA.get()
 			).build(null));

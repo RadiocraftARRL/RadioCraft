@@ -24,12 +24,13 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * The camera: hold right click to raise it to your eye and aim (a viewfinder shows the square that will be taken; the
- * scroll wheel zooms 1x to 3x, see {@code client.photo.CameraClient}); let go to take the photo. The photo is the
+ * scroll wheel zooms 1x to 3x, see {@code client.photo.CameraClient}); left click to take the photo, and let go of right
+ * click to lower the camera. The photo is the
  * middle square of the screen without your hand or the HUD, printed on a sheet of photo paper from your inventory as a
  * locked map ({@link com.arrl.radiocraft.common.photo.PhotoPrints}). Photo paper in the other hand is used first, else
  * the first found in the inventory; colour photo paper gives a colour photo, black and white paper a greyscale one.
  * <p>
- * The server decides: on release it fires the shutter ({@link #fireShutter}: {@link PhotoUploads#open}, the click
+ * The server decides: on a left click while aiming ({@code SCameraShutterPacket}) it fires the shutter ({@link #fireShutter}: {@link PhotoUploads#open}, the click
  * everyone nearby hears), asks the player's game for the picture ({@link CPhotoShutterPacket}), and prints it when the
  * picture arrives. The camera's cooldown ({@code camera_cooldown_seconds}) is the film advance; {@code camera_photo_cap}
  * may limit how many photos a player keeps ({@link PhotoLedger}).
@@ -61,7 +62,7 @@ public class CameraItem extends Item {
 		}
 		if(serverPlayer != null && PhotoLedger.refuseOverCap(serverPlayer))
 			return InteractionResultHolder.fail(stack);
-		player.startUsingItem(hand); // Aiming: the viewfinder is up until the button is let go.
+		player.startUsingItem(hand); // Aiming: the viewfinder is up until the button is let go; left click shoots.
 		return InteractionResultHolder.consume(stack);
 	}
 
@@ -75,16 +76,8 @@ public class CameraItem extends Item {
 		return UseAnim.SPYGLASS; // Held up to the eye.
 	}
 
-	@Override
-	public void releaseUsing(@NotNull ItemStack stack, @NotNull Level level, @NotNull LivingEntity entity, int timeLeft) {
-		if(level.isClientSide)
-			com.arrl.radiocraft.client.photo.CameraClient.shutterReleased(entity); // A separate class, so the server never loads it.
-		else if(entity instanceof ServerPlayer player)
-			fireShutter(player, player.getUsedItemHand());
-	}
-
 	/**
-	 * Fires the shutter of the camera in {@code player}'s {@code hand}: checks again (on, film advanced, paper, cap),
+	 * Fires the shutter of the camera in {@code player}'s {@code hand} (the player left clicked while aiming): checks again (on, film advanced, paper, cap),
 	 * opens the upload, asks the client for the picture, clicks and starts the cooldown. True if it fired.
 	 */
 	public static boolean fireShutter(ServerPlayer player, InteractionHand hand) {

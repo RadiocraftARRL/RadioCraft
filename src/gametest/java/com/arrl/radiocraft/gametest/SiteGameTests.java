@@ -264,7 +264,7 @@ public class SiteGameTests {
 			CommercialRadioModuleBlockEntity module = (CommercialRadioModuleBlockEntity)level.getBlockEntity(expected.pos());
 			CommercialStations.Station placed = module.station();
 			helper.assertTrue(placed != null && placed.equals(new CommercialStations.Station(expected.pos(), expected.kind(), expected.band(), expected.frequency(),
-					expected.seed(), expected.callsign(), false)), "predicted " + expected + ", placed " + placed);
+					expected.seed(), expected.callsign(), false, expected.mode())), "predicted " + expected + ", placed " + placed);
 			helper.assertTrue(CommercialStations.get(level).get(expected.pos()) != null, "the placed module is not on the air");
 			helper.succeed();
 		});

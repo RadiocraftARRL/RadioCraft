@@ -11,7 +11,7 @@ issueTrackerURL="https://github.com/RadiocraftARRL/RadioCraft/issues" #optional
     #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
     displayURL="https://radiocraft.w1btr.com/" #optional
     logoFile="logo.png" #optional
-    credits="Funded by the AARL" #optional
+    credits="Funded by the ARRL. See Contributors.md for everyone who made it." #optional
     authors="The RadioCraft Developers" #optional
     description='''Radiocraft is a Minecraft mod that adds ham radio (also known as Amateur Radio) into Minecraft Java edition.
 

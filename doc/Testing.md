@@ -5,7 +5,7 @@ Three layers, cheapest first, plus a launch test of the shipped jar. Use the che
 | Layer | Command | Time | Use it for |
 |---|---|---|---|
 | Unit tests | `./gradlew test` | ~20 s | Pure math: propagation, SWR, noise/static formulas, band tables, packet codecs |
-| GameTests | `./gradlew runGameTestServer` | ~1 min | In-world behavior: structures, networks, block entities, save/load |
+| GameTests | `./gradlew runGameTestServer` | ~13 min (all); 1-2 min filtered | In-world behavior: structures, networks, block entities, save/load |
 | Dev server + RCON | `tools/devserver.sh start`, then `python tools/rcon.py "<cmd>"` | ~20 s to start, instant after | Poking a live world, building scenarios, watching state change over time, server restarts |
 | Production launch | `./gradlew prodLaunchTest` | ~2 min (first run downloads ~400 MB) | The shipped jar loading outside the dev environment: packaging, jar-in-jar, module clashes |
 
@@ -32,6 +32,15 @@ Gradle fails if a *required* test fails. To see results:
 ./gradlew runGameTestServer --console=plain > build/gametest.log 2>&1; echo EXIT=$?
 grep -E "LogTestReporter|tests failed|tests passed|   - " build/gametest.log
 ```
+
+To run only some, name their classes (or single tests) with `-Pgametests` (`GameTestFilter`, 2026-11-09):
+
+```
+./gradlew runGameTestServer -Pgametests=RepeaterGameTests,SiteGameTests
+./gradlew runGameTestServer -Pgametests=squelchShutsUnderTheMeter
+```
+
+Use it while working on something; run the whole suite before a commit.
 
 Create is left out of dev runs unless asked for: add `-PwithCreate` (to `runGameTestServer`, `runClient` or
 `runServer`) to load Create, Ponder, Flywheel and Registrate, so `CreateGameTests` really turns an alternator

@@ -57,8 +57,9 @@ import java.util.List;
  * sheet of paper every {@link #LINES_PER_PAPER} lines. Nothing identifies the sender on the paper: as on the air,
  * operators give their callsign in what they type. (The teletype's callsign only tells stations apart on the air.) It cannot print what it hears while
  * it is sending or being typed on (half duplex), and two stations sending at once on a frequency garble each other
- * (see {@code RadioBlockEntity#receiveData}). Moderators listening in see each line sent, with who typed it. SOLAR WX prints the solar weather, which it reads through a radio with a real
- * antenna next to it (the comparator gives the same, 1 for a blackout to 6 for great).
+ * (see {@code RadioBlockEntity#receiveData}). Moderators listening in see each line sent, with who typed it. A comparator reads the solar conditions through a radio
+ * with a real antenna next to it, 1 for a blackout to 6 for great. (The printed solar report moved to the WEFAX
+ * receiver's SOLR WX, 2026-11-07.)
  */
 public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -124,9 +125,6 @@ public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 
 	// Server only, not saved.
 	private final SeenPackets seen = new SeenPackets();
-	/** How long SOLAR WX waits for an Ionospheric Processor to answer over the air. */
-	public static final int REQUEST_TICKS = 300;
-	private long requestUntil = -1L; // SOLAR WX asked over the air: until when it waits.
 
 	public TeletypeBlockEntity(BlockPos pos, BlockState state) {
 		super(RadiocraftBlockEntities.TELETYPE.get(), pos, state);
@@ -143,10 +141,6 @@ public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 				be.sendNext(level);
 			if(now == be.secondKeyAt)
 				be.keySound();
-			if(be.requestUntil >= 0L && now >= be.requestUntil) { // Nobody answered.
-				be.requestUntil = -1L;
-				be.print(WX, "NO ANSWER\n");
-			}
 			if(be.isReceiving() && now % MOTOR_TICKS == 0 && level instanceof net.minecraft.server.level.ServerLevel serverLevel)
 				be.motorSound(serverLevel);
 			boolean receiving = be.isReceiving();
@@ -261,16 +255,8 @@ public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 		return level != null && level.getGameTime() < receivingUntil;
 	}
 
-	/**
-	 * A packet a radio next to it decoded: RTTY prints, unless it is sending or being typed on (half duplex); a solar
-	 * bulletin prints if SOLAR WX is waiting for one.
-	 */
+	/** A packet a radio next to it decoded: RTTY prints, unless it is sending or being typed on (half duplex). */
 	public void receive(TncPacket packet) {
-		if(packet.kind() == TncPacket.Kind.SOLAR && requestUntil >= 0L && level != null && seen.remember(packet.id())) {
-			requestUntil = -1L;
-			printLines(packet.from(), packet.solarLines());
-			return;
-		}
 		if(packet.kind() != TncPacket.Kind.RTTY || level == null || !seen.remember(packet.id()))
 			return;
 		long now = level.getGameTime();
@@ -280,53 +266,6 @@ public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 		print(packet.from(), packet.text());
 		if(level instanceof net.minecraft.server.level.ServerLevel server) // Typewriter Thunder: RTTY copied here.
 			com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grantNear(server, worldPosition, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.STATION_RANGE, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.TYPEWRITER_THUNDER);
-	}
-
-	/**
-	 * SOLAR WX. With the server's {@code solar_weather_station_needs_radio} off, the local report; with an Ionospheric
-	 * Processor beside it (or beside one of its radios), that processor's bulletin straight away; otherwise it asks over
-	 * the air through its radios and prints what a processor answers, or NO ANSWER after {@link #REQUEST_TICKS}.
-	 */
-	public void printReport() {
-		if(level == null)
-			return;
-		if(!RadiocraftServerConfig.TELETYPE_NEEDS_RADIO.get()) {
-			for(Component line : getReportLines())
-				print(WX, Rtty.sanitize(line.getString(), RTTY_LINE_MAX) + "\n");
-			return;
-		}
-		IonosphericProcessorBlockEntity processor = IonosphericProcessorBlockEntity.nearby(level, worldPosition, getRadios().stream().map(BlockEntity::getBlockPos).toList());
-		if(processor != null) {
-			if(processor.isOnline())
-				printLines(processor.sender(), processor.bulletinLines());
-			else
-				print(WX, "PROCESSOR HAS NO IONOSONDE\n");
-			return;
-		}
-		if(requestUntil >= 0L)
-			return; // Still waiting for the last one.
-		TncPacket query = TncPacket.query(level.getRandom().nextLong(), sender(), TncPacket.TOPIC_SOLAR);
-		seen.remember(query.id());
-		boolean sent = false;
-		for(RadioBlockEntity radio : getRadios())
-			sent |= radio.isPowered() && radio.sendData(query);
-		if(!sent) {
-			print(WX, "NO RADIO ON\n");
-			return;
-		}
-		requestUntil = level.getGameTime() + REQUEST_TICKS;
-		print(WX, "QRU SOLAR?\n");
-	}
-
-	/** True while SOLAR WX waits for an answer over the air. */
-	public boolean isRequesting() {
-		return requestUntil >= 0L;
-	}
-
-	/** Prints a report from {@code from}, a line each. */
-	private void printLines(String from, List<String> lines) {
-		for(String line : lines)
-			print(from, Rtty.sanitize(line, RTTY_LINE_MAX) + "\n");
 	}
 
 	/**
@@ -669,7 +608,7 @@ public class TeletypeBlockEntity extends BlockEntity implements MenuProvider {
 		return lines;
 	}
 
-	/** The one-line report, kept for tools and tests; SOLAR WX prints {@link #getReportLines()}. */
+	/** The one-line report, kept for tools and tests. */
 	public Component getReport() {
 		if(!hasRadio())
 			return Component.translatable("message.radiocraft.solar_weather_station.no_radio");

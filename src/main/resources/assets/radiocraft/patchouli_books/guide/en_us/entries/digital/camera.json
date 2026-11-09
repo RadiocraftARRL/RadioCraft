@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The $(item)Camera$() photographs what you see. $(thing)Hold right click$() to raise it: the viewfinder marks the square the photo will be, and the $(thing)scroll wheel$() zooms from 1x to 3x. $(thing)Let go$() to take it. The photo comes out on a sheet of $(item)Photo Paper$() from your inventory, without your hand or the HUD."
+      "text": "The $(item)Camera$() photographs what you see. $(thing)Hold right click$() to raise it: the viewfinder marks the square the photo will be, and the $(thing)scroll wheel$() zooms from 1x to 3x. $(thing)Left click$() to take it, and let go of right click to lower the camera. The photo comes out on a sheet of $(item)Photo Paper$() from your inventory, without your hand or the HUD."
     },
     {
       "type": "patchouli:text",

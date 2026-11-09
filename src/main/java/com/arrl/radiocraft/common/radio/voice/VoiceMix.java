@@ -61,9 +61,17 @@ public final class VoiceMix {
 	 * @param fmSignal The signal's strength on an FM receiver, below 0 for SSB/AM.
 	 * @param onAir    How strong it counts in a mix, whatever the noise did to {@code level}: ranks and weights it.
 	 * @param multipath How strong its late sky path gets, 0 to 1.
+	 * @param amHiss   On an AM receiver, the hiss under it ({@link ReceiverMix#amHiss}), 0 to 1; below 0 otherwise. AM mixes
+	 *                 as SSB does (everyone heard at once).
 	 */
 	public record Signal(Object key, @Nullable UUID source, short[] pcm, double level, double rasp, double pitchShiftHz,
-						 double splatter, double qrm, double fmSignal, double onAir, double multipath) {
+						 double splatter, double qrm, double fmSignal, double onAir, double multipath, double amHiss) {
+		/** Not AM. */
+		public Signal(Object key, @Nullable UUID source, short[] pcm, double level, double rasp, double pitchShiftHz,
+					  double splatter, double qrm, double fmSignal, double onAir, double multipath) {
+			this(key, source, pcm, level, rasp, pitchShiftHz, splatter, qrm, fmSignal, onAir, multipath, -1.0D);
+		}
+
 		/** With its strength on air taken from {@code fmSignal} or, for SSB, {@code level}. */
 		public Signal(Object key, @Nullable UUID source, short[] pcm, double level, double rasp, double pitchShiftHz,
 					  double splatter, double qrm, double fmSignal) {
@@ -72,6 +80,10 @@ public final class VoiceMix {
 
 		public boolean fm() {
 			return fmSignal >= 0.0D;
+		}
+
+		public boolean am() {
+			return amHiss >= 0.0D;
 		}
 
 		/** How strong it is on air, to rank it against the others. */
@@ -208,6 +220,8 @@ public final class VoiceMix {
 				short[] pcm = track.processor.process(s.pcm().clone(), settings, s.level() * loudness, s.rasp(), s.pitchShiftHz(), s.splatter(), s.qrm(), s.multipath());
 				if(s.fm())
 					fm.fmFade(pcm, s.fmSignal(), s.level() * loudness, settings.smoothSeconds());
+				if(s.am())
+					track.processor.amHiss(pcm, s.amHiss(), s.level() * loudness);
 				settleMixGain(pcm);
 				return new Mixed(pcm, s);
 			}
@@ -319,6 +333,8 @@ public final class VoiceMix {
 		private void add(double[] sum, Signal s, double pitchShiftHz, double splatter, double weight, RadioVoiceProcessor.Settings settings, double loudness, long nanos) {
 			Track track = track(s, nanos);
 			short[] pcm = track.processor.process(s.pcm().clone(), settings, s.level() * loudness, s.rasp(), pitchShiftHz, splatter, s.qrm(), s.multipath());
+			if(s.am())
+				track.processor.amHiss(pcm, s.amHiss(), s.level() * loudness);
 			if(track.weight < 0.0D)
 				track.weight = weight;
 			double glide = RadioVoiceProcessor.coefficient(0.005D);

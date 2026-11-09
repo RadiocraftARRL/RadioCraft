@@ -598,4 +598,77 @@ public class RepeaterGameTests {
                 })
                 .thenSucceed();
     }
+
+    private static final BlockPos LOOP_A = new BlockPos(4, 2, 2), LOOP_B = new BlockPos(9, 2, 2), LOOP_STATION = new BlockPos(6, 2, 4);
+
+    /** Two repeaters, no antennas (bare connectors, a few blocks apart), each listening where the other transmits. */
+    private static void buildLoop(GameTestHelper helper) {
+        helper.setBlock(LOOP_A, RadiocraftBlocks.VHF_REPEATER.get());
+        helper.setBlock(LOOP_B, RadiocraftBlocks.VHF_REPEATER.get());
+        helper.setBlock(LOOP_STATION, RadiocraftBlocks.VHF_BASE_STATION.get());
+    }
+
+    private static void setUpLoop(GameTestHelper helper) {
+        CompoundTag a = new CompoundTag();
+        a.putFloat("rxFrequency", 145_000_000.0F);
+        a.putFloat("txFrequency", 145_600_000.0F);
+        a.putInt("hang", 10);
+        repeater(helper, LOOP_A).applySettings(a);
+        CompoundTag b = new CompoundTag();
+        b.putFloat("rxFrequency", 145_600_000.0F);
+        b.putFloat("txFrequency", 145_000_000.0F);
+        b.putInt("hang", 10);
+        repeater(helper, LOOP_B).applySettings(b);
+        station(helper, LOOP_STATION).setFrequency(145_000_000.0F);
+        powerOn(helper, LOOP_A);
+        powerOn(helper, LOOP_B);
+        powerOn(helper, LOOP_STATION);
+    }
+
+    /**
+     * Two repeaters on each other's frequencies (2026-11-09): a frame goes round and round, one relay a tick, howling,
+     * instead of recursing until the stack overflows. They keep each other keyed long after the station let go.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = "repeater_loop")
+    public static void loopedRepeatersHowlInsteadOfCrashing(GameTestHelper helper) {
+        buildLoop(helper);
+        long[] spokeAt = new long[1];
+        helper.startSequence()
+                .thenIdle(2)
+                .thenExecute(() -> setUpLoop(helper))
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    spokeAt[0] = helper.getLevel().getGameTime();
+                    speak(helper, LOOP_STATION); // Survives: no StackOverflowError.
+                    helper.assertTrue(heardNow(helper, LOOP_B), "B did not hear A's output");
+                })
+                .thenIdle(40)
+                .thenExecute(() -> helper.assertTrue(repeater(helper, LOOP_A).getLastSignalGameTime() > spokeAt[0] + 20,
+                        "The loop died out: A last heard something at " + repeater(helper, LOOP_A).getLastSignalGameTime() + ", spoke at " + spokeAt[0]))
+                .thenSucceed();
+    }
+
+    /** The same pair with repeater_loop_protection on: nothing goes round, and both drop after their hang time. */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = "repeater_loop_protected")
+    public static void loopProtectionStopsTheLoop(GameTestHelper helper) {
+        buildLoop(helper);
+        boolean was = com.arrl.radiocraft.RadiocraftServerConfig.REPEATER_LOOP_PROTECTION.get();
+        com.arrl.radiocraft.RadiocraftServerConfig.REPEATER_LOOP_PROTECTION.set(true);
+        long[] spokeAt = new long[1];
+        helper.startSequence()
+                .thenIdle(2)
+                .thenExecute(() -> setUpLoop(helper))
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    spokeAt[0] = helper.getLevel().getGameTime();
+                    speak(helper, LOOP_STATION);
+                })
+                .thenIdle(60)
+                .thenExecute(() -> {
+                    com.arrl.radiocraft.RadiocraftServerConfig.REPEATER_LOOP_PROTECTION.set(was);
+                    helper.assertFalse(repeater(helper, LOOP_A).isTransmitting() || repeater(helper, LOOP_B).isTransmitting(),
+                            "With loop protection the repeaters should have dropped");
+                })
+                .thenSucceed();
+    }
 }

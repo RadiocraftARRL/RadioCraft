@@ -34,6 +34,12 @@ final class CuriosIntegration {
                 .orElse(List.of());
     }
 
+    static List<ItemStack> wornCbPortables(Player player) {
+        return CuriosApi.getCuriosInventory(player)
+                .map(inventory -> inventory.findCurios(stack -> stack.getItem() instanceof com.arrl.radiocraft.common.items.CbPortableItem).stream().map(SlotResult::stack).toList())
+                .orElse(List.of());
+    }
+
     static List<ItemStack> wornFccBadges(Player player) {
         return CuriosApi.getCuriosInventory(player)
                 .map(inventory -> inventory.findCurios(stack -> stack.getItem() instanceof com.arrl.radiocraft.common.items.FccBadgeItem).stream().map(SlotResult::stack).toList())

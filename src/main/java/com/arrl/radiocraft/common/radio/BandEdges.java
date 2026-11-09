@@ -30,8 +30,14 @@ public final class BandEdges {
     public static float tuneMin(Band band) {
         if(!band.isAmateur())
             return band.minFrequency();
-        return (float)(band.minFrequency() - band.width() * EXTENSION);
+        float min = (float)(band.minFrequency() - band.width() * EXTENSION);
+        if("10m".equals(band.name())) // Down through the CB channels, as modded 10m rigs reach ("freeband", 2026-11-08).
+            min = Math.min(min, FREEBAND_BOTTOM_HZ);
+        return min;
     }
+
+    /** How far down a 10m radio tunes: below CB channel 1. */
+    public static final float FREEBAND_BOTTOM_HZ = 26_900_000.0F;
 
     /** Highest frequency a radio on {@code band} tunes to. */
     public static float tuneMax(Band band) {

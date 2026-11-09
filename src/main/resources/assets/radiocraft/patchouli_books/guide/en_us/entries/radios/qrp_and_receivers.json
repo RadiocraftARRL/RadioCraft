@@ -17,6 +17,19 @@
       "type": "patchouli:crafting",
       "recipe": "radiocraft:hf_receiver",
       "recipe2": "radiocraft:vhf_receiver"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "VHF Receiver",
+      "text": "A 2 m FM listener. Press power and the display shows the frequency. The left knob tunes (drag it or scroll), the right one is the volume, and the speaker button mutes it. Hover any control in its screen to see what it does.$(br2)With no antenna it hears a few blocks; coax a VHF antenna to it for range."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The six numbered buttons are $(thing)memories$(). An empty one stores the frequency shown; a stored one is pressed in to listen there. Press in two or more and it $(thing)scans$() them, stopping on a signal. Shift + click stores over a memory.$(br2)The lamp over a button lights while a signal comes in on it. Turning the tuning knob goes back to the dial."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "It runs from a power wire, or from a $(item)Small NiCd$() or $(item)Small Alkaline Battery$(): shift + right-click it with the cell, with an empty hand to take it out.$(br2)On the cell alone it listens about ten days, half as long as a weather alert receiver, and far less while it plays signals. The wire never charges the cell, and a flat alkaline comes out dead."
     }
   ]
 }

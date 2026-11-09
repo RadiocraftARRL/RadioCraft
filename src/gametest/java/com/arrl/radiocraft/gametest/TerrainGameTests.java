@@ -176,6 +176,36 @@ public class TerrainGameTests {
                 .thenSucceed();
     }
 
+    /**
+     * A chunk nobody has loaded, read by a path, is noted and filled from the world generator on the server thread,
+     * without loading it; a chunk the atlas already has keeps its heights.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = "terrain_worldgen")
+    public static void unloadedChunksFillFromWorldgen(GameTestHelper helper) {
+        RadiocraftServerConfig.TERRAIN_ENABLED.set(true);
+        helper.startSequence()
+                .thenExecute(() -> {
+                    net.minecraft.server.level.ServerLevel level = helper.getLevel();
+                    com.arrl.radiocraft.common.radio.terrain.TerrainAtlas atlas = TerrainPropagation.openAtlas(level);
+                    int x = helper.absolutePos(BALUN).getX() + 40_000, z = helper.absolutePos(BALUN).getZ() + 40_000;
+                    helper.assertTrue(level.getChunkSource().getChunkNow(x >> 4, z >> 4) == null, "The far chunk is loaded");
+                    helper.assertTrue(atlas.surface(x, z) == com.arrl.radiocraft.common.radio.terrain.TerrainMath.UNKNOWN, "The far chunk is mapped already");
+                    TerrainPropagation.fillFromWorldgen(level, atlas, 8192);
+                    int filled = atlas.surface(x, z);
+                    short[] expected = TerrainPropagation.estimate(level, x >> 4, z >> 4);
+                    helper.assertTrue(filled != com.arrl.radiocraft.common.radio.terrain.TerrainMath.UNKNOWN && filled == expected[((x & 15) >> 2) * 4 + ((z & 15) >> 2)],
+                            "The far chunk was not filled from worldgen: " + filled);
+                    helper.assertTrue(level.getChunkSource().getChunkNow(x >> 4, z >> 4) == null, "Filling loaded the chunk");
+                    short[] mine = new short[16];
+                    java.util.Arrays.fill(mine, (short)7);
+                    atlas.put((x >> 4) + 1, z >> 4, mine, 1_000_000);
+                    atlas.putEstimate((x >> 4) + 1, z >> 4, expected, 1_000_000);
+                    helper.assertTrue(atlas.surface(x + 16, z) == 7, "An estimate replaced heights the atlas had");
+                    RadiocraftServerConfig.TERRAIN_ENABLED.set(false);
+                })
+                .thenSucceed();
+    }
+
     private static double twoMetre(GameTestHelper helper, BlockPos from, BlockPos to) {
         return BandCalculateCommands.calculate(helper.getLevel(), from, to).stream()
                 .filter(result -> result.band().name().equals("2m")).findFirst().orElseThrow().score();

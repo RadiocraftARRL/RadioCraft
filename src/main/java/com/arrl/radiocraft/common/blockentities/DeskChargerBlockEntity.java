@@ -202,6 +202,8 @@ public class DeskChargerBlockEntity extends BlockEntity implements GeoBlockEntit
         ItemStack radio = be.inventory.getStackInSlot(0);
         if (radio == null || radio.isEmpty()) return;
 
+                if (com.arrl.radiocraft.common.items.PortableBatteries.hasAlkaline(radio)) return; // Alkaline cells are not rechargeable.
+
         // Ensure item has energy capability
         net.neoforged.neoforge.energy.IEnergyStorage radioEnergy = radio.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM);
         if (radioEnergy == null) return;

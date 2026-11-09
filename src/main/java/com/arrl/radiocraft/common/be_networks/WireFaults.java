@@ -191,10 +191,13 @@ public final class WireFaults {
 		BlockState state = strand.state(level);
 		if(state == null)
 			return out;
-		for(BlockPos link : strand.kind().getLinks(level, strand.pos(), state).keySet())
+				for(BlockPos link : strand.kind().getLinks(level, strand.pos(), state).keySet()) {
+			if(WireUtils.skipUnloaded(level, link))
+				continue; // The recheck stops at unloaded chunks rather than loading them.
 			for(Strand next : powerStrands(level, link))
-				if(strand.kind().joins(next.kind()))
+								if(strand.kind().joins(next.kind()))
 					out.add(next);
+		}
 		return out;
 	}
 
@@ -275,14 +278,20 @@ public final class WireFaults {
 			Fault fault = entry.getValue();
 			if(!level.isLoaded(pos))
 				continue;
-			if((time + pos.hashCode()) % RECHECK_TICKS == 0) {
-				Kind kind = classify(level, pos);
-				if(kind == null) {
+						if((time + pos.hashCode()) % RECHECK_TICKS == 0) {
+				Kind[] kind = new Kind[1];
+				// Once a second per fault: walk only loaded wire, or a fault on a long line kept every chunk along it loaded.
+				WireUtils.loadedOnly(() -> {
+					kind[0] = classify(level, pos);
+					if(kind[0] != null) {
+						fault.kind = kind[0];
+						recheckSupply(level, pos, fault);
+					}
+				});
+				if(kind[0] == null) {
 					it.remove();
 					continue;
 				}
-				fault.kind = kind;
-				recheckSupply(level, pos, fault);
 			}
 			if(fault.stored <= 0L)
 				continue;

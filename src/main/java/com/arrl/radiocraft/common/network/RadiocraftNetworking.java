@@ -29,11 +29,13 @@ public class RadiocraftNetworking {
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SRadioScrollTunePacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SRadioScrollTunePacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SRadioScrollTunePacket::handle);
         registrar.playToServer(SBlockRadioControlPacket.TYPE, SBlockRadioControlPacket.STREAM_CODEC, SBlockRadioControlPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SCbRadioPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SCbRadioPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SCbRadioPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SMarineRadioPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SMarineRadioPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SMarineRadioPacket::handle);
         registrar.playToClient(CWireEndPosUpdatePacket.TYPE, CWireEndPosUpdatePacket.STREAM_CODEC, CWireEndPosUpdatePacket::handle);
         registrar.playToClient(CNoisePacket.TYPE, CNoisePacket.STREAM_CODEC, CNoisePacket::handle);
         registrar.playToServer(SPlayerClickHoldUpdate.TYPE, SPlayerClickHoldUpdate.STREAM_CODEC, SPlayerClickHoldUpdate::handle);
         registrar.playToServer(SWornPttPacket.TYPE, SWornPttPacket.STREAM_CODEC, SWornPttPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket::handle);
         registrar.playToServer(SCWBufferPacket.TYPE, SCWBufferPacket.STREAM_CODEC, SCWBufferPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SClaimCallsignPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SClaimCallsignPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SClaimCallsignPacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CCallsignPromptPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CCallsignPromptPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CCallsignPromptPacket::handle);
@@ -57,6 +59,7 @@ public class RadiocraftNetworking {
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SRealWorldInterfacePacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SRealWorldInterfacePacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SRealWorldInterfacePacket::handle);
         registrar.playToServer(SAntennaTunerDialPacket.TYPE, SAntennaTunerDialPacket.STREAM_CODEC, SAntennaTunerDialPacket::handle);
         registrar.playToServer(SDuplexerScrewPacket.TYPE, SDuplexerScrewPacket.STREAM_CODEC, SDuplexerScrewPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SVHFReceiverPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SVHFReceiverPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SVHFReceiverPacket::handle); // Memories, scan and mute (2026-11-09).
         registrar.playToServer(SChargeControllerTogglePacket.TYPE, SChargeControllerTogglePacket.STREAM_CODEC, SChargeControllerTogglePacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CPhotoShutterPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CPhotoShutterPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CPhotoShutterPacket::handle);
         // QSL cards (computer batch 3C): writing on a card, taking one out of an album.

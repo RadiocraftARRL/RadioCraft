@@ -53,7 +53,13 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addItem(RadiocraftItems.TELEPHONE_HANDSET, "Telephone Handset");
 			provider.addItem(RadiocraftItems.HF_CIRCUIT_BOARD, "HF Circuit Board");
 			provider.addItem(RadiocraftItems.ALL_BAND_CIRCUIT_BOARD, "All-Band Circuit Board");
-			provider.addItem(RadiocraftItems.SMALL_BATTERY, "Small Alkaline Battery");
+			provider.addItem(RadiocraftItems.SMALL_BATTERY, "Small NiCd Battery");
+						provider.addItem(RadiocraftItems.SMALL_ALKALINE_BATTERY, "Small Alkaline Battery");
+			provider.addItem(RadiocraftItems.DEAD_ALKALINE_BATTERY, "Dead Alkaline Battery");
+			provider.add("tooltip.radiocraft.dead_alkaline_battery", "A spent alkaline cell. Smelt it to get its steel can back as an iron nugget.");
+			provider.add("tooltip.radiocraft.small_alkaline_battery", "Full when made, but it cannot be recharged: no charger takes it, and the rechargeable radios want a Small NiCd Battery. A battery weather radio runs on it for weeks.");
+			provider.addItem(RadiocraftItems.ALL_APPS_FLOPPY, "All Applications Floppy");
+			provider.add("tooltip.radiocraft.all_apps_floppy", "Creative only. Put it in a radio computer's drive: every program that comes on a floppy (but the secret ones) is installed at once, and the disk comes back out.");
 			provider.addItem(RadiocraftItems.APRS_MODULE, "APRS Module");
 			provider.addItem(RadiocraftItems.MARS_MOD, "MARS Mod");
 			provider.addItem(RadiocraftItems.RADIO_CLONER, "Radio Cloner");
@@ -72,6 +78,11 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addBlock(RadiocraftBlocks.SOLAR_PANEL, "Solar Panel");
 			provider.addBlock(RadiocraftBlocks.TELETYPE, "Teletype Machine");
 			provider.addBlock(RadiocraftBlocks.LARGE_BATTERY, "Large Battery");
+			provider.addBlock(RadiocraftBlocks.STABLE_CHEMICAL_BATTERY, "Stable Chemical Battery");
+			provider.add("container.radiocraft.stable_chemical_battery", "Stable Chemical Battery");
+			provider.add("tooltip.radiocraft.stable_chemical_battery", "Not rechargeable. It sits inert and keeps its charge as long as you like, until it gets a redstone signal; then it runs its circuit until it is flat.");
+			provider.add("tooltip.radiocraft.stable_chemical_battery.sealed", "Sealed, full");
+			provider.add("tooltip.radiocraft.stable_chemical_battery.active", "Seal broken, %s%% left");
 			addCrystalRadio(provider, RadiocraftItems.VHF_BASE_STATION_VARIANTS, "VHF Base Station");
 			provider.addBlock(RadiocraftBlocks.VHF_RECEIVER, "VHF Receiver");
 			provider.addBlock(RadiocraftBlocks.VHF_REPEATER, "VHF Repeater");
@@ -98,11 +109,39 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addBlock(RadiocraftBlocks.DUPLEXER, "Duplexer");
 			provider.addBlock(RadiocraftBlocks.ANTENNA_SPLITTER, "Antenna Splitter");
 			provider.addBlock(RadiocraftBlocks.ANTENNA_SWITCH, "Antenna Switch");
-			provider.add("tooltip.radiocraft.antenna_switch", "One radio, three antennas: the brass input turns to the radio's coax by itself. Right click to switch between outputs 1, 2 and 3.");
+			provider.add("tooltip.radiocraft.antenna_switch", "One radio, three antennas: the brass input turns to the radio's coax by itself. Right click to switch between outputs 1, 2 and 3. A redstone signal turns it once to the next output with coax on it.");
 			provider.add("message.radiocraft.antenna_switch", "Antenna %s");
 			provider.add("tooltip.radiocraft.antenna_splitter", "Receive only: coax from one antenna to several radios on its other sides. Each hears the antenna, a little weaker; none can transmit through it.");
 			provider.addBlock(RadiocraftBlocks.WIRE_JUNCTION, "Wire Junction");
 			provider.add("tooltip.radiocraft.wire_junction", "Joins power wire of any colour run into it. Not coax.");
+			provider.addBlock(RadiocraftBlocks.POWER_SWITCH_ON_OFF, "Power Switch - On/Off");
+			provider.add("tooltip.radiocraft.power_switch_on_off", "Power wire in on the side facing you and out the side opposite. On, they are one circuit; off, two. Right click or a redstone signal throws it.");
+			provider.addBlock(RadiocraftBlocks.POWER_SWITCH_LEFT_RIGHT, "Power Switch - Left/Right");
+			provider.add("tooltip.radiocraft.power_switch_left_right", "Power wire in on the side facing you, out to the left or the right: the input joins whichever the lever points to. Right click or a redstone signal throws it.");
+			provider.add("message.radiocraft.power_switch.on", "On");
+			provider.add("message.radiocraft.power_switch.off", "Off");
+			provider.add("message.radiocraft.power_switch.left", "Left");
+			provider.add("message.radiocraft.power_switch.right", "Right");
+			provider.addBlock(RadiocraftBlocks.BATTERY_METER, "Battery Meter");
+			provider.add("tooltip.radiocraft.battery_meter", "Put it on a power wire: shows the voltage and charge of the batteries on it. Power passes through. A comparator reads the charge.");
+			provider.add("message.radiocraft.battery_meter", "%s V, %s%% charged (%s batteries), %s");
+			provider.add("message.radiocraft.battery_meter.none", "No batteries on this wire");
+			provider.add("message.radiocraft.battery_meter.charging", "charging at %s FE/t, full in %s");
+			provider.add("message.radiocraft.battery_meter.discharging", "discharging at %s FE/t, empty in %s");
+			provider.add("message.radiocraft.battery_meter.rest", "resting");
+			provider.add("message.radiocraft.battery_meter.under_a_minute", "under a minute");
+			provider.add("message.radiocraft.battery_meter.minutes", "%s min");
+			provider.add("message.radiocraft.battery_meter.hours", "%s h %s min");
+			provider.addBlock(RadiocraftBlocks.LIGHTNING_ARRESTOR, "Lightning Arrestor");
+			provider.add("tooltip.radiocraft.lightning_arrestor", "Put it in the coax between antenna and radio, and run ground wire (green) from it to a ground rod. A lightning strike on the antenna stops here: nothing beyond it is harmed. Without a good ground it stops only some strikes. A grounded arrestor also grounds the radios on its coax.");
+			provider.addBlock(RadiocraftBlocks.GROUND_ROD, "Ground Rod");
+			provider.add("tooltip.radiocraft.ground_rod", "Drive it into the ground (stack rods down a hole to go deeper) and run ground wire (green wire) to a radio or a lightning arrestor. Not required: a good ground lowers HF noise. Damp clay and mud are best; sand, rock and frozen ground need deeper or more rods. Use it to measure it. Never put power on a ground run.");
+			provider.add("message.radiocraft.ground_rod", "Ground: %s (%s%%)");
+			provider.add("message.radiocraft.ground.none", "none");
+			provider.add("message.radiocraft.ground.poor", "poor");
+			provider.add("message.radiocraft.ground.fair", "fair");
+			provider.add("message.radiocraft.ground.good", "good");
+			provider.add("message.radiocraft.ground.excellent", "excellent");
 			provider.addBlock(RadiocraftBlocks.ANTENNA_TUNER, "Antenna Tuner");
 			provider.addBlock(RadiocraftBlocks.AUTO_TUNER, "Automatic Antenna Tuner");
 			provider.addBlock(RadiocraftBlocks.ANTENNA_CONNECTOR, "Antenna Connector");
@@ -114,7 +153,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addBlock(RadiocraftBlocks.WIRE_BUNDLE, "Wire Bundle");
 			RadiocraftBlocks.COLOURED_COAX.forEach((colour, block) -> provider.addBlock(block, dyeName(colour) + " Coaxial Wire"));
 			RadiocraftBlocks.COLOURED_DATA_WIRE.forEach((colour, block) -> provider.addBlock(block, dyeName(colour) + " Data Wire"));
-			RadiocraftBlocks.COLOURED_WIRE.forEach((colour, block) -> provider.addBlock(block, dyeName(colour) + " Wire"));
+			// Green power wire is ground wire, as electricians colour it (2026-11-08): it bonds ground rods.
+			RadiocraftBlocks.COLOURED_WIRE.forEach((colour, block) -> provider.addBlock(block, colour == net.minecraft.world.item.DyeColor.GREEN ? "Ground Wire" : dyeName(colour) + " Wire"));
 			provider.addBlock(RadiocraftBlocks.RADIO_INTERFACE, "Radio Interface");
 			provider.addBlock(RadiocraftBlocks.APRS_TERMINAL, "H19 APRS Terminal");
 			RadiocraftBlocks.RADIO_FAXES.forEach((wood, block) -> provider.addBlock(block, woodName(wood) + " Radio Fax"));
@@ -297,7 +337,6 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add(Radiocraft.translationKey("screen", "teletype.paper"), "PAPER: %s LINES");
 			provider.add(Radiocraft.translationKey("screen", "teletype.paper_out"), "PAPER OUT");
 			provider.add(Radiocraft.translationKey("screen", "teletype.edit_callsign"), "TELETYPE CALLSIGN: ENTER saves, empty claims yours");
-			provider.add(Radiocraft.translationKey("screen", "teletype.tip.solar"), "SOLAR WX: print the solar weather (needs a radio with an antenna next to it)");
 			provider.add(Radiocraft.translationKey("screen", "teletype.tip.callsign"), "Callsign: click to change (empty claims your own)");
 			provider.add(Radiocraft.translationKey("screen", "teletype.tip.set_by"), "%s, set by %s");
 			provider.add(Radiocraft.translationKey("screen", "teletype.tip.paper_out"), "Out of paper: right click the teletype with paper, or feed it with a hopper");
@@ -457,7 +496,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
             for(String side : new String[] {"north", "east", "south", "west"})
                 provider.add(Radiocraft.translationKey("message", "side." + side), side);
 
-            provider.add(Radiocraft.translationKey("tooltip", "teletype"), "RTTY through the radios it touches, printed on its own paper. SOLAR WX prints the solar conditions, which it reads through a radio with an antenna (not a dummy load) next to it. A comparator reads 1 (blackout) to 6 (great).");
+            provider.add(Radiocraft.translationKey("tooltip", "teletype"), "RTTY through the radios it touches, printed on its own paper. A comparator reads the solar conditions through a radio with an antenna (not a dummy load) next to it: 1 (blackout) to 6 (great).");
             provider.add(Radiocraft.translationKey("message", "solar_weather_station.report"), "Solar conditions: %s (noise floor %s%%). %s band: %s");
             provider.add(Radiocraft.translationKey("message", "solar_weather_station.no_data"), "No solar weather data yet");
             provider.add(Radiocraft.translationKey("message", "solar_weather_station.no_radio"), "No signal: the station needs a radio next to it with an antenna (not a dummy load)");
@@ -565,11 +604,10 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
             provider.add(Radiocraft.translationKey("tooltip", "qrp_radio_40m"), "Low power 40m transceiver: shorter range, lighter to build. Needs a 40m antenna on coax.");
             provider.add(Radiocraft.translationKey("tooltip", "hf_receiver"), "Listens on the HF bands. Receive only.");
             provider.add(Radiocraft.translationKey("tooltip", "vhf_base_station"), "2m FM transceiver for local contacts and repeaters. Needs a VHF antenna on coax.");
-            provider.add(Radiocraft.translationKey("tooltip", "vhf_receiver"), "Listens on 2m FM. Receive only.");
             provider.add(Radiocraft.translationKey("tooltip", "energy_stored"), "Energy: %s / %s FE");
             provider.add(Radiocraft.translationKey("tooltip", "energy_stored_joules"), "Energy: %s / %s J");
             provider.add(Radiocraft.translationKey("tooltip", "battery_percentage"), "Charge: %s%%");
-			provider.add(Radiocraft.translationKey("tooltip", "small_battery"), "A common small battery, typically starts with 50-70% charge");
+			provider.add(Radiocraft.translationKey("tooltip", "small_battery"), "A rechargeable NiCd pack for handhelds and portables: swap charge with a radio, top it up in a charger or charge controller. Starts 50-70% charged.");
 			provider.add(Radiocraft.translationKey("tooltip", "vhf_handheld_battery_swap"), "Click battery on VHF Handheld to swap batteries");
 			provider.add(Radiocraft.translationKey("tooltip", "vhf_handheld_aprs"), "APRS module installed");
 			provider.add(Radiocraft.translationKey("message", "scroll_tuned"), "%s MHz");
@@ -609,6 +647,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add(Radiocraft.translationKey("screen", "band_plan.legend"), "Legend");
 			addCommercialRadios(provider);
 			addMarineRadios(provider);
+			addCbRadios(provider);
 			addCamera(provider);
 			addRadioComputer(provider);
 			addOfficeApps(provider);
@@ -632,6 +671,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.QslLang.add(provider); // and QSL cards.
 			addAdsb(provider);
 			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
+			com.arrl.radiocraft.datagen.lang.VHFReceiverLang.add(provider); // VHF receiver: memories, scan, mute and its cell (2026-11-09).
 			addFccGear(provider);
 			addRealWorldInterface(provider);
 			provider.add(Radiocraft.translationKey("tooltip", "crystal_pure"), "Pure crystal: a little less noise.");
@@ -753,6 +793,21 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("screen", "marine_handheld.title"), "Marine Handheld");
 	}
 
+	/** The CB radios (2026-11-08). */
+	private static void addCbRadios(LanguageProvider provider) {
+		provider.addItem(RadiocraftItems.CB_PORTABLE, "TRC-217 CB Portable");
+		provider.addBlock(RadiocraftBlocks.CB_MOBILE_5875, "5875 CB Mobile");
+		provider.addBlock(RadiocraftBlocks.CB_MOBILE_PC68, "PC68 CB Mobile");
+		provider.addBlock(RadiocraftBlocks.CB_GROUND_PLANE_ANTENNA, "CB Ground Plane Antenna");
+		provider.add(Radiocraft.translationKey("tooltip", "cb_ground_plane_antenna"), "A vertical five blocks tall with radials at its foot, cut for CB: matched on all 40 channels. It works on 10m at a push (about 1.8:1 at the bottom of the band, worse higher up). Coax goes to the base.");
+		provider.add(Radiocraft.translationKey("tooltip", "cb.channel"), "Channel %s (%s)");
+		provider.add(Radiocraft.translationKey("tooltip", "cb.no_licence"), "Citizens Band: no licence required");
+		provider.add(Radiocraft.translationKey("tooltip", "cb.portable"), "40 AM channels, 5 W, on its own whip (half a mobile's range). Turn the volume up to switch it on; hold right click to talk; sneak and use for its knobs. Wear it on your back (Curios) and talk with the Talk on Worn Radio key. Swap charge with a Small NiCd Battery.");
+		provider.add(Radiocraft.translationKey("tooltip", "cb.5875"), "40 AM channels, 5 W. Clock, signal/power and SWR/modulation meters, speech compressor. Sneak and use for its hand mic. Needs a 10m or CB antenna and power.");
+		provider.add(Radiocraft.translationKey("tooltip", "cb.pc68"), "40 AM channels, 5 W, with a CH9 switch. Sneak and use for its hand mic. Needs a 10m or CB antenna and power.");
+		provider.add(Radiocraft.translationKey("screen", "cb_portable.title"), "CB Portable");
+	}
+
 	/** The camera, photo paper and the photos it prints (1.12 step 4). */
 	private static void addCamera(LanguageProvider provider) {
 		provider.addItem(RadiocraftItems.CAMERA, "Camera");
@@ -773,7 +828,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("screen", "camera.color"), "COLOR");
 		provider.add(Radiocraft.translationKey("screen", "camera.bw"), "B&W");
 		provider.add(Radiocraft.translationKey("screen", "camera.no_paper"), "NO PAPER");
-		provider.add(Radiocraft.translationKey("screen", "camera.hint"), "Scroll to zoom, let go to shoot");
+		provider.add(Radiocraft.translationKey("screen", "camera.hint"), "Scroll to zoom, left click to shoot");
 		provider.add(Radiocraft.translationKey("commands", "photos.none"), "You have no photos");
 		provider.add(Radiocraft.translationKey("commands", "photos.header"), "Your photos (%s), oldest first, page %s of %s:");
 		provider.add(Radiocraft.translationKey("commands", "photos.entry"), "#%s, day %s (%s)");

@@ -37,7 +37,7 @@ public class HFRadioAllBandScreen extends HFRadioScreen<HFRadioAllBandMenu> {
     private static final double GOOD_SWR = 2.0D;
 
     public HFRadioAllBandScreen(HFRadioAllBandMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, Radiocraft.id("textures/gui/hf_radio_all_band.png"), Radiocraft.id("textures/gui/hf_radio_all_band_widgets.png"));
+        super(menu, playerInventory, title, Radiocraft.id("textures/gui/hf_radio_all_band_old.png"), Radiocraft.id("textures/gui/hf_radio_all_band_widgets_old.png"));
 
         this.imageWidth = 252;
         this.imageHeight = 142;
@@ -54,8 +54,8 @@ public class HFRadioAllBandScreen extends HFRadioScreen<HFRadioAllBandMenu> {
                 () -> menu.blockEntity.getBandIndex(), this::onTurnBand)); // Band switch
         addRenderableWidget(new ValueButton(leftPos + 86, topPos + 57, 34, 19, 84, 49, widgetsTexture, 256, 256, () -> menu.blockEntity.getCWEnabled(), this::onPressCW));
         addRenderableWidget(new ValueButton(leftPos + 86, topPos + 77, 34, 19, 0, 0, widgetsTexture, 256, 256, this::isSSBSelected, this::onPressSSB)); // SSB button
-        addRenderableWidget(new ValueButton(leftPos + 88, topPos + 100, 26, 26, 0, 138, widgetsTexture, 256, 256, () -> menu.blockEntity.getFMEnabled(), this::onPressFM)); // FM button
-        addRenderableWidget(new HoldButton(leftPos + 35, topPos + 104, 51, 19, 0, 192, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT));
+        addRenderableWidget(new ValueButton(leftPos + 88, topPos + 100, 26, 26, 0, 138, widgetsTexture, 256, 256, () -> menu.blockEntity.getFMEnabled() || menu.blockEntity.getAMEnabled(), this::onPressFM)); // FM / AM button: FM, press again for AM
+        addRenderableWidget(ptt(new HoldButton(leftPos + 35, topPos + 104, 51, 19, 0, 192, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT)));
         addRenderableWidget(new ToggleButton(false, leftPos + 221, topPos + 79, 22, 22, 0, 47, widgetsTexture, 256, 256, (btn) -> {})); // MIC
         addRenderableWidget(new ToggleButton(false, leftPos + 221, topPos + 58, 22, 22, 0, 91, widgetsTexture, 256, 256, (btn) -> {})); // SPK
         addRenderableWidget(new HoldButton(leftPos + 194, topPos + 94, 18, 17, 46, 49, widgetsTexture, 256, 256, (btn) -> onFrequencyButtonUp(null), (btn) -> {}));
@@ -70,9 +70,13 @@ public class HFRadioAllBandScreen extends HFRadioScreen<HFRadioAllBandMenu> {
         menu.blockEntity.setBandIndex(index); // Optimistic; the server re-syncs.
     }
 
+    /** The FM button steps FM, then AM, then FM again (2026-11-08: AM has no button of its own on this panel). */
     private void onPressFM(ValueButton button) {
-        if(menu.blockEntity.getFMEnabled())
-            return; // Mode buttons select: pressing the active one does nothing.
+        if(menu.blockEntity.getFMEnabled()) {
+            SBlockRadioControlPacket.updateServer(menu.blockEntity.getBlockPos(), SBlockRadioControlPacket.Action.SET_AM, true);
+            menu.blockEntity.setAMEnabled(true);
+            return;
+        }
         SBlockRadioControlPacket.updateServer(menu.blockEntity.getBlockPos(), SBlockRadioControlPacket.Action.SET_FM, true);
         menu.blockEntity.setFMEnabled(true);
     }
@@ -86,6 +90,8 @@ public class HFRadioAllBandScreen extends HFRadioScreen<HFRadioAllBandMenu> {
     protected String modeLabel() {
         if(menu.blockEntity.getFMEnabled())
             return "FM";
+        if(menu.blockEntity.getAMEnabled())
+            return "AM";
         return super.modeLabel();
     }
 

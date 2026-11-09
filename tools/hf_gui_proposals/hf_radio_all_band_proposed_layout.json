@@ -1,0 +1,417 @@
+{
+  "texture": "radiocraft:textures/gui/hf_radio_all_band_proposed.png",
+  "width": 256,
+  "height": 158,
+  "controls": [
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 11,
+      "y": 9,
+      "w": 72,
+      "h": 46
+    },
+    {
+      "name": "display",
+      "type": "display",
+      "x": 95,
+      "y": 13,
+      "w": 100,
+      "h": 26
+    },
+    {
+      "name": "power",
+      "type": "button",
+      "x": 206,
+      "y": 11,
+      "w": 18,
+      "h": 12
+    },
+    {
+      "name": "on_lamp",
+      "type": "lamp",
+      "x": 236,
+      "y": 13,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "agc",
+      "type": "knob3",
+      "x": 215,
+      "y": 60,
+      "w": 21,
+      "h": 21
+    },
+    {
+      "name": "meter_po",
+      "type": "button",
+      "x": 36,
+      "y": 71,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "meter_swr",
+      "type": "button",
+      "x": 56,
+      "y": 71,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "band_down",
+      "type": "button",
+      "x": 89,
+      "y": 71,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "band_up",
+      "type": "button",
+      "x": 106,
+      "y": 71,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "mode_ssb",
+      "type": "button",
+      "x": 12,
+      "y": 92,
+      "w": 23,
+      "h": 8
+    },
+    {
+      "name": "mode_cw",
+      "type": "button",
+      "x": 39,
+      "y": 92,
+      "w": 23,
+      "h": 8
+    },
+    {
+      "name": "mode_fm",
+      "type": "button",
+      "x": 66,
+      "y": 92,
+      "w": 23,
+      "h": 8
+    },
+    {
+      "name": "mode_am",
+      "type": "button",
+      "x": 93,
+      "y": 92,
+      "w": 23,
+      "h": 8
+    },
+    {
+      "name": "rx_lamp",
+      "type": "lamp",
+      "x": 13,
+      "y": 104,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "ant_lamp",
+      "type": "lamp",
+      "x": 40,
+      "y": 104,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "tx_lamp",
+      "type": "lamp",
+      "x": 71,
+      "y": 104,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "ptt",
+      "type": "button",
+      "x": 12,
+      "y": 128,
+      "w": 31,
+      "h": 19
+    },
+    {
+      "name": "mic_gain",
+      "type": "knob",
+      "x": 55,
+      "y": 129,
+      "w": 19,
+      "h": 19
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 85,
+      "y": 129,
+      "w": 19,
+      "h": 19
+    },
+    {
+      "name": "tuning",
+      "type": "dial",
+      "x": 123,
+      "y": 80,
+      "w": 68,
+      "h": 68
+    },
+    {
+      "name": "quick",
+      "type": "button",
+      "x": 193,
+      "y": 120,
+      "w": 15,
+      "h": 8
+    },
+    {
+      "name": "memory",
+      "type": "button",
+      "x": 133,
+      "y": 70,
+      "w": 17,
+      "h": 8
+    },
+    {
+      "name": "vfo_mem",
+      "type": "button",
+      "x": 163,
+      "y": 70,
+      "w": 19,
+      "h": 8
+    },
+    {
+      "name": "coarse",
+      "type": "button",
+      "x": 193,
+      "y": 138,
+      "w": 15,
+      "h": 8
+    },
+    {
+      "name": "af_gain",
+      "type": "knob",
+      "x": 211,
+      "y": 120,
+      "w": 29,
+      "h": 29
+    }
+  ],
+  "labels": [
+    {
+      "name": "brand",
+      "type": "label",
+      "x": 96,
+      "y": 46,
+      "w": 99,
+      "h": 5
+    },
+    {
+      "name": "power_label",
+      "type": "label",
+      "x": 206,
+      "y": 26,
+      "w": 19,
+      "h": 5
+    },
+    {
+      "name": "on_lamp_label",
+      "type": "label",
+      "x": 237,
+      "y": 26,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "agc_slow",
+      "type": "label",
+      "x": 218,
+      "y": 52,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "agc_off",
+      "type": "label",
+      "x": 201,
+      "y": 73,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "agc_fast",
+      "type": "label",
+      "x": 238,
+      "y": 73,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "agc_label",
+      "type": "label",
+      "x": 220,
+      "y": 83,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "meter_sel_label",
+      "type": "label",
+      "x": 12,
+      "y": 66,
+      "w": 19,
+      "h": 5
+    },
+    {
+      "name": "meter_po_label",
+      "type": "label",
+      "x": 39,
+      "y": 64,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "meter_swr_label",
+      "type": "label",
+      "x": 57,
+      "y": 64,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "band_label",
+      "type": "label",
+      "x": 97,
+      "y": 64,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "mode_ssb_label",
+      "type": "label",
+      "x": 18,
+      "y": 85,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "mode_cw_label",
+      "type": "label",
+      "x": 47,
+      "y": 85,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "mode_fm_label",
+      "type": "label",
+      "x": 74,
+      "y": 85,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "mode_am_label",
+      "type": "label",
+      "x": 101,
+      "y": 85,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "rx_lamp_label",
+      "type": "label",
+      "x": 22,
+      "y": 105,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "ant_lamp_label",
+      "type": "label",
+      "x": 49,
+      "y": 105,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "tx_lamp_label",
+      "type": "label",
+      "x": 80,
+      "y": 105,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "ptt_label",
+      "type": "label",
+      "x": 22,
+      "y": 121,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "mic_label",
+      "type": "label",
+      "x": 59,
+      "y": 121,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "sql_label",
+      "type": "label",
+      "x": 89,
+      "y": 121,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "quick_label",
+      "type": "label",
+      "x": 193,
+      "y": 113,
+      "w": 19,
+      "h": 5
+    },
+    {
+      "name": "memory_label",
+      "type": "label",
+      "x": 130,
+      "y": 63,
+      "w": 23,
+      "h": 5
+    },
+    {
+      "name": "vfo_mem_label",
+      "type": "label",
+      "x": 159,
+      "y": 63,
+      "w": 27,
+      "h": 5
+    },
+    {
+      "name": "coarse_label",
+      "type": "label",
+      "x": 195,
+      "y": 131,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "vol_label",
+      "type": "label",
+      "x": 221,
+      "y": 112,
+      "w": 11,
+      "h": 5
+    }
+  ]
+}

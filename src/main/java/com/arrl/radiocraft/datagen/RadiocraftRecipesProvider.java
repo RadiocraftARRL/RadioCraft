@@ -307,6 +307,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         buildVhfHandheldRecipe(recipeOutput);
         buildCommercialRadioRecipes(recipeOutput);
         buildMarineRadioRecipes(recipeOutput);
+        buildCbRadioRecipes(recipeOutput);
         buildQrpRadioRecipes(recipeOutput);
 
         // All band radio variants (shapeless)
@@ -525,6 +526,38 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('S', Items.STICK)
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
                 .save(recipeOutput);
+        // Lightning arrestor: coax in and out either side of a
+        // lightning rod (the gas tube and ground lug), in an iron case.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.LIGHTNING_ARRESTOR.get(), 1)
+                .pattern(" I ")
+                .pattern("CRC")
+                .pattern(" I ")
+                .define('I', Items.IRON_INGOT)
+                .define('C', RadiocraftItems.COAX_WIRE.get())
+                .define('R', Items.LIGHTNING_ROD)
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
+        // Ground rod: copper-clad steel, as real rods are. Two at a time.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.GROUND_ROD.get(), 2)
+                .pattern("C")
+                .pattern("I")
+                .pattern("C")
+                .define('C', Items.COPPER_INGOT)
+                .define('I', Items.IRON_INGOT)
+                .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
+                .save(recipeOutput);
+        // Battery meter: a comparator behind a glass face, wire
+        // through it, in an iron case.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.BATTERY_METER.get(), 1)
+                .pattern("IGI")
+                .pattern("WCW")
+                .pattern("III")
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.GLASS_PANE)
+                .define('W', RadiocraftItems.WIRE.get())
+                .define('C', Items.COMPARATOR)
+                .unlockedBy("has_wire", has(RadiocraftItems.WIRE.get()))
+                .save(recipeOutput);
         // Wire junction (maintainer, 2026-10-28): an iron box round a piece of plain wire, two at a time.
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WIRE_JUNCTION.get(), 2)
                 .pattern(" I ")
@@ -533,6 +566,37 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('I', Items.IRON_INGOT)
                 .define('W', RadiocraftItems.WIRE.get())
                 .unlockedBy("has_wire", has(RadiocraftItems.WIRE.get()))
+                .save(recipeOutput);
+        // Power switches: a lever on an iron body, a piece of
+        // wire for each terminal. The Left/Right has a third terminal, so one more wire.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.POWER_SWITCH_ON_OFF.get(), 1)
+                .pattern(" L ")
+                .pattern("WIW")
+                .define('L', Items.LEVER)
+                .define('I', Items.IRON_INGOT)
+                .define('W', RadiocraftItems.WIRE.get())
+                .unlockedBy("has_wire", has(RadiocraftItems.WIRE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.POWER_SWITCH_LEFT_RIGHT.get(), 1)
+                .pattern(" L ")
+                .pattern("WIW")
+                .pattern(" W ")
+                .define('L', Items.LEVER)
+                .define('I', Items.IRON_INGOT)
+                .define('W', RadiocraftItems.WIRE.get())
+                .unlockedBy("has_wire", has(RadiocraftItems.WIRE.get()))
+                .save(recipeOutput);
+        // Stable Chemical Battery: an iron case of reserve cells,
+        // blaze powder and glowstone for the chemistry, and redstone for the trigger that breaks the seal.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.STABLE_CHEMICAL_BATTERY.get(), 1)
+                .pattern("IRI")
+                .pattern("GBG")
+                .pattern("III")
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.REDSTONE)
+                .define('G', Items.GLOWSTONE_DUST)
+                .define('B', Items.BLAZE_POWDER)
+                .unlockedBy("has_blaze_powder", has(Items.BLAZE_POWDER))
                 .save(recipeOutput);
         // Tower beams, all iron, four at a time: an X of lattice round a heavier core.
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.TOWER_BEAM_THIN.get(), 4)
@@ -731,7 +795,20 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .save(recipeOutput);
     }
 
-    private void buildSmallBatteryRecipe(RecipeOutput recipeOutput) {
+        private void buildSmallBatteryRecipe(RecipeOutput recipeOutput) {
+        // A dead alkaline cell: smelted down, its steel can comes back as an iron nugget (all the
+        // iron one cell takes), as iron tools smelt to nuggets. A furnace or a blast furnace.
+        net.minecraft.data.recipes.SimpleCookingRecipeBuilder.smelting(Ingredient.of(RadiocraftItems.DEAD_ALKALINE_BATTERY.get()), RecipeCategory.MISC, Items.IRON_NUGGET, 0.1F, 200)
+                .unlockedBy("has_dead_alkaline_battery", has(RadiocraftItems.DEAD_ALKALINE_BATTERY.get()))
+                .save(recipeOutput, com.arrl.radiocraft.Radiocraft.id("iron_nugget_from_smelting_dead_alkaline_battery"));
+        net.minecraft.data.recipes.SimpleCookingRecipeBuilder.blasting(Ingredient.of(RadiocraftItems.DEAD_ALKALINE_BATTERY.get()), RecipeCategory.MISC, Items.IRON_NUGGET, 0.1F, 100)
+                .unlockedBy("has_dead_alkaline_battery", has(RadiocraftItems.DEAD_ALKALINE_BATTERY.get()))
+                .save(recipeOutput, com.arrl.radiocraft.Radiocraft.id("iron_nugget_from_blasting_dead_alkaline_battery"));
+        // The Small Alkaline Battery: a steel can (iron nuggets), zinc and manganese (redstone), carbon.
+        net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, RadiocraftItems.SMALL_ALKALINE_BATTERY.get(), 2)
+                .requires(Items.IRON_NUGGET).requires(Items.IRON_NUGGET).requires(Items.REDSTONE).requires(ItemTags.COALS)
+                .unlockedBy("has_redstone", has(Items.REDSTONE))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.SMALL_BATTERY.get(), 1)
                 .pattern("IGI")
                 .pattern("GCG")
@@ -1145,7 +1222,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         return Ingredient.of(RadiocraftItems.ENCASED_CRYSTALS.values().stream().flatMap(m -> m.values().stream()).map(Supplier::get).toArray(ItemLike[]::new));
     }
 
-    /** The commercial radios (1.12 step 2, for review): a cheap brick, its fire-service upgrade, and the two mobiles. */
+    /** The commercial radios (1.12 step 2): a cheap brick, its fire-service upgrade, and the two mobiles. */
     private void buildCommercialRadioRecipes(RecipeOutput recipeOutput) {
         // The 1990s brick (maintainer, 2026-11-05): an antenna, a VHF crystal, a speaker and a built-in mic element in an
         // iron case with one PTT button. No keypad, so it costs about what the ham VHF handheld does.
@@ -1181,9 +1258,67 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
     }
 
     /**
-     * The marine radios (1.12 step 3, for review): built like the commercial ones, with waterproof wire for a life
+     * The marine radios (1.12 step 3): built like the commercial ones, with waterproof wire for a life
      * at sea. The fixed-mount radio is the mobile's recipe on waterproof wire; the handheld the brick's with it.
      */
+    /**
+     * The CB radios (2026-11-08): built on 10m crystals. The portable and the PC68 take any 10m
+     * crystal, the 5875 a good or pure one (and a clock for its clock, dark oak for its woodgrain lid).
+     */
+    private void buildCbRadioRecipes(RecipeOutput recipeOutput) {
+        Ingredient anyTen = encasedCrystal(CrystalBand.BAND_10M);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.CB_PORTABLE.get())
+                .pattern("  L")
+                .pattern("SCE")
+                .pattern("IBI")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('C', anyTen)
+                .define('E', RadiocraftItems.MICROPHONE_ELEMENT.get())
+                .define('I', Items.IRON_INGOT)
+                .define('B', ItemTags.BUTTONS)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        // PC68: a button on top for its CH9 switch, which also keeps it apart from the Low Band Mobile.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.CB_MOBILE_PC68.get())
+                .pattern("IBI")
+                .pattern("MCS")
+                .pattern("#R#")
+                .define('I', Items.IRON_INGOT)
+                .define('B', ItemTags.BUTTONS)
+                .define('M', RadiocraftItems.HAND_MICROPHONE.get())
+                .define('C', anyTen)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('#', RadiocraftItems.WIRE.get())
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        // The CB ground plane: tubing up the middle (lightning rods), radials, coax to the base.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.CB_GROUND_PLANE_ANTENNA.get())
+                .pattern(" L ")
+                .pattern(" L ")
+                .pattern("RCR")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('R', RadiocraftItems.ANTENNA_WIRE.get())
+                .define('C', RadiocraftItems.COAX_WIRE.get())
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.CB_MOBILE_5875.get())
+                .pattern("PKP")
+                .pattern("SCM")
+                .pattern("IRI")
+                .define('P', Items.DARK_OAK_PLANKS)
+                .define('K', Items.CLOCK)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('C', Ingredient.of(RadiocraftItems.ENCASED_CRYSTALS.get(CrystalBand.BAND_10M).get(com.arrl.radiocraft.common.radio.crystal.CrystalQuality.GOOD).get(),
+                        RadiocraftItems.ENCASED_CRYSTALS.get(CrystalBand.BAND_10M).get(com.arrl.radiocraft.common.radio.crystal.CrystalQuality.PURE).get())) // Good or better.
+                .define('M', RadiocraftItems.HAND_MICROPHONE.get())
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+    }
+
     private void buildMarineRadioRecipes(RecipeOutput recipeOutput) {
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.MARINE_HANDHELD.get())
                 .pattern("WLW")
@@ -1281,7 +1416,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         net.minecraft.data.recipes.SpecialRecipeBuilder.special(com.arrl.radiocraft.common.crafting.MarsModInstallRecipe::new)
                 .save(recipeOutput, Radiocraft.id("mars_mod_install"));
 
-        // The Radio Cloner (1.12 playtest fixes 2; for review): the cloning cable (wire) on an iron box with its memory
+        // The Radio Cloner (1.12 playtest fixes 2): the cloning cable (wire) on an iron box with its memory
         // (diamond) and logic (comparator).
         ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, RadiocraftItems.RADIO_CLONER.get())
                 .pattern(" W ")
@@ -1402,7 +1537,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('X', RadiocraftItems.COAX_WIRE.get())
                 .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
                 .save(recipeOutput);
-        // Weather alerts (1.12, proposed for the maintainer's review): the generator is an iron cabinet that reads the
+        // Weather alerts (1.12): the generator is an iron cabinet that reads the
         // sky (daylight detector) and decides (comparators) round a VHF crystal; the receiver a small radio with a whip
         // (lightning rod), a speaker and a red lamp (redstone torch).
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WEATHER_ALERT_GENERATOR.get())
@@ -1495,9 +1630,9 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.BBS, Items.CHEST); // The mailbox.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.PROPAGATION, Items.CLOCK); // The hours ahead.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.REPEATERS, Items.REPEATER);
-        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SCHEDULER, Items.BELL); // Computer batch 3A: it rings the hours (proposed).
-        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.RIG_CONTROL, Items.LEVER); // Computer batch 3B: the rig's controls (proposed).
-        // Computer batch 3C (proposed): the net control station reads the roll from a lectern; certificates go in a frame;
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SCHEDULER, Items.BELL); // Computer batch 3A: it rings the hours.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.RIG_CONTROL, Items.LEVER); // Computer batch 3B: the rig's controls.
+        // Computer batch 3C: the net control station reads the roll from a lectern; certificates go in a frame;
         // QSL cards are printed in ink.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.NET_CONTROL, Items.LECTERN);
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.AWARDS, Items.ITEM_FRAME);
@@ -1507,14 +1642,14 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .requires(ingredient)
                 .unlockedBy("has_floppy_disk", has(RadiocraftItems.FLOPPY_DISK.get()))
                 .save(recipeOutput));
-        // The QSL album (computer batch 3C, proposed): a book bound with leather and two more sheets.
+        // The QSL album (computer batch 3C): a book bound with leather and two more sheets.
         net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, RadiocraftItems.QSL_ALBUM.get())
                 .requires(Items.BOOK)
                 .requires(Items.LEATHER)
                 .requires(Items.PAPER, 2)
                 .unlockedBy("has_book", has(Items.BOOK))
                 .save(recipeOutput);
-        // FT8 (computer batch 3B, approved): a blank floppy and any pressure plate. Vanilla 1.21.1 has no item tag
+        // FT8 (computer batch 3B): a blank floppy and any pressure plate. Vanilla 1.21.1 has no item tag
         // for every pressure plate (minecraft:pressure_plates is a block tag only), so: the wooden ones' tag and the rest.
         net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(com.arrl.radiocraft.common.computer.ComputerApps.FT8)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())

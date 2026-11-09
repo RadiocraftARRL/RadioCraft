@@ -125,6 +125,30 @@ public class RadiocraftDataComponent {
                     .networkSynchronized(CloneImage.STREAM_CODEC)
     );
 
+    /** A CB radio's channel, knobs and switches ({@link com.arrl.radiocraft.common.radio.cb.CbRadioState}): on the portable and the mobiles' items. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.cb.CbRadioState>> CB_RADIO = DATA_COMPONENTS.registerComponentType(
+            "cb_radio",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.cb.CbRadioState.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.cb.CbRadioState.STREAM_CODEC)
+    );
+
+    /** Present (true) on a portable radio whose cell is a Small Alkaline Battery: no charger tops it up (2026-11-09). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Boolean>> ALKALINE_CELL = DATA_COMPONENTS.registerComponentType(
+            "alkaline_cell",
+            builder -> builder
+                    .persistent(com.mojang.serialization.Codec.BOOL)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.BOOL)
+    );
+
+    /** The CB portable's cells, in FE. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CB_ENERGY = DATA_COMPONENTS.registerComponentType(
+            "cb_energy",
+            builder -> builder
+                    .persistent(com.mojang.serialization.Codec.INT)
+                    .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
+    );
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.marine.MarineRadioState>> MARINE_RADIO = DATA_COMPONENTS.registerComponentType(
             "marine_radio",
             builder -> builder
@@ -163,6 +187,14 @@ public class RadiocraftDataComponent {
             builder -> builder
                     .persistent(com.arrl.radiocraft.common.datacomponents.FloppyData.CODEC)
                     .networkSynchronized(com.arrl.radiocraft.common.datacomponents.FloppyData.STREAM_CODEC)
+    );
+
+    /** A Stable Chemical Battery's charge and seal, kept on its item when it is broken out (2026-11-09). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ChemicalCharge>> CHEMICAL_CHARGE = DATA_COMPONENTS.registerComponentType(
+            "chemical_charge",
+            builder -> builder
+                    .persistent(ChemicalCharge.CODEC)
+                    .networkSynchronized(ChemicalCharge.STREAM_CODEC)
     );
 
     /** An FCC badge's agent and number (1.12, see {@link FccBadge}); set by {@code /radiocraft fcc badge}. */

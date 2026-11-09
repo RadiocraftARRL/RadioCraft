@@ -70,6 +70,55 @@ public final class ReceiverMix {
 		return 1.0D - depth * near * close;
 	}
 
+	/** Signal strength from which an AM voice is clean on a quiet band: no hiss under it. */
+	public static final double AM_QUIET = 0.3D;
+
+	/**
+	 * The hiss under an AM voice, 0 to 1: none on a signal well clear of the noise ({@link #AM_QUIET}, or twice the
+	 * noise floor if that is higher), rising as it sinks toward it. An AM receiver's AGC holds a voice's volume much
+	 * as FM does, so a weak signal turns noisy before it turns quiet; but it has no dropouts, and the noise it rises
+	 * into is the band's own, so a noisy band is noisier (2026-11-08).
+	 */
+	public static double amHiss(double signal, double noise) {
+		if(signal <= 0.0D)
+			return 1.0D;
+		double clear = Math.max(AM_QUIET, 2.0D * noise);
+		if(signal >= clear)
+			return 0.0D;
+		double below = 1.0D - signal / clear;
+		return below * below;
+	}
+
+	/** An AM voice's level, 0 to 1: the AGC holds it up until the signal is nearly lost in the noise. */
+	/**
+	 * The speaker level with the AGC off (2026-11-09): straight from the signal, so a strong station is louder than the
+	 * AGC would let it be and a weak one fainter. Capped so the loudest is not painful.
+	 */
+	public static double agcOffLevel(double signal) {
+		return Math.min(AGC_OFF_MAX, Math.max(0.0D, signal) * AGC_OFF_GAIN);
+	}
+
+	static final double AGC_OFF_GAIN = 2.0D, AGC_OFF_MAX = 1.6D;
+
+	/**
+	 * How much of an SSB signal is there in this frame, 0 to 1 (2026-11-09): SSB sends only the voice, so between words
+	 * there is no signal at all. Full from a peak of {@link #SSB_FULL_PEAK} of full scale.
+	 */
+	public static double ssbEnvelope(short[] pcm) {
+		int peak = 0;
+		for(short sample : pcm)
+			peak = Math.max(peak, Math.abs((int)sample));
+		return Math.min(1.0D, peak / 32768.0D / SSB_FULL_PEAK);
+	}
+
+	static final double SSB_FULL_PEAK = 0.2D;
+	/** Below this share of a frame's SSB signal, nothing registers: a pause between words. */
+	public static final double SSB_SILENT = 0.03D;
+
+	public static double amLevel(double signal, double noise) {
+		return Math.sqrt(voiceLevel(signal, noise));
+	}
+
 	/** Signal strength from which an FM receiver is fully quiet (full quieting): no hiss under the voice. */
 	public static final double FM_QUIETING = 0.3D;
 	/** Below this an FM signal starts to cut in and out (picket fencing). */

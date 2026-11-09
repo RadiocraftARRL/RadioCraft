@@ -19,7 +19,9 @@ public class CommercialRadioModuleScreen extends AbstractContainerScreen<Commerc
 
 	private StationProgram.Kind program;
 	private EditBox frequency;
-	private Button programButton;
+	private Button programButton, modeButton;
+	/** Its HF mode (2026-11-09): SSB or AM. VHF is always FM, and dead air on HF always AM. */
+	private String mode;
 
 	public CommercialRadioModuleScreen(CommercialRadioModuleMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
@@ -27,6 +29,7 @@ public class CommercialRadioModuleScreen extends AbstractContainerScreen<Commerc
 		imageHeight = 96;
 		StationProgram.Kind kind = menu.blockEntity.getKind();
 		program = kind == null ? StationProgram.Kind.DF_BEEPER : kind;
+		mode = menu.blockEntity.getMode();
 	}
 
 	@Override
@@ -35,7 +38,9 @@ public class CommercialRadioModuleScreen extends AbstractContainerScreen<Commerc
 		programButton = addRenderableWidget(Button.builder(Component.empty(), b -> {
 			StationProgram.Kind[] kinds = StationProgram.Kind.values();
 			program = kinds[(program.ordinal() + 1) % kinds.length];
-		}).bounds(leftPos + 10, topPos + 22, 180, 20).build());
+		}).bounds(leftPos + 10, topPos + 22, 120, 20).build());
+		modeButton = addRenderableWidget(Button.builder(Component.empty(), b -> mode = mode.equals("AM") ? "SSB" : "AM")
+				.bounds(leftPos + 136, topPos + 22, 54, 20).build());
 		frequency = addRenderableWidget(new EditBox(font, leftPos + 10, topPos + 48, 120, 18, Component.literal("MHz")));
 		frequency.setValue(menu.blockEntity.getFrequency() > 0 ? String.format(Locale.ROOT, "%.4f", menu.blockEntity.getFrequency() / 1e6) : "146.5200");
 		addRenderableWidget(Button.builder(Component.literal("SET"), b -> apply()).bounds(leftPos + 136, topPos + 47, 54, 20).build());
@@ -45,6 +50,7 @@ public class CommercialRadioModuleScreen extends AbstractContainerScreen<Commerc
 		try {
 			CompoundTag tag = new CompoundTag();
 			tag.putString("program", program.name());
+			tag.putString("mode", mode);
 			tag.putFloat("frequency", (float)(Double.parseDouble(frequency.getValue().trim()) * 1e6));
 			SStationPacket.send(menu.getBlockPos(), "configure", tag);
 			onClose();
@@ -69,8 +75,27 @@ public class CommercialRadioModuleScreen extends AbstractContainerScreen<Commerc
 
 	@Override
 	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		programButton.setMessage(Component.literal("PROGRAM: " + program.name().replace('_', ' ')));
+		programButton.setMessage(Component.literal(program.name().replace('_', ' ')));
+		modeButton.setMessage(Component.literal(shownMode()));
+		modeButton.active = !vhf() && program != StationProgram.Kind.DEAD_AIR;
 		super.render(graphics, mouseX, mouseY, partialTick);
+	}
+
+	/** What the mode button shows: FM on VHF, AM for dead air on HF, else the pick. */
+	private String shownMode() {
+		if(vhf())
+			return "FM";
+		return program == StationProgram.Kind.DEAD_AIR ? "AM" : mode;
+	}
+
+	private boolean vhf() {
+		try {
+			com.arrl.radiocraft.common.radio.Band band = com.arrl.radiocraft.common.radio.Band.getBand((float)(Double.parseDouble(frequency.getValue().trim()) * 1e6));
+			return band != null && band.isVhf();
+		}
+		catch(NumberFormatException e) {
+			return false;
+		}
 	}
 
 	@Override

@@ -27,16 +27,17 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.LARGE_BATTERY.get(), LargeBatteryScreen::new);
 		event.register(RadiocraftMenuTypes.SOLAR_PANEL.get(), SolarPanelScreen::new);
 		event.register(RadiocraftMenuTypes.CHARGE_CONTROLLER.get(), ChargeControllerScreen::new);
-		event.register(RadiocraftMenuTypes.HF_RADIO_10M.get(), HFRadio10mScreen::new);
-		event.register(RadiocraftMenuTypes.HF_RADIO_20M.get(), HFRadio20mScreen::new);
-		event.register(RadiocraftMenuTypes.HF_RADIO_40M.get(), HFRadio40mScreen::new);
-		event.register(RadiocraftMenuTypes.HF_RADIO_80M.get(), HFRadio80mScreen::new);
-		event.register(RadiocraftMenuTypes.HF_RADIO_ALL_BAND.get(), HFRadioAllBandScreen::new);
+		event.register(RadiocraftMenuTypes.HF_RADIO_10M.get(), com.arrl.radiocraft.client.screens.radios.HfPanelScreen.of("hf_radio_10m")); // The new panel (2026-11-09); the old screen, HFRadio10mScreen, is on _old textures.
+		event.register(RadiocraftMenuTypes.HF_RADIO_20M.get(), com.arrl.radiocraft.client.screens.radios.HfPanelScreen.of("hf_radio_20m")); // The new panel (2026-11-09); the old screen, HFRadio20mScreen, is on _old textures.
+		event.register(RadiocraftMenuTypes.HF_RADIO_40M.get(), com.arrl.radiocraft.client.screens.radios.HfPanelScreen.of("hf_radio_40m")); // The new panel (2026-11-09); the old screen, HFRadio40mScreen, is on _old textures.
+		event.register(RadiocraftMenuTypes.HF_RADIO_80M.get(), com.arrl.radiocraft.client.screens.radios.HfPanelScreen.of("hf_radio_80m")); // The new panel (2026-11-09); the old screen, HFRadio80mScreen, is on _old textures.
+		event.register(RadiocraftMenuTypes.HF_RADIO_ALL_BAND.get(), com.arrl.radiocraft.client.screens.radios.HfPanelScreen.of("hf_radio_all_band")); // The new panel (2026-11-09); the old screen, HFRadioAllBandScreen, is on _old textures.
 		event.register(RadiocraftMenuTypes.QRP_RADIO_20M.get(), QRPRadio20mScreen::new);
 		event.register(RadiocraftMenuTypes.QRP_RADIO_40M.get(), QRPRadio40mScreen::new);
-		event.register(RadiocraftMenuTypes.VHF_BASE_STATION.get(), VHFBaseStationScreen::new);
+		event.register(RadiocraftMenuTypes.VHF_BASE_STATION.get(), com.arrl.radiocraft.client.screens.radios.HfPanelScreen.of("vhf_base_station")); // The new panel (2026-11-09); the old screen, VHFBaseStationScreen, is on _old textures.
 		event.register(RadiocraftMenuTypes.COMMERCIAL_MOBILE.get(), CommercialMobileScreen::new);
 		event.register(RadiocraftMenuTypes.MARINE_RADIO.get(), MarineRadioScreen::new);
+		event.register(RadiocraftMenuTypes.CB_RADIO.get(), com.arrl.radiocraft.client.screens.radios.CbRadioScreen::new);
 		event.register(RadiocraftMenuTypes.VHF_RECEIVER.get(), VHFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.HF_RECEIVER.get(), HFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.DESK_CHARGER.get(), DeskChargerScreen::new);
@@ -88,6 +89,7 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer((net.minecraft.world.level.block.entity.BlockEntityType) RadiocraftBlockEntities.SATELLITE_DISH.get(), ctx -> new com.arrl.radiocraft.client.render.SatelliteDishRenderer(ctx));
 		// The frequency, mode and S-meter on each radio's screen; a radio whose model has no DISPLAY draws nothing.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.AUTO_TUNER.get(), com.arrl.radiocraft.client.render.AutoTunerDisplayRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.BATTERY_METER.get(), com.arrl.radiocraft.client.render.BatteryMeterRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MICROWAVE_HORN.get(), com.arrl.radiocraft.client.render.MicrowaveHornRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.HF_RADIO_10M.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.HF_RADIO_20M.get(), RadioDisplayRenderer::new);
@@ -98,6 +100,7 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_BASE_STATION.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.COMMERCIAL_MOBILE.get(), RadioDisplayRenderer::new); // Channel display, lamps, mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MARINE_RADIO.get(), RadioDisplayRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.CB_RADIO.get(), com.arrl.radiocraft.client.render.CbRadioRenderer::new); // Channel, clock, meters, lamps, mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_RECEIVER.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_20M.get(), RadioDisplayRenderer::new); // No screen; draws the mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_40M.get(), RadioDisplayRenderer::new);
@@ -121,9 +124,15 @@ public class ClientSetupEvents {
 		if(com.arrl.radiocraft.compat.create.CreateCompat.isActive())
 			event.enqueueWork(com.arrl.radiocraft.compat.create.CreateAlternatorClient::registerVisual);
 		if(com.arrl.radiocraft.compat.curios.CuriosCompat.isLoaded()) // The handheld on the belt.
-			event.enqueueWork(com.arrl.radiocraft.compat.curios.HandheldBeltRenderer::register);
+			event.enqueueWork(() -> {
+				com.arrl.radiocraft.compat.curios.HandheldBeltRenderer.register();
+				com.arrl.radiocraft.compat.curios.CbPortableBackRenderer.register(); // The CB portable on the back slot.
+			});
 		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_DIRECTION_FINDER.get(),
 				Radiocraft.id("lit"), (stack, level, entity, seed) -> entity == net.minecraft.client.Minecraft.getInstance().player && com.arrl.radiocraft.client.HandheldDfClient.isLit() ? 1.0F : 0.0F));
+		// The CB portable's whip is pulled out while it is on.
+		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.CB_PORTABLE.get(),
+				Radiocraft.id("extended"), (stack, level, entity, seed) -> com.arrl.radiocraft.common.items.CbPortableItem.isOn(stack) ? 1.0F : 0.0F));
 	}
 
 	/** Tape reels: the reel and its label tinted by the tape's colourway. */

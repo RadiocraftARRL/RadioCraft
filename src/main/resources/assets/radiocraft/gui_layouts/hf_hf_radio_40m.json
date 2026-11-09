@@ -1,0 +1,255 @@
+{
+  "texture": "radiocraft:textures/gui/hf_panels/hf_radio_40m.png",
+  "width": 256,
+  "height": 160,
+  "controls": [
+    {
+      "name": "af_gain",
+      "type": "knob",
+      "x": 15,
+      "y": 21,
+      "w": 30,
+      "h": 30,
+      "cx": 30,
+      "cy": 36,
+      "pointer_from": 3,
+      "pointer_r": 8,
+      "pointer_width": 1,
+      "pointer_colour": "#EEEEEE",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 51,
+      "y": 21,
+      "w": 30,
+      "h": 30,
+      "cx": 66,
+      "cy": 36,
+      "pointer_from": 3,
+      "pointer_r": 8,
+      "pointer_width": 1,
+      "pointer_colour": "#EEEEEE",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "power",
+      "type": "button",
+      "x": 20,
+      "y": 78,
+      "w": 21,
+      "h": 14
+    },
+    {
+      "name": "mic_gain",
+      "type": "knob",
+      "x": 51,
+      "y": 73,
+      "w": 30,
+      "h": 30,
+      "cx": 66,
+      "cy": 88,
+      "pointer_from": 3,
+      "pointer_r": 8,
+      "pointer_width": 1,
+      "pointer_colour": "#EEEEEE",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "display",
+      "type": "display",
+      "x": 88,
+      "y": 14,
+      "w": 82,
+      "h": 26,
+      "ink": "#7CFF9A"
+    },
+    {
+      "name": "tuning",
+      "type": "dial",
+      "x": 100,
+      "y": 69,
+      "w": 58,
+      "h": 58,
+      "cx": 129,
+      "cy": 98,
+      "mark_r": 11,
+      "mark_size": 5,
+      "mark_colour": "#B2B2B2",
+      "mark_shadow": "#262626"
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 184,
+      "y": 12,
+      "w": 58,
+      "h": 40,
+      "pivot": [
+        213,
+        49
+      ],
+      "radius": 26,
+      "zero_deg": -50.0,
+      "full_deg": 50.0,
+      "s9_fraction": 0.6,
+      "needle_colour": "#202020"
+    },
+    {
+      "name": "meter_select",
+      "type": "switch",
+      "x": 198,
+      "y": 60,
+      "w": 30,
+      "h": 7,
+      "positions": [
+        "PO",
+        "SWR"
+      ],
+      "handles": [
+        [
+          200,
+          61,
+          12,
+          5
+        ],
+        [
+          214,
+          61,
+          12,
+          5
+        ]
+      ],
+      "handle_colour": "#B2B2B2",
+      "handle_shadow": "#4F4F4F"
+    },
+    {
+      "name": "mode_ssb",
+      "type": "button",
+      "x": 164,
+      "y": 87,
+      "w": 30,
+      "h": 11
+    },
+    {
+      "name": "mode_ssb_lamp",
+      "type": "lamp",
+      "x": 199,
+      "y": 91,
+      "w": 2,
+      "h": 2,
+      "colour": "#FF4030"
+    },
+    {
+      "name": "mode_cw",
+      "type": "button",
+      "x": 164,
+      "y": 102,
+      "w": 30,
+      "h": 11
+    },
+    {
+      "name": "mode_cw_lamp",
+      "type": "lamp",
+      "x": 199,
+      "y": 106,
+      "w": 2,
+      "h": 2,
+      "colour": "#FF4030"
+    },
+    {
+      "name": "mode_am",
+      "type": "button",
+      "x": 164,
+      "y": 117,
+      "w": 30,
+      "h": 11
+    },
+    {
+      "name": "mode_am_lamp",
+      "type": "lamp",
+      "x": 199,
+      "y": 121,
+      "w": 2,
+      "h": 2,
+      "colour": "#FF4030"
+    },
+    {
+      "name": "agc",
+      "type": "switch",
+      "x": 210,
+      "y": 90,
+      "w": 7,
+      "h": 32,
+      "positions": [
+        "FAST",
+        "SLOW",
+        "OFF"
+      ],
+      "handles": [
+        [
+          211,
+          92,
+          5,
+          8
+        ],
+        [
+          211,
+          102,
+          5,
+          8
+        ],
+        [
+          211,
+          112,
+          5,
+          8
+        ]
+      ],
+      "handle_colour": "#B2B2B2",
+      "handle_shadow": "#4F4F4F"
+    },
+    {
+      "name": "ptt",
+      "type": "button",
+      "x": 164,
+      "y": 132,
+      "w": 77,
+      "h": 14
+    },
+    {
+      "name": "coarse",
+      "type": "button",
+      "x": 86,
+      "y": 52,
+      "w": 21,
+      "h": 11,
+      "lit": [
+        88,
+        56,
+        3,
+        3,
+        "#FFC040"
+      ]
+    },
+    {
+      "name": "quick",
+      "type": "button",
+      "x": 145,
+      "y": 52,
+      "w": 29,
+      "h": 11,
+      "lit": [
+        147,
+        56,
+        3,
+        3,
+        "#FFC040"
+      ]
+    }
+  ]
+}

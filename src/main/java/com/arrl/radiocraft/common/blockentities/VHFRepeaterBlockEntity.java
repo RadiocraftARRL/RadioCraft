@@ -456,7 +456,90 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 		return heard;
 	}
 
+		// -------------------- REPEATER TO REPEATER (2026-11-09) --------------------
+
+	/**
+	 * The repeaters a frame has been through on its way here, while a repeater is transmitting it on this thread. A
+	 * repeater hearing another's output does not repeat it at once (inside that transmission, which for two repeaters
+	 * on each other's frequencies recursed until the stack overflowed): it queues it and sends it on its next tick, one
+	 * relay a tick. A frame that comes back to a repeater it has been through is a loop: it howls louder each time
+	 * round ({@link #feedback}) until the timeout timers drop the transmitters, or never starts with
+	 * {@code repeater_loop_protection}.
+	 */
+	private static final ThreadLocal<Relay> RELAY = new ThreadLocal<>();
+
+	/** A frame's way so far: the repeaters it has been through, and how many times it has come back round. */
+	private record Relay(java.util.Set<Long> path, int loops, boolean tail) {
+		Relay(java.util.Set<Long> path, int loops) {
+			this(path, loops, false);
+		}
+	}
+
+	/** A frame heard from another repeater, to send on the next tick. */
+	private record Queued(short[] audio, java.util.UUID source, java.util.Set<Long> path, int loops, boolean tail) {}
+
+	private final java.util.concurrent.ConcurrentLinkedQueue<Queued> relayQueue = new java.util.concurrent.ConcurrentLinkedQueue<>();
+	/** Most frames waiting at once; older ones go (a looping pair cannot pile them up). */
+	private static final int RELAY_QUEUE_MAX = 6;
+	/** A loop round more times than this stops, timeout or not (about half a minute between two repeaters). */
+	static final int MAX_LOOPS = 300;
+	/** The feedback howl's phase, kept between frames so it does not click. */
+	private double howlPhase = 0.0D;
+
+	/** Sends {@code audio} with the repeaters it has been through known to any repeater that hears it. */
+	private void transmitRelayed(ServerLevel serverLevel, short[] audio, java.util.UUID source, Relay relay) {
+		Relay was = RELAY.get();
+		RELAY.set(relay);
+		try {
+			transmitVoice(() -> serverLevel, audio, txFrequency, source, txTone);
+		}
+		finally {
+			if(was == null)
+				RELAY.remove();
+			else
+				RELAY.set(was);
+		}
+	}
+
+	/** Sends up to a tick's worth of frames heard from other repeaters. Server thread. */
+	private void tickRelayQueue(ServerLevel serverLevel) {
+		int frames = serverLevel.getGameTime() % 2 == 0 ? 3 : 2;
+		for(int i = 0; i < frames; i++) {
+			Queued next = relayQueue.poll();
+			if(next == null)
+				return;
+			short[] audio = next.loops() > 0 ? feedback(next.audio(), next.loops()) : next.audio();
+			transmitRelayed(serverLevel, audio, next.source(), new Relay(next.path(), next.loops(), next.tail()));
+			recordTransmit();
+			relayed(next.source());
+		}
+	}
+
+	/**
+	 * A frame gone round a loop {@code loops} times: the voice smears and fades under a howl that grows each time
+	 * round, as two repeaters feeding each other sound. A new array.
+	 */
+	short[] feedback(short[] pcm, int loops) {
+		short[] out = new short[pcm.length];
+		double howl = Math.min(0.85D, 0.12D + loops * 0.04D), voice = Math.max(0.1D, 1.0D - loops * 0.08D);
+		double hz = 1150.0D + 180.0D * Math.sin(loops * 0.7D); // Wanders a little as it builds.
+		double step = 2.0D * Math.PI * hz / 48_000.0D;
+		java.util.Random noise = new java.util.Random(loops * 31L + pcm.length);
+		for(int i = 0; i < pcm.length; i++) {
+			howlPhase += step;
+			if(howlPhase > 2.0D * Math.PI)
+				howlPhase -= 2.0D * Math.PI;
+			double sample = pcm[i] * voice + Math.sin(howlPhase) * howl * 26000.0D + (noise.nextDouble() - 0.5D) * howl * 6000.0D;
+			out[i] = (short)Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, Math.round(sample)));
+		}
+		return out;
+	}
+
 	private void onInput(short[] audio, AntennaVoicePacket packet) {
+		Relay from = RELAY.get();
+		if(from != null && com.arrl.radiocraft.RadiocraftServerConfig.REPEATER_LOOP_PROTECTION.get()
+				&& (from.tail() || from.path().contains(worldPosition.asLong())))
+			return; // Loop protection: another repeater's own tail, or something that has been through here, is not input.
 		long now = level == null ? 0L : level.getGameTime();
 		if(lastInputGameTime < 0 || now - lastInputGameTime > INPUT_GAP_TICKS) { // A new over.
 			inputStartGameTime = now;
@@ -474,12 +557,28 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 		}
 		if(isKerchunking())
 			return; // The tick keys it up and down; the voice never gets through.
-		ServerLevel serverLevel = packet.getLevel();
+				ServerLevel serverLevel = packet.getLevel();
+		long self = worldPosition.asLong();
+		Relay heardFrom = RELAY.get();
+		if(heardFrom != null) { // Another repeater's output: next tick, not inside its transmission.
+			boolean loop = heardFrom.path().contains(self);
+			if(loop && com.arrl.radiocraft.RadiocraftServerConfig.REPEATER_LOOP_PROTECTION.get())
+				return; // Been through here already: protection stops the loop.
+			int loops = heardFrom.loops() + (loop ? 1 : 0);
+			if(loops > MAX_LOOPS)
+				return;
+			java.util.Set<Long> path = new java.util.HashSet<>(heardFrom.path());
+			path.add(self);
+			relayQueue.add(new Queued(audio, packet.getSourcePlayer(), path, loops, heardFrom.tail()));
+			while(relayQueue.size() > RELAY_QUEUE_MAX)
+				relayQueue.poll();
+			return;
+		}
 		// The moderation log notes it as repeated, linked to the transmission it heard (logged once, at its source).
 		boolean logged = ModerationHooks.recording();
 		ModerationHooks.Tag was = logged ? ModerationHooks.push(ModerationHooks.Tag.repeated(packet)) : null;
 		try {
-			transmitVoice(() -> serverLevel, audio, txFrequency, packet.getSourcePlayer(), txTone);
+			transmitRelayed(serverLevel, audio, packet.getSourcePlayer(), new Relay(java.util.Set.of(self), 0));
 		}
 		finally {
 			if(logged)
@@ -609,8 +708,12 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 		}
 		else if(isKerchunking())
 			tickKerchunk(serverLevel, now);
-		else
+				else {
+			tickRelayQueue(serverLevel); // Frames heard from other repeaters, one relay a tick.
 			tickRepeat(serverLevel, now);
+		}
+		if(!powered || !txEnabled || isKerchunking())
+			relayQueue.clear();
 		if(wasKeyed != (keyed || kerchunkTicks > 0))
 			updateIsReceiving(); // Transmit draw while keyed.
 	}
@@ -657,7 +760,7 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 						break;
 					frame = RepeaterAudio.silence(); // Carrier up, nobody talking.
 				}
-				transmitVoice(() -> serverLevel, frame, txFrequency, voiceId, txTone);
+				transmitRelayed(serverLevel, frame, voiceId, new Relay(java.util.Set.of(worldPosition.asLong()), 0, true)); // Its own tail.
 				recordTransmit();
 			}
 		}

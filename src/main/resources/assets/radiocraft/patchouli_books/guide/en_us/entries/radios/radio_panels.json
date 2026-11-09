@@ -1,0 +1,38 @@
+{
+  "name": "Radio Panels",
+  "icon": "radiocraft:hf_radio_10m",
+  "category": "radiocraft:radios",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Controls",
+      "text": "The $(l:radiocraft:radios/hf_radios)10m, 20m, 40m and 80m$(/l) radios, the $(l:radiocraft:radios/all_band_radio)all-band$(/l) and the $(l:radiocraft:radios/vhf_base_station)VHF base station$(/l) share one kind of front panel.$(li)$(thing)Knobs$(): scroll, or left click up and right click down. Hover one to read it.$(li)The $(thing)dial$(): scroll, or drag up and down.$(li)Switches and the 80m's mode lever: click a position, or scroll."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Knobs",
+      "text": "$(thing)AF$() is the volume, $(thing)MIC$() your microphone gain and $(thing)SQL$() the squelch.$(br2)The squelch opens on whatever the S-meter reads: the band noise or the strongest station. Once it is open, everything comes through. Turn it just past the noise and the radio stays quiet until a station beats it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "AGC",
+      "text": "The HF panels have an $(thing)AGC$() switch, for how the radio levels what it hears.$(li)$(thing)SLOW$(): the normal sound.$(li)$(thing)FAST$(): the static comes back quickly between words.$(li)$(thing)OFF$(): no levelling. Strong stations blast, weak ones are faint, and the static never ducks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Meter and 10X",
+      "text": "On receive the meter reads $(thing)S$(), the signal. On the air its selector picks $(thing)PO$(), the power going out, or $(thing)SWR$(). Both read only while power goes out: on SSB only while you talk, on AM and FM whenever you are keyed.$(br2)The $(thing)10X$() key moves the dial ten steps at a time, and UP/DN 100 kHz instead of 10 kHz."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "QUICK and AM",
+      "text": "$(thing)Hold QUICK$() to store the frequency you are on. $(thing)Press QUICK$() to jump there, and press it again to come back. The all-band radio changes band to get there.$(br2)Every HF radio has $(thing)AM$() as well as SSB and CW: voice on a steady carrier, as $(l:radiocraft:radios/cb_radios)CB$() uses."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Sideband voices",
+      "text": "An SSB signal is only there while someone talks. The S-meter rises and falls with their words, the squelch opens and shuts with them, and between words the static comes back.$(br2)AM and FM send a steady carrier, so the meter holds still for as long as the far station is keyed."
+    }
+  ]
+}

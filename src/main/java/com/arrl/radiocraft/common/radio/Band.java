@@ -26,8 +26,21 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
     public static final String LOW_BAND = "low_band";
     /** Commercial VHF (high band), 150-174 MHz: business, public safety, federal, and the marine channels. Like 2m. */
     public static final String VHF_COMMERCIAL = "vhf_commercial";
+    /**
+     * Citizens Band, 26.965-27.405 MHz (11m): 40 AM channels, 5 W, no licence (2026-11-08). On the HF antenna network and
+     * carried like 10m, a little less far for the low power (line of sight 25% shorter, skip 30% shorter); it follows
+     * 10m's solar weather.
+     */
+    public static final String CB = "cb";
+    /** The CB channels' span (channel 1 to 40, with a little room), for code that must not touch the config. */
+    public static final double CB_MIN_HZ = 26_960_000.0D, CB_MAX_HZ = 27_410_000.0D;
+
+    /** True on the CB channels (26.96-27.41 MHz), whatever the server config says the CB band is. */
+    public static boolean isCbFrequency(double hz) {
+        return hz >= CB_MIN_HZ && hz <= CB_MAX_HZ;
+    }
     /** The bands that are not amateur bands: no MARS extension, and left out of {@link #getDefaults()}. */
-    public static final Set<String> COMMERCIAL_BANDS = Set.of(LOW_BAND, VHF_COMMERCIAL);
+    public static final Set<String> COMMERCIAL_BANDS = Set.of(LOW_BAND, VHF_COMMERCIAL, CB);
     /** Frequencies at or above this are on the VHF antenna network (and line of sight like 2m). */
     public static final float VHF_NETWORK_FROM_HZ = 100_000_000.0F;
     /** Slack on band edges, for float rounding at VHF (16 Hz at 174 MHz). */
@@ -124,6 +137,7 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
         return switch(name) {
             case LOW_BAND -> "Low Band";
             case VHF_COMMERCIAL -> "VHF Comm";
+            case CB -> "CB";
             default -> name;
         };
     }
@@ -136,7 +150,7 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
         Registered registered = REGISTERED.get(name);
         if(registered != null)
             return registered.conditionName();
-        return LOW_BAND.equals(name) ? "10m" : name;
+        return LOW_BAND.equals(name) || CB.equals(name) ? "10m" : name;
     }
 
     // -------------------- BANDS OTHER MODS ADD --------------------
@@ -201,7 +215,8 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
     public static Collection<Band> getCommercialDefaults() {
         return List.of(
                 new Band(LOW_BAND, 650, 3000, 7000, 0, 0, 30_000_000, 50_000_000),
-                new Band(VHF_COMMERCIAL, 500, 0, 0, 0, 0, 150_000_000, 174_000_000)
+                new Band(VHF_COMMERCIAL, 500, 0, 0, 0, 0, 150_000_000, 174_000_000),
+                new Band(CB, 600, 1750, 5600, 1750, 4200, 26_960_000, 27_410_000) // 10m's reach, toned down for 5 W.
         );
     }
 

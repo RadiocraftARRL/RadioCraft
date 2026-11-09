@@ -136,13 +136,19 @@ public class MoxonAntennaType extends NonDirectionalAntennaType<MoxonAntennaData
 
 	@Override
 	public double getTransmitEfficiency(IAntennaPacket packet, MoxonAntennaData data, BlockPos destination, boolean isCW) {
-		BlockPos from = packet.getSource().getAntennaPos().position();
+		com.arrl.radiocraft.api.antenna.IAntenna.AntennaPos at = sourcePos(packet);
+		if(at == null)
+			return 0.0D; // The sender went away mid-broadcast.
+		BlockPos from = at.position();
 		return super.getTransmitEfficiency(packet, data, destination, isCW) * pattern(data.getFacing(), from, Sublevels.inFrameOf(packet.getLevel(), from, destination));
 	}
 
 	@Override
 	public double getReceiveEfficiency(IAntennaPacket packet, MoxonAntennaData data, BlockPos pos) {
-		BlockPos source = Sublevels.inFrameOf(packet.getLevel(), pos, packet.getSource().getAntennaPos().position());
+		com.arrl.radiocraft.api.antenna.IAntenna.AntennaPos at = sourcePos(packet);
+		if(at == null)
+			return 0.0D; // The sender went away mid-broadcast.
+		BlockPos source = Sublevels.inFrameOf(packet.getLevel(), pos, at.position());
 		return super.getReceiveEfficiency(packet, data, pos) * pattern(data.getFacing(), pos, source);
 	}
 

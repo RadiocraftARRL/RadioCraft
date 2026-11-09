@@ -321,8 +321,7 @@ def rigctl():
         i.line([(x, 3), (x, 13)], c)
     for (x, y) in [(5, 5), (13, 9), (21, 4), (26, 11), (11, 12)]:
         i.px(x, y, B)
-    i.rect(17, 0, 18, 1, fill=LR, outline=None)
-    radio(i, y0=16, y1=29); i.save('rigctl')
+    radio(i, y0=16, y1=29); i.save('rigctl')  # No marker on the top edge: it bled onto the bottom when scaled (2026-11-09).
 
 
 def ft8():

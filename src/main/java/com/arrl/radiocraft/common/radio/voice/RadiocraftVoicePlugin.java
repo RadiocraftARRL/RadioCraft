@@ -99,12 +99,17 @@ public class RadiocraftVoicePlugin implements VoicechatPlugin {
 		// The wearer's HF manpack, keyed by its PTT or handset, hears only its wearer.
 		com.arrl.radiocraft.common.radio.voice.handheld.ManpackRadio.get(sender.getUuid())
 				.ifPresent(manpack -> manpack.acceptVoicePacket(sender.getServerLevel(), decodedAudio, sender.getUuid()));
+		// The CB portable in hand, keyed by holding right click.
+		com.arrl.radiocraft.common.radio.voice.handheld.CbPortableRadio.get(sender.getUuid())
+				.ifPresent(cb -> cb.acceptVoicePacket(sender.getServerLevel(), decodedAudio, sender.getUuid()));
 		PlayerRadioManager.get(sender.getUuid()).ifPresent(playerRadio -> {
 			//still need to reconsider the structure for static antennas so not deleting this just yet, but for synchronization the check is moved inside
 //					if (playerRadio.canTransmitVoice()){ //TODO reconsider this structure, should the onus be on the radio to know if it should transmit instead?
 				playerRadio.acceptVoicePacket(sender.getServerLevel(), decodedAudio, sender.getUuid());
 //					}
 		});
+		// RIGCTL's PTT held at a computer set to REMOTE audio: the voice goes into that rig wherever it is (2026-11-09).
+		IVoiceTransmitter fedRemotely = RemoteMics.accept(sender.getServerLevel(), decodedAudio, sender.getUuid());
 
 		//this is the auditory range NOT the radio range
 		double sqrRange = API.getBroadcastRange();
@@ -136,6 +141,9 @@ public class RadiocraftVoicePlugin implements VoicechatPlugin {
 
 				if (!listener.canTransmitVoice())
 					continue; // Do not transmit if listener is not accepting packets.
+
+				if (listener == fedRemotely)
+					continue; // It had this frame through RIGCTL's remote mic already.
 
 				listener.acceptVoicePacket(sender.getServerLevel(), decodedAudio, sender.getUuid(), new Vec3(playerPos.getX(), playerPos.getY(), playerPos.getZ()));
 			}

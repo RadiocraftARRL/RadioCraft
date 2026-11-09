@@ -72,7 +72,7 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 	public void transmitAudioPacket(ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone, float power) {
 		com.arrl.radiocraft.common.radio.TransmitterLog.record(this, pos.get(), band, frequencyHertz); // On the air: direction finders can hear it.
 		if(network != null) {
-			Set<IAntenna> antennas = network.allAntennas();
+			Set<IAntenna> antennas = snapshot(network.allAntennas()); // Players and chunks come and go on the server thread meanwhile.
 			double matchEfficiency = getMatchEfficiency(frequencyHertz);
 
 			for(IAntenna antenna : antennas) {
@@ -119,7 +119,7 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 	public void transmitCWPacket(net.minecraft.server.level.ServerLevel level, Collection<CWBuffer> buffers, Band band, float frequencyHertz) {
 		com.arrl.radiocraft.common.radio.TransmitterLog.record(this, pos.get(), band, frequencyHertz); // On the air: direction finders can hear it.
 		if(network != null) {
-			Set<IAntenna> antennas = network.allAntennas();
+			Set<IAntenna> antennas = snapshot(network.allAntennas()); // Players and chunks come and go on the server thread meanwhile.
 			double matchEfficiency = getMatchEfficiency(frequencyHertz);
 			for(IAntenna antenna : antennas) {
 				if(antenna != this) {
@@ -168,7 +168,7 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 		com.arrl.radiocraft.common.radio.TransmitterLog.record(this, pos.get(), band, frequencyHertz); // On the air: direction finders can hear it.
 		if(network != null) {
 			double matchEfficiency = getMatchEfficiency(frequencyHertz);
-			for(IAntenna antenna : network.allAntennas()) {
+			for(IAntenna antenna : snapshot(network.allAntennas())) {
 				AntennaPos destination = antenna.getAntennaPos();
 				if(antenna == this || destination == null || destination.level() != pos.get().level() || BandUtils.outOfReach(band, pos.get().world(), destination.world()))
 					continue;
@@ -244,4 +244,11 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
     public Player getPlayer() {
         return null;
     }
+
+	/** A copy of a synchronized set, taken under its lock: iterating the live set while the server thread adds to it throws. */
+	private static Set<IAntenna> snapshot(Set<IAntenna> all) {
+		synchronized(all) {
+			return new java.util.HashSet<>(all);
+		}
+	}
 }

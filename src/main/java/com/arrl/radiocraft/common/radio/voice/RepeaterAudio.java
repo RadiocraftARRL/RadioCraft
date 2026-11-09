@@ -124,6 +124,25 @@ public final class RepeaterAudio {
 		return new short[FRAME];
 	}
 
+	/**
+	 * One frame of a carrier with nobody talking (2026-11-09): not digital silence but the faint hiss and now and then
+	 * the crackle a real one carries. From {@code seed}, so tests can repeat it.
+	 */
+	public static short[] deadAir(long seed) {
+		short[] frame = noise(0.012D, seed);
+		java.util.SplittableRandom random = new java.util.SplittableRandom(seed);
+		if(random.nextDouble() < 0.18D) { // A crackle: a click or two that dies away.
+			int clicks = 1 + random.nextInt(2);
+			for(int c = 0; c < clicks; c++) {
+				int at = random.nextInt(FRAME - 40);
+				double amplitude = (0.08D + random.nextDouble() * 0.14D) * (random.nextBoolean() ? 1.0D : -1.0D);
+				for(int i = 0; i < 40; i++)
+					frame[at + i] = (short)Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, frame[at + i] + Math.round(amplitude * Math.exp(-i / 6.0D) * 32767.0D)));
+			}
+		}
+		return frame;
+	}
+
 	/** One frame of white noise at {@code level} (0 to 1), from {@code seed} so tests can repeat it. */
 	public static short[] noise(double level, long seed) {
 		short[] frame = new short[FRAME];

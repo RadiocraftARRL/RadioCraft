@@ -55,8 +55,18 @@ public class DipoleAntennaType extends NonDirectionalAntennaType<DipoleAntennaDa
 		return new StaticAntenna<>(this, pos, level, new DipoleAntennaData(relativeArm1.length(), relativeArm2.length()));
 	}
 
+	/**
+	 * How fast the SWR climbs per block of arm length off a quarter wave on CB, where it is worked out from the exact
+	 * length: a 10m dipole (3 + 3 blocks) comes out near 1.8:1 there (maintainer, 2026-11-08), usable but not great.
+	 */
+	static final double CB_SWR_PER_BLOCK = 1.7D;
+
 	@Override
 	public double getSWR(DipoleAntennaData data, float frequencyHertz) {
+		if(com.arrl.radiocraft.common.radio.Band.isCbFrequency(frequencyHertz)) {
+			double quarter = BandUtils.getWavelengthMetersFromFrequencyHertz(frequencyHertz) / 4.0D;
+			return 1.0D + CB_SWR_PER_BLOCK * (Math.abs(quarter - data.getArmLength1()) + Math.abs(quarter - data.getArmLength2()));
+		}
 		int desiredLength = (int)Math.round(BandUtils.getWavelengthMetersFromFrequencyHertz(frequencyHertz) / 4.0D); // The desired length for each "arm" is 1/4 of the wavelength used, round to the nearest int (for example 10m radio -> 3 blocks)
 		double incorrectBlocks = Math.abs(desiredLength - data.getArmLength1()) + Math.abs(desiredLength - data.getArmLength2());
 

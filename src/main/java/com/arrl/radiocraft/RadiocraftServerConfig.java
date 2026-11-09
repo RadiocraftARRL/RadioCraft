@@ -175,6 +175,8 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<Boolean> TERRAIN_SKY_VIEW;
 	public static final ModConfigSpec.ConfigValue<Integer> TERRAIN_ATLAS_MAX_CHUNKS;
 	public static final ModConfigSpec.ConfigValue<Integer> TERRAIN_REFRESH_CHUNKS_PER_TICK;
+	public static final ModConfigSpec.ConfigValue<Boolean> TERRAIN_WORLDGEN_FILL;
+	public static final ModConfigSpec.ConfigValue<Integer> TERRAIN_WORLDGEN_CHUNKS_PER_TICK;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_RECALCULATE_SECONDS;
 	public static final ModConfigSpec.ConfigValue<Integer> TERRAIN_CLIFF_RISE;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_CLIFF_LOSS_DB;
@@ -209,7 +211,8 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> BAND_PLAN_MARKERS;
 	public static final ModConfigSpec.ConfigValue<Double> MARS_MOD_SPLATTER;
 	public static final ModConfigSpec.EnumValue<com.arrl.radiocraft.common.radio.MarineChannels.Region> MARINE_CHANNEL_PLAN;
-	public static final ModConfigSpec.ConfigValue<Boolean> CAMERA_ENABLED;
+		public static final ModConfigSpec.ConfigValue<Boolean> CAMERA_ENABLED;
+	public static final ModConfigSpec.ConfigValue<Boolean> REPEATER_LOOP_PROTECTION;
 	public static final ModConfigSpec.ConfigValue<Double> CAMERA_COOLDOWN_SECONDS;
 	public static final ModConfigSpec.ConfigValue<Integer> CAMERA_PHOTO_CAP;
 	public static final ModConfigSpec.ConfigValue<Integer> COMPUTER_STORAGE_KB;
@@ -377,7 +380,11 @@ public class RadiocraftServerConfig {
 		CALLSIGN_ZONE_RADIUS = BUILDER.comment(" Repeater callsigns (X#XX) carry a digit for how far from spawn they stand: 0 near spawn up to 9 at this many",
 				" blocks (or the world border, if nearer)").defineInRange("callsign_zone_radius", 10000, 10, 30000000);
 		REPEATER_CALLSIGN_MODE = BUILDER.comment(" Repeater callsigns: EITHER (made up in the X#XX form, or the owner's own callsign), AUTO (X#XX only) or OWN",
-				" (the owner's callsign only). New repeaters get an X#XX one, or with OWN their placer's").defineEnum("repeater_callsign_mode", com.arrl.radiocraft.common.radio.Callsigns.RepeaterMode.EITHER);
+								" (the owner's callsign only). New repeaters get an X#XX one, or with OWN their placer's").defineEnum("repeater_callsign_mode", com.arrl.radiocraft.common.radio.Callsigns.RepeaterMode.EITHER);
+		REPEATER_LOOP_PROTECTION = BUILDER.comment(" Two repeaters that hear each other's output (one listening where the other transmits, both ways) loop:",
+				" off (default), they key each other up with a rising feedback howl until their timeout timers drop them, as real",
+				" ones do (one relay a tick, so it costs no more than someone talking). On, a repeater never repeats a",
+				" transmission that has already been through it, so loops never start").define("repeater_loop_protection", false);
 		BUILDER.pop();
 
 		BUILDER.push("Redstone Interference");
@@ -636,6 +643,9 @@ public class RadiocraftServerConfig {
 		TERRAIN_ATLAS_MAX_CHUNKS = BUILDER.comment(" Most chunks the terrain map remembers per dimension, about 190 bytes each (100000 is about 19 MB). Past it the",
 				" oldest are forgotten and count as clear until they load again").defineInRange("terrain_atlas_max_chunks", 100_000, 1_000, 10_000_000);
 		TERRAIN_REFRESH_CHUNKS_PER_TICK = BUILDER.comment(" Loaded chunks re-read per tick, so building and digging shows up while they stay loaded").defineInRange("terrain_refresh_chunks_per_tick", 8, 0, 1000);
+		TERRAIN_WORLDGEN_FILL = BUILDER.comment(" Chunks nobody has loaded, on a path a signal takes, get their terrain from the world generator (natural ground only, no",
+				" trees or buildings) instead of counting as flat; the real terrain replaces it when the chunk loads").define("terrain_worldgen_fill", true);
+		TERRAIN_WORLDGEN_CHUNKS_PER_TICK = BUILDER.comment(" Chunks estimated from the world generator per tick (each costs well under a millisecond)").defineInRange("terrain_worldgen_chunks_per_tick", 4, 0, 256);
 		TERRAIN_RECALCULATE_SECONDS = BUILDER.comment(" How long a path's terrain loss and a station's horizon are kept before they are worked out again. Moving",
 				" stations are looked up by 4 block cell, so walking still updates them. 0 works it out for every voice packet")
 				.defineInRange("terrain_recalculate_seconds", 2.0, 0.0, 600.0);

@@ -92,6 +92,11 @@ public final class EditorApp extends DosApp {
 		});
 	}
 
+	@Override
+	public boolean holdsUnsavedWork() {
+		return area.isModified();
+	}
+
 	/** Runs {@code then} once unsaved changes are saved or let go (asks), or at once if there are none. */
 	private void whenSafe(Runnable then) {
 		if(!area.isModified()) {

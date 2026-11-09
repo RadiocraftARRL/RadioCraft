@@ -179,6 +179,34 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		unlocked.remove(player);
 	}
 
+	// -------------------- NETWORK NAME (2026-11-09) --------------------
+
+	/** True while it asks for a name for its network (server; not saved: it looks again when it boots). */
+	private boolean needsName = false;
+	/** The set of computers it reached when it last looked ({@link com.arrl.radiocraft.common.computer.ComputerNetwork#check}). */
+	private int peerHash = 0;
+
+	/**
+	 * True while it shows the NETWORK NAME prompt: it reaches other radio computers and has no name, or one of theirs
+	 * (see {@link com.arrl.radiocraft.common.computer.ComputerNetwork}). Server; players at it see it through
+	 * {@link RadioComputerMenu#namePrompt}.
+	 */
+	public boolean needsNetworkName() {
+		return needsName;
+	}
+
+	public void setNeedsNetworkName(boolean value) {
+		needsName = value;
+	}
+
+	public int peerHash() {
+		return peerHash;
+	}
+
+	public void setPeerHash(int hash) {
+		peerHash = hash;
+	}
+
 	// -------------------- POWER --------------------
 
 	@Override
@@ -560,6 +588,7 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	/** Opens the computer's screen for {@code player}, shown on the monitor at {@code monitor}. */
 	public void open(ServerPlayer player, BlockPos monitor) {
 		long start = System.nanoTime();
+		com.arrl.radiocraft.common.computer.ComputerNetwork.boot(this); // On a network it needs a name of its own there.
 		hasViewers = true;
 		activity(player);
 		saverOn = false;
@@ -668,6 +697,8 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		updatePower((gameTime + worldPosition.asLong()) % VIEWER_CHECK_TICKS == 0L);
 		if((gameTime + worldPosition.asLong()) % 20L == 0L && level instanceof ServerLevel server) // Speakers come and go rarely.
 			refreshSpeakers(server);
+		if((powered || hasViewers) && (gameTime + worldPosition.asLong()) % com.arrl.radiocraft.common.computer.ComputerNetwork.CHECK_TICKS == 0L)
+			com.arrl.radiocraft.common.computer.ComputerNetwork.check(this); // Joined to another network, or a name clash.
 		if(!powered)
 			return; // Dark: the background programs wait for power.
 		for(ComputerAppHandler handler : tickers)

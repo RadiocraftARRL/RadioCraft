@@ -18,6 +18,7 @@
                 "radiocraft:mars_mod",
                 "radiocraft:commercial_program",
                 "radiocraft:marine_radio",
+                "radiocraft:cb_radio",
                 "minecraft:dyed_color"
               ],
               "source": "block_entity"

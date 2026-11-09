@@ -16,7 +16,7 @@
     {
       "type": "patchouli:text",
       "title": "Battery",
-      "text": "It runs on a $(item)Small Alkaline Battery$(): shift + right click with one to put it in (or change it), shift + right click with an empty hand to take it out. A full battery lasts about three weeks of game time. When it runs low the red lamp blinks every 10 seconds. Right click it for the battery, the generator it hears and the last alert."
+      "text": "It runs on a $(item)Small Alkaline Battery$() (a rechargeable Small NiCd Battery fits too): shift + right click with one to put it in (or change it), shift + right click with an empty hand to take it out. A full battery lasts about three weeks of game time. When it runs low the red lamp blinks every 10 seconds. Right click it for the battery, the generator it hears and the last alert."
     },
     {
       "type": "patchouli:crafting",

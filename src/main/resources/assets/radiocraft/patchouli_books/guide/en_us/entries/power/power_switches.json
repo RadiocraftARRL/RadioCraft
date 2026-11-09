@@ -1,0 +1,29 @@
+{
+  "name": "Power Switches",
+  "icon": "radiocraft:power_switch_on_off",
+  "category": "radiocraft:power",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A $(item)power switch$() sits on a power wire and changes what is wired to what. $(thing)Right click$() throws its lever, and so does a $(thing)redstone pulse$(): once, as the signal comes on. It stays where it is while the signal stays on.$(br2)Place it facing you. The side towards you is its main terminal."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:power_switch_on_off",
+      "title": "On/Off",
+      "text": "Wire in on the side facing you and out of the side opposite. $(thing)On$(), the two wires are one circuit; $(thing)off$(), they are two.$(br2)Put one between the batteries and a radio to switch the radio off without breaking a wire."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:power_switch_left_right",
+      "title": "Left/Right",
+      "text": "The input is the side facing you, with an output on its left and its right. The lever joins the input to the $(thing)left$() or the $(thing)right$() output; the other one is a circuit of its own.$(br2)Use it to move a radio from one battery bank to another."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:power_switch_on_off",
+      "recipe2": "radiocraft:power_switch_left_right"
+    }
+  ]
+}

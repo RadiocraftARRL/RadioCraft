@@ -8,6 +8,197 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## Dead air and SSB that follows the voice (added 2026-11-09)
+
+- [ ] Commercial radio module screen: a mode button, SSB/AM on HF (FM shown on VHF, AM forced for dead air). An AM
+  module is heard as AM (an SSB rig hears its carrier; a CB hears it), an SSB one as SSB.
+- [ ] RIGCTL waterfall, zoomed in: an SSB station is a slab beside its frequency (above for USB, below for LSB) that
+  comes and goes with the words, not a solid line; AM shows a steady carrier line with sidebands that swell with the
+  voice; FM a carrier that spreads wider when someone talks.
+
+- [ ] A dead air station (FM/VHF) is no longer dead silent: a faint hiss with the odd crackle under its carrier.
+- [ ] No dead air stations on SSB bands (random modules pick another program); an SSB one configured by hand sends only
+  its kerchunks.
+- [ ] Listening to someone on SSB: the S-meter rises and falls with their words; between words the static comes back
+  up, and with the squelch set it cuts in and out. AM/FM carriers hold the meter steady.
+- [ ] RIGCTL remote: C leaves the host's waterfall scrolling on the client's monitor.
+
+## RIGCTL remote control and network names (added 2026-11-09)
+
+- [ ] A computer left with unsaved work (EDIT text, the book editor, a codeplug in the programmer) keeps its screen
+  past the usual 10 minutes, as one playing music does: come back after 15 minutes and the work is still there.
+
+- [ ] A computer that boots plays a short four-note welcome (rising chime) once the boot is done or skipped. New
+  computers start on the Program Manager (icons) launcher.
+- [ ] RIGCTL banner reads "REMOTE: RADIO@<name> (WIRE)   F6=Connection Menu"; the Remote page says "Connected to ...".
+
+- [ ] Data wire of different colours joins through a junction box (red in, blue out): the devices at either end
+  reach each other; the wire visibly connects to the box.
+
+- [ ] While a computer plays a rig (REMOTE audio, or any remote session), the rig itself and its wired speakers are
+  silent: voice, static, squelch tail and Morse all come from the computer.
+- [ ] On the air through RIGCTL the S-meter shows your voice level; T is hold-to-talk (key repeat does not re-key it)
+  and gives a short go-ahead beep when it keys; letting go unkeys.
+- [ ] RIGCTL's audio plays only while it runs: Esc out of RIGCTL stops the computer playing the rig (and ends a
+  remote session it drove); C closes the screen with RIGCTL left running, audio and waterfall carrying on.
+- [ ] Clicking the mode, PWR or SQL on the display changes them (SQL: right click goes down). ? opens the key guide;
+  any key or click closes it. The hint line and bottom bar fit.
+
+- [ ] Data wire joins only the devices at its ends: a computer wired to another computer does not reach the radio
+  interface (and radios) touching that one. Touching devices still chain.
+- [ ] RIGCTL on a computer with no radio of its own says so and opens the Remote page; the host cursor (black on
+  cyan) moves with the arrows; LOCAL/REMOTE shows which is set; the help line fits (ends "F6: Remote").
+
+- [ ] Two computers on data wire, same name (or none): opening the second shows NETWORK NAME before the desktop; a
+  taken name (any case) says NAME IN USE ON THIS NETWORK; a free one goes to the desktop and shows in the top bar.
+  A non-owner sees the "ask its owner" notice and Enter carries on.
+- [ ] SETUP's name field refuses a name another computer on the network uses.
+- [ ] RIGCTL F6 Remote page: readable in every SETUP colour scheme; L/A/W/C/K/H keys; the host list (name, link,
+  code, who, IN USE/OFF); clicking a host twice connects.
+- [ ] REMOTE audio at the rig's own computer: the rig is heard at the computer (or its speakers); holding T your
+  voice goes out even standing away from the rig; LOCAL as before.
+- [ ] Remote session over wire: C drives H's rig (tune, band, mode, scan, waterfall, squelch, memories, PTT); C's
+  top line magenta "REMOTE: driving..."; H's red "REMOTE: <player> via <name>"; H's keys refused; F8 at H takes over.
+- [ ] Remote audio at C with REMOTE set at C: H's rig heard at C, your voice into H's rig with T; no double audio.
+- [ ] Over microwave: MW GOOD/FAIR/POOR in the list; audio slightly delayed, rougher and gappy at FAIR/POOR; the
+  session ends at NO SIGNAL.
+- [ ] Session ends and the PTT lets go on: D, breaking the wire, H turning remote access off. Closing C's screen keeps
+  the session and its audio (only the PTT lets go); the waterfall keeps scrolling on the monitor while you stay within
+  16 blocks, with no time limit. The Remote page is F6 (F2 is Minecraft's screenshot key).
+- [ ] Handbook: the four new Rig Control pages fit and their links work.
+
+## Repeater loops (added 2026-11-09, late)
+
+- [ ] Two repeaters on each other's frequencies (A in 145.000 out 145.600, B the reverse), a few blocks apart: a call
+  through A howls round the pair, louder each time, until the timeout drops them; the server stays smooth. With
+  `repeater_loop_protection = true` the call goes through once and both drop after their hang time.
+
+## VHF receiver, power switches, chemical battery (added 2026-11-09, late)
+
+- [ ] VHF receiver: the display between the knobs reads well; every control has a tooltip; an empty memory button
+  stores, a stored one selects; two or more selected scan and stop on a signal; turning the knob leaves the scan;
+  the speaker button mutes; shift right click a cell in and out (a flat alkaline comes out dead); PWR on a flat cell;
+  the cell drops when the block breaks.
+- [ ] Power Switch On/Off and Left/Right: placeholder levers lean the right way; right click and a redstone pulse
+  switch them; a radio wired through goes off / moves circuit.
+- [ ] Stable Chemical Battery: inert until redstone (fizz), then powers a radio; won't charge; broken while sealed it
+  keeps its charge; its screen opens.
+- [ ] Antenna switch: a redstone pulse steps to the next output with coax, skipping empty ones.
+
+## Memories, QUICK, handheld art (added 2026-11-09, late)
+
+- [ ] QUICK (every new panel): hold stores the frequency ("QUICK SET"); press jumps there (lit), press again comes back.
+  The all-band radio changes band to get there.
+- [ ] All-band MEMORY: hold on the VFO, the display shows "MW nn" and what that channel holds (EMPTY or its
+  frequency and mode); the dial or UP/DN picks 1-50; press MEMORY to store ("Mnn SET"). Any other key cancels.
+- [ ] All-band VFO/MEM: press goes to the memories (corner "Mnn SSB"), the dial steps through stored channels, press
+  again back to the VFO where it was; hold on a memory copies it to the VFO ("TO VFO").
+- [ ] VHF handheld screen: the battery pack under it is taller (nearer the model); no checkerboard behind VHF FM; no
+  dots on the keypad plate.
+
+## Panel fixes, VHF panel, alkaline cells (added 2026-11-09, evening)
+
+- [ ] Squelch (all HF, CB, VHF): it opens on whatever the S-meter reads (band noise or the strongest station) and then
+  everything plays; static is never heard without the station under it. The S-meter shows the band noise on receive.
+- [ ] Display: the mode marker no longer overlaps the frequency. AM to SSB in one press.
+- [ ] Meter on the air: PO/SWR only move while speaking on SSB (or keying CW); AM/FM whenever keyed. No S key.
+- [ ] 10X key: the dial steps ten at a time; UP/DN 100 kHz with it, 10 kHz without.
+- [ ] 80m lever: clicking walks SSB-CW-AM and back.
+- [ ] CW: the static narrows and quiets (the CW filter).
+- [ ] VHF Base Station's new panel: offset knob (- S +), TONE up/down, display corner shows offset and tone, squelch.
+- [ ] Alkaline cells in the VHF handheld and CB portable (either click direction): the old cell comes back; a flat
+  alkaline comes back as a Dead Alkaline Battery (crafts to an iron nugget). The desk charger does not charge a radio
+  on an alkaline.
+
+## New HF panels (added 2026-11-09)
+
+- [ ] 10m, 20m, 40m, 80m, all-band: the new panel opens and lines up (display text inside the window, pointers on the
+  knobs, handles in their slots, the needle on its pivot and inside the meter face, lamps on their lenses).
+- [ ] Knobs (AF, MIC, SQL) turn by scroll and clicks and show their value on hover; the dial tunes by scroll and drag
+  and its dimple turns; power, PTT (right click: hand mic), step and band keys work.
+- [ ] Mode keys / the 80m lever: SSB, CW, AM (and FM on the all-band) select and light.
+- [ ] Meter: S on receive; on the air S/PO shows power, SWR the SWR (high with no antenna).
+- [ ] AGC: OFF makes strong stations louder and weak ones quieter, and the static stops ducking; FAST brings the static
+  back quicker between words.
+- [ ] CB portable extended: the thick section runs 40% up, the black collar, then the thin whip.
+
+## CB controls (added 2026-11-09)
+
+- [ ] 5875 FUNCTION knob: AM / USB / LSB lamps follow it; two 5875s on USB talk; one on LSB hears the other on USB
+  only as faint interference; a PC68 on AM hears nothing from a USB 5875.
+- [ ] 5875 CLAR: hover shows the offset; an SSB station tuned off by the clarifier sounds pitched up/down.
+- [ ] 5875 RF GAIN: turning it down lowers the hiss, weak stations and the RX meter.
+- [ ] NB and ANL (5875), NB/ANL (PC68): with redstone switching nearby, the crackle drops (NB more than ANL).
+- [ ] PC68 AM/FM switch: FM lamp lights; two PC68s on FM talk; an AM set does not hear the FM one clearly (warble).
+- [ ] CB portable in the Curios belt slot: renders on the right hip, antenna up when on.
+
+## Squelch (added 2026-11-09)
+
+- [ ] CB mobiles and the portable: SQUELCH up past what a weak station reads on the RX meter cuts it out (and its
+  hiss); back to 0 it plays again. A strong station still opens it.
+- [ ] Squelch at or under the band noise (0, or low on a noisy band) hisses on the CB mobiles and the portable (the
+  portable's hiss follows you, in hand or on your back); turned past the noise it goes quiet.
+- [ ] A CB (or any radio) turns on at once when switched on, no 3 s wait.
+- [ ] CB portable in hand: a little bigger than the VHF handheld, held (not floating); third person and dropped too.
+- [ ] SSB keyed into no antenna does not blow while silent; talking can blow it. AM (CB) keyed can blow silent (carrier).
+- [ ] 20m (bottom-left knob), 40m and HF receiver (top-left knob): hovering the knob shows OPEN / SQL n. Above 0, the
+  band static goes silent, and comes up with a station that opens the squelch. The S-meter (comparator) still reads
+  stations under the squelch.
+
+## CB rework, CB antenna, batteries, All Applications Floppy (added 2026-11-08, second pass)
+- [ ] CB screens are textures now (`textures/gui/cb/`, laid out by `gui_layouts/cb_*.json`, drawn by
+  `tools/cb_gui_assets.py`). 5875: less crowded? Knobs, switches and lamps line up with their labels? Needles swing on
+  the printed scales? PC68: bigger knobs, the mic plugged in with its cord going round the back, the channel knob in its
+  bezel, CH9. Portable: LIGHT (hold it: the channel window lights), PTT bar on the left.
+- [ ] Mobiles: the volume knob switches the radio on from OFF and off at OFF, every time, however fast you turn it.
+  Turning the channel knob does not switch it on. The 5875's clock shows (screen and block) with a charged battery on
+  the wire even while the radio is off, and goes dark with no battery.
+- [ ] On the blocks (your models): channel number in the narrow window, clock in the wide one, both needles move (RX
+  signal while listening, TX power and SWR/MOD on the air), ON AIR lights the TX_LED cube; PC68 green LED on receive,
+  red on transmit.
+- [ ] CB portable: click a small NiCd battery onto it in the inventory (survival and creative), or sneak-use with one in
+  the other hand: their charge swaps. The creative-tab one comes charged.
+- [ ] CB Ground Plane Antenna (placeholder model): placing it puts up five blocks, radials at the foot; breaking any
+  part takes it all and drops one. An antenna analyzer or a radio's SWR: about 1.1 on channel 19, 1.8 at 28.0 MHz.
+- [ ] Small NiCd Battery is the name everywhere; the Small Alkaline Battery (new texture) shows full, cannot go in a
+  charger or charge controller, and powers the weather alert receiver.
+- [ ] All Applications Floppy (creative tab): insert it in a radio computer: every program appears, the disk comes back.
+
+## CB radios and grounding (added 2026-11-08)
+- [ ] CB portable: the 3D radio in the inventory (does it fit the slot?) and in hand. Sneak and use: the screen shows the radio
+  with the channel knob on top, volume and squelch low on the front. Turn the volume up from OFF: in third person
+  (F5) the whip pulls out to about three blocks; back to OFF and it goes down. Does it look right in first person,
+  third person, on the ground and in an item frame?
+- [ ] Two players with CB portables on one channel: hold right click to talk, the other hears it. Both talk at once:
+  both voices are heard. Walk apart: the voice gets hissy before it goes, with no background static when nobody talks.
+  The portable reaches about half as far as a mobile.
+- [ ] 5875 mobile: does the drawn panel read well (clock with AM/PM on the left, meters, red channel LED, ON AIR)? The
+  clock shows the game time. Turn the volume to its lowest click: the radio switches off. CHANNEL knob (wheel, click,
+  right click). MOD/SWR flips what the right meter shows while transmitting (hold the MIC jack or use the hand mic).
+  SPEECH COMPRESSION on MAX: does your voice sound punchier and more even on the far radio?
+- [ ] PC68 mobile: panel reads well; CH9 jumps to channel 9; VOL inner knob, SQ outer ring; RX/TX lamp green on
+  receive and red on transmit, on the screen and on the block.
+- [ ] Block models (placeholders by agy): do the 5875 and PC68 look like the photos at a glance? Is the channel number
+  on the block's red window, and the ON AIR / RX-TX lamps in the right place? Ceiling-mounted too.
+- [ ] Next channel bleedover: two mobiles on 19 and 20 close together: talking on 20 crackles on 19's audio.
+- [ ] Grounding: a 20m radio with a noisy band (redstone near the antenna or a poor solar day): run green wire to a
+  ground rod column in mud or clay: the static gets quieter. Use the rod: it says how good the ground is. A rod in
+  desert sand reads poor; stacking more rods down improves it. Red wire to the same rod does nothing.
+- [ ] Ground fault: put a battery on the green wire run: the rod sparks and the battery drains.
+- [ ] Green wire reads "Ground Wire" in the inventory and on Jade.
+
+## Lightning arrestor and battery meter (added 2026-11-07)
+- [ ] Lightning arrestor: put one in the coax between a radio and its antenna. The radio still hears and transmits
+  through it. In a storm (or `/summon lightning_bolt` on the antenna) the arrestor sparks and cracks, the coax on the
+  antenna side can burn, and the radio behind it stays working. Does the placeholder box look acceptable and does coax
+  visibly join it on its sides?
+- [ ] Battery meter: wire it to a battery or two. Is the green text on its face readable (voltage on top, percent and
+  an arrow below), and does it turn to face you when placed? "NO BATT" in red with nothing on its wire. Charge from a
+  solar panel: up arrow, voltage above 12.7. Transmit off the battery: down arrow, voltage sags. Use it: the chat line
+  with time to full or empty makes sense? A comparator beside it gives a signal that rises with the charge; Jade shows
+  the reading.
+- [ ] Handbook: Safety > Lightning has the arrestor page and recipe; Power > Battery Meter reads well.
+
 ## 1.12 advancements (added 2026-11-06)
 - [ ] The tab: open Advancements (L). A RadioCraft tab with the stone background, Going Ham (20 m radio) at the root
   once a radio is placed. Is the tree readable (getting started, distance under First Contact, modes under Dit Dah,
@@ -557,8 +748,10 @@ the Band Plan sheet. A second player helps for the shutter sound and the fax che
   square darkens, white corner marks, a centre cross, "1.0x" bottom left, "COLOR" bottom right, the hint on top. In
   third person (F5) the player holds it up like a spyglass.
 - [ ] Scroll while aiming: 1.0x, 1.5x ... 3.0x and back; the hotbar does not change. The view narrows smoothly enough?
-- [ ] Let go: a click, and within a moment a "Photo" map shows exactly what the viewfinder framed, at that zoom. No
-  hand, hotbar or viewfinder marks in it. Right way up, not mirrored, colours right?
+- [ ] Left click while aiming (changed 2026-11-06: was let go of right click): a click, no arm swing, and within a moment a "Photo" map shows exactly what the viewfinder framed, at that zoom. No
+  hand, hotbar or viewfinder marks in it. Right way up, not mirrored, colours right? Letting go of right click only
+  lowers the camera (no photo); the viewfinder stays up after a shot, and a second left click after the cooldown takes
+  another. Left clicking a mob or block while aiming does not hit or break it. Hint on top reads "left click to shoot".
 - [ ] With B&W photo paper: the viewfinder says "B&W" and the photo is greys only. With both kinds, paper in the off
   hand is used first.
 - [ ] Try day, night, under water, the Nether, F1, a GUI-scale change and an odd-shaped window: always the middle

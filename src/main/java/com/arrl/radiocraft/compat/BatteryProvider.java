@@ -5,6 +5,8 @@ import com.arrl.radiocraft.api.benetworks.BENetwork;
 import com.arrl.radiocraft.api.benetworks.BENetworkObject;
 import com.arrl.radiocraft.api.benetworks.PowerBENetwork;
 import com.arrl.radiocraft.api.capabilities.IBENetworks;
+import com.arrl.radiocraft.common.be_networks.BatteryMeterReading;
+import com.arrl.radiocraft.common.be_networks.network_objects.BatteryMeterNetworkObject;
 import com.arrl.radiocraft.common.be_networks.network_objects.BatteryNetworkObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -18,13 +20,21 @@ import snownee.jade.api.config.IPluginConfig;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Jade lines for a battery: its own charge, and the charge of every battery on the wire it is on. */
+/** Jade lines for a battery (its own charge, and the charge of every battery on the wire it is on) and a battery meter. */
 public enum BatteryProvider implements IBlockComponentProvider, IServerDataProvider<BlockAccessor> {
     INSTANCE;
 
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag data = accessor.getServerData();
+        if(data.contains("meterVolts")) { // A battery meter: what the batteries on its wire read.
+            if(data.getInt("count") == 0)
+                tooltip.add(Component.translatable("message.radiocraft.battery_meter.none"));
+            else
+                tooltip.add(Component.literal(String.format("%.1f V, ", data.getDouble("meterVolts")) + data.getInt("count") + " batteries, "
+                        + charge(data.getInt("networkEnergy"), data.getInt("networkMax"))));
+            return;
+        }
         if(!data.contains("energy"))
             return;
         tooltip.add(Component.literal("Charge: " + charge(data.getInt("energy"), data.getInt("max"))));
@@ -42,7 +52,16 @@ public enum BatteryProvider implements IBlockComponentProvider, IServerDataProvi
 
     @Override
     public void appendServerData(CompoundTag data, BlockAccessor accessor) {
-        if(!(IBENetworks.getObject(accessor.getLevel(), accessor.getPosition()) instanceof BatteryNetworkObject battery))
+        BENetworkObject looked = IBENetworks.getObject(accessor.getLevel(), accessor.getPosition());
+        if(looked instanceof BatteryMeterNetworkObject meter) {
+            BatteryMeterReading reading = meter.getReading();
+            data.putDouble("meterVolts", reading.volts());
+            data.putInt("count", reading.batteries());
+            data.putInt("networkEnergy", (int)Math.min(Integer.MAX_VALUE, reading.energy()));
+            data.putInt("networkMax", (int)Math.min(Integer.MAX_VALUE, reading.capacity()));
+            return;
+        }
+        if(!(looked instanceof BatteryNetworkObject battery))
             return;
         data.putInt("energy", battery.getStorage().getEnergyStored());
         data.putInt("max", battery.getStorage().getMaxEnergyStored());

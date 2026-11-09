@@ -30,7 +30,17 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
         SET_TONE, // stepCount: CTCSS tone list position (Ctcss.index), 0 for none
         SET_OFFSET, // stepCount: repeater offset in Hz
         SET_SPEAKER_GAIN, // stepCount: percent
-        SET_MIC_GAIN // stepCount: percent
+        SET_MIC_GAIN, // stepCount: percent
+        TAKE_HAND_MIC, // Right click on a screen's PTT: the screen shuts and the hand mic comes off its hook (2026-11-08).
+        SET_AM, // The all-band radio's AM (2026-11-08).
+        SET_SQUELCH, // stepCount: percent of the S-meter's scale (2026-11-09).
+                SET_AGC, // stepCount: RadioBlockEntity.AGC_OFF, AGC_SLOW or AGC_FAST (2026-11-09).
+        QUICK_STORE, // QUICK held: remember this frequency (2026-11-09).
+        QUICK_TOGGLE, // QUICK pressed: to the stored frequency, or back.
+        MEM_STORE, // stepCount: the memory channel (0-49) to store the VFO in (all-band radio).
+        VFO_MEM, // VFO/MEM pressed: between the VFO and the memories.
+        MEM_SELECT, // stepCount: the memory channel to recall.
+        MEM_TO_VFO // VFO/MEM held on a memory: copy it to the VFO, and back to VFO.
     }
 
     public static final CustomPacketPayload.Type<SBlockRadioControlPacket> TYPE = new CustomPacketPayload.Type<>(Radiocraft.id("s_block_radio_control"));
@@ -57,7 +67,9 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
             if(actionId < 0 || actionId >= Action.values().length)
                 return;
 
-            BlockPos targetPos = BlockPos.of(pos);
+                        BlockPos targetPos = BlockPos.of(pos);
+            if(!com.arrl.radiocraft.common.network.PacketChecks.nearAndLoaded(context.player(), targetPos))
+                return; // Never look up (and so load) a chunk the player is nowhere near.
             BlockEntity blockEntity = context.player().level().getBlockEntity(targetPos);
             if(!(blockEntity instanceof RadioBlockEntity radio))
                 return;
@@ -88,6 +100,29 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
                     if(radio instanceof HFRadioAllBandBlockEntity allBand)
                         allBand.setFMEnabled(value);
                 }
+                case SET_AM -> {
+                    if(radio instanceof HFRadioBlockEntity hf)
+                        hf.setAMEnabled(value);
+                }
+                case SET_AGC -> radio.setAgc(stepCount);
+                case QUICK_STORE -> radio.storeQuick();
+                case QUICK_TOGGLE -> radio.toggleQuick();
+                case MEM_STORE -> {
+                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
+                        allBand.storeMemory(stepCount);
+                }
+                case VFO_MEM -> {
+                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
+                        allBand.toggleMemoryMode();
+                }
+                case MEM_SELECT -> {
+                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
+                        allBand.selectMemory(stepCount);
+                }
+                case MEM_TO_VFO -> {
+                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
+                        allBand.memoryToVfo();
+                }
                 case SET_BAND -> {
                     if(radio instanceof HFRadioAllBandBlockEntity allBand)
                         allBand.setBandIndex(stepCount);
@@ -102,6 +137,16 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
                 }
                 case SET_SPEAKER_GAIN -> radio.setSpeakerGain(stepCount / 100.0F);
                 case SET_MIC_GAIN -> radio.setMicGain(stepCount / 100.0F);
+                case SET_SQUELCH -> {
+                    if(radio.hasSquelchKnob())
+                        radio.setSquelch(stepCount / 100.0F);
+                }
+                case TAKE_HAND_MIC -> {
+                    if(radio.canLendHandMic() && context.player() instanceof net.minecraft.server.level.ServerPlayer player) {
+                        player.closeContainer();
+                        radio.takeHandMic(player); // Says so if their hand is full or someone else has it.
+                    }
+                }
             }
         });
     }

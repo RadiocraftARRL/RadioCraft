@@ -58,7 +58,17 @@ public class LargeBatteryBlockEntity extends PowerBlockEntity {
 	}
 
 	public LargeBatteryBlockEntity(BlockPos pos, BlockState state) {
-		super(RadiocraftBlockEntities.LARGE_BATTERY.get(), pos, state);
+		this(RadiocraftBlockEntities.LARGE_BATTERY.get(), pos, state);
+	}
+
+	/** For a battery block of another type built on this one (the stable chemical battery). */
+	protected LargeBatteryBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+		super(type, pos, state);
+	}
+
+	/** The charge as last saved or handed over by the network object, without looking the object up. */
+	protected int savedEnergy() {
+		return savedEnergy;
 	}
 
 	@Override

@@ -1,0 +1,21 @@
+{
+  "name": "Stable Chemical Battery",
+  "icon": "radiocraft:stable_chemical_battery",
+  "category": "radiocraft:power",
+  "sortnum": 5,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "An emergency reserve. The $(item)Stable Chemical Battery$() is made full and sealed, and while it is sealed it is $(thing)inert$(): it gives nothing to the wire and keeps its charge, in place or broken out and carried as an item, for as long as you like.$(br2)Its $(thing)first redstone signal$() breaks the seal for good, with a fizz. From then on it powers its circuit until it is flat."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Use once",
+      "text": "It $(thing)cannot be recharged$(): no solar panel, charge controller or generator puts anything back into it. Once it is flat, it is done.$(br2)Wire one to a station with a button beside it, for the day the sun goes and the other batteries run down."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:stable_chemical_battery"
+    }
+  ]
+}

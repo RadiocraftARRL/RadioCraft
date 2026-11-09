@@ -60,6 +60,9 @@ public class RadiocraftBlocks {
 	}
 	public static final DeferredHolder<Block, SolarPanelBlock> SOLAR_PANEL = BLOCKS.register("solar_panel", () -> new SolarPanelBlock(PROPERTIES_RADIO));
 	public static final DeferredHolder<Block, LargeBatteryBlock> LARGE_BATTERY = BLOCKS.register("large_battery", () -> new LargeBatteryBlock(PROPERTIES_RADIO));
+	/** An emergency reserve (2026-11-09): full and inert until a redstone signal, never recharged. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.power.StableChemicalBatteryBlock> STABLE_CHEMICAL_BATTERY = BLOCKS.register("stable_chemical_battery",
+			() -> new com.arrl.radiocraft.common.blocks.power.StableChemicalBatteryBlock(PROPERTIES_RADIO));
 	public static final DeferredHolder<Block, ChargeControllerBlock> CHARGE_CONTROLLER = BLOCKS.register("charge_controller", () -> new ChargeControllerBlock(PROPERTIES_STONE));
 
 	// Radios/receivers/repeaters
@@ -75,6 +78,11 @@ public class RadiocraftBlocks {
 	/** The fixed-mount VHF marine radio (1.12): channel-only, 25 W / 1 W, 16/9 and dual watch, hand mic. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.MarineRadioBlock> MARINE_RADIO = BLOCKS.register("marine_radio",
 			() -> new com.arrl.radiocraft.common.blocks.radios.MarineRadioBlock(PROPERTIES_RADIO));
+	/** The CB mobiles (2026-11-08): 40 AM channels, 5 W, no licence. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.CbRadioBlock> CB_MOBILE_5875 = BLOCKS.register("cb_mobile_5875",
+			() -> new com.arrl.radiocraft.common.blocks.radios.CbRadioBlock(PROPERTIES_RADIO, com.arrl.radiocraft.common.radio.cb.CbMobileModel.DELUXE_5875));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.CbRadioBlock> CB_MOBILE_PC68 = BLOCKS.register("cb_mobile_pc68",
+			() -> new com.arrl.radiocraft.common.blocks.radios.CbRadioBlock(PROPERTIES_RADIO, com.arrl.radiocraft.common.radio.cb.CbMobileModel.PC68));
 	/** Plays tapes out loud and into the radios it touches, and records on blank ones. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.TapePlayerBlock> TAPE_PLAYER = BLOCKS.register("tape_player",
 			() -> new com.arrl.radiocraft.common.blocks.TapePlayerBlock(Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(1.5F).noOcclusion()));
@@ -133,6 +141,21 @@ public class RadiocraftBlocks {
 	/** Joins power wire of any colour (colours otherwise keep apart). */
 	public static final DeferredHolder<Block, WireJunctionBlock> WIRE_JUNCTION = BLOCKS.register("wire_junction",
 			() -> new WireJunctionBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0F).noOcclusion()));
+	/** Power Switch - On/Off (2026-11-09): connects or parts the power wire on two opposite sides. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.power.OnOffPowerSwitchBlock> POWER_SWITCH_ON_OFF = BLOCKS.register("power_switch_on_off",
+			() -> new com.arrl.radiocraft.common.blocks.power.OnOffPowerSwitchBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0F).noOcclusion()));
+	/** Power Switch - Left/Right (2026-11-09): connects its input to the output on its left or on its right. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.power.LeftRightPowerSwitchBlock> POWER_SWITCH_LEFT_RIGHT = BLOCKS.register("power_switch_left_right",
+			() -> new com.arrl.radiocraft.common.blocks.power.LeftRightPowerSwitchBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0F).noOcclusion()));
+	/** Shows the charge of the batteries on its power wire; power passes through it. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.BatteryMeterBlock> BATTERY_METER = BLOCKS.register("battery_meter",
+			() -> new com.arrl.radiocraft.common.blocks.BatteryMeterBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0F).noOcclusion()));
+	/** In-line on coax: a lightning strike's surge stops here. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.LightningArrestorBlock> LIGHTNING_ARRESTOR = BLOCKS.register("lightning_arrestor",
+			() -> new com.arrl.radiocraft.common.blocks.LightningArrestorBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0F).noOcclusion()));
+	/** A ground rod (2026-11-08): stack them down into the soil, bond with ground (green) wire. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.GroundRodBlock> GROUND_ROD = BLOCKS.register("ground_rod",
+			() -> new com.arrl.radiocraft.common.blocks.GroundRodBlock(Properties.ofFullCopy(Blocks.LIGHTNING_ROD).noOcclusion()));
 	public static final DeferredHolder<Block, DuplexerBlock> DUPLEXER = BLOCKS.register("duplexer", () -> new DuplexerBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	/** One radio to one of three antennas, chosen by a knob. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.AntennaSwitchBlock> ANTENNA_SWITCH = BLOCKS.register("antenna_switch",
@@ -173,6 +196,9 @@ public class RadiocraftBlocks {
 	public static final DeferredHolder<Block, IonosphericProcessorBlock> IONOSPHERIC_PROCESSOR = BLOCKS.register("ionospheric_processor", () -> new IonosphericProcessorBlock(Properties.ofFullCopy(Blocks.STONE).noOcclusion()
 			.lightLevel(state -> state.getValue(IonosphericProcessorBlock.HALF) == DoubleBlockHalf.UPPER ? IonosphericProcessorBlock.VALVE_LIGHT : 0)));
 	public static final DeferredHolder<Block, FiveBtvAntennaBlock> FIVE_BTV_ANTENNA = BLOCKS.register("5btv_antenna", () -> new FiveBtvAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	/** A CB ground plane, five blocks tall (2026-11-08). */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.CbGroundPlaneAntennaBlock> CB_GROUND_PLANE_ANTENNA = BLOCKS.register("cb_ground_plane_antenna",
+			() -> new com.arrl.radiocraft.common.blocks.antennas.CbGroundPlaneAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, IonosondeBlock> IONOSONDE = BLOCKS.register("ionosonde", () -> new IonosondeBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, SlimJimAntennaBlock> SLIM_JIM_ANTENNA = BLOCKS.register("slim_jim_antenna", () -> new SlimJimAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, YagiAntennaBlock> YAGI_ANTENNA = BLOCKS.register("yagi_antenna", () -> new YagiAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));

@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class HFRadio10mScreen extends HFRadioScreen<HFRadio10mMenu> {
 
 	public HFRadio10mScreen(HFRadio10mMenu menu, Inventory playerInventory, Component title) {
-		super(menu, playerInventory, title, guiTexture(menu, "hf_radio_10m", ""), guiTexture(menu, "hf_radio_10m", "_widgets"));
+		super(menu, playerInventory, title, guiTexture(menu, "hf_radio_10m", "_old"), guiTexture(menu, "hf_radio_10m", "_widgets_old"));
 
 		this.imageWidth = 250;
 		this.imageHeight = 147;
@@ -23,7 +23,7 @@ public class HFRadio10mScreen extends HFRadioScreen<HFRadio10mMenu> {
 		addRenderableWidget(new ToggleButton(menu.isPowered(), leftPos + 13, topPos + 14, 14, 17, 0, 0, widgetsTexture, 256, 256, this::onPressPower).withPowerClick()); // Power button
 		addRenderableWidget(new ValueButton(leftPos + 197, topPos + 66, 34, 19, 0, 34, widgetsTexture, 256, 256, () -> menu.blockEntity.getCWEnabled(), this::onPressCW)); // CW Button
 		addRenderableWidget(new ValueButton(leftPos + 197, topPos + 86, 34, 19, 0, 72, widgetsTexture, 256, 256, () -> menu.blockEntity.getSSBEnabled(), this::onPressSSB)); // SSB button
-		addRenderableWidget(new HoldButton(leftPos + 128, topPos + 110, 51, 19, 0, 110, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT)); // PTT button
+		addRenderableWidget(ptt(new HoldButton(leftPos + 128, topPos + 110, 51, 19, 0, 110, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT))); // PTT button
 		addRenderableWidget(new Dial(leftPos + 134, topPos + 37, 42, 45, 102, 0, widgetsTexture, 256, 256, this::onFrequencyDialUp, this::onFrequencyDialDown));
 		
 		addRenderableWidget(new HoldButton(leftPos + 129, topPos + 93, 25, 17, 0, 148, widgetsTexture, 256, 256, (btn) -> onFrequencyButtonUp(null), (btn) -> {}));

@@ -51,6 +51,23 @@ public abstract class DosApp {
 	public abstract void render(TextGrid g, long now);
 
 	/** A key (GLFW key code); true if it was used. */
+	/**
+	 * True while this program has work not saved yet (an edited text file, book or codeplug): the computer's session is
+	 * then kept past {@link ComputerSession#KEEP_MS}, with the program on its screen, as a playing tune keeps it (2026-11-09).
+	 */
+	public boolean holdsUnsavedWork() {
+		return false;
+	}
+
+	/** A key let go (2026-11-09: RIGCTL's PTT is held). False if the program does not use it. */
+	protected boolean onKeyUp(int key) {
+		return false;
+	}
+
+	final boolean keyUp(int key) {
+		return dialog == null && onKeyUp(key);
+	}
+
 	protected boolean onKey(int key, int scanCode, int modifiers) {
 		return false;
 	}

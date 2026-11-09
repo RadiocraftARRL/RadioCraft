@@ -491,5 +491,10 @@
     "sounds": [
       "radiocraft:weather_alert/word_thousand"
     ]
+  },
+  "static_cw": {
+    "sounds": [
+      "radiocraft:static_cw"
+    ]
   }
 }

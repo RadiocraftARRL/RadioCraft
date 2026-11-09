@@ -27,6 +27,12 @@ public class RadioMorseSoundInstance extends AbstractTickableSoundInstance {
 			stop();
 		else {
 			volume = radio.getCWReceiveBuffer().getNextStrength();
+			// Played at a computer (RIGCTL REMOTE audio): the Morse is heard there instead (2026-11-09).
+			java.util.List<com.arrl.radiocraft.common.radio.BEVoiceReceiver.WiredSpeaker> at = radio.isAudioRouted() ? radio.getStaticSpeakers() : java.util.List.of();
+			net.minecraft.core.BlockPos pos = at.isEmpty() ? radio.getBlockPos() : at.get(0).pos();
+			x = pos.getX() + 0.5D;
+			y = pos.getY() + 0.5D;
+			z = pos.getZ() + 0.5D;
 		}
 	}
 

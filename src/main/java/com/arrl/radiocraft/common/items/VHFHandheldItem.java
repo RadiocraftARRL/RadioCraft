@@ -50,6 +50,11 @@ public class VHFHandheldItem extends Item {
         return CommercialHandheldItem.is(stack) || MarineHandheldItem.is(stack);
     }
 
+    /** True for a radio that runs on a small battery's charge and swaps it with one: the VHF handhelds and the CB portable. */
+    public static boolean takesSmallBattery(ItemStack stack) {
+        return stack.getItem() instanceof VHFHandheldItem || stack.getItem() instanceof CbPortableItem;
+    }
+
     /** The crystal in the handheld {@code stack}, good if it is not a handheld. */
     public static CrystalQuality crystalOf(ItemStack stack) {
         return stack.getItem() instanceof VHFHandheldItem handheld ? handheld.crystal : CrystalQuality.GOOD;
@@ -105,11 +110,11 @@ public class VHFHandheldItem extends Item {
                                          net.minecraft.world.inventory.ClickAction action, Player player) {
         ItemStack slotStack = slot.getItem();
         
-        if (action == net.minecraft.world.inventory.ClickAction.PRIMARY && !slotStack.isEmpty() && 
-            slotStack.getItem() == RadiocraftItems.SMALL_BATTERY.get()) {
-            
+                if (action == net.minecraft.world.inventory.ClickAction.PRIMARY && !slotStack.isEmpty() &&
+            PortableBatteries.isCell(slotStack)) {
+
             if (!player.level().isClientSide()) {
-                swapBatteryEnergy(radio, slotStack, player);
+                PortableBatteries.radioOntoCell(radio, slot, player); // NiCd or alkaline; the old cell takes its place.
             }
             
             return true;

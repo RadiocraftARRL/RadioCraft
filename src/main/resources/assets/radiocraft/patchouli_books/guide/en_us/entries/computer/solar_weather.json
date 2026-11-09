@@ -11,7 +11,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Like the Teletype's SOLAR WX, the computer has to hear these: wire it to a powered radio with a real antenna (it copies the geophysical alert and weather broadcasts), or to an $(l:radiocraft:sky/ionosphere)Ionospheric Processor$(). Servers can drop that need (solar_weather_station_needs_radio).$(br2)Both pages refresh every 20 seconds. F6 prints the page as a book, F7 saves it as a text file."
+      "text": "Like the WEFAX receiver's SOLR WX, the computer has to hear these: wire it to a powered radio with a real antenna (it copies the geophysical alert and weather broadcasts), or to an $(l:radiocraft:sky/ionosphere)Ionospheric Processor$(). Servers can drop that need (solar_weather_station_needs_radio).$(br2)Both pages refresh every 20 seconds. F6 prints the page as a book, F7 saves it as a text file."
     },
     {
       "type": "patchouli:crafting",

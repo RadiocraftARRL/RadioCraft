@@ -40,7 +40,7 @@ public class ComputerSetupGameTests {
 		helper.assertFalse(guest.hasPermissions(2), "the guest is an operator: the test cannot check SETUP");
 
 		// Unowned: anyone may change it (computers placed before owners existed).
-		ComputerSettings first = ComputerSettings.DEFAULT.withView(ComputerSettings.View.ICONS);
+		ComputerSettings first = ComputerSettings.DEFAULT.withView(ComputerSettings.View.LIST);
 		helper.assertFalse(call(computer, guest, "sys.settings", settings(first)).contains("error"), "an unowned computer refused SETUP");
 
 		computer.claim(owner);

@@ -38,6 +38,13 @@ import java.util.Locale;
  * Manager's list, F5 loads another .FRQ, F4 stores the dial), stopping on a signal over the squelch (Q); Space holds
  * the scan, X stops it. The server side is {@code RigControlHandler}; the waterfall rows are its band scope, asked for
  * four times a second while this is on screen.
+ * <p>
+ * F6 opens the Remote page (F2 is Minecraft's screenshot key) (2026-11-09): L switches the audio between LOCAL (the rig's own speaker and mics) and REMOTE
+ * (this computer is the rig's speaker, and T's PTT takes your voice into it); A, W and C set whether and to whom this
+ * computer lets another drive its rig (REMOTE ACCESS, OWNER or ANYONE WITH CODE, the access code); the list shows the
+ * computers on this one's network that allow it, by network name and link (WIRE, MW GOOD/FAIR/POOR): Enter connects
+ * (asking for the code), D disconnects, K takes the rig back from a remote user here. Connected, every key on the main
+ * page drives the host's rig, and the top line says so; at the host it says who drives it from where (F8 takes over).
  */
 public final class RigControlApp extends DosApp {
 
@@ -58,6 +65,12 @@ public final class RigControlApp extends DosApp {
 	private final List<String> memoryNames = new ArrayList<>();
 	private final List<Double> memoryMhz = new ArrayList<>();
 	private int memoryAt = -1;
+	/** The Remote page: shown instead of the display and waterfall. */
+	private boolean remotePage;
+	private CompoundTag remote = new CompoundTag();
+	private ListTag hosts = new ListTag();
+	private int hostAt;
+	private static final int HOSTS_TOP = 14, HOSTS_ROWS = 5;
 
 	public RigControlApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
@@ -84,6 +97,10 @@ public final class RigControlApp extends DosApp {
 
 	@Override
 	protected boolean onEscape() {
+		if(remotePage) {
+			remotePage = false;
+			return true;
+		}
 		session.app(app, "leave", new CompoundTag(), response -> {});
 		exit();
 		return true;
@@ -96,6 +113,8 @@ public final class RigControlApp extends DosApp {
 				return;
 			station = response.data();
 			rig = station.getCompound("rig");
+			remote = station.getCompound("remote");
+			offerRemote();
 			memoryNames.clear();
 			memoryMhz.clear();
 			ListTag list = station.getList("memories", Tag.TAG_COMPOUND);
@@ -121,6 +140,13 @@ public final class RigControlApp extends DosApp {
 	public void event(String kind, CompoundTag data) {
 		if(kind.equals("scope")) // Pushed while the screen is closed and we are near the monitor.
 			take(data);
+		else if(kind.equals("remote") || kind.equals("remote_ended")) { // A session began or ended: the screen follows.
+			if(kind.equals("remote") && !data.getString("player").isEmpty() && data.getString("reason").isEmpty())
+				session.message(Dos.tr("rig.remote.started", data.getString("player")), false);
+			status();
+			if(remotePage)
+				refreshRemote();
+		}
 	}
 
 	/** A new waterfall row and the rig's state. */
@@ -159,7 +185,179 @@ public final class RigControlApp extends DosApp {
 		if(data.contains("rig")) {
 			station = data;
 			rig = data.getCompound("rig");
+			remote = data.getCompound("remote");
 		}
+	}
+
+	// -------------------- THE REMOTE PAGE --------------------
+
+	/** Whether the Remote page has been offered since the program started (once: Esc goes back to the main page). */
+	private boolean remoteOffered;
+
+	/**
+	 * No radio on this computer's own station (2026-11-09): say so and go straight to the Remote page, where any rig
+	 * this computer can reach over its network is listed to connect to.
+	 */
+	private void offerRemote() {
+		String problem = station.getString("problem");
+		if(remoteOffered || remote.contains("to") || !(problem.equals("station_no_interface") || problem.equals("rig_no_radio")))
+			return;
+		remoteOffered = true;
+		remotePage = true;
+		refreshRemote();
+		session.message(Dos.tr("rig.remote.no_local"), false);
+	}
+
+	private void refreshRemote() {
+		session.app(app, "remote", new CompoundTag(), this::remoteAnswered);
+		session.app(app, "hosts", new CompoundTag(), response -> {
+			if(response.ok()) {
+				hosts = response.data().getList("hosts", Tag.TAG_COMPOUND);
+				hostAt = Math.max(0, Math.min(hostAt, hosts.size() - 1));
+			}
+		});
+	}
+
+	private void remoteAnswered(ComputerResponse response) {
+		if(!response.ok()) {
+			session.message(response.errorText(), true);
+			return;
+		}
+		remote = response.data();
+	}
+
+	private void remoteAct(String action, CompoundTag data) {
+		session.app(app, action, data, response -> {
+			remoteAnswered(response);
+			if(response.ok())
+				status();
+		});
+	}
+
+	private void setHost(boolean access, boolean anyone) {
+		CompoundTag data = new CompoundTag();
+		data.putBoolean("access", access);
+		data.putBoolean("anyone", anyone);
+		remoteAct("host", data);
+	}
+
+	private void askCode() {
+		DosInput field = new DosInput(remote.getString("code"), com.arrl.radiocraft.common.computer.apps.RigControlHandler.MAX_CODE, c -> c > ' ' && c <= '~');
+		showDialog(DosDialog.ask(Dos.tr("rig.remote.code_title"), Dos.tr("rig.remote.code_prompt"), field, value -> {
+			CompoundTag data = new CompoundTag();
+			data.putString("code", value);
+			remoteAct("code", data);
+		}));
+	}
+
+	private void connect() {
+		if(hosts.isEmpty()) {
+			session.message(Dos.tr("rig.remote.no_hosts"), true);
+			return;
+		}
+		CompoundTag host = hosts.getCompound(Math.max(0, Math.min(hostAt, hosts.size() - 1)));
+		if(host.getBoolean("code"))
+			showDialog(DosDialog.ask(Dos.tr("rig.remote.code_title"), Dos.tr("rig.remote.enter_code", host.getString("name")),
+					new DosInput("", com.arrl.radiocraft.common.computer.apps.RigControlHandler.MAX_CODE).masked(), code -> connect(host, code)));
+		else
+			connect(host, "");
+	}
+
+	private void connect(CompoundTag host, String code) {
+		CompoundTag data = new CompoundTag();
+		data.putString("id", host.getString("id"));
+		data.putString("code", code);
+		session.app(app, "connect", data, response -> {
+			if(!response.ok()) {
+				session.message(response.errorText(), true);
+				return;
+			}
+			remote = response.data();
+			remotePage = false;
+			session.message(Dos.tr("rig.remote.connected", host.getString("name"), host.getString("link")), false);
+			status();
+		});
+	}
+
+	private boolean remoteKey(int key) {
+		boolean configure = remote.getBoolean("mayConfigure");
+		switch(key) {
+			case GLFW.GLFW_KEY_F6 -> remotePage = false;
+			case GLFW.GLFW_KEY_UP -> hostAt = Math.max(0, hostAt - 1);
+			case GLFW.GLFW_KEY_DOWN -> hostAt = Math.max(0, Math.min(hosts.size() - 1, hostAt + 1));
+			case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> connect();
+			case GLFW.GLFW_KEY_D -> remoteAct("disconnect", new CompoundTag());
+			case GLFW.GLFW_KEY_K, GLFW.GLFW_KEY_F8 -> remoteAct("takeover", new CompoundTag());
+			case GLFW.GLFW_KEY_H -> refreshRemote();
+			case GLFW.GLFW_KEY_L -> {
+				CompoundTag data = new CompoundTag();
+				data.putBoolean("remote", !remote.getBoolean("audio"));
+				remoteAct("audio", data);
+			}
+			case GLFW.GLFW_KEY_A, GLFW.GLFW_KEY_W, GLFW.GLFW_KEY_C -> {
+				if(!configure) {
+					session.message(Dos.tr("err.remote_owner_settings"), true);
+					return true;
+				}
+				if(key == GLFW.GLFW_KEY_A)
+					setHost(!remote.getBoolean("access"), remote.getBoolean("anyone"));
+				else if(key == GLFW.GLFW_KEY_W)
+					setHost(remote.getBoolean("access"), !remote.getBoolean("anyone"));
+				else
+					askCode();
+			}
+			default -> {
+				return false;
+			}
+		}
+		Dos.click();
+		return true;
+	}
+
+	private void renderRemote(TextGrid g) {
+		int bg = DosColours.BODY_BG, fg = DosColours.TEXT_FG, dim = DosColours.DIM;
+		g.box(0, 2, TextGrid.COLS, 20, true, Dos.tr("rig.remote.box"), DosColours.BODY_FG, bg);
+		boolean audio = remote.getBoolean("audio");
+		int col = g.put(2, 3, Dos.tr("rig.remote.audio"), fg, bg);
+		// The setting in force is highlighted (black on cyan: blue on the blue page did not show, 2026-11-09).
+		col = g.put(col + 1, 3, Dos.tr("rig.remote.local"), audio ? dim : DosColours.HIGHLIGHT_FG, audio ? bg : DosColours.HIGHLIGHT_BG);
+		col = g.put(col + 1, 3, Dos.tr("rig.remote.remote"), audio ? DosColours.HIGHLIGHT_FG : dim, audio ? DosColours.HIGHLIGHT_BG : bg);
+		g.put(col + 2, 3, Dos.fit(Dos.tr(audio ? "rig.remote.audio_remote" : "rig.remote.audio_local"), TextGrid.COLS - col - 4), dim, bg);
+
+		String myName = remote.getString("myName");
+		g.put(2, 5, Dos.tr("rig.remote.host_title", myName.isEmpty() ? Dos.tr("rig.remote.no_name") : myName), DosColours.ACCENT, bg);
+		boolean access = remote.getBoolean("access");
+		g.put(4, 6, Dos.tr("rig.remote.access", Dos.tr(access ? "rig.remote.on" : "rig.remote.off")), fg, bg);
+		g.put(4, 7, Dos.tr("rig.remote.who", Dos.tr(remote.getBoolean("anyone") ? "rig.remote.anyone" : "rig.remote.owner")), fg, bg);
+		String code = remote.getString("code");
+		g.put(4, 8, Dos.tr("rig.remote.code", !remote.getBoolean("hasCode") ? Dos.tr("rig.remote.no_code")
+				: code.isEmpty() ? "******" : code), fg, bg);
+		if(!remote.getBoolean("mayConfigure"))
+			g.put(44, 6, Dos.tr("rig.remote.owner_sets"), dim, bg);
+		if(remote.contains("by"))
+			g.put(4, 9, Dos.fit(Dos.tr("rig.remote.hosting", remote.getString("by"), remote.getString("via"), remote.getString("viaLink")), TextGrid.COLS - 6),
+					DosColours.YELLOW, bg);
+		else
+			g.put(4, 9, Dos.tr("rig.remote.no_session"), dim, bg);
+
+		g.put(2, 11, Dos.tr("rig.remote.connect_title"), DosColours.ACCENT, bg);
+		if(remote.contains("to"))
+			g.put(4, 12, Dos.fit(Dos.tr("rig.remote.driving_page", remote.getString("to"), remote.getString("toLink")), TextGrid.COLS - 6), DosColours.YELLOW, bg);
+		else
+			g.put(4, 12, Dos.tr("rig.remote.not_connected"), dim, bg);
+		g.put(4, 13, Dos.fit(Dos.tr("rig.remote.list_head"), TextGrid.COLS - 6), dim, bg);
+		if(hosts.isEmpty())
+			g.put(4, HOSTS_TOP, Dos.tr("rig.remote.no_hosts"), dim, bg);
+		int first = Math.max(0, Math.min(hostAt - HOSTS_ROWS + 1, hosts.size() - HOSTS_ROWS));
+		for(int i = 0; i < HOSTS_ROWS && first + i < hosts.size(); i++) {
+			CompoundTag host = hosts.getCompound(first + i);
+			boolean picked = first + i == hostAt;
+			String line = String.format(Locale.ROOT, "%-20s %-12s %-5s %-6s %s", Dos.fit(host.getString("name"), 20), Dos.fit(host.getString("link"), 12),
+					host.getBoolean("code") ? Dos.tr("rig.remote.yes") : "-", host.getBoolean("ownerOnly") ? Dos.tr("rig.remote.owner_short") : Dos.tr("rig.remote.anyone_short"),
+					!host.getBoolean("on") ? Dos.tr("rig.remote.off_short") : host.getBoolean("busy") ? Dos.tr("rig.remote.busy") : "");
+			g.putField(3, HOSTS_TOP + i, " " + line, TextGrid.COLS - 6, picked ? DosColours.HIGHLIGHT_FG : fg, picked ? DosColours.HIGHLIGHT_BG : bg); // The cursor.
+		}
+		g.putField(1, 20, " " + Dos.tr("rig.remote.keys"), TextGrid.COLS - 2, DosColours.BODY_FG, bg);
 	}
 
 	private static CompoundTag tag(String key, double value) {
@@ -291,10 +489,58 @@ public final class RigControlApp extends DosApp {
 
 	// -------------------- KEYS AND MOUSE --------------------
 
+	/** T is held down: the rig is keyed until it is let go. */
+	private boolean pttHeld;
+
+	private void ptt(boolean on) {
+		CompoundTag data = new CompoundTag();
+		data.putBoolean("on", on);
+		session.app(app, "ptt", data, response -> {
+			answered(response);
+			if(on && response.ok() && pttHeld)
+				goAhead(); // Keyed: a beep says go ahead.
+		});
+	}
+
+	@Override
+	protected boolean onKeyUp(int key) {
+		if(key != GLFW.GLFW_KEY_T || !pttHeld)
+			return false;
+		pttHeld = false;
+		ptt(false);
+		return true;
+	}
+
+	/** The go-ahead beep when RIGCTL keys the rig (2026-11-09): two short high pips at the computer, for this player. */
+	private static void goAhead() {
+		net.minecraft.client.Minecraft.getInstance().getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
+				net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BIT.value(), 2.0F, 0.35F));
+	}
+
 	@Override
 	protected boolean onKey(int key, int scanCode, int modifiers) {
+		if(guide) { // Any key closes the key guide.
+			guide = false;
+			return true;
+		}
+		if(key == GLFW.GLFW_KEY_SLASH && Screen.hasShiftDown()) { // ?: every key, on one page.
+			guide = true;
+			return true;
+		}
+		if(remotePage)
+			return remoteKey(key);
 		boolean shift = Screen.hasShiftDown();
 		switch(key) {
+			case GLFW.GLFW_KEY_F6 -> {
+				remotePage = true;
+				refreshRemote();
+			}
+			case GLFW.GLFW_KEY_F8 -> {
+				if(!remote.contains("by"))
+					return false;
+				act("takeover", new CompoundTag());
+				status();
+			}
 			case GLFW.GLFW_KEY_LEFT, GLFW.GLFW_KEY_RIGHT -> {
 				int dir = key == GLFW.GLFW_KEY_LEFT ? -1 : 1;
 				if(Dos.ctrl())
@@ -309,10 +555,16 @@ public final class RigControlApp extends DosApp {
 			case GLFW.GLFW_KEY_F, GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> typedFrequency();
 			case GLFW.GLFW_KEY_M -> act("mode", new CompoundTag());
 			case GLFW.GLFW_KEY_P -> act("power", new CompoundTag());
-			case GLFW.GLFW_KEY_T -> {
-				CompoundTag data = new CompoundTag();
-				data.putBoolean("on", !rig.getBoolean("ptt"));
-				act("ptt", data);
+			case GLFW.GLFW_KEY_T -> { // Held to talk (2026-11-09); the key repeating while held does not key it again.
+				if(pttHeld)
+					return true;
+				pttHeld = true;
+				ptt(true);
+			}
+			case GLFW.GLFW_KEY_C -> { // Close the screen with RIGCTL left running, as the music player does.
+				Screen screen = net.minecraft.client.Minecraft.getInstance().screen;
+				if(screen != null)
+					screen.onClose();
 			}
 			case GLFW.GLFW_KEY_S -> scanRange();
 			case GLFW.GLFW_KEY_F3 -> scanMemories();
@@ -335,8 +587,43 @@ public final class RigControlApp extends DosApp {
 		return true;
 	}
 
+	/** Where the clickable parts of the display were drawn: the mode, PWR and SQL (columns, end exclusive). */
+	private int modeFrom = -1, modeTo = -1, powerTo = -1, squelchTo = -1;
+	private static final int POWER_COL = 52, SQUELCH_COL = 28;
+	/** The key guide (?) is open. */
+	private boolean guide;
+
 	@Override
 	protected boolean onClick(int col, int row, int button) {
+		if(guide) {
+			guide = false;
+			return true;
+		}
+		if(!remotePage && row == DISPLAY_ROW + 1 && col >= modeFrom && col < modeTo) { // Click the mode: the next one.
+			act("mode", new CompoundTag());
+			Dos.click();
+			return true;
+		}
+		if(!remotePage && row == DISPLAY_ROW + 1 && col >= POWER_COL && col < powerTo) { // PWR: on or off.
+			act("power", new CompoundTag());
+			Dos.click();
+			return true;
+		}
+		if(!remotePage && row == DISPLAY_ROW + 2 && col >= SQUELCH_COL && col < squelchTo) { // SQL: up, right click down.
+			act("squelch", intTag("level", (rig.getInt("squelch") + (button == 1 ? 9 : 1)) % 10));
+			Dos.click();
+			return true;
+		}
+		if(remotePage) {
+			int index = Math.max(0, Math.min(hostAt - HOSTS_ROWS + 1, hosts.size() - HOSTS_ROWS)) + row - HOSTS_TOP;
+			if(row >= HOSTS_TOP && row < HOSTS_TOP + HOSTS_ROWS && index >= 0 && index < hosts.size()) {
+				if(index == hostAt)
+					connect(); // A second click on the picked host connects.
+				hostAt = index;
+				return true;
+			}
+			return false;
+		}
 		if(row >= SCALE_ROW && row < FALL_TOP + FALL_ROWS && col >= FALL_LEFT && col < FALL_LEFT + BandScope.BINS && hi > lo) {
 			tuneTo(Waterfall.centre(col - FALL_LEFT, lo, hi, BandScope.BINS));
 			return true;
@@ -346,6 +633,8 @@ public final class RigControlApp extends DosApp {
 
 	@Override
 	protected boolean onScroll(int col, int row, double amount) {
+		if(remotePage)
+			return false;
 		act("step", intTag("steps", amount > 0 ? 1 : -1));
 		return true;
 	}
@@ -363,11 +652,36 @@ public final class RigControlApp extends DosApp {
 		return String.format(Locale.ROOT, "%d.%03d.%02d", mhz, khz, rest);
 	}
 
+	/** How many lines the key guide has (rig.guide.1 to rig.guide.N). */
+	private static final int GUIDE_LINES = 16;
+
+	private void renderGuide(TextGrid g) {
+		int top = 2, height = GUIDE_LINES + 3;
+		g.box(1, top, TextGrid.COLS - 2, height, true, Dos.tr("rig.guide.title"), DosColours.DIALOG_FG, DosColours.DIALOG_BG);
+		g.fill(2, top + 1, TextGrid.COLS - 4, height - 2, ' ', DosColours.DIALOG_FG, DosColours.DIALOG_BG);
+		for(int i = 1; i <= GUIDE_LINES; i++) {
+			String line = Dos.tr("rig.guide." + i);
+			boolean heading = !line.startsWith(" ");
+			g.put(3, top + i, Dos.fit(line, TextGrid.COLS - 6), heading ? DosColours.BLUE : DosColours.DIALOG_FG, DosColours.DIALOG_BG);
+		}
+		g.put(3, top + height - 2, Dos.tr("rig.guide.close"), DosColours.DARK_GREY, DosColours.DIALOG_BG);
+	}
+
 	@Override
 	public void render(TextGrid g, long now) {
 		String name = rig.contains("name") ? I18n.get(rig.getString("name")) : "";
 		Dos.frame(g, Dos.tr("rig.title", name), Dos.tr("rig.keys"));
 		int bg = DosColours.BODY_BG;
+		if(guide) {
+			renderGuide(g);
+			return;
+		}
+		if(remotePage) {
+			remoteBanner(g);
+			renderRemote(g);
+			footer(g, bg);
+			return;
+		}
 		String problem = station.getString("problem");
 		if(!problem.isEmpty()) {
 			g.putField(0, 1, " " + Dos.tr("err." + problem), TextGrid.COLS, DosColours.ERROR_FG, DosColours.ERROR_BG);
@@ -377,10 +691,20 @@ public final class RigControlApp extends DosApp {
 		}
 		g.putField(0, 1, " " + Dos.tr("rig.station", station.getString("myCall").isEmpty() ? "-" : station.getString("myCall"),
 				station.getList("radios", Tag.TAG_COMPOUND).size()), TextGrid.COLS, DosColours.BLACK, DosColours.LIGHT_GREY);
+		remoteBanner(g);
 		drawDisplay(g, now);
 		drawScale(g);
 		drawFall(g);
 		footer(g, bg);
+	}
+
+	/** Row 1 while a session runs: whose rig this drives, or who drives this one from where. */
+	private void remoteBanner(TextGrid g) {
+		if(remote.contains("to"))
+			g.putField(0, 1, " " + Dos.tr("rig.remote.driving", remote.getString("to"), remote.getString("toLink")), TextGrid.COLS, DosColours.WHITE, DosColours.MAGENTA);
+		else if(remote.contains("by"))
+			g.putField(0, 1, " " + Dos.tr("rig.remote.banner", remote.getString("by"), remote.getString("via"), remote.getString("viaLink")), TextGrid.COLS,
+					DosColours.WHITE, DosColours.RED);
 	}
 
 	private void drawDisplay(TextGrid g, long now) {
@@ -391,12 +715,14 @@ public final class RigControlApp extends DosApp {
 		int digits = power ? DosColours.ACCENT : DosColours.DIM;
 		int col = g.put(2, DISPLAY_ROW + 1, dial(rig.getDouble("hz")), digits, field);
 		col = g.put(col + 1, DISPLAY_ROW + 1, "MHz", DosColours.DIM, field);
+		modeFrom = col + 3;
 		col = g.put(col + 3, DISPLAY_ROW + 1, Dos.fit(rig.getString("mode"), 4), DosColours.TEXT_FG, field);
+		modeTo = col;
 		String band = rig.getString("band");
 		col = g.put(col + 3, DISPLAY_ROW + 1, band.equals("low_band") ? Dos.tr("rig.low_band") : band, DosColours.TEXT_FG, field);
 		if(rig.getBoolean("channelized"))
 			g.put(col + 2, DISPLAY_ROW + 1, Dos.tr("rig.channelized"), DosColours.DIM, field);
-		g.put(52, DISPLAY_ROW + 1, power ? Dos.tr("rig.power_on") : Dos.tr("rig.power_off"), DosColours.WHITE, power ? DosColours.GREEN : DosColours.DARK_GREY);
+		powerTo = g.put(POWER_COL, DISPLAY_ROW + 1, power ? Dos.tr("rig.power_on") : Dos.tr("rig.power_off"), DosColours.WHITE, power ? DosColours.GREEN : DosColours.DARK_GREY);
 		boolean tx = rig.getBoolean("ptt");
 		String txText = !rig.getBoolean("transmitter") ? " RX ONLY " : rig.getBoolean("inhibited") && tx ? " INHIBIT " : tx ? "   TX    " : "   RX    ";
 		g.put(62, DISPLAY_ROW + 1, txText, DosColours.WHITE, tx ? DosColours.RED : DosColours.BLUE);
@@ -407,7 +733,7 @@ public final class RigControlApp extends DosApp {
 		for(int i = 0; i < 15; i++)
 			g.set(4 + i, DISPLAY_ROW + 2, i < meter ? TextGrid.FULL : TextGrid.SHADE_LIGHT, i < meter ? (i >= 9 ? DosColours.BAD : DosColours.GOOD) : DosColours.DIM, field);
 		g.put(4 + 16, DISPLAY_ROW + 2, meter >= 10 ? "+" + (meter - 9) * 10 : "S" + Math.min(9, (meter * 9 + 14) / 15), DosColours.TEXT_FG, field);
-		g.put(28, DISPLAY_ROW + 2, Dos.tr("rig.squelch", rig.getInt("squelch")), DosColours.TEXT_FG, field);
+		squelchTo = g.put(SQUELCH_COL, DISPLAY_ROW + 2, Dos.tr("rig.squelch", rig.getInt("squelch")), DosColours.TEXT_FG, field);
 		String scan = rig.getString("scan");
 		if(!scan.isEmpty() && !scan.equals("OFF")) {
 			boolean blink = (now / 400) % 2 == 0;

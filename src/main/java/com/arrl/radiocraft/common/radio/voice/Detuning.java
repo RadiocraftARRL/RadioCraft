@@ -10,6 +10,9 @@ package com.arrl.radiocraft.common.radio.voice;
  *     <li><b>FM</b>: up to 2 kHz off sounds as usual, a little weaker. From 3 to 10 kHz off (and on VHF, one channel step
  *     off) the signal does not open the squelch at all, but it puts splatter on whatever the receiver is hearing on its
  *     own frequency.</li>
+ *     <li><b>AM</b> (CB, 2026-11-08): up to 2 kHz off sounds as usual, a little weaker, with no pitch shift (an envelope
+ *     detector does not care where the carrier sits). Past that, out to 10 kHz (a CB's next channel), it is not heard on
+ *     its own but bleeds over onto whatever the receiver hears, the more the closer and the stronger it is.</li>
  * </ul>
  */
 public final class Detuning {
@@ -24,6 +27,15 @@ public final class Detuning {
 	public static final double FM_CLEAR_HZ = 2_000.0D;
 	/** Furthest an FM signal can be off and still cause splatter (without a channel step to cover). */
 	public static final double FM_SPLATTER_HZ = 10_000.0D;
+
+	/** Furthest an AM signal can be off and still be heard (weaker). */
+	public static final double AM_CLEAR_HZ = 2_000.0D;
+	/** Furthest an AM signal bleeds over onto the channel the receiver is on (a CB channel step). */
+	public static final double AM_BLEED_HZ = 10_000.0D;
+	/** Strength lost per kHz off on AM, inside {@link #AM_CLEAR_HZ}. */
+	private static final double AM_LOSS_PER_KHZ = 0.1D;
+	/** AM bleedover just past {@link #AM_CLEAR_HZ}, falling to {@link #AM_FAR_BLEED} a channel away. */
+	private static final double AM_NEAR_BLEED = 0.6D, AM_FAR_BLEED = 0.25D;
 
 	/** Strength left at the edge of the SSB window. */
 	private static final double SSB_EDGE_STRENGTH = 0.4D;
@@ -120,6 +132,23 @@ public final class Detuning {
 		if(channelStepHz > 0.0D && off <= channelStepHz * reach + ON_FREQUENCY_HZ)
 			return new Effect(false, 0.0D, 0.0D, 0.0D, FM_STEP_SPLATTER);
 		return NONE;
+	}
+
+	/**
+	 * An AM receiver on {@code rxHz} hearing a signal on {@code txHz}, from a transmitter whose splatter reaches
+	 * {@code splatterReach} times as far as usual (out of band).
+	 */
+	public static Effect am(double rxHz, double txHz, double splatterReach) {
+		double off = Math.abs(rxHz - txHz);
+		if(off < ON_FREQUENCY_HZ)
+			return ON_FREQUENCY;
+		if(off <= AM_CLEAR_HZ + ON_FREQUENCY_HZ)
+			return new Effect(true, 1.0D - AM_LOSS_PER_KHZ * off / 1000.0D, 0.0D, 0.0D, 0.0D);
+		double bleedHz = AM_BLEED_HZ * Math.max(1.0D, splatterReach);
+		if(off > bleedHz + ON_FREQUENCY_HZ)
+			return NONE;
+		double t = Math.max(0.0D, Math.min(1.0D, (off - AM_CLEAR_HZ) / (bleedHz - AM_CLEAR_HZ)));
+		return new Effect(false, 0.0D, 0.0D, 0.0D, AM_NEAR_BLEED - (AM_NEAR_BLEED - AM_FAR_BLEED) * t);
 	}
 
 	/**

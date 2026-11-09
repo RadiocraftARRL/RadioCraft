@@ -114,4 +114,49 @@ public class DataWireGameTests {
 						"Red data wire joined blue"))
 				.thenSucceed();
 	}
+
+	/**
+	 * A data wire joins only the devices at its ends (maintainer, 2026-11-09): a computer wired to another computer is
+	 * not on the bus of the radio interface touching that one, so it does not reach its radios. The other computer,
+	 * touching the interface, is.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 40)
+	public static void dataWireDoesNotLinkThroughADevice(GameTestHelper helper) {
+		net.minecraft.core.BlockPos host = new net.minecraft.core.BlockPos(2, 1, 2), radioInterface = new net.minecraft.core.BlockPos(3, 1, 2),
+				client = new net.minecraft.core.BlockPos(2, 1, 6);
+		helper.setBlock(host, com.arrl.radiocraft.common.init.RadiocraftBlocks.RADIO_COMPUTER.get());
+		helper.setBlock(radioInterface, com.arrl.radiocraft.common.init.RadiocraftBlocks.RADIO_INTERFACE.get());
+		helper.setBlock(client, com.arrl.radiocraft.common.init.RadiocraftBlocks.RADIO_COMPUTER.get());
+		for(int z = 3; z <= 5; z++)
+			GameTestUtil.placeWire(helper, new net.minecraft.core.BlockPos(2, 1, z), com.arrl.radiocraft.common.init.RadiocraftBlocks.DATA_WIRE.get());
+		helper.runAfterDelay(2, () -> {
+			com.arrl.radiocraft.common.blockentities.StationBus hostBus = com.arrl.radiocraft.common.blockentities.StationBus.find(helper.getLevel(), helper.absolutePos(host));
+			com.arrl.radiocraft.common.blockentities.StationBus clientBus = com.arrl.radiocraft.common.blockentities.StationBus.find(helper.getLevel(), helper.absolutePos(client));
+			helper.assertTrue(hostBus.interfaces().size() == 1, "The computer touching the interface should have it on its bus");
+			helper.assertTrue(clientBus.interfaces().isEmpty(), "A computer wired to another must not reach the interface touching that one");
+			helper.succeed();
+		});
+	}
+
+	/** A junction box joins data wire of different colours (2026-11-09): red in, blue out, the two computers reach each other. */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 40)
+	public static void junctionJoinsDataWireColours(GameTestHelper helper) {
+		net.minecraft.core.BlockPos a = new net.minecraft.core.BlockPos(2, 1, 1), junction = new net.minecraft.core.BlockPos(2, 1, 4),
+				b = new net.minecraft.core.BlockPos(2, 1, 7);
+		helper.setBlock(a, com.arrl.radiocraft.common.init.RadiocraftBlocks.RADIO_COMPUTER.get());
+		helper.setBlock(b, com.arrl.radiocraft.common.init.RadiocraftBlocks.RADIO_COMPUTER.get());
+		helper.setBlock(junction, com.arrl.radiocraft.common.init.RadiocraftBlocks.WIRE_JUNCTION.get());
+		for(int z = 2; z <= 3; z++)
+			GameTestUtil.placeWire(helper, new net.minecraft.core.BlockPos(2, 1, z),
+					com.arrl.radiocraft.common.init.RadiocraftBlocks.COLOURED_DATA_WIRE.get(net.minecraft.world.item.DyeColor.RED).get());
+		for(int z = 5; z <= 6; z++)
+			GameTestUtil.placeWire(helper, new net.minecraft.core.BlockPos(2, 1, z),
+					com.arrl.radiocraft.common.init.RadiocraftBlocks.COLOURED_DATA_WIRE.get(net.minecraft.world.item.DyeColor.BLUE).get());
+		helper.runAfterDelay(2, () -> {
+			java.util.List<net.minecraft.core.BlockPos> reached = com.arrl.radiocraft.common.be_networks.DataWire.reached(helper.getLevel(), helper.absolutePos(a));
+			helper.assertTrue(reached.contains(helper.absolutePos(b)), "Red and blue data wire did not join through the junction box: " + reached);
+			helper.assertFalse(reached.contains(helper.absolutePos(junction)), "The junction box is a meeting point, not a device");
+			helper.succeed();
+		});
+	}
 }

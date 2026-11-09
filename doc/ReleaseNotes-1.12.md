@@ -342,8 +342,160 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   dropped as it reaches the interface, however it got there: direct, through a repeater or Everywhere).
 - A quiet **monitor speaker** on the block plays what goes out to the real radio for players standing by it (6 blocks).
 
-### Changes
+#### CB radio
 
+- **Citizens Band** (26.965-27.405 MHz, the 40 US channels): no licence needed. CB is **AM**: a new receive mode where
+  there is no background static, a weak signal turns hissy before it fades, a strong station on the next channel
+  bleeds over, and two people talking at once are both heard (as on SSB). It carries a little less far than 10m,
+  being 5 W: line of sight is a quarter shorter and skip about a third shorter. Any 10m antenna works on CB.
+- **TRC-217 CB Portable**: a walkie-talkie with its own cells (swap charge with a small battery). Turn the volume up
+  from OFF and its whip pulls out about three blocks; hold right click to talk; sneak and use for the channel knob on
+  top, volume and squelch. Half a mobile's range, both ways.
+- **5875 CB Mobile**: the deluxe set with a woodgrain lid: a clock, RX signal / TX power meter, red channel LED, ON AIR
+  lamp, and a meter that reads SWR or modulation (MOD/SWR switch). Its **speech compressor** makes your voice punchier
+  and gives a little more talk power. Built with a pure 10m crystal.
+- **PC68 CB Mobile**: a compact chrome mobile with a meter, channel LED, RX/TX lamp and a CH9 switch. Any 10m crystal.
+- **CB Ground Plane Antenna**: a vertical five blocks tall with radials at its foot, matched across all 40 channels.
+  It works on 10m at a push (about 1.8:1 at the bottom of the band, worse higher up).
+- On the mobiles the **volume knob is the power switch** (its lowest click is OFF), and the 5875's clock runs whenever
+  the radio has a charged battery on its wire, switched on or not. The block shows the channel, the clock, both meters'
+  needles and the ON AIR / RX-TX lamps.
+- The mobiles draw an SSB rig's power while listening and only a little more on the air. Their hand mic comes off on a
+  cord (sneak and use), as on the marine radio. The squelch knobs are there but do nothing yet.
+
+#### Modes meet: SSB, AM and FM
+
+- Every voice transmission now carries its mode. An **SSB** receiver hears an **AM** station clean when tuned on its
+  carrier, and off it with the carrier's whistle and the voice shifted; it hears **FM** as a garbled warble. An **AM**
+  receiver (CB) never hears SSB on its own (no carrier), only as garble over an AM station it lands on; FM's carrier
+  opens it, but as a warble with no words. FM receivers do not hear AM.
+- **10m radios tune down through the CB channels** (the "freeband", to 26.9 MHz). Listening is free; transmitting
+  there needs a MARS mod, as anywhere out of band.
+- The **all-band radio** has **AM**: press its FM button again.
+- **No antenna** on a transmitter counts as an SWR of 6: transmit into an empty connector and it can blow, like any bad
+  match. The CB meters show it.
+- The 5875's AWI lamp lights amber while a signal comes in. Right click a radio screen's PTT to take the hand mic.
+
+#### Squelch
+
+- The **CB radios' SQUELCH knobs** work: turned up, the speaker stays shut until the RX meter reads past the setting
+  (weak stations and their hiss are cut out). At 0 it is open.
+- The **20m and 40m radios and the HF receiver** have a squelch on a spare knob (20m: bottom left; 40m and the
+  receiver: top left). Hover it to see OPEN or SQL 1-10. Set above 0, the static goes quiet too, and comes back under
+  a signal that opens it. The S-meter still moves for a signal under the squelch.
+- A squelch set at or under the band's noise is held open by it: the CB radios (portable too) hiss on the band
+  noise with the squelch down, and go quiet once it is turned past.
+- Radios switch on at once (they could wait 3 seconds, paying for their first tick of power twice).
+- SSB has no carrier: keyed with no antenna it only risks blowing while you talk (or send CW or data). AM and FM
+  carry a carrier whenever keyed.
+
+#### New HF radio panels
+
+- The **10m, 20m, 40m, 80m and all-band radios** have new front panels that match their blocks: an analog meter,
+  a display window, the tuning dial, AF, MIC and SQL knobs, an AGC switch, mode keys and PTT. The old panels are kept
+  (as `_old` textures) for now.
+  - Knobs: scroll, or left click up and right click down. The dial: scroll, or drag up and down. Switches and the
+    80m's mode lever: click a position, or scroll.
+  - The **meter** reads S on receive; on the air S and PO read power out, SWR the SWR. Its selector is remembered.
+- **AM** on every HF radio (10m AM talks to CB on the freeband).
+- **AGC**: SLOW is how radios always sounded. FAST lets the static back quickly between words. OFF levels nothing:
+  strong stations blast, weak ones are faint, and the static never ducks.
+- Every HF radio has a **squelch** knob.
+
+#### Remote rig control
+
+- RIGCTL remote audio: on the new Remote page (F6) switch the audio to REMOTE and the computer becomes the rig's
+  speaker, and RIGCTL's PTT takes your voice into the rig, wherever the rig is.
+- RIGCTL remote control: a computer can let others on its network drive its rig (REMOTE ACCESS, OWNER or ANYONE WITH
+  CODE, an optional access code). Another computer reached over data wire or a microwave link lists it by name and
+  link quality, connects, and drives the rig as if it sat there, with its own speaker and mic. One remote user at a
+  time; the host shows who and can take over. Microwave links add a little delay and, as the link weakens, a rough
+  voice and dropped words. The session ends if the link drops; closing the screen leaves it (and the waterfall on the monitor) running.
+- Data wire joins only the devices at its ends: what touches the far device is not on the line (touching devices
+  still chain). A junction box joins data wire of different colours, as it does power wire.
+- Network names: computers that reach each other form a network, and each needs a name the others there do not use.
+  A computer with no name there, or a taken one, asks for one before the desktop.
+
+#### Signals that sound and look real
+
+- SSB is only there while someone speaks: the S-meter and the squelch follow the voice, and between words the static
+  comes back. AM and FM hold a carrier.
+- Dead air stations carry a faint hiss and crackle, not digital silence, and are never on SSB.
+- Commercial radio modules have a mode: SSB or AM on HF, FM on VHF.
+- The RIGCTL waterfall draws signals by mode: SSB as the voice beside its frequency, coming and going with the words;
+  AM as a carrier with sidebands that swell; FM as a carrier that spreads as someone talks.
+
+#### Stability
+
+- **Repeater loops** no longer crash the server. Two repeaters that hear each other (one listening where the other
+  transmits, both ways) lock each other up as real ones do: the transmission goes round one relay a tick under a
+  rising feedback howl, until their timeout timers drop them. The new server setting `repeater_loop_protection`
+  (off by default) stops loops from starting at all.
+- Fixed a crash when a block radio's antenna transmitted while players or antennas were joining the band.
+- Radio control packets no longer look up blocks the player is nowhere near (which could force chunks to load).
+- A wire fault no longer keeps the chunks along its whole power line loaded.
+
+#### Memories, QUICK, switches and cells
+
+- **QUICK** on every new radio panel: hold to store the frequency, press to jump there, press again to come back.
+- The **all-band radio** has **50 memories**: hold MEMORY to store (pick the channel with the dial, press MEMORY),
+  VFO/MEM to switch, hold VFO/MEM on a memory to copy it to the VFO.
+- The **VHF receiver** works properly now: a frequency display, six memory buttons that store, select and **scan**,
+  a mute button, tooltips on every control, and it runs on a small NiCd or alkaline cell (shift right click) with no
+  power wire.
+- **Power Switch - On/Off** and **Power Switch - Left/Right**: switch power circuits by hand or with a redstone pulse.
+- The **Stable Chemical Battery**: not rechargeable, inert until its first redstone signal, then powers the circuit
+  until flat. Stores full and sealed: an emergency reserve.
+- A redstone pulse turns the **antenna switch** to the next output with coax on it.
+- Small **alkaline cells** run the VHF handhelds and the CB portable; a flat one comes out as a **Dead Alkaline
+  Battery**, which crafts back into an iron nugget.
+
+#### CB controls
+
+- The **5875's FUNCTION knob** picks **AM, USB or LSB**. Sideband carries further than AM (12 W PEP against a 4 W
+  carrier). Two sets on the same sideband talk; USB and LSB on one channel only put a little interference on each
+  other, and an AM set does not hear SSB on its own.
+- **CLAR** (the clarifier) tunes the receiver up to 1 kHz either side of the channel, to bring an off-tune SSB voice
+  back to its own pitch. **RF GAIN** turns the receiver down, static and weak stations with it.
+- **NB** (noise blanker) and **ANL** (automatic noise limiter) cut impulse noise (redstone sparks, aurora crackle):
+  the blanker most, the limiter some, both together the most. The PC68's NB/ANL switch works both.
+- The **PC68's AM/FM switch** puts it on FM.
+- The CB portable also fits the **belt** Curios slot, on the right hip.
+
+#### Batteries and floppies
+
+- The rechargeable small battery is now the **Small NiCd Battery** (it was called alkaline; nothing changes in worlds).
+- New **Small Alkaline Battery**: cheap, full when made, and **not rechargeable** (no charger takes it, and the
+  rechargeable radios want the NiCd one). The weather alert receiver runs on either.
+- **All Applications Floppy** (creative only): put it in a radio computer's drive and every floppy program is installed
+  at once; the disk comes straight back out.
+
+#### Grounding
+
+- **Ground rods**: drive them into the ground (stack them down a hole to go deeper) and run **ground wire** to a radio
+  or to a lightning arrestor's ground lug. Green wire is now called **Ground Wire**, and only it bonds a rod. A
+  grounded arrestor grounds every radio on its coax. Not required: a good ground lowers an HF station's noise (most of
+  the local redstone and lightning hash, some of the band noise). Damp clay and mud are best; sand, rock and frozen
+  ground need deeper or more rods; rain and water nearby help. Use a rod to measure it.
+- A lightning arrestor needs a good ground to stop every strike: without one, half of them arc past it.
+- Power on a ground run (a battery, solar panel or charge controller on the green wire) is a **ground fault**: the rod
+  sparks and the batteries drain into the earth.
+
+#### Lightning arrestor and battery meter
+- **Lightning arrestor**: an in-line coax block. The signal passes straight through it. When lightning strikes the
+  antenna, the surge stops there: the coax between the antenna and the arrestor can still burn out, but radios behind
+  it do not blow, the coax on their side is not burnt, and their batteries do not catch fire.
+- **Battery meter**: put it on a power wire. Its face shows the batteries on that wire as a 12 V bank: voltage
+  (11.8 V empty to 12.7 V full at rest, up to 14.4 V while charging, sagging under load), charge, and an arrow while
+  they charge or discharge. Using it prints the full reading with the time to full or empty. A comparator reads the
+  charge (0 to 15). Power passes through it like a wire junction.
+
+### Changes
+- **Terrain** in chunks nobody has loaded is no longer flat: a signal's path through them gets the natural ground from
+  the world generator (no trees or buildings) until the chunk loads. Server config `terrain_worldgen_fill`,
+  `terrain_worldgen_chunks_per_tick`.
+- The **teletype** no longer prints the solar report (its SOLAR WX code is gone): use the WEFAX receiver's SOLR WX.
+  Its comparator still reads the solar conditions.
 - The guide book is now the **ARRL Radiocraft Handbook**, with new chapters for the radio computer, aviation and the
   server admin gear, and a page on ham shacks.
 - WEFAX receivers with AUTO on now print the charts other stations send (on paper), as a real recorder starts on the

@@ -1,0 +1,79 @@
+{
+	"credit": "RadioCraft (placeholder, see doc/ModelDesignBounty.md)",
+	"parent": "block/block",
+	"textures": {
+		"side": "radiocraft:block/wire_junction_side",
+		"top": "minecraft:block/cut_copper",
+		"particle": "radiocraft:block/wire_junction_side"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				6,
+				16
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						10,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"south": {
+					"uv": [
+						0,
+						10,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"east": {
+					"uv": [
+						0,
+						10,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"west": {
+					"uv": [
+						0,
+						10,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#top"
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#side"
+				}
+			}
+		}
+	]
+}

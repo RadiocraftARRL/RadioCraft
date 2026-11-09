@@ -12,6 +12,8 @@ public class RadiocraftSoundEvents {
 	public static final DeferredRegister<SoundEvent> SOUND_EVENTS = DeferredRegister.create(BuiltInRegistries.SOUND_EVENT, Radiocraft.MOD_ID);
 
 	public static Supplier<SoundEvent> STATIC = SOUND_EVENTS.register("static", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("static"), 32.0F));
+	/** The HF static through a CW filter (2026-11-09, tools/cw_static.py): what an HF radio in CW hears of the band. */
+	public static Supplier<SoundEvent> STATIC_CW = SOUND_EVENTS.register("static_cw", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("static_cw"), 32.0F));
 	public static Supplier<SoundEvent> MORSE = SOUND_EVENTS.register("morse", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("morse"), 32.0F));
 	/** Broadband switching noise a radio picks up from redstone near its antenna (maintainer's recording, 2026-10-27, 19 s). */
 	public static Supplier<SoundEvent> REDSTONE_RFI = SOUND_EVENTS.register("redstone_rfi", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("redstone_rfi"), 32.0F));

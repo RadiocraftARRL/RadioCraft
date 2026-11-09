@@ -16,11 +16,14 @@ import com.arrl.radiocraft.common.blocks.antennas.AntennaSwitchBlock;
 import com.arrl.radiocraft.common.init.RadiocraftBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +40,12 @@ public class AntennaSwitchBlockEntity extends BlockEntity implements INetworkObj
 
 	/** How often it looks for the radio's side, in ticks. */
 	public static final int CHECK_TICKS = 20;
+	private static final String SIGNAL_TAG = "redstone";
+	/**
+	 * The redstone level going into it when last looked at, so a signal turns it once, as it rises (2026-11-09). Kept
+	 * here rather than as a blockstate property, so the blockstates of switches already placed stay valid.
+	 */
+	private int lastSignal = 0;
 
 	public AntennaSwitchBlockEntity(BlockPos pos, BlockState state) {
 		super(RadiocraftBlockEntities.ANTENNA_SWITCH.get(), pos, state);
@@ -52,6 +61,31 @@ public class AntennaSwitchBlockEntity extends BlockEntity implements INetworkObj
 		super.onLoad();
 		if(level != null && !level.isClientSide())
 			getNetworkObject(level, worldPosition); // Makes the object and joins the coax around it.
+	}
+
+	/** The redstone level going into it when last looked at. */
+	public int lastSignal() {
+		return lastSignal;
+	}
+
+	/** Remembers the redstone level going into it now. */
+	public void setLastSignal(int signal) {
+		if(lastSignal != signal) {
+			lastSignal = signal;
+			setChanged();
+		}
+	}
+
+	@Override
+	protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+		super.saveAdditional(tag, registries);
+		tag.putInt(SIGNAL_TAG, lastSignal);
+	}
+
+	@Override
+	protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+		super.loadAdditional(tag, registries);
+		lastSignal = tag.getInt(SIGNAL_TAG);
 	}
 
 	public static void tick(Level level, BlockPos pos, BlockState state, AntennaSwitchBlockEntity entity) {

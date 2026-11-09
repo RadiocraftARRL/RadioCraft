@@ -1,0 +1,20 @@
+{
+ "name": "Battery Meter",
+ "icon": "radiocraft:battery_meter",
+ "category": "radiocraft:power",
+ "sortnum": 3,
+ "pages": [
+  {
+   "type": "patchouli:text",
+   "text": "Put a $(item)battery meter$() on a power wire. Its face shows the batteries on that wire as a 12 V bank: the $(thing)voltage$() and the $(thing)charge$(), with an arrow up while they charge and down while they discharge. Power passes through it from any side, like a wire junction.$(br2)At rest it reads 11.8 V empty to 12.7 V full. Charging lifts it towards 14.4 V; a heavy load sags it a little."
+  },
+  {
+   "type": "patchouli:text",
+   "text": "Use it for the full reading in chat: how many batteries, the charge, and how fast it is going in or out, with the time left to full or to empty.$(br2)A $(item)comparator$() beside it reads the charge: 0 empty, 15 full. Use it to switch a generator on when the bank runs low."
+  },
+  {
+   "type": "patchouli:crafting",
+   "recipe": "radiocraft:battery_meter"
+  }
+ ]
+}

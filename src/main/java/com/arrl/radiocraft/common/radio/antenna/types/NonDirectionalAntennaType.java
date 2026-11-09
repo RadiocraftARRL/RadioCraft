@@ -1,5 +1,6 @@
 package com.arrl.radiocraft.common.radio.antenna.types;
 
+import com.arrl.radiocraft.api.antenna.IAntenna;
 import com.arrl.radiocraft.api.antenna.IAntennaPacket;
 import com.arrl.radiocraft.api.antenna.IAntennaType;
 import com.arrl.radiocraft.common.radio.Band;
@@ -55,7 +56,20 @@ public abstract class NonDirectionalAntennaType<T extends AntennaData> implement
     }
 
     protected double computeDistance(IAntennaPacket packet, BlockPos destination) {
-        return Math.sqrt(Sublevels.distSqr(packet.getLevel(), packet.getSource().getAntennaPos().position(), destination));
+        IAntenna.AntennaPos from = sourcePos(packet);
+        if(from == null)
+            return Double.POSITIVE_INFINITY; // The sender went away mid-broadcast: out of reach.
+        return Math.sqrt(Sublevels.distSqr(packet.getLevel(), from.position(), destination));
+    }
+
+    /**
+     * The sending antenna's position, read once; null when there is no sender or it has none any more. A mobile
+     * radio's position is cleared on the server thread when it is put away, dropped or its player logs out, which can
+     * happen while Simple Voice Chat's thread is still delivering its audio (2026-11-09).
+     */
+    protected static IAntenna.AntennaPos sourcePos(IAntennaPacket packet) {
+        IAntenna source = packet.getSource();
+        return source == null ? null : source.getAntennaPos();
     }
 
     protected double modifyDistanceForTransmit(IAntennaPacket packet, T data, BlockPos destination, double distance) {
@@ -65,8 +79,11 @@ public abstract class NonDirectionalAntennaType<T extends AntennaData> implement
     protected double getPropagationStrength(IAntennaPacket packet, BlockPos destination, double distance, boolean isCW) {
         double effectiveDistance = isCW ? distance / CW_RANGE_MULTIPLIER : distance;
         Level level = packet.getLevel();
+        IAntenna.AntennaPos from = sourcePos(packet);
+        if(from == null || Double.isInfinite(distance))
+            return 0.0D; // The sender went away mid-broadcast.
         // Where both ends really are (either may be on a Sable ship), for solar weather, aurora and terrain.
-        BlockPos source = packet.getSource().getAntennaPos().world();
+        BlockPos source = from.world();
         destination = Sublevels.world(level, destination);
         // Solar weather only touches the sky wave: a poor or closed band weakens skip, line of sight is unchanged. An
         // aurora over either end costs HF a condition step, and lets VHF skip between two stations under it.

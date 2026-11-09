@@ -79,6 +79,10 @@ public class MarineRadioScreen extends AbstractContainerScreen<MarineRadioMenu> 
 
 	@Override
 	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if(button == 1 && overPtt(mouseX, mouseY)) { // Right click: the hand mic instead.
+			HandMicPtt.take(radio().getBlockPos());
+			return true;
+		}
 		if(button == 0 && overPtt(mouseX, mouseY)) {
 			setPtt(true);
 			return true;

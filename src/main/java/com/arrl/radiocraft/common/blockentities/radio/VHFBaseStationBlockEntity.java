@@ -37,4 +37,9 @@ public class VHFBaseStationBlockEntity extends VHFRadioBlockEntity {
         return new RadioNetworkObject(level, worldPosition, CommonConfig.VHF_BASE_STATION_TRANSMIT_TICK.get(), CommonConfig.VHF_BASE_STATION_RECEIVE_TICK.get());
     }
 
+    /** Its new panel has a squelch knob (2026-11-09). */
+    @Override
+    public boolean hasSquelchKnob() {
+        return true;
+    }
 }

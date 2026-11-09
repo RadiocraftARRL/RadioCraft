@@ -36,8 +36,11 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.WATERPROOF_WIRE.get())
                 .add(RadiocraftBlocks.COLOURED_WIRE.values().stream().map(net.neoforged.neoforge.registries.DeferredHolder::get).toArray(Block[]::new))
                 .add(RadiocraftBlocks.WIRE_JUNCTION.get())
+                .add(RadiocraftBlocks.POWER_SWITCH_ON_OFF.get(), RadiocraftBlocks.POWER_SWITCH_LEFT_RIGHT.get())
+                .add(RadiocraftBlocks.BATTERY_METER.get())
                 .add(RadiocraftBlocks.SOLAR_PANEL.get())
                 .add(RadiocraftBlocks.LARGE_BATTERY.get())
+                .add(RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get())
                 .add(RadiocraftBlocks.CHARGE_CONTROLLER.get())
                 .add(RadiocraftBlocks.AUTO_TUNER.get())
                 .add(RadiocraftBlocks.ALL_BAND_RADIO.get())
@@ -53,6 +56,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.VHF_REPEATER.get())
                 .add(RadiocraftBlocks.COMMERCIAL_REPEATER.get()) // Its charger runs off the station's power wire, to any cell of the rack.
                 .add(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get(), RadiocraftBlocks.MARINE_RADIO.get())
+                .add(RadiocraftBlocks.CB_MOBILE_5875.get(), RadiocraftBlocks.CB_MOBILE_PC68.get())
                 .add(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()) // A station on power and coax (1.12 step 11).
                 .add(RadiocraftBlocks.DIRECTION_FINDER_MODULE.get()) // Passes power on to the finder and the next module.
                 .add(RadiocraftBlocks.MICROWAVE_RADIO.get())
@@ -84,7 +88,8 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.DTMF_DECODER.get(), RadiocraftBlocks.DTMF_ENCODER.get())
                 .add(RadiocraftBlocks.RADIO_COMPUTER.get(), RadiocraftBlocks.SCANNER.get()) // The computer's line to its radios, scanner and station bus.
                 .add(RadiocraftBlocks.ADSB_RECEIVER.get()) // The computer's ADS-B program reads it.
-                .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()); // Its line to the APRS station (weather alerts, 1.12).
+                .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()) // Its line to the APRS station (weather alerts, 1.12).
+                .add(RadiocraftBlocks.WIRE_JUNCTION.get()); // Data wire of any colour joins through it, as power wire does (2026-11-09).
 
         // Signal sources that only report a reading: Another Weather Mod's instruments re-read the weather every second, and
         // in a storm each new reading popped a nearby radio with interference (2026-10-30).
@@ -116,6 +121,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.ANTENNA_SPLITTER.get())
                 .add(RadiocraftBlocks.ANTENNA_SWITCH.get())
                 .add(RadiocraftBlocks.ANTENNA_TUNER.get())
+                .add(RadiocraftBlocks.LIGHTNING_ARRESTOR.get())
                 .add(RadiocraftBlocks.AUTO_TUNER.get())
                 .add(RadiocraftBlocks.ANTENNA_CONNECTOR.get())
                 .add(RadiocraftBlocks.BALUN_ONE_TO_ONE.get())
@@ -126,6 +132,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(net.minecraft.world.level.block.Blocks.LIGHTNING_ROD) // A very basic VHF antenna.
                 .add(RadiocraftBlocks.IONOSONDE.get())
                 .add(RadiocraftBlocks.FIVE_BTV_ANTENNA.get())
+                .add(RadiocraftBlocks.CB_GROUND_PLANE_ANTENNA.get())
                 .add(RadiocraftBlocks.SLIM_JIM_ANTENNA.get())
                 .add(RadiocraftBlocks.YAGI_ANTENNA.get())
                 .add(RadiocraftBlocks.DUMMY_LOAD.get())
@@ -145,6 +152,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.VHF_REPEATER.get())
                 .add(RadiocraftBlocks.COMMERCIAL_REPEATER.get())
                 .add(RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get(), RadiocraftBlocks.MARINE_RADIO.get())
+                .add(RadiocraftBlocks.CB_MOBILE_5875.get(), RadiocraftBlocks.CB_MOBILE_PC68.get())
                 .add(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()) // A station on power and coax (1.12 step 11).
                 .add(RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get()) // ADS-B's 1090 MHz antenna to its receiver.
                 .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get(), RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get()); // Weather alerts (1.12) to a VHF antenna.
@@ -161,6 +169,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.J_POLE_ANTENNA.get())
                 .add(RadiocraftBlocks.IONOSONDE.get())
                 .add(RadiocraftBlocks.FIVE_BTV_ANTENNA.get())
+                .add(RadiocraftBlocks.CB_GROUND_PLANE_ANTENNA.get())
                 .add(RadiocraftBlocks.SLIM_JIM_ANTENNA.get())
                 .add(RadiocraftBlocks.YAGI_ANTENNA.get())
                 .add(RadiocraftBlocks.DUMMY_LOAD.get())

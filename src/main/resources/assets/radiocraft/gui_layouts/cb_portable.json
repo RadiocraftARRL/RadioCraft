@@ -1,0 +1,77 @@
+{
+  "_comment": "CB portable (TRC-217) front. Positions in GUI pixels from the top left of textures/gui/cb/cb_portable.png. The body starts 40 px down so the whip stub fits above it; the pulled-out whip is drawn up from 'whip' while the radio is on. tools/cb_gui_assets.py draws the background from this file.",
+  "background": "radiocraft:textures/gui/cb/cb_portable.png",
+  "width": 124,
+  "height": 252,
+  "body": [
+    20,
+    50,
+    104,
+    246
+  ],
+  "whip": [
+    84,
+    16,
+    2
+  ],
+  "widgets": [
+    {
+      "type": "knob",
+      "x": 50,
+      "y": 42,
+      "w": 16,
+      "h": 14,
+      "size": "none",
+      "control": "CHANNEL",
+      "label": "CHANNEL"
+    },
+    {
+      "type": "digits",
+      "x": 44,
+      "y": 77,
+      "w": 20,
+      "h": 12,
+      "shows": "channel",
+      "colour": "#101010",
+      "back": "#F0F0E8",
+      "back_lit": "#FFE9A0",
+      "back_off": "#9A9A94"
+    },
+    {
+      "type": "light",
+      "x": 88,
+      "y": 77,
+      "w": 10,
+      "h": 10,
+      "label": "LIGHT"
+    },
+    {
+      "type": "knob",
+      "x": 44,
+      "y": 192,
+      "size": "chrome_small",
+      "control": "VOLUME",
+      "label": "VOLUME",
+      "min": "OFF"
+    },
+    {
+      "type": "knob",
+      "x": 80,
+      "y": 192,
+      "size": "chrome_small",
+      "control": "SQUELCH",
+      "label": "SQUELCH",
+      "min": "MIN",
+      "max": "MAX"
+    },
+    {
+      "type": "ptt",
+      "x": 12,
+      "y": 100,
+      "w": 6,
+      "h": 50,
+      "label": "PTT",
+      "side": true
+    }
+  ]
+}

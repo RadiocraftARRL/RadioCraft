@@ -60,7 +60,17 @@ public final class StationProgram {
 	/** The numbers station's interval tune, the same for every station. */
 	private static volatile List<short[]> chime;
 
+	/** Sent on SSB: with nobody talking nothing goes out at all, so dead air there is only its kerchunks (2026-11-09). */
+	private final boolean ssb;
+	private long airSeed;
+
 	public StationProgram(Kind kind, long seed, String callsign, Supplier<List<short[]>> voice) {
+		this(kind, seed, callsign, voice, false);
+	}
+
+	public StationProgram(Kind kind, long seed, String callsign, Supplier<List<short[]>> voice, boolean ssb) {
+		this.ssb = ssb;
+		this.airSeed = seed;
 		this.kind = kind;
 		this.seed = seed;
 		this.callsign = callsign;
@@ -80,8 +90,12 @@ public final class StationProgram {
 			start(gameTime);
 		List<short[]> out = new ArrayList<>(count);
 		if(kind == Kind.DEAD_AIR) {
-			for(int i = 0; i < count; i++)
-				out.add(queue.isEmpty() ? RepeaterAudio.silence() : queue.poll());
+			for(int i = 0; i < count; i++) {
+				if(!queue.isEmpty())
+					out.add(queue.poll());
+				else if(!ssb) // The carrier: faint hiss and crackle. On SSB no voice means no signal.
+					out.add(RepeaterAudio.deadAir(airSeed = airSeed * 6364136223846793005L + 1442695040888963407L));
+			}
 			return out;
 		}
 		for(int i = 0; i < count && !queue.isEmpty(); i++)
@@ -91,7 +105,7 @@ public final class StationProgram {
 
 	/** True while it has a transmission under way (or, on dead air, always). */
 	public boolean onAir() {
-		return kind == Kind.DEAD_AIR || !queue.isEmpty();
+		return kind == Kind.DEAD_AIR && !ssb || !queue.isEmpty();
 	}
 
 	private void start(long gameTime) {

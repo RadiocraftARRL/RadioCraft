@@ -32,6 +32,8 @@ public final class RadioComputerMenu extends AbstractContainerMenu implements St
 	private final DataSlot starved;
 	/** 1 while this player must type the computer's password (1.12 open-question fixes). */
 	private final DataSlot locked;
+	/** While the computer asks for a network name (2026-11-09): 1 if this player may give it one, 2 if not; else 0. */
+	private final DataSlot naming;
 
 	public RadioComputerMenu(int id, RadioComputerBlockEntity computer, BlockPos monitor) {
 		this(id, computer, monitor, null);
@@ -65,6 +67,28 @@ public final class RadioComputerMenu extends AbstractContainerMenu implements St
 			});
 		else
 			locked = addDataSlot(DataSlot.standalone());
+		if(player instanceof ServerPlayer serverPlayer)
+			naming = addDataSlot(new DataSlot() {
+				@Override
+				public int get() {
+					if(!computer.needsNetworkName())
+						return 0;
+					return computer.mayChangePassword(serverPlayer) ? 1 : 2;
+				}
+
+				@Override
+				public void set(int value) {}
+			});
+		else
+			naming = addDataSlot(DataSlot.standalone());
+	}
+
+	/**
+	 * The NETWORK NAME prompt (2026-11-09): 0 none, 1 the computer asks this player for a name, 2 it needs one but only
+	 * its owner (or an operator) may give it. Both sides; the client's copy comes from the server.
+	 */
+	public int namePrompt() {
+		return naming.get();
 	}
 
 	/** True while the player at it must type its password first (both sides; the client's copy comes from the server). */

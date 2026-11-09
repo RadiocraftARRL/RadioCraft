@@ -40,6 +40,29 @@ What was done for the parrot controller, as the pattern for the next one:
 
 ## Open bounties
 
+### Models: power switches and the Stable Chemical Battery (2026-11-09)
+
+Placeholders written by hand from vanilla textures (blockstates hand-made in `src/main/resources`, except the
+battery's, which datagen makes from its model like the large battery's):
+
+- `radiocraft:power_switch_on_off` (`models/block/power_switch_on_off.json`, `power_switch_on_off_on.json`): a knife
+  switch or heavy toggle for a power circuit. Placeholder: a half-block iron box with a smooth stone top, copper
+  terminal posts on the north and south edges and a vanilla lever handle on top, leaning one way off and the other on.
+  Wanted: a station power switch (a knife switch on a slate or Bakelite base, or a big rotary or toggle in a steel box)
+  with two terminals, one on the north side and one on the south (wire meets the box on those sides), and the handle
+  clearly in its on or off position. Two models, `on=false` and `on=true`; drawn facing north.
+- `radiocraft:power_switch_left_right` (`power_switch_left_right.json`, `power_switch_left_right_right.json`): the same
+  as a changeover switch (single pole, double throw). Placeholder: the same box with a polished andesite top and
+  terminals north (the input), east (left) and west (right), the lever leaning toward the selected output. Wanted: a
+  double-throw knife switch or a rotary changeover, with the input terminal on the north side and the two outputs on
+  the east and west, the handle showing which output is in. Two models, `right=false` (left, east) and `right=true`
+  (right, west); drawn facing north.
+- `radiocraft:stable_chemical_battery` (`models/block/stable_chemical_battery.json`): an emergency reserve battery,
+  sealed until a redstone signal sets it going. Placeholder: the large battery model with its front, sides and bottom
+  retextured in polished blackstone. Wanted: a sealed reserve cell bank (a military-style olive or black case, warning
+  stencils, a seal or pull tab, the large battery's terminals on top), full block, facing north. Optional: a second
+  model for once the seal is broken (tell us, and it gets a blockstate property).
+
 ### Models and sounds: weather alert generator and receiver (2026-11-06)
 
 Placeholders from `tools/weather_alert_models.py` (32x32 textures; blockstates hand-made in `src/main/resources`
@@ -429,3 +452,30 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
     roll), `awards` (a medal) and `qsl` (a card) since batch 3C). Wanted: Windows 3.1 / DOS Shell style pictograms, readable at 32 x 32. **Keep to
     the sixteen EGA colours exactly** (`DosColours.PALETTE`; no anti-aliasing, transparency allowed): the colour
     schemes recolour icons by matching those colours, and `ComputerIconsTest` fails on any other colour.
+- **Lightning arrestor** (built 2026-11-07, placeholder `models/block/lightning_arrestor.json`): an in-line coax
+  surge protector, like a Polyphaser or Alpha Delta box: a small grey or bronze body with an N or SO-239 connector on
+  each end and a ground lug with a wing nut on top. Low (about 6 px high); coax meets it on any side, so keep the
+  connectors at the sides. One model, no states.
+- **Battery meter** (built 2026-11-07, placeholder `models/block/battery_meter.json`): a panel voltmeter in a small
+  steel box (half a block high), a dark display window on the front (keep it at x 2-14, y 1-7, front face at z -0.5,
+  or tell us where it moves: `BatteryMeterRenderer` writes the voltage and charge on it in green), a terminal post or
+  two on top. Faces north as drawn.
+- **CB mobiles** (built 2026-11-08, placeholders `models/block/cb_mobile_5875.json` and `cb_mobile_pc68.json`, drawn
+  by `tools/cb_radio_assets.py`): the **5875** after a 1970s GE 3-5875 base (woodgrain lid, brushed silver case, black
+  display strip with a red LED clock, two meters, a red 2-digit channel LED and an ON AIR lamp, speaker grille left and
+  knobs and bat-handle toggles right), and the **PC68** after a chrome-faced Uniden PC68 (meter, mic jack, toggles,
+  knobs, red channel LED, RX/TX LED, big channel knob). No brand names. Keep an element named `DISPLAY` over the
+  channel window and tell us where the ON AIR and RX/TX lamps move (`RadioDisplays.LAMPS`). Face north as drawn.
+- **CB portable** (built 2026-11-08, placeholder `models/item/cb_portable.json` / `cb_portable_extended.json` from
+  `tools/cb_portable_models.py`, texture `textures/item/cb_portable_body.png`): a Realistic TRC-217 style walkie-talkie
+  (black body, silver top cap, channel knob on top, grille, volume and squelch knobs low on the front). The extended
+  model's whip is about three blocks tall in third person (it is 40 model pixels at scale 1). The inventory
+  shows the 3D model (a flat icon, `textures/item/cb_portable.png`, is drawn but unused).
+- **Ground rod** (built 2026-11-08, placeholder `models/block/ground_rod.json`): a copper-clad rod, full block tall, 2 px
+  thick, with a clamp near the top; it stacks into a column.
+- **CB ground plane antenna** (built 2026-11-08, placeholder `models/block/cb_ground_plane_antenna_segment_0..4.json` from
+  `tools/cb_ground_plane_models.py`): five blocks tall, a tapering aluminium vertical with a yellow base insulator, a
+  mounting plate and three or four radials sticking out about half a block from the base, drooping a little. Segment 0
+  is the base (coax connects there).
+- **Small Alkaline Battery** (2026-11-08, `textures/item/small_alkaline_battery.png`, a recolour of the NiCd one): a
+  copper-top style cell, so it reads differently from the rechargeable pack.

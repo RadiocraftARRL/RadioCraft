@@ -49,7 +49,8 @@ public class LargeBatteryMenu extends AbstractContainerMenu {
 
 	@Override
 	public boolean stillValid(@NotNull Player player) {
-		return stillValid(canInteractWithCallable, player, RadiocraftBlocks.LARGE_BATTERY.get());
+		return stillValid(canInteractWithCallable, player, RadiocraftBlocks.LARGE_BATTERY.get())
+				|| stillValid(canInteractWithCallable, player, RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get()); // Shares the screen.
 	}
 
 	@Override

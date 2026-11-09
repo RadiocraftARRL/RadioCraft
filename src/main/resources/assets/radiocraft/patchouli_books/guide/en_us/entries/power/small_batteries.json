@@ -1,0 +1,28 @@
+{
+  "name": "Small Batteries",
+  "icon": "radiocraft:small_battery",
+  "category": "radiocraft:power",
+  "sortnum": 6,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Two cells run the portable radios: the $(l:radiocraft:radios/vhf_handheld)VHF handhelds$(/l), the $(l:radiocraft:radios/cb_radios)CB portable$(/l) and the $(l:radiocraft:radios/qrp_and_receivers)VHF receiver$(/l). The weather alert receiver runs on either.$(li)The $(item)Small NiCd Battery$() is rechargeable, in a desk charger or a charge controller.$(li)The $(item)Small Alkaline Battery$() comes full, cannot be charged, and is thrown away when flat."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Changing cells",
+      "text": "In an inventory, click a cell onto the radio, or click the radio onto a cell. The new cell goes in and the old one comes back with whatever charge it had left. The VHF receiver takes its cell with $(thing)shift + right click$().$(br2)A flat alkaline comes back as a $(item)Dead Alkaline Battery$(). A desk charger does not charge a radio with an alkaline in it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:dead_alkaline_battery",
+      "title": "Dead Alkaline Battery",
+      "text": "What is left of an alkaline cell once a radio has run it flat. It holds nothing and powers nothing. Smelt it in a furnace or blast furnace to get its steel can back as an iron nugget."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:small_battery",
+      "recipe2": "radiocraft:small_alkaline_battery"
+    }
+  ]
+}

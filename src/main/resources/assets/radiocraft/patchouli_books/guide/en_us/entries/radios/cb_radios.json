@@ -1,0 +1,71 @@
+{
+  "name": "CB Radio",
+  "icon": "radiocraft:cb_portable",
+  "category": "radiocraft:radios",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)Citizens Band$() is the radio anyone can use: no licence, no callsign. It has $(thing)40 channels$() around 27 MHz, just below 10m, and most CB is $(thing)AM$() at 5 W. Channel $(thing)9$() is for emergencies and $(thing)19$() is the highway channel, where everyone listens.$(br2)Any antenna that works on 10m works on CB."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "How AM sounds",
+      "text": "AM has no background hiss on a quiet channel. A strong signal comes in clean; a weak one gets hissy, then fades out. If two people talk at once you hear $(thing)both$(), over each other. A strong station on the next channel can $(thing)bleed over$() and crackle on yours.$(br2)At 5 W, CB carries a little less far than 10m: line of sight about a quarter shorter, skip about a third."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:cb_portable",
+      "title": "TRC-217 Portable",
+      "text": "A walkie-talkie on its own cell. Turn the volume up from OFF to switch it on: the whip pulls out about three blocks. Hold right click to talk; sneak and use for the channel knob on top, volume and squelch. It reaches half as far as a mobile. It takes a $(l:radiocraft:power/small_batteries)small NiCd or alkaline cell$(/l), and with Curios it rides in the belt slot."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:cb_mobile_5875",
+      "title": "5875 Mobile",
+      "text": "The deluxe set: a clock, an RX signal / TX power meter, the channel LED, an ON AIR lamp and a second meter that reads $(thing)SWR$() or $(thing)modulation$() (the MOD/SWR switch). $(thing)Speech compression$() on MAX makes your voice punchier and carries a little further. Sneak and use for its hand mic."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:cb_mobile_pc68",
+      "title": "PC68 Mobile",
+      "text": "A compact chrome mobile: meter, channel LED, an RX/TX lamp and a $(thing)CH9$() switch that takes you straight to the emergency channel. The inner VOL knob switches it on; the SQUELCH ring keeps the speaker shut until the meter reads past it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "5875 Controls",
+      "text": "$(thing)FUNCTION$() picks AM, USB or LSB. Sideband carries further than AM. Two sets on the same sideband talk; USB and LSB only put a little interference on each other, and an AM set does not hear SSB.$(br2)$(thing)CLAR$() tunes the receiver up to 1 kHz either side, to bring an off-tune SSB voice back to its own pitch. $(thing)RF GAIN$() turns the receiver down, static and weak stations with it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Noise",
+      "text": "The 5875's $(thing)NB$() (noise blanker) and $(thing)ANL$() (automatic noise limiter) both cut the sparks and crackle of redstone and aurora; NB cuts more, both together the most.$(br2)The PC68 has an $(thing)NB/ANL$() switch and an $(thing)AM/FM$() switch: two PC68s on FM talk to each other."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Squelch",
+      "text": "The $(thing)SQUELCH$() knobs work: the speaker stays shut until the RX meter reads past the setting, band noise or a station. Turned down to the noise, the radio hisses; turned just past it, it waits quietly for a station."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:cb_ground_plane_antenna",
+      "title": "CB Ground Plane",
+      "text": "A five-block whip with radials at its foot, cut for CB: the best match there (about 1.1:1 on channel 19). It works on 10m too, but not as well (about 1.8:1 at the bottom of the band). Run coax to its base. A 10m dipole or the multiband vertical will do on CB, but not well."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:cb_ground_plane_antenna"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:cb_portable",
+      "recipe2": "radiocraft:cb_mobile_pc68",
+      "text": "Any 10m crystal will do."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:cb_mobile_5875",
+      "text": "The 5875 needs a good or pure 10m crystal."
+    }
+  ]
+}

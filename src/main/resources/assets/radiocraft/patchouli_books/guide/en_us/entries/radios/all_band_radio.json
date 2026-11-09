@@ -6,12 +6,17 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The all-band transceiver covers 80, 40, 20 and 10 m and the 2 m band, in SSB, CW and FM. Its band knob steps through them; the frequency jumps to the bottom of the new band.$(br2)Its lamps: signal, antenna matched (SWR 2 or better) and transmitting."
+      "text": "The all-band transceiver covers 80, 40, 20 and 10 m and the 2 m band, in SSB, CW, AM and FM. Its band knob steps through them; the frequency jumps to the bottom of the new band.$(br2)Its lamps: signal, antenna matched (SWR 2 or better) and transmitting."
     },
     {
       "type": "patchouli:text",
       "text": "Its heart is the $(item)all-band circuit board$(), which needs a $(thing)pure$() encased crystal of every band. One antenna will not suit every band: use a $(l:radiocraft:antennas/five_btv)5-BTV$(/l), an $(l:radiocraft:antennas/ocfd)OCFD$(/l) or a $(l:radiocraft:antennas/tuners)tuner$(/l).",
       "title": "Building one"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "50 Memories",
+      "text": "$(thing)Hold MEMORY$() on the VFO: the display shows MW, a channel number and what that channel holds. Turn the dial to pick 1 to 50, then press MEMORY to store. Any other key cancels.$(br2)$(thing)VFO/MEM$() switches between the VFO and the memories; on the memories the dial steps through the stored channels. $(thing)Hold VFO/MEM$() on a memory to copy it to the VFO."
     },
     {
       "type": "patchouli:crafting",

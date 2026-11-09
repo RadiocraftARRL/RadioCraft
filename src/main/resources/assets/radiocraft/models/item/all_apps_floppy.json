@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "radiocraft:item/floppy_disk",
+    "layer1": "radiocraft:item/floppy_disk_label"
+  }
+}

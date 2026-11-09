@@ -36,10 +36,10 @@ public class SmallBatteryItem extends Item {
         ItemStack slotStack = slot.getItem();
         
         if (action == ClickAction.PRIMARY && !slotStack.isEmpty() && 
-            slotStack.getItem() instanceof VHFHandheldItem) {
+            VHFHandheldItem.takesSmallBattery(slotStack)) {
             
-            if (!player.level().isClientSide()) {
-                VHFHandheldItem.swapBatteryEnergy(slotStack, battery, player);
+                        if (!player.level().isClientSide()) {
+                PortableBatteries.cellOntoRadio(battery, slot, player); // The old cell comes back on the cursor.
             }
             
             return true;

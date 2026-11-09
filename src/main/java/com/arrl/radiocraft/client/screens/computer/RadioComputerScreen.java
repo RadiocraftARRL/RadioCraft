@@ -20,6 +20,10 @@ import org.lwjgl.glfw.GLFW;
  * {@link TextGrid}; {@link DosRenderer} draws it inside a dark bezel, scaled to fit the window (up to twice size, in
  * half steps, so the text stays crisp). The keyboard goes to the program in front; Escape in the shell closes the
  * screen. The fan whirrs while it is open, and the screen is copied onto the monitor in the world.
+ * <p>
+ * After the password, a computer on a network with no name of its own there shows the NETWORK NAME prompt before the
+ * desktop ({@link RadioComputerMenu#namePrompt}, 2026-11-09): its owner types one no other computer on the network
+ * uses; anyone else is told to ask the owner and carries on.
  */
 public final class RadioComputerScreen extends AbstractContainerScreen<RadioComputerMenu> {
 
@@ -43,6 +47,11 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 	private final DosInput passwordField = new DosInput("", com.arrl.radiocraft.common.computer.ComputerLock.MAX_LENGTH).masked();
 	private String lockMessage = "";
 	private boolean wasLocked = false;
+	/** The NETWORK NAME prompt's field, and what the server said to the last name typed. */
+	private final DosInput nameField = new DosInput("", com.arrl.radiocraft.common.computer.ComputerSettings.MAX_NAME, c -> c >= ' ' && c <= '~');
+	private String nameMessage = "";
+	/** A player who may not name the computer read the notice and carried on. */
+	private boolean nameNoticeSeen = false;
 	/** The last key pressed only woke the screensaver: the character that follows it is dropped. */
 	private boolean wokeByKey = false;
 
@@ -108,7 +117,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		if(wasLocked && !locked) // Password typed: the programs carry on.
 			session.refresh();
 		wasLocked = locked;
-		if(locked)
+		if(locked || naming())
 			return;
 		if(boot == null || !boot.running())
 			session.tick();
@@ -139,6 +148,10 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		g.fill(gridX - 2, gridY - 2, gridX + TextGrid.WIDTH + 2, gridY + TextGrid.HEIGHT + 2, GLASS_EDGE);
 		long now = System.currentTimeMillis();
 		Dos.setStatus(session.statusText(), showsMusicNote() ? MUSIC_COL - 1 : TextGrid.COLS - 1);
+		if(menu.isPowered() && boot != null && !boot.running() && !boot.welcomed) { // Booted (or skipped): the welcome tune.
+			boot.welcomed = true;
+			DosBoot.welcome();
+		}
 		if(!menu.isPowered()) { // Dark glass, and why.
 			grid.clear(DosColours.BLACK, DosColours.BLACK);
 			grid.center(TextGrid.ROWS / 2, Dos.tr("no_power"), DosColours.DARK_GREY, DosColours.BLACK);
@@ -147,6 +160,8 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 			boot.render(grid, session.serial(), Dos.drive(session));
 		else if(menu.isLocked())
 			renderLock(now);
+		else if(naming())
+			renderName(now);
 		else {
 			boot = null;
 			session.drawPrograms(grid, now);
@@ -165,6 +180,45 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 		passwordField.render(grid, col + 2, row + 3, w - 4, now / 400L % 2L == 0L);
 		if(!lockMessage.isEmpty())
 			grid.put(col + 2, row + 5, Dos.fit(lockMessage, w - 4), DosColours.YELLOW, DosColours.BODY_BG);
+	}
+
+	/** True while the NETWORK NAME prompt shows. */
+	private boolean naming() {
+		int prompt = menu.namePrompt();
+		return prompt == 1 || prompt == 2 && !nameNoticeSeen;
+	}
+
+	/** The NETWORK NAME prompt: a name for this computer that no other on its network uses (or, for a guest, a notice). */
+	private void renderName(long now) {
+		boolean mayName = menu.namePrompt() == 1;
+		Dos.frame(grid, Dos.tr("netname.title"), Dos.tr(mayName ? "netname.keys" : "netname.notice_keys"));
+		int w = 56, h = 9, col = (TextGrid.COLS - w) / 2, row = (TextGrid.ROWS - h) / 2;
+		grid.box(col, row, w, h, true, Dos.tr("netname.box"), DosColours.TEXT_FG, DosColours.BODY_BG);
+		grid.put(col + 2, row + 2, Dos.fit(Dos.tr("netname.intro"), w - 4), DosColours.TEXT_FG, DosColours.BODY_BG);
+		if(!mayName) {
+			grid.put(col + 2, row + 4, Dos.fit(Dos.tr("netname.not_owner"), w - 4), DosColours.YELLOW, DosColours.BODY_BG);
+			grid.put(col + 2, row + 6, Dos.fit(Dos.tr("netname.carry_on"), w - 4), DosColours.DIM, DosColours.BODY_BG);
+			return;
+		}
+		grid.put(col + 2, row + 3, Dos.fit(Dos.tr("netname.prompt"), w - 4), DosColours.TEXT_FG, DosColours.BODY_BG);
+		nameField.render(grid, col + 2, row + 5, w - 4, now / 400L % 2L == 0L);
+		if(!nameMessage.isEmpty())
+			grid.put(col + 2, row + 7, Dos.fit(nameMessage, w - 4), DosColours.YELLOW, DosColours.BODY_BG);
+	}
+
+	/** Sends the typed network name; a taken one is refused ("NAME IN USE ON THIS NETWORK"). */
+	private void submitName() {
+		CompoundTag data = new CompoundTag();
+		data.putString("name", nameField.text());
+		nameMessage = "";
+		session.request("sys.netname", data, response -> {
+			if(!response.ok())
+				nameMessage = response.errorText();
+			else {
+				nameField.set("");
+				session.learnSettings(com.arrl.radiocraft.common.computer.ComputerSettings.fromTag(response.data().getCompound("settings")));
+			}
+		});
 	}
 
 	/** Sends the typed password; a wrong one clears the field and says so. */
@@ -227,12 +281,32 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 				passwordField.keyPressed(key);
 			return true;
 		}
+		if(naming()) {
+			if(menu.namePrompt() != 1) { // Not theirs to name: the notice, then on to the desktop.
+				if(key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER || key == GLFW.GLFW_KEY_ESCAPE)
+					nameNoticeSeen = true;
+			}
+			else if(key == GLFW.GLFW_KEY_ESCAPE)
+				onClose();
+			else if(key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER)
+				submitName();
+			else
+				nameField.keyPressed(key);
+			return true;
+		}
 		boolean used = session.current().key(key, scanCode, modifiers);
 		if(!used && key == GLFW.GLFW_KEY_ESCAPE && session.current() instanceof ShellApp) {
 			onClose();
 			return true;
 		}
 		return true; // Every other key is the program's: E must not close the screen while typing.
+	}
+
+	@Override
+	public boolean keyReleased(int key, int scanCode, int modifiers) {
+		if(menu.isPowered() && !menu.isLocked() && !naming() && session.current().keyUp(key))
+			return true;
+		return super.keyReleased(key, scanCode, modifiers);
 	}
 
 	@Override
@@ -247,6 +321,11 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 			passwordField.charTyped(c);
 			return true;
 		}
+		if(naming()) {
+			if(menu.namePrompt() == 1)
+				nameField.charTyped(c);
+			return true;
+		}
 		session.current().typed(c);
 		return true;
 	}
@@ -258,7 +337,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseClicked(double rawX, double rawY, int button) {
-		if(!menu.isPowered() || skipBoot() || session.touch() || menu.isLocked())
+		if(!menu.isPowered() || skipBoot() || session.touch() || menu.isLocked() || naming())
 			return true;
 		int c = col(rawX), r = row(rawY);
 		if(r == 0 && c >= MUSIC_COL && c < MUSIC_COL + MUSIC_W && showsMusicNote()) {
@@ -283,7 +362,7 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseScrolled(double rawX, double rawY, double scrollX, double scrollY) {
-		if(!menu.isPowered() || session.touch() || menu.isLocked())
+		if(!menu.isPowered() || session.touch() || menu.isLocked() || naming())
 			return true;
 		int c = col(rawX), r = row(rawY);
 		if(TextGrid.inside(c, r))

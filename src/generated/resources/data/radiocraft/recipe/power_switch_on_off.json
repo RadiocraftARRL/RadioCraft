@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:lever"
+    },
+    "W": {
+      "item": "radiocraft:wire"
+    }
+  },
+  "pattern": [
+    " L ",
+    "WIW"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:power_switch_on_off"
+  }
+}

@@ -94,6 +94,8 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
     public void handle(IPayloadContext context) {
         context.enqueueWork(()->{
 
+                        if(this.index < 0 || this.index >= context.player().getInventory().getContainerSize())
+                return; // A slot the player does not have.
             ItemStack stack = context.player().getInventory().getItem(this.index);
 
             if(stack == null){

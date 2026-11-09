@@ -1,0 +1,219 @@
+{
+  "_comment": "CB 5875 front panel. Positions in GUI pixels from the top left of textures/gui/cb/cb_mobile_5875.png. tools/cb_gui_assets.py draws the background from this file (labels, bezels, meter scales); CbPanel reads it for the live parts. Knob sizes: small, large (black), chrome_small, chrome_large, chrome_xl, none. Edit, then rerun the script.",
+  "background": "radiocraft:textures/gui/cb/cb_mobile_5875.png",
+  "width": 376,
+  "height": 168,
+  "widgets": [
+    {
+      "type": "lamp",
+      "x": 20,
+      "y": 31,
+      "lights": "clock_am",
+      "label": "AM"
+    },
+    {
+      "type": "lamp",
+      "x": 20,
+      "y": 51,
+      "lights": "clock_pm",
+      "label": "PM"
+    },
+    {
+      "type": "digits",
+      "x": 30,
+      "y": 24,
+      "w": 80,
+      "h": 36,
+      "shows": "clock",
+      "colour": "#FF3020"
+    },
+    {
+      "type": "lamp",
+      "x": 122,
+      "y": 28,
+      "lights": "usb",
+      "label": "USB"
+    },
+    {
+      "type": "lamp",
+      "x": 122,
+      "y": 42,
+      "lights": "am",
+      "colour": "red",
+      "label": "AM"
+    },
+    {
+      "type": "lamp",
+      "x": 122,
+      "y": 56,
+      "lights": "lsb",
+      "label": "LSB"
+    },
+    {
+      "type": "meter",
+      "x": 148,
+      "y": 20,
+      "w": 62,
+      "h": 44,
+      "reads": "signal",
+      "label": "RX SIGNAL",
+      "label2": "TX PWR"
+    },
+    {
+      "type": "digits",
+      "x": 218,
+      "y": 24,
+      "w": 40,
+      "h": 36,
+      "shows": "channel",
+      "colour": "#FF3020",
+      "back": "#1A0303"
+    },
+    {
+      "type": "lamp",
+      "x": 274,
+      "y": 50,
+      "lights": "rx",
+      "colour": "amber",
+      "label": "AWI",
+      "label_pos": "below"
+    },
+    {
+      "type": "lamp",
+      "x": 274,
+      "y": 32,
+      "lights": "tx",
+      "colour": "red",
+      "label": "ON AIR",
+      "label_pos": "above"
+    },
+    {
+      "type": "meter",
+      "x": 290,
+      "y": 20,
+      "w": 62,
+      "h": 44,
+      "reads": "swr_mod",
+      "label": "SWR",
+      "label2": "MOD"
+    },
+    {
+      "type": "knob",
+      "x": 138,
+      "y": 104,
+      "size": "small",
+      "control": "FUNCTION",
+      "label": "FUNCTION"
+    },
+    {
+      "type": "toggle",
+      "x": 166,
+      "y": 104,
+      "key": "ANL",
+      "label": "ANL",
+      "up": "ON",
+      "down": "OFF"
+    },
+    {
+      "type": "toggle",
+      "x": 192,
+      "y": 104,
+      "key": "NB",
+      "label": "NB",
+      "up": "ON",
+      "down": "OFF"
+    },
+    {
+      "type": "toggle",
+      "x": 218,
+      "y": 104,
+      "key": "NONE",
+      "label": "CB/PA",
+      "up": "CB",
+      "down": "PA"
+    },
+    {
+      "type": "knob",
+      "x": 254,
+      "y": 104,
+      "size": "large",
+      "control": "CHANNEL",
+      "label": "CHANNEL"
+    },
+    {
+      "type": "toggle",
+      "x": 288,
+      "y": 104,
+      "key": "METER",
+      "label": "MOD/SWR",
+      "up": "MOD",
+      "down": "SWR",
+      "invert": true
+    },
+    {
+      "type": "toggle",
+      "x": 314,
+      "y": 104,
+      "key": "NONE",
+      "label": "ANT",
+      "up": "A",
+      "down": "B"
+    },
+    {
+      "type": "toggle",
+      "x": 340,
+      "y": 104,
+      "key": "COMPRESSOR",
+      "label": "COMP",
+      "up": "MAX",
+      "down": "NORM"
+    },
+    {
+      "type": "knob",
+      "x": 140,
+      "y": 146,
+      "size": "small",
+      "control": "VOLUME",
+      "label": "VOLUME"
+    },
+    {
+      "type": "knob",
+      "x": 182,
+      "y": 146,
+      "size": "small",
+      "control": "SQUELCH",
+      "label": "SQUELCH"
+    },
+    {
+      "type": "knob",
+      "x": 220,
+      "y": 146,
+      "size": "small",
+      "control": "MIC_GAIN",
+      "label": "MIC GAIN"
+    },
+    {
+      "type": "knob",
+      "x": 258,
+      "y": 146,
+      "size": "small",
+      "control": "RF_GAIN",
+      "label": "RF GAIN"
+    },
+    {
+      "type": "knob",
+      "x": 296,
+      "y": 146,
+      "size": "small",
+      "control": "CLARIFIER",
+      "label": "CLAR"
+    },
+    {
+      "type": "ptt",
+      "x": 340,
+      "y": 146,
+      "r": 9,
+      "label": "MIC"
+    }
+  ]
+}

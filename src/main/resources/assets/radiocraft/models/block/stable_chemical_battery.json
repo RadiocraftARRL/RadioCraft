@@ -1,0 +1,9 @@
+{
+  "credit": "RadioCraft placeholder (ModelDesignBounty), 2026-11-09: the large battery in a dark case",
+  "parent": "radiocraft:block/large_battery",
+  "textures": {
+    "1": "minecraft:block/polished_blackstone",
+    "2": "minecraft:block/polished_blackstone",
+    "3": "minecraft:block/polished_blackstone"
+  }
+}

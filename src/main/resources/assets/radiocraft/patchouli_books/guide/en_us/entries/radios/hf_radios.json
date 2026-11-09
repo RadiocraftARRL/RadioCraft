@@ -6,11 +6,11 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "HF radios are made for one band each: $(thing)80 m$(), $(thing)40 m$(), $(thing)20 m$() or $(thing)10 m$(). They reach far beyond the horizon by $(l:radiocraft:propagation/bands)skip$(/l).$(li)$(thing)SSB$(): voice. 40 and 80 m use lower sideband, 20 and 10 m upper.$(li)$(thing)CW$(): Morse code, sent with the key on the radio's screen. CW gets through where voice cannot."
+      "text": "HF radios are made for one band each: $(thing)80 m$(), $(thing)40 m$(), $(thing)20 m$() or $(thing)10 m$(). They reach far beyond the horizon by $(l:radiocraft:propagation/bands)skip$(/l).$(li)$(thing)SSB$(): voice. 40 and 80 m use lower sideband, 20 and 10 m upper.$(li)$(thing)AM$(): voice on a steady carrier.$(li)$(thing)CW$(): Morse code, sent with the key on the radio's screen. CW gets through where voice cannot."
     },
     {
       "type": "patchouli:text",
-      "text": "Turn it on with the power switch, pick a mode, tune with the big knob (1 kHz a step) and hold $(thing)PTT$() to talk. The screen on the model shows the frequency, mode and S-meter. A comparator next to it reads the S-meter too.$(br2)An HF radio draws 8 FE/t listening and 26 transmitting.",
+      "text": "Turn it on with the power switch, pick a mode, tune with the big knob (1 kHz a step) and hold $(thing)PTT$() to talk. Every control is in $(l:radiocraft:radios/radio_panels)Radio Panels$(/l). The screen on the model shows the frequency, mode and S-meter. A comparator next to it reads the S-meter too.$(br2)An HF radio draws 8 FE/t listening and 26 transmitting.",
       "title": "Operating"
     },
     {

@@ -55,6 +55,14 @@ public final class DataWire {
 			CHANGED.computeIfAbsent(level, l -> new HashSet<>()).add(pos.immutable());
 	}
 
+	/**
+	 * A number that goes up whenever a data wire is laid, lifted or changed anywhere in {@code level}: a cache built on
+	 * walks of the wire (the computer network, 2026-11-09) is stale once it moves.
+	 */
+	public static synchronized long generation(Level level) {
+		return GENERATION.getOrDefault(level, 0L);
+	}
+
 	/** Brings the memory up to date round the wire that changed last tick, now that its states are stored. */
 	@net.neoforged.bus.api.SubscribeEvent
 	public static void onLevelTick(net.neoforged.neoforge.event.tick.LevelTickEvent.Post event) {
@@ -158,6 +166,7 @@ public final class DataWire {
 		DataWireMemory memory = DataWireMemory.of(level);
 		Set<Strand> seen = new HashSet<>();
 		Set<BlockPos> devices = new LinkedHashSet<>();
+		Set<BlockPos> junctions = new HashSet<>();
 		ArrayDeque<Strand> queue = new ArrayDeque<>();
 		for(BlockPos wirePos : WireUtils.wireLinksOf(level, start, wires).keySet())
 			enter(level, wirePos, null, wires, seen, queue, memory, loaded);
@@ -195,6 +204,14 @@ public final class DataWire {
 					continue;
 				}
 				BlockPos device = loaded.test(target) ? WireUtils.linkTarget(level, target, link.getValue()).immutable() : target.immutable();
+				if(loaded.test(device) && level.getBlockState(device).getBlock() instanceof com.arrl.radiocraft.common.blocks.WireJunctionBlock) {
+					// A junction box (2026-11-09): not a device, a meeting point. The walk goes on down every data wire
+					// touching it, whatever its colour, so different colours join here.
+					if(junctions.add(device))
+						for(BlockPos wirePos : WireUtils.wireLinksOf(level, device, wires).keySet())
+							enter(level, wirePos, null, wires, seen, queue, memory, loaded);
+					continue;
+				}
 				if(!device.equals(start))
 					devices.add(device);
 			}

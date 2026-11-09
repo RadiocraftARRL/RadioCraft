@@ -1,0 +1,287 @@
+{
+  "texture": "radiocraft:textures/gui/hf_radio_40m_proposed.png",
+  "width": 256,
+  "height": 160,
+  "meter": {
+    "pivot": [
+      213,
+      49
+    ],
+    "radius": 24,
+    "start_deg": 220.0,
+    "sweep_deg": 100.0,
+    "s9_fraction": 0.6,
+    "face": [
+      184,
+      12,
+      58,
+      40
+    ]
+  },
+  "controls": [
+    {
+      "name": "af_label",
+      "type": "label",
+      "x": 27,
+      "y": 14,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "af_gain",
+      "type": "knob",
+      "x": 15,
+      "y": 21,
+      "w": 30,
+      "h": 30
+    },
+    {
+      "name": "squelch_label",
+      "type": "label",
+      "x": 61,
+      "y": 14,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 51,
+      "y": 21,
+      "w": 30,
+      "h": 30
+    },
+    {
+      "name": "power_label",
+      "type": "label",
+      "x": 21,
+      "y": 66,
+      "w": 19,
+      "h": 5
+    },
+    {
+      "name": "power",
+      "type": "button",
+      "x": 19,
+      "y": 77,
+      "w": 23,
+      "h": 16
+    },
+    {
+      "name": "mic_gain_label",
+      "type": "label",
+      "x": 61,
+      "y": 66,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "mic_gain",
+      "type": "knob",
+      "x": 51,
+      "y": 73,
+      "w": 30,
+      "h": 30
+    },
+    {
+      "name": "display",
+      "type": "display",
+      "x": 84,
+      "y": 10,
+      "w": 90,
+      "h": 34
+    },
+    {
+      "name": "tuning_dial",
+      "type": "dial",
+      "x": 100,
+      "y": 69,
+      "w": 58,
+      "h": 58
+    },
+    {
+      "name": "tuning_label",
+      "type": "label",
+      "x": 118,
+      "y": 130,
+      "w": 23,
+      "h": 5
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 180,
+      "y": 8,
+      "w": 66,
+      "h": 48
+    },
+    {
+      "name": "meter_select",
+      "type": "switch",
+      "x": 198,
+      "y": 60,
+      "w": 30,
+      "h": 7
+    },
+    {
+      "name": "meter_select_po",
+      "type": "label",
+      "x": 203,
+      "y": 70,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "meter_select_swr",
+      "type": "label",
+      "x": 215,
+      "y": 70,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "mode_label",
+      "type": "label",
+      "x": 172,
+      "y": 79,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "mode_ssb",
+      "type": "button",
+      "x": 163,
+      "y": 86,
+      "w": 32,
+      "h": 13
+    },
+    {
+      "name": "mode_ssb_lamp",
+      "type": "lamp",
+      "x": 198,
+      "y": 90,
+      "w": 4,
+      "h": 4
+    },
+    {
+      "name": "mode_cw",
+      "type": "button",
+      "x": 163,
+      "y": 101,
+      "w": 32,
+      "h": 13
+    },
+    {
+      "name": "mode_cw_lamp",
+      "type": "lamp",
+      "x": 198,
+      "y": 105,
+      "w": 4,
+      "h": 4
+    },
+    {
+      "name": "mode_am",
+      "type": "button",
+      "x": 163,
+      "y": 116,
+      "w": 32,
+      "h": 13
+    },
+    {
+      "name": "mode_am_lamp",
+      "type": "lamp",
+      "x": 198,
+      "y": 120,
+      "w": 4,
+      "h": 4
+    },
+    {
+      "name": "agc",
+      "type": "switch",
+      "x": 210,
+      "y": 90,
+      "w": 7,
+      "h": 32
+    },
+    {
+      "name": "agc_fast",
+      "type": "label",
+      "x": 220,
+      "y": 93,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "agc_slow",
+      "type": "label",
+      "x": 220,
+      "y": 103,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "agc_off",
+      "type": "label",
+      "x": 220,
+      "y": 113,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "agc_title",
+      "type": "label",
+      "x": 217,
+      "y": 81,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "ptt",
+      "type": "button",
+      "x": 163,
+      "y": 131,
+      "w": 79,
+      "h": 16
+    },
+    {
+      "name": "coarse",
+      "type": "button",
+      "x": 85,
+      "y": 51,
+      "w": 23,
+      "h": 13
+    },
+    {
+      "name": "quick",
+      "type": "button",
+      "x": 144,
+      "y": 51,
+      "w": 31,
+      "h": 13
+    },
+    {
+      "name": "brand",
+      "type": "label",
+      "x": 14,
+      "y": 118,
+      "w": 19,
+      "h": 5
+    },
+    {
+      "name": "brand2",
+      "type": "label",
+      "x": 14,
+      "y": 126,
+      "w": 51,
+      "h": 5
+    },
+    {
+      "name": "brand3",
+      "type": "label",
+      "x": 14,
+      "y": 134,
+      "w": 43,
+      "h": 5
+    }
+  ]
+}

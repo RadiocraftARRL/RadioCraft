@@ -149,7 +149,7 @@ public class DebugCommands {
 			.then(Commands.literal("terrain").executes(DebugCommands::terrain)
 					.then(Commands.literal("reset").executes(DebugCommands::terrainReset))
 					.then(Commands.literal("path").then(Commands.argument("from", BlockPosArgument.blockPos()).then(Commands.argument("to", BlockPosArgument.blockPos())
-							.then(Commands.argument("band", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("2m", "10m", "20m", "40m", "80m", Band.LOW_BAND, Band.VHF_COMMERCIAL), b))
+							.then(Commands.argument("band", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("2m", "10m", "20m", "40m", "80m", Band.LOW_BAND, Band.VHF_COMMERCIAL, Band.CB), b))
 									.executes(DebugCommands::terrainPath))))))
 			.then(Commands.literal("parrot").then(Commands.argument("pos", BlockPosArgument.blockPos())
 					.then(Commands.literal("off").executes(ctx -> parrot(ctx, 0.0D)))
@@ -786,7 +786,7 @@ public class DebugCommands {
 		List<String> out = new ArrayList<>();
 		TerrainAtlas atlas = TerrainPropagation.openAtlas(level);
 		out.add("terrain_enabled=" + TerrainPropagation.enabled() + (atlas == null ? " (no terrain map in this dimension)" : String.format(Locale.ROOT,
-				" map: %d chunks, about %.1f MB", atlas.chunkCount(), atlas.estimatedBytes() / 1048576.0D)));
+				" map: %d chunks, about %.1f MB, %d waiting for a worldgen estimate", atlas.chunkCount(), atlas.estimatedBytes() / 1048576.0D, atlas.wantedCount())));
 		long calls = TerrainPropagation.CALLS.sum();
 		long nanos = TerrainPropagation.CALL_NANOS.sum();
 		out.add(String.format(Locale.ROOT, "since reset: %d signal paths checked, %.2f us each on average, %.1f ms in all; worked out %d paths and %d horizons (the rest came from the cache)",

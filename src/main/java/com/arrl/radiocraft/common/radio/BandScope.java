@@ -60,6 +60,51 @@ public final class BandScope {
 			peak[bin] = (float)strength;
 	}
 
+	/** A signal spread from {@code fromHz} to {@code toHz} at {@code strength}: every bin it covers, in the span. */
+	public void hearSpan(double fromHz, double toHz, double strength) {
+		if(!(strength > 0.0D))
+			return;
+		double low = lowHz, width = highHz - low;
+		int first = (int)Math.floor((Math.min(fromHz, toHz) - low) / width * BINS), last = (int)Math.floor((Math.max(fromHz, toHz) - low) / width * BINS);
+		if(last < 0 || first >= BINS)
+			return;
+		for(int bin = Math.max(0, first); bin <= Math.min(BINS - 1, last); bin++)
+			if(strength > peak[bin])
+				peak[bin] = (float)strength;
+	}
+
+	/**
+	 * A voice signal as a waterfall shows it (2026-11-09), {@code envelope} the voice's loudness in this frame (0 to 1):
+	 * <ul>
+	 *     <li>SSB: only the voice, 300 to 2700 Hz on its sideband, as strong as the voice is; nothing between words.</li>
+	 *     <li>AM: the carrier, steady, with sidebands either side that swell with the voice.</li>
+	 *     <li>FM: the carrier, pushed wider the louder the voice.</li>
+	 * </ul>
+	 */
+	public void hearVoice(double hz, double strength, com.arrl.radiocraft.common.radio.voice.Modulation modulation, boolean lowerSideband, double envelope) {
+		switch(modulation) {
+			case SSB -> {
+				if(envelope < com.arrl.radiocraft.common.radio.voice.ReceiverMix.SSB_SILENT)
+					return;
+				double s = strength * envelope;
+				if(lowerSideband)
+					hearSpan(hz - 2700.0D, hz - 300.0D, s);
+				else
+					hearSpan(hz + 300.0D, hz + 2700.0D, s);
+			}
+			case AM -> {
+				hear(hz, strength); // The carrier.
+				if(envelope >= com.arrl.radiocraft.common.radio.voice.ReceiverMix.SSB_SILENT)
+					hearSpan(hz - 3000.0D, hz + 3000.0D, strength * envelope * 0.5D); // Its sidebands, with the voice.
+			}
+			case FM -> {
+				double deviation = 2500.0D + envelope * 5000.0D;
+				hearSpan(hz - deviation, hz + deviation, strength * 0.7D);
+				hear(hz, strength);
+			}
+		}
+	}
+
 	/** Copies the strongest signal per bin since the last read into {@code out} and starts over. */
 	public void drain(float[] out) {
 		for(int i = 0; i < BINS && i < out.length; i++) {

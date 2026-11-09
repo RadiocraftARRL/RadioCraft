@@ -235,6 +235,49 @@ public class ElectricalHazardGameTests {
                 .thenSucceed();
     }
 
+    /**
+     * The same strike with a lightning arrestor in the coax: the coax at the antenna burns, but the radio behind the
+     * arrestor does not blow, the coax on its side stays, and the battery does not catch (ignite chance 1 here).
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = "antenna_strike_arrestor")
+    public static void arrestorStopsTheSurge(GameTestHelper helper) {
+        double ignite = RadiocraftServerConfig.LIGHTNING_BATTERY_IGNITE_CHANCE.get();
+        RadiocraftServerConfig.LIGHTNING_BATTERY_IGNITE_CHANCE.set(1.0D);
+        RadiocraftServerConfig.BATTERY_FIRES_ENABLED.set(true);
+        BlockPos radio = new BlockPos(4, 2, 4), radioCoax = radio.south(), arrestor = radio.south(2), antennaCoax = radio.south(3),
+                jPole = radio.south(4), battery = radio.north(2);
+        helper.setBlock(radio, RadiocraftBlocks.VHF_BASE_STATION.get());
+        GameTestUtil.placeWire(helper, radioCoax, RadiocraftBlocks.COAX_WIRE.get());
+        helper.setBlock(arrestor, RadiocraftBlocks.LIGHTNING_ARRESTOR.get());
+        GameTestUtil.placeWire(helper, antennaCoax, RadiocraftBlocks.COAX_WIRE.get());
+        helper.setBlock(jPole, RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState().setValue(com.arrl.radiocraft.common.blocks.antennas.DoubleVHFAntennaBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+        helper.setBlock(jPole.above(), RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState().setValue(com.arrl.radiocraft.common.blocks.antennas.DoubleVHFAntennaBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+        helper.setBlock(battery, RadiocraftBlocks.LARGE_BATTERY.get());
+        wire(helper, radio.north());
+        // Grounded (2026-11-08): an arrestor with no ground lets half the strikes through.
+        GameTestUtil.placeWire(helper, arrestor.east(), RadiocraftBlocks.COLOURED_WIRE.get(net.minecraft.world.item.DyeColor.GREEN).get());
+        GroundingGameTests.rodInMud(helper, arrestor.east(2).below(), 4);
+        helper.startSequence()
+                .thenWaitUntil(() -> {
+                    AntennaNetworkObject antenna = GameTestUtil.networkObject(helper, jPole, AntennaNetworkObject.class);
+                    helper.assertTrue(antenna.getAntenna() != null && antenna.getRadios().size() == 1, "The J-pole is not on the radio through the arrestor yet");
+                    helper.assertTrue(GameTestUtil.networkObject(helper, battery, BatteryNetworkObject.class).getNetworks().values().stream()
+                            .anyMatch(n -> n.getNetworkObjects().size() > 1), "The battery is not wired to the radio yet");
+                })
+                .thenExecute(() -> {
+                    GameTestUtil.networkObject(helper, battery, BatteryNetworkObject.class).getStorage().setEnergy(CHARGE);
+                    AntennaStrikes.strike(helper.getLevel(), net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(jPole.above(2))));
+                    RadiocraftServerConfig.LIGHTNING_BATTERY_IGNITE_CHANCE.set(ignite);
+                    helper.assertFalse(helper.getBlockState(radio).getValue(RadioBlock.BLOWN), "The radio behind the arrestor blew");
+                    helper.assertFalse(helper.getBlockState(antennaCoax).is(RadiocraftBlocks.COAX_WIRE.get()), "The coax at the antenna did not burn out");
+                    helper.assertTrue(helper.getBlockState(radioCoax).is(RadiocraftBlocks.COAX_WIRE.get()), "The coax behind the arrestor burnt");
+                    helper.assertTrue(helper.getBlockState(arrestor).is(RadiocraftBlocks.LIGHTNING_ARRESTOR.get()), "The arrestor is gone");
+                    helper.assertFalse(BatteryFires.isBurning(helper.getLevel(), helper.absolutePos(battery)), "The battery behind the arrestor caught");
+                    RadiocraftServerConfig.BATTERY_FIRES_ENABLED.set(false);
+                })
+                .thenSucceed();
+    }
+
     /** A lone battery set alight burns away; water on it holds the flames but it is consumed all the same. */
     @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = "battery_fire")
     public static void batteryBurnsAwayEvenUnderWater(GameTestHelper helper) {

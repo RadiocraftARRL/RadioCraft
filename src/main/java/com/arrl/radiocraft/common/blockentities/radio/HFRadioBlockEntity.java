@@ -84,7 +84,47 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 		return cwEnabled;
 	}
 
+	/** AM voice (2026-11-09, on every HF radio's new panel): a carrier; it talks to CB on 10m's freeband. */
+	protected boolean amEnabled = false;
+
+	public boolean getAMEnabled() {
+		return amEnabled;
+	}
+
+	/** Selects AM: the voice path on, CW off. Deselecting it leaves SSB. */
+	public void setAMEnabled(boolean value) {
+		if(amEnabled == value)
+			return;
+		if(value) {
+			cwEnabled = false;
+			super.setSSBEnabled(true); // Voice on (RadioBlockEntity's: does not clear AM).
+		}
+		amEnabled = value;
+		if(level != null)
+			updateIsReceiving();
+		updateBlock();
+		setChanged();
+	}
+
+	@Override
+	public boolean isAM() {
+		return amEnabled;
+	}
+
+	/** SSB is selected when the voice path is on and no other voice mode (AM, the all-band radio's FM) is. */
+	public boolean isSSBSelected() {
+		return getSSBEnabled() && !isAM() && !isFM();
+	}
+
+	/** Every HF radio's panel has a squelch knob (2026-11-09). */
+	@Override
+	public boolean hasSquelchKnob() {
+		return true;
+	}
+
 	public void setCWEnabled(boolean value) {
+		if(value)
+			amEnabled = false;
 		if(value && ssbEnabled)
 			ssbEnabled = false; // Disable SSB if it as enabled here, don't need to sync here as it's done in super method.
 		if(cwEnabled != value) {
@@ -98,6 +138,11 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 
 	@Override
 	public void setSSBEnabled(boolean value) {
+		if(value && amEnabled) {
+			amEnabled = false;
+			updateBlock();
+			setChanged();
+		}
 		if(value && cwEnabled)
 			cwEnabled = false; // Disable CW if it as enabled here, don't need to sync here as it's done in super method.
 		super.setSSBEnabled(value);
@@ -154,12 +199,14 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 	protected void setupSaveTag(CompoundTag nbt) {
 		super.setupSaveTag(nbt);
 		nbt.putBoolean("cwEnabled", cwEnabled);
+		nbt.putBoolean("amEnabled", amEnabled);
 	}
 
 	@Override
 	protected void readSaveTag(CompoundTag nbt) {
 		super.readSaveTag(nbt);
 		cwEnabled = nbt.getBoolean("cwEnabled");
+		amEnabled = nbt.getBoolean("amEnabled");
 	}
 
 	@Override

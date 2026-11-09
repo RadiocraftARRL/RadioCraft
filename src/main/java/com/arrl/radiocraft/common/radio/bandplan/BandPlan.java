@@ -123,6 +123,8 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 			// 20m
 			"14.000-14.070|CW|cw", "14.070-14.112|Digital (RTTY, PSK, packet)|digital", "14.112-14.150|CW|cw",
 			"14.150-14.225|Phone|phone", "14.225-14.235|SSTV / fax|image", "14.235-14.350|Phone|phone",
+			// Citizens Band (2026-11-08): 40 AM channels, 26.965-27.405 MHz
+			"26.960-27.410|Citizens Band (AM, no licence)|murs",
 			// 10m
 			"28.000-28.070|CW|cw", "28.070-28.300|Digital and beacons|digital", "28.300-28.670|Phone|phone",
 			"28.670-28.690|SSTV / fax|image", "28.690-29.300|Phone|phone", "29.300-29.510|Satellite|weak_signal",
@@ -163,7 +165,7 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 			"14.300|Emergency / maritime net", "28.680|SSTV", "29.600|10m FM simplex calling",
 			"144.200|SSB calling", "144.390|APRS", "146.520|National simplex calling",
 			"151.820|MURS 1", "151.880|MURS 2", "151.940|MURS 3", "154.570|MURS 4", "154.600|MURS 5",
-			"156.450|Marine ch 9 (hailing)", "156.800|Marine ch 16 (distress, calling)", "162.550|NOAA weather radio");
+			"27.065|CB ch 9 (emergency)", "27.185|CB ch 19 (highway)", "156.450|Marine ch 9 (hailing)", "156.800|Marine ch 16 (distress, calling)", "162.550|NOAA weather radio");
 
 	/** The plan from {@link #DEFAULT_SEGMENTS} and {@link #DEFAULT_MARKERS}. */
 	public static BandPlan defaults() {

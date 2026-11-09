@@ -39,7 +39,7 @@ import java.util.List;
 /**
  * The Simple Weather Alert Receiver (see {@link WeatherAlertReceiverBlockEntity}): a small table-top weather radio. Its
  * red lamp is {@link #LIT} while it flashes; {@link #POWERED} is its one redstone pulse on a new alert. Shift +
- * right-click with a Small Alkaline Battery swaps the battery, with an empty hand takes it out; right-click silences
+ * right-click with a Small Alkaline (or NiCd) Battery swaps the battery, with an empty hand takes it out; right-click silences
  * an alert or tells its status.
  */
 public class WeatherAlertReceiverBlock extends AbstractNetworkBlock {

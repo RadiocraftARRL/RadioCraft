@@ -1,0 +1,447 @@
+{
+  "credit": "Placeholder from tools/cb_portable_models.py (see doc/ModelDesignBounty.md)",
+  "textures": {
+    "body": "radiocraft:item/cb_portable_body",
+    "metal": "minecraft:block/iron_block",
+    "rubber": "minecraft:block/black_concrete",
+    "particle": "radiocraft:item/cb_portable_body"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        6.5,
+        -16,
+        7
+      ],
+      "to": [
+        9.5,
+        -8,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            16
+          ],
+          "texture": "#body"
+        },
+        "south": {
+          "uv": [
+            10,
+            0,
+            16,
+            16
+          ],
+          "texture": "#body"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            16
+          ],
+          "texture": "#body"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            2
+          ],
+          "texture": "#body"
+        },
+        "down": {
+          "uv": [
+            10,
+            14,
+            16,
+            16
+          ],
+          "texture": "#body"
+        }
+      }
+    },
+    {
+      "name": "channel_knob",
+      "from": [
+        7.0,
+        -8,
+        7.5
+      ],
+      "to": [
+        8.0,
+        -7.25,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#body"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#body"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#body"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#body"
+        }
+      }
+    },
+    {
+      "name": "whip_base",
+      "from": [
+        8.5,
+        -8,
+        7.75
+      ],
+      "to": [
+        9.0,
+        8,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "from": [
+        8.4,
+        8,
+        7.65
+      ],
+      "to": [
+        9.1,
+        10,
+        8.35
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rubber"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rubber"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rubber"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rubber"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rubber"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#rubber"
+        }
+      }
+    },
+    {
+      "name": "whip",
+      "from": [
+        8.65,
+        10,
+        7.9
+      ],
+      "to": [
+        8.85,
+        32,
+        8.1
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "south": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "east": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "west": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#metal"
+        },
+        "up": {
+          "uv": [
+            7,
+            0,
+            9,
+            16
+          ],
+          "texture": "#metal"
+        }
+      }
+    }
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        20.9,
+        1.5
+      ],
+      "scale": [
+        0.96,
+        0.96,
+        0.96
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        20.9,
+        1.5
+      ],
+      "scale": [
+        0.96,
+        0.96,
+        0.96
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -20,
+        0
+      ],
+      "translation": [
+        0,
+        20.1,
+        -1
+      ],
+      "scale": [
+        1.03,
+        1.03,
+        1.03
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        20,
+        0
+      ],
+      "translation": [
+        0,
+        20.1,
+        -1
+      ],
+      "scale": [
+        1.03,
+        1.03,
+        1.03
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        21.6,
+        0
+      ],
+      "scale": [
+        1.03,
+        1.03,
+        1.03
+      ]
+    },
+    "fixed": {
+      "translation": [
+        0,
+        19.9,
+        0
+      ],
+      "scale": [
+        1.17,
+        1.17,
+        1.17
+      ]
+    },
+    "head": {
+      "translation": [
+        0,
+        20,
+        0
+      ]
+    },
+    "gui": {
+      "rotation": [
+        15,
+        -30,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.33,
+        0.33,
+        0.33
+      ]
+    }
+  }
+}

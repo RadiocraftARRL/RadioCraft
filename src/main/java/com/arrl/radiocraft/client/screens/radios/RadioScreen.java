@@ -30,6 +30,10 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 
 	protected final ResourceLocation texture;
 	protected final ResourceLocation widgetsTexture;
+	/** The background texture's size in pixels: 256 x 256 sheets, or a panel drawn to its own size (2026-11-09). */
+	protected int textureWidth = 256, textureHeight = 256;
+	/** How far the frequency sits below the display window's middle, so it clears the mode and TX markers (pixels). */
+	protected float displayTextDrop = 0.0F;
 	protected final T menu;
 
 	/**
@@ -63,6 +67,12 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 		renderAdditionalTooltips(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 		renderGainReadout(pGuiGraphics, speakerGainDial, menu.blockEntity.getSpeakerGain());
 		renderGainReadout(pGuiGraphics, micGainDial, menu.blockEntity.getMicGain());
+		if(squelchDial != null && squelchDial.isHoveredOrChanging()) { // SQL and the setting, OPEN at 0.
+			float squelch = menu.blockEntity.getSquelchLevel();
+			String text = squelch <= 0.0F ? "OPEN" : String.format(Locale.ROOT, "SQL %d", Math.round(squelch * 10.0F));
+			pGuiGraphics.drawString(font, text, squelchDial.getRectangle().getCenterInAxis(ScreenAxis.HORIZONTAL) - font.width(text) / 2,
+					squelchDial.getRectangle().getCenterInAxis(ScreenAxis.VERTICAL) - font.lineHeight / 2, 0xFFFFFF);
+		}
 		com.arrl.radiocraft.client.screens.RecIndicator.draw(pGuiGraphics, font, leftPos + imageWidth - 4, topPos + 3); // The server logs radio voice.
 	}
 
@@ -70,8 +80,48 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 	@Nullable
 	protected Dial speakerGainDial, micGainDial;
 
+	/**
+	 * The squelch knob, on the radios that have one (2026-11-09): nothing plays, static included, until the S-meter reads
+	 * past its setting. 0 is open.
+	 */
+	@Nullable
+	protected Dial squelchDial;
+
+	protected void onSquelchUp(AbstractWidget dial) {
+		setSquelch(menu.blockEntity.getSquelchLevel() + com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.SQUELCH_STEP);
+	}
+
+	protected void onSquelchDown(AbstractWidget dial) {
+		setSquelch(menu.blockEntity.getSquelchLevel() - com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.SQUELCH_STEP);
+	}
+
+	private void setSquelch(float level) {
+		int percent = Math.round(Mth.clamp(level, 0.0F, 1.0F) * 10.0F) * 10;
+		menu.blockEntity.setSquelchClient(percent / 100.0F);
+		SBlockRadioControlPacket.updateServer(menu.blockEntity.getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, percent);
+	}
+
 	/** Gain steps per click of a gain dial, out of 1 (full) and up to {@link #MAX_GAIN}. */
 	private static final float GAIN_STEP = 0.1F, MAX_GAIN = 2.0F;
+
+	/** The screen's PTT button, if it has one: a right click on it hands over the hand mic ({@link HandMicPtt}). */
+	@org.jetbrains.annotations.Nullable
+	private net.minecraft.client.gui.components.AbstractWidget pttButton;
+
+	/** Marks {@code button} as the PTT, and returns it. */
+	protected <W extends net.minecraft.client.gui.components.AbstractWidget> W ptt(W button) {
+		pttButton = button;
+		return button;
+	}
+
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		if(button == 1 && pttButton != null && pttButton.isMouseOver(mouseX, mouseY)) {
+			HandMicPtt.take(menu.blockEntity.getBlockPos());
+			return true;
+		}
+		return super.mouseClicked(mouseX, mouseY, button);
+	}
 
 	/** The gain as a percentage on the dial while it is hovered or turning, like the handheld's. */
 	private void renderGainReadout(GuiGraphics guiGraphics, @Nullable Dial dial, float gain) {
@@ -137,7 +187,7 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 		boolean inhibited = menu.blockEntity.isTransmitInhibited();
 		// Keyed out of band without a MARS mod: the rig refuses, and says so where the frequency was.
 		String text = inhibited && menu.blockEntity.isPTTDown() ? "OUT OF BAND" : String.format("%.3f MHz", menu.getFrequency() / 1_000_000.0F);
-		drawScaled(guiGraphics, text, leftPos + x + w / 2.0F, topPos + y + h / 2.0F, scale, transmitting || inhibited && menu.blockEntity.isPTTDown() ? DISPLAY_TX_COLOUR : colour);
+		drawScaled(guiGraphics, text, leftPos + x + w / 2.0F, topPos + y + h / 2.0F + (h >= 20 ? displayTextDrop : 0.0F), scale, transmitting || inhibited && menu.blockEntity.isPTTDown() ? DISPLAY_TX_COLOUR : colour);
 		if(h < 20)
 			return; // Too small for the corner markers.
 		float markerScale = Math.min(1.0F, scale * 0.6F);
@@ -186,7 +236,7 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 
 		int edgeSpacingX = (this.width - this.imageWidth) / 2;
 		int edgeSpacingY = (this.height - this.imageHeight) / 2;
-		pGuiGraphics.blit(this.texture, edgeSpacingX, edgeSpacingY, 0, 0, this.imageWidth, this.imageHeight);
+		pGuiGraphics.blit(this.texture, edgeSpacingX, edgeSpacingY, 0, 0, this.imageWidth, this.imageHeight, textureWidth, textureHeight);
 
 		renderAdditionalBackground(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
 	}

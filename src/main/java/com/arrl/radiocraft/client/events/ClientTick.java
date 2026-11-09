@@ -38,7 +38,8 @@ public class ClientTick {
         if(isUseHeld != wasUseHeld) {
             SPlayerClickHoldUpdate.updateServer(isUseHeld);
 
-            boolean holdingRadio = Optional.ofNullable(Minecraft.getInstance().player).map(Player::getMainHandItem).map(i -> i.getCapability(VHF_HANDHELDS)).isPresent();
+            boolean holdingRadio = Optional.ofNullable(Minecraft.getInstance().player).map(Player::getMainHandItem).map(i -> i.getCapability(VHF_HANDHELDS)).isPresent()
+                    || Optional.ofNullable(Minecraft.getInstance().player).map(Player::getMainHandItem).map(i -> i.getItem() instanceof com.arrl.radiocraft.common.items.CbPortableItem).orElse(false);
             // Holding right click also talks on a radio's hand mic, or on the desk mic being looked at: the voice chat
             // has to send for those too, or the radio keys up and carries nothing.
             boolean holdingMic = Optional.ofNullable(Minecraft.getInstance().player).map(Player::getMainHandItem)
@@ -68,7 +69,8 @@ public class ClientTick {
         boolean wornPtt = RadiocraftKeys.WORN_PTT.isDown();
         if(wornPtt != wasWornPttHeld) {
             SWornPttPacket.send(wornPtt);
-            if(CuriosCompat.isLoaded() && Minecraft.getInstance().player != null && !CuriosCompat.wornHandhelds(Minecraft.getInstance().player).isEmpty())
+            if(CuriosCompat.isLoaded() && Minecraft.getInstance().player != null && (!CuriosCompat.wornHandhelds(Minecraft.getInstance().player).isEmpty()
+                    || !CuriosCompat.wornCbPortables(Minecraft.getInstance().player).isEmpty()))
                 Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, wornPtt ? 1.0F : 1.3F));
         }
         wasWornPttHeld = wornPtt;

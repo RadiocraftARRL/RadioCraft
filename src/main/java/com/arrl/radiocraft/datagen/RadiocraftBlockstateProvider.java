@@ -40,8 +40,12 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		RadiocraftBlocks.HF_RADIO_40M_VARIANTS.values().forEach(this::radio);
 		RadiocraftBlocks.HF_RADIO_80M_VARIANTS.values().forEach(this::radio);
 		complexHorizontalBlockWithItem(RadiocraftBlocks.LARGE_BATTERY.get());
+		complexHorizontalBlockWithItem(RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get()); // Placeholder: the large battery in a dark case (ModelDesignBounty).
 		complexHorizontalBlockWithItem(RadiocraftBlocks.ANTENNA_TUNER.get());
 		complexHorizontalBlockWithItem(RadiocraftBlocks.AUTO_TUNER.get());
+		complexHorizontalBlockWithItem(RadiocraftBlocks.BATTERY_METER.get());
+		complexBlockWithItem(RadiocraftBlocks.LIGHTNING_ARRESTOR.get());
+		complexBlockWithItem(RadiocraftBlocks.GROUND_ROD.get()); // Placeholder model (ModelDesignBounty).
 		horizontalWithRadioLinks(RadiocraftBlocks.TELETYPE.get(), "solar_weather_station"); // The maintainer's model, from before the rename.
 		horizontalWithRadioLinks(RadiocraftBlocks.RADIO_INTERFACE.get());
 		horizontalWithRadioLinks(RadiocraftBlocks.DTMF_ENCODER.get());
@@ -64,6 +68,8 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		radio(RadiocraftBlocks.COMMERCIAL_MOBILE.get()); // Placeholder models (ModelDesignBounty), case tinted (tintindex 0).
 		radio(RadiocraftBlocks.LOW_BAND_MOBILE.get());
 		radio(RadiocraftBlocks.MARINE_RADIO.get()); // Placeholder model (ModelDesignBounty, tools/marine_radio_assets.py).
+		radio(RadiocraftBlocks.CB_MOBILE_5875.get()); // Placeholder models (ModelDesignBounty, tools/cb_radio_assets.py).
+		radio(RadiocraftBlocks.CB_MOBILE_PC68.get());
 		radio(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()); // Placeholder model (ModelDesignBounty, tools/real_world_interface_assets.py).
 		radio(RadiocraftBlocks.ALL_BAND_RADIO.get());
 		complexHorizontalBlockWithItem(RadiocraftBlocks.MODERATION_COMPUTER.get()); // Placeholder from tools/moderation_computer_model.py.

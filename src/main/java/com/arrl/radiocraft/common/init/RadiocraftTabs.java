@@ -63,6 +63,7 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.AUTO_TUNER.get());
         output.accept(RadiocraftItems.DUMMY_LOAD.get());
         output.accept(RadiocraftItems.FIVE_BTV_ANTENNA.get());
+        output.accept(RadiocraftItems.CB_GROUND_PLANE_ANTENNA.get());
         output.accept(RadiocraftItems.IONOSONDE.get());
         output.accept(RadiocraftItems.IONOSPHERIC_PROCESSOR.get());
         output.accept(RadiocraftItems.HF_MANPACK.get());
@@ -106,6 +107,11 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.ANTENNA_SPLITTER.get());
         output.accept(RadiocraftItems.ANTENNA_SWITCH.get());
         output.accept(RadiocraftItems.WIRE_JUNCTION.get());
+        output.accept(RadiocraftItems.POWER_SWITCH_ON_OFF.get()); // Switch power circuits by hand or redstone.
+        output.accept(RadiocraftItems.POWER_SWITCH_LEFT_RIGHT.get());
+        output.accept(RadiocraftItems.BATTERY_METER.get()); // The charge of the batteries on its wire.
+        output.accept(RadiocraftItems.LIGHTNING_ARRESTOR.get()); // Stops a strike's surge on the coax.
+        output.accept(RadiocraftItems.GROUND_ROD.get()); // Grounds the station: less HF noise, and the arrestor works.
         output.accept(RadiocraftItems.DTMF_ENCODER.get()); // Remote control over the air, a repeater's or anyone's.
         output.accept(RadiocraftItems.DTMF_DECODER.get());
 
@@ -131,7 +137,9 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.SOLAR_PANEL.get());
         output.accept(RadiocraftItems.CHARGE_CONTROLLER.get());
         output.accept(RadiocraftItems.LARGE_BATTERY.get());
+        output.accept(RadiocraftItems.STABLE_CHEMICAL_BATTERY.get()); // An emergency reserve, switched on by redstone.
         output.accept(RadiocraftItems.SMALL_BATTERY.get());
+        output.accept(RadiocraftItems.SMALL_ALKALINE_BATTERY.get());
         output.accept(RadiocraftItems.WATERPROOF_WIRE.get());
         output.accept(RadiocraftItems.DATA_WIRE.get());
         RadiocraftItems.COLOURED_DATA_WIRE.values().forEach(wire -> output.accept(wire.get()));
@@ -169,6 +177,9 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.LOW_BAND_MOBILE.get());
         output.accept(RadiocraftItems.MARINE_HANDHELD.get());
         output.accept(RadiocraftItems.MARINE_RADIO.get());
+        output.accept(com.arrl.radiocraft.common.items.CbPortableItem.charged(RadiocraftItems.CB_PORTABLE.get())); // Charged, ready to use.
+        output.accept(RadiocraftItems.CB_MOBILE_PC68.get());
+        output.accept(RadiocraftItems.CB_MOBILE_5875.get());
         output.accept(RadiocraftItems.APRS_MODULE.get());
         output.accept(RadiocraftItems.MARS_MOD.get());
         output.accept(RadiocraftItems.BAND_PLAN.get());
@@ -181,6 +192,7 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.SCANNER.get());
         output.accept(RadiocraftItems.FLOPPY_DISK.get());
         RadiocraftItems.FLOPPIES.values().forEach(floppy -> output.accept(floppy.get()));
+        output.accept(RadiocraftItems.ALL_APPS_FLOPPY.get()); // Creative only: no recipe.
         output.accept(RadiocraftItems.QSL_CARD.get()); // Computer batch 3C: a blank card of the plain design, and the album.
         output.accept(RadiocraftItems.QSL_ALBUM.get());
         // ADS-B (1.12 step 9): the beacon for craft, the receiver and its antenna.

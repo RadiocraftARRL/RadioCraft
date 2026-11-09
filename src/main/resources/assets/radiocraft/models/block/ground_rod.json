@@ -1,0 +1,37 @@
+{
+  "credit": "Placeholder (see doc/ModelDesignBounty.md): a copper-clad rod with a clamp near the top",
+  "parent": "block/block",
+  "textures": {
+    "rod": "minecraft:block/copper_block",
+    "clamp": "minecraft:block/iron_block",
+    "particle": "minecraft:block/copper_block"
+  },
+  "elements": [
+    {
+      "name": "rod",
+      "from": [7, 0, 7],
+      "to": [9, 16, 9],
+      "faces": {
+        "north": {"uv": [7, 0, 9, 16], "texture": "#rod"},
+        "east": {"uv": [7, 0, 9, 16], "texture": "#rod"},
+        "south": {"uv": [7, 0, 9, 16], "texture": "#rod"},
+        "west": {"uv": [7, 0, 9, 16], "texture": "#rod"},
+        "up": {"uv": [7, 7, 9, 9], "texture": "#rod"},
+        "down": {"uv": [7, 7, 9, 9], "texture": "#rod"}
+      }
+    },
+    {
+      "name": "clamp",
+      "from": [6.5, 11, 6.5],
+      "to": [9.5, 13, 9.5],
+      "faces": {
+        "north": {"uv": [0, 0, 3, 2], "texture": "#clamp"},
+        "east": {"uv": [0, 0, 3, 2], "texture": "#clamp"},
+        "south": {"uv": [0, 0, 3, 2], "texture": "#clamp"},
+        "west": {"uv": [0, 0, 3, 2], "texture": "#clamp"},
+        "up": {"uv": [0, 0, 3, 3], "texture": "#clamp"},
+        "down": {"uv": [0, 0, 3, 3], "texture": "#clamp"}
+      }
+    }
+  ]
+}

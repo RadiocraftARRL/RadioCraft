@@ -13,8 +13,11 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * The station bus: radio interfaces and the terminals (APRS, file transfer) joined by touching or by data wire,
- * directly or through one another, the way a terminal is cabled to its modem. A terminal works through every radio interface on its bus
+ * The station bus: radio interfaces and the terminals (APRS, file transfer) joined by touching or by data wire, the way
+ * a terminal is cabled to its modem. Touching devices chain (a stack of them is one bus); a data wire joins only the
+ * devices at its ends (2026-11-09, maintainer): a device reached over the wire is on the bus, but what touches it at
+ * the far end is not, so a computer wired to another computer does not reach the radios beside that one. Only the
+ * device the search starts from follows its data wire, so the bus is the same seen from either end of a wire. A terminal works through every radio interface on its bus
  * and sends under the first callsign it finds there. It is searched afresh each time; a bus is only a few blocks.
  */
 public record StationBus(List<RadioInterfaceBlockEntity> interfaces, List<StationTerminal> terminals) {
@@ -29,6 +32,7 @@ public record StationBus(List<RadioInterfaceBlockEntity> interfaces, List<Statio
 		List<StationTerminal> terminals = new ArrayList<>();
 		Set<BlockPos> visited = new HashSet<>();
 		ArrayDeque<BlockPos> queue = new ArrayDeque<>();
+		Set<BlockPos> overWire = new HashSet<>(); // Reached over data wire: an end of the wire, not walked on from.
 		queue.add(start);
 		visited.add(start);
 		while(!queue.isEmpty() && visited.size() <= MAX_BLOCKS) {
@@ -40,14 +44,20 @@ public record StationBus(List<RadioInterfaceBlockEntity> interfaces, List<Statio
 				terminals.add(terminal);
 			else if(!at.equals(start))
 				continue;
+			if(overWire.contains(at))
+				continue; // The far end of a data wire: on the bus, but nothing beyond it is.
 			for(Direction direction : Direction.values()) {
 				BlockPos next = at.relative(direction);
 				if(next.distManhattan(start) <= MAX_REACH && visited.add(next))
 					queue.add(next);
 			}
+			if(!at.equals(start))
+				continue; // Only the device looking follows its own data wire: the same bus seen from either end.
 			for(BlockPos next : com.arrl.radiocraft.common.be_networks.DataWire.reached(level, at)) // However far the wire runs.
-				if(visited.add(next))
+				if(visited.add(next)) {
+					overWire.add(next);
 					queue.add(next);
+				}
 		}
 		return new StationBus(interfaces, terminals);
 	}

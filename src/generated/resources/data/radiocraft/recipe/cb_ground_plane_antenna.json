@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "radiocraft:coax_wire"
+    },
+    "L": {
+      "item": "minecraft:lightning_rod"
+    },
+    "R": {
+      "item": "radiocraft:antenna_wire"
+    }
+  },
+  "pattern": [
+    " L ",
+    " L ",
+    "RCR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:cb_ground_plane_antenna"
+  }
+}

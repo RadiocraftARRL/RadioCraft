@@ -66,9 +66,30 @@ public class BlownRadioGameTests {
                 .thenWaitUntil(() -> helper.assertTrue(radio(helper, RADIO_A).getAntennaSWR() >= RadiocraftServerConfig.RADIO_BLOW_SWR.get(),
                         "SWR is " + radio(helper, RADIO_A).getAntennaSWR()))
                 .thenExecute(() -> radio(helper, RADIO_A).setPTTDown(true))
-                .thenWaitUntil(() -> helper.assertTrue(blown(helper, RADIO_A), "Radio has not blown yet"))
+                .thenWaitUntil(() -> {
+                    if(!blown(helper, RADIO_A)) // SSB only puts power out while the operator talks.
+                        radio(helper, RADIO_A).acceptVoicePacket(() -> helper.getLevel(), TransmissionGameTests.toneFrame(), TransmissionGameTests.OPERATOR);
+                    helper.assertTrue(blown(helper, RADIO_A), "Radio has not blown yet");
+                })
                 .thenExecuteAfter(2, () -> {
                     helper.assertTrue(radio(helper, RADIO_A).getTransmitTargets() == null, "A blown radio still disturbs redstone");
+                    radio(helper, RADIO_A).setPTTDown(false);
+                })
+                .thenSucceed();
+    }
+
+    /** SSB keyed into a bad SWR but silent never blows: no carrier, so no power goes out to reflect (2026-11-09). */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 300, batch = BATCH)
+    public static void silentSsbNeverBlows(GameTestHelper helper) {
+        TransmitInterferenceGameTests.buildStationWithArms(helper, RADIO_A, BALUN_A, 2);
+        helper.runAfterDelay(5, () -> setupSsb(helper, RADIO_A, 0));
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(radio(helper, RADIO_A).getAntennaSWR() >= RadiocraftServerConfig.RADIO_BLOW_SWR.get(),
+                        "SWR is " + radio(helper, RADIO_A).getAntennaSWR()))
+                .thenExecute(() -> radio(helper, RADIO_A).setPTTDown(true))
+                .thenIdle(100)
+                .thenExecute(() -> {
+                    helper.assertFalse(blown(helper, RADIO_A), "A silent SSB transmitter blew");
                     radio(helper, RADIO_A).setPTTDown(false);
                 })
                 .thenSucceed();

@@ -29,6 +29,14 @@ public class BENetworkTypes {
                 com.arrl.radiocraft.common.be_networks.network_objects.AntennaSplitterNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.WireJunctionNetworkObject.TYPE,
                 com.arrl.radiocraft.common.be_networks.network_objects.WireJunctionNetworkObject::new);
+        BENetworkRegistry.registerObject(PowerSwitchNetworkObject.TYPE, PowerSwitchNetworkObject::new);
+        BENetworkRegistry.registerObject(StableChemicalBatteryNetworkObject.TYPE, (level, pos) -> new StableChemicalBatteryNetworkObject(level, pos, 0, 0, 0));
+        BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.BatteryMeterNetworkObject.TYPE,
+                com.arrl.radiocraft.common.be_networks.network_objects.BatteryMeterNetworkObject::new);
+        BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.GroundRodNetworkObject.TYPE,
+                com.arrl.radiocraft.common.be_networks.network_objects.GroundRodNetworkObject::new);
+        BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.LightningArrestorNetworkObject.TYPE,
+                com.arrl.radiocraft.common.be_networks.network_objects.LightningArrestorNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.BandFollowingAntennaNetworkObject.TYPE,
                 com.arrl.radiocraft.common.be_networks.network_objects.BandFollowingAntennaNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.DummyLoadNetworkObject.TYPE,
@@ -40,6 +48,7 @@ public class BENetworkTypes {
         BENetworkRegistry.registerObject(MicrowaveNetworkObjects.Dish.TYPE, MicrowaveNetworkObjects.Dish::new);
         BENetworkRegistry.registerObject(MicrowaveNetworkObjects.Radio.TYPE, MicrowaveNetworkObjects.Radio::new);
         BENetworkRegistry.registerObject(MicrowaveNetworkObjects.StationLink.TYPE, MicrowaveNetworkObjects.StationLink::new);
+        BENetworkRegistry.registerObject(VHFReceiverNetworkObject.TYPE, (level, pos) -> new VHFReceiverNetworkObject(level, pos, 0, 0)); // Runs from a cell too (2026-11-09).
         BENetworkRegistry.registerObject(RepeaterNetworkObject.TYPE, (level, pos) -> new RepeaterNetworkObject(level, pos, 0, 0));
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.blockentities.CommercialRepeaterBlockEntity.Commercial.TYPE,
                 (level, pos) -> new com.arrl.radiocraft.common.blockentities.CommercialRepeaterBlockEntity.Commercial(level, pos, 0, 0));

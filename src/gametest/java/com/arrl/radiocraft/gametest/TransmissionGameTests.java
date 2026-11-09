@@ -64,7 +64,7 @@ public class TransmissionGameTests {
     static final double EXPECTED_CW_STRENGTH = 1.0D - (9.0D / 1.5D) / 300.0D;
     static final double TOLERANCE = 1e-6;
 
-    private static final UUID OPERATOR = UUID.nameUUIDFromBytes("gametest-operator".getBytes());
+    static final UUID OPERATOR = UUID.nameUUIDFromBytes("gametest-operator".getBytes());
 
     /** Radio, one coax block and a balun with a 5+5 dipole running east-west. */
     static void buildStation(GameTestHelper helper, BlockPos radio, BlockPos balun) {
@@ -127,7 +127,7 @@ public class TransmissionGameTests {
     }
 
     /** One frame of a tone, like Simple Voice Chat would hand the transmitter. */
-    private static short[] toneFrame() {
+    static short[] toneFrame() {
         short[] audio = new short[960];
         for (int i = 0; i < audio.length; i++)
             audio[i] = (short) (Math.sin(2 * Math.PI * 440 * i / 48000.0D) * 8000);

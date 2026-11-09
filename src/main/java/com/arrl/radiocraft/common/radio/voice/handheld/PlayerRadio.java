@@ -71,6 +71,11 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
 
     private boolean isUseHeld;
     private volatile boolean wornPttHeld; // The "talk on worn radio" key, for a handheld worn in a Curios slot.
+
+    /** True while the player holds the "talk on worn radio" key (a handheld on the belt, a CB portable on the back). */
+    public boolean isWornPttHeld() {
+        return wornPttHeld;
+    }
     private volatile boolean indoors; // No sky above the player's head, updated each tick on the server thread.
 
     public void setUseHeld(boolean useHeld) {

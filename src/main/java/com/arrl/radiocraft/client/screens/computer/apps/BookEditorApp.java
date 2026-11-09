@@ -135,6 +135,11 @@ public final class BookEditorApp extends DosApp {
 		});
 	}
 
+	@Override
+	public boolean holdsUnsavedWork() {
+		return isModified();
+	}
+
 	/** Runs {@code then} once unsaved changes are saved or let go (asks), or at once if there are none. */
 	private void whenSafe(Runnable then) {
 		if(!isModified()) {

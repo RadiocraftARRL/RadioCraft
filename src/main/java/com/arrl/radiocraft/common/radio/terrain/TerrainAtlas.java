@@ -28,6 +28,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * moves only when terrain really changes, so a path worked out earlier can tell whether the chunks it crossed are
  * still the same ({@link #changedSince}). Past {@code maxChunks} chunks the oldest are forgotten, and count as clear
  * again until they load.
+ * <p>
+ * A chunk nobody has loaded is asked for when a path reads it ({@link #surface} notes it, {@link #takeWanted} hands
+ * the notes to the server thread) and filled with an estimate from the world generator ({@link #putEstimate}):
+ * natural terrain only, replaced by the real thing when the chunk loads. Until then it counts as clear.
  */
 public final class TerrainAtlas extends SavedData implements TerrainMath.HeightSource {
 
@@ -42,6 +46,10 @@ public final class TerrainAtlas extends SavedData implements TerrainMath.HeightS
     private final Set<Long> loaded = ConcurrentHashMap.newKeySet();
     private final AtomicLong changes = new AtomicLong();
     private Iterator<Long> refreshCursor = null; // Server thread only.
+    /** Chunks a path read that are not in the atlas, waiting for a worldgen estimate. */
+    private final Set<Long> wanted = ConcurrentHashMap.newKeySet();
+    /** At most this many chunks wait for an estimate; past it, new ones are not noted until some are filled. */
+    public static final int MAX_WANTED = 8192;
 
     public static SavedData.Factory<TerrainAtlas> factory() {
         return new SavedData.Factory<>(TerrainAtlas::new, TerrainAtlas::load, null);
@@ -49,9 +57,13 @@ public final class TerrainAtlas extends SavedData implements TerrainMath.HeightS
 
     @Override
     public int surface(int x, int z) {
-        Chunk chunk = chunks.get(key(x >> 4, z >> 4));
-        if(chunk == null)
+        long key = key(x >> 4, z >> 4);
+        Chunk chunk = chunks.get(key);
+        if(chunk == null) {
+            if(wanted.size() < MAX_WANTED)
+                wanted.add(key); // Any thread: filled from worldgen on the server thread.
             return TerrainMath.UNKNOWN;
+        }
         return chunk.cells()[((x & 15) >> 2) * 4 + ((z & 15) >> 2)];
     }
 
@@ -75,6 +87,39 @@ public final class TerrainAtlas extends SavedData implements TerrainMath.HeightS
                 chunks.remove(oldest);
             }
         }
+    }
+
+    /**
+     * Stores a worldgen estimate for a chunk, unless the chunk is known by now (a real sample always wins). Server
+     * thread only.
+     */
+    public void putEstimate(int chunkX, int chunkZ, short[] cells, int maxChunks) {
+        if(!chunks.containsKey(key(chunkX, chunkZ)))
+            put(chunkX, chunkZ, cells, maxChunks);
+    }
+
+    /** True if the atlas has heights for this chunk, real or estimated. */
+    public boolean has(long chunkKey) {
+        return chunks.containsKey(chunkKey);
+    }
+
+    /** Up to {@code count} chunks paths have asked for and the atlas does not have, taken off the list. Server thread only. */
+    long[] takeWanted(int count) {
+        long[] out = new long[Math.min(count, wanted.size())];
+        int n = 0;
+        Iterator<Long> it = wanted.iterator();
+        while(n < out.length && it.hasNext()) {
+            long key = it.next();
+            it.remove();
+            if(!chunks.containsKey(key))
+                out[n++] = key;
+        }
+        return n == out.length ? out : Arrays.copyOf(out, n);
+    }
+
+    /** How many chunks wait for an estimate. */
+    public int wantedCount() {
+        return wanted.size();
     }
 
     /** The current change count: a later {@link #changedSince} with it tells whether any chunk has changed since. */

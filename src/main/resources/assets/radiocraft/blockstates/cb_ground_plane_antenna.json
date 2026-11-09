@@ -1,0 +1,83 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "segment": "0"
+      },
+      "apply": {
+        "model": "radiocraft:block/cb_ground_plane_antenna_segment_0"
+      }
+    },
+    {
+      "when": {
+        "segment": "1"
+      },
+      "apply": {
+        "model": "radiocraft:block/cb_ground_plane_antenna_segment_1"
+      }
+    },
+    {
+      "when": {
+        "segment": "2"
+      },
+      "apply": {
+        "model": "radiocraft:block/cb_ground_plane_antenna_segment_2"
+      }
+    },
+    {
+      "when": {
+        "segment": "3"
+      },
+      "apply": {
+        "model": "radiocraft:block/cb_ground_plane_antenna_segment_3"
+      }
+    },
+    {
+      "when": {
+        "segment": "4"
+      },
+      "apply": {
+        "model": "radiocraft:block/cb_ground_plane_antenna_segment_4"
+      }
+    },
+    {
+      "when": {
+        "segment": "0",
+        "north": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_coax"
+      }
+    },
+    {
+      "when": {
+        "segment": "0",
+        "east": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_coax",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "segment": "0",
+        "south": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_coax",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "segment": "0",
+        "west": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_coax",
+        "y": 270
+      }
+    }
+  ]
+}

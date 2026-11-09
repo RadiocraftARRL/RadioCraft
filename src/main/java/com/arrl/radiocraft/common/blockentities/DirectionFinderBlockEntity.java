@@ -151,9 +151,10 @@ public class DirectionFinderBlockEntity extends BlockEntity implements MenuProvi
 		double tolerance = band != null && band.isVhf() ? RadiocraftServerConfig.VHF_FREQUENCY_STEP.get() / 2.0D : 1500.0D;
 		if(Math.abs(packet.getFrequency() - frequency) > tolerance || packet.getStrength() < MIN_SIGNAL)
 			return;
-		if(packet.getSource() == null || packet.getSource().getAntennaPos() == null)
+		com.arrl.radiocraft.api.antenna.IAntenna.AntennaPos source = packet.getSource() == null ? null : packet.getSource().getAntennaPos(); // Read once: the voice thread races the server.
+		if(source == null)
 			return;
-		BlockPos from = packet.getSource().getAntennaPos().world(); // Where it really is (it may be on a Sable ship).
+		BlockPos from = source.world(); // Where it really is (it may be on a Sable ship).
 		heardFrom = from;
 		heardStrength = packet.getStrength();
 		heardSkip = band != null && from.distSqr(here()) > (double)band.losRange() * band.losRange();

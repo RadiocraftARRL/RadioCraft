@@ -90,7 +90,7 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 	}
 
 	/** Lights the front panel's TX lamp while keyed and its RX lamp while a signal comes in, full bright over the dark ones painted on. */
-	private static void renderLamps(RadioBlockEntity radio, BlockState state, @org.jetbrains.annotations.Nullable RadioDisplays.Display display,
+	static void renderLamps(RadioBlockEntity radio, BlockState state, @org.jetbrains.annotations.Nullable RadioDisplays.Display display,
 	                                java.util.List<RadioDisplays.Lamp> lamps, PoseStack poseStack, MultiBufferSource buffer) {
 		if(lamps.isEmpty())
 			return;
@@ -119,7 +119,7 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 	}
 
 	/** The hand mic's cord, from the radio to the hand of the player holding the mic, while it is out. */
-	private static void renderMicCord(RadioBlockEntity radio, float partialTick, PoseStack poseStack, MultiBufferSource buffer) {
+	static void renderMicCord(RadioBlockEntity radio, float partialTick, PoseStack poseStack, MultiBufferSource buffer) {
 		UUID holder = radio.getMicHolder();
 		if(holder == null || radio.getLevel() == null)
 			return;
@@ -151,6 +151,8 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 			return "FM";
 		if(radio.isFM())
 			return "FM";
+		if(radio.isAM())
+			return "AM";
 		if(radio instanceof HFRadioBlockEntity hf && hf.getCWEnabled())
 			return "CW";
 		return radio.isLowerSideband() ? "LSB" : "USB";

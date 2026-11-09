@@ -67,7 +67,24 @@ public class CommercialStations extends SavedData {
 	 * One station: where the module's bottom cell is, its program, band (by name), frequency in Hz, seed and callsign,
 	 * and whether it is only predicted (its site not generated yet).
 	 */
-	public record Station(BlockPos pos, StationProgram.Kind kind, String band, float frequency, long seed, String callsign, boolean predicted) {
+	public record Station(BlockPos pos, StationProgram.Kind kind, String band, float frequency, long seed, String callsign, boolean predicted, String mode) {
+
+		public Station(BlockPos pos, StationProgram.Kind kind, String band, float frequency, long seed, String callsign, boolean predicted) {
+			this(pos, kind, band, frequency, seed, callsign, predicted, "");
+		}
+
+		/**
+		 * How it modulates (2026-11-09): FM on VHF; on HF its own SSB or AM, SSB if it says nothing; dead air always has
+		 * a carrier (AM on HF), since SSB with nobody talking sends nothing.
+		 */
+		public com.arrl.radiocraft.common.radio.voice.Modulation modulation() {
+			Band b = Band.getBand(band);
+			if(b == null || b.isVhf())
+				return com.arrl.radiocraft.common.radio.voice.Modulation.FM;
+			if(kind == StationProgram.Kind.DEAD_AIR || "AM".equals(mode))
+				return com.arrl.radiocraft.common.radio.voice.Modulation.AM;
+			return com.arrl.radiocraft.common.radio.voice.Modulation.SSB;
+		}
 
 		/** A module's station from its saved tag ({@link CommercialRadioModuleBlockEntity}'s keys); null if it has no program yet. */
 		@Nullable
@@ -75,7 +92,7 @@ public class CommercialStations extends SavedData {
 			if(!tag.contains("program") || Band.getBand(tag.getString("band")) == null)
 				return null;
 			return new Station(pos.immutable(), StationProgram.Kind.byName(tag.getString("program")), tag.getString("band"), tag.getFloat("frequency"),
-					tag.getLong("seed"), tag.getString("callsign"), predicted);
+					tag.getLong("seed"), tag.getString("callsign"), predicted, tag.getString("mode"));
 		}
 
 		private CompoundTag save() {
@@ -87,12 +104,13 @@ public class CommercialStations extends SavedData {
 			tag.putLong("seed", seed);
 			tag.putString("callsign", callsign);
 			tag.putBoolean("predicted", predicted);
+			tag.putString("mode", mode);
 			return tag;
 		}
 
 		private static Station load(CompoundTag tag) {
 			return new Station(BlockPos.of(tag.getLong("pos")), StationProgram.Kind.byName(tag.getString("program")), tag.getString("band"),
-					tag.getFloat("frequency"), tag.getLong("seed"), tag.getString("callsign"), tag.getBoolean("predicted"));
+					tag.getFloat("frequency"), tag.getLong("seed"), tag.getString("callsign"), tag.getBoolean("predicted"), tag.getString("mode"));
 		}
 	}
 
@@ -204,7 +222,16 @@ public class CommercialStations extends SavedData {
 			// A note for the moderation log (what played, where), kept if someone heard it.
 			com.arrl.radiocraft.common.moderation.ModerationHooks.commercial(on.antenna(), level, station.pos(), station.kind().name().toLowerCase(java.util.Locale.ROOT),
 					station.callsign(), station.frequency(), band);
-			on.antenna().transmitAudioFrames(() -> level, frames, band, station.frequency(), on.voiceId());
+			// Its mode and sideband go with every frame: SSB (LSB below 10 MHz), AM or FM (2026-11-09).
+			com.arrl.radiocraft.common.radio.voice.Modulation wasMode = com.arrl.radiocraft.common.radio.voice.Modulation.push(station.modulation());
+			Boolean wasSideband = com.arrl.radiocraft.common.radio.voice.Modulation.pushLowerSideband(station.frequency() < 10_000_000.0F);
+			try {
+				on.antenna().transmitAudioFrames(() -> level, frames, band, station.frequency(), on.voiceId());
+			}
+			finally {
+				com.arrl.radiocraft.common.radio.voice.Modulation.pop(wasMode);
+				com.arrl.radiocraft.common.radio.voice.Modulation.popLowerSideband(wasSideband);
+			}
 			com.arrl.radiocraft.common.radio.voice.RadioModeration.broadcast(level, on.voiceId(), frames, station.frequency()); // A moderator tuned in.
 			sending.add(station.pos());
 		}
@@ -219,7 +246,8 @@ public class CommercialStations extends SavedData {
 		CabinetAntenna antenna = new CabinetAntenna(level, station.pos().above(StackedBlocks.HEIGHT - 1));
 		antenna.register(band);
 		StationProgram program = new StationProgram(station.kind(), station.seed(), station.callsign().isEmpty() ? "X0X" : station.callsign(),
-				() -> CommercialRadioModuleBlockEntity.numbersTape(level));
+				() -> CommercialRadioModuleBlockEntity.numbersTape(level),
+				station.modulation() == com.arrl.radiocraft.common.radio.voice.Modulation.SSB);
 		UUID voiceId = UUID.nameUUIDFromBytes(("radiocraft-module-" + station.pos().asLong()).getBytes(StandardCharsets.UTF_8));
 		if(station.kind() == StationProgram.Kind.NUMBERS) // Hearing it earns the Numbers Station advancement.
 			com.arrl.radiocraft.common.advancements.ContactTracker.numbersStation(voiceId);

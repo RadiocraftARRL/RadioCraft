@@ -30,9 +30,11 @@ public class JadeCompat implements IWailaPlugin {
         registration.registerBlockDataProvider(RadioProvider.INSTANCE, QRPRadio40mBlock.class);
         registration.registerBlockDataProvider(RadioProvider.INSTANCE, VHFBaseStationBlock.class);
         registration.registerBlockDataProvider(RadioProvider.INSTANCE, VHFReceiverBlock.class);
+        registration.registerBlockDataProvider(RadioProvider.INSTANCE, RadioBlock.class); // Every other radio (CB, commercial, marine...): the client side is on RadioBlock.
         registration.registerBlockDataProvider(ParrotControllerProvider.INSTANCE, ParrotControllerBlock.class);
         registration.registerBlockDataProvider(TeletypeProvider.INSTANCE, TeletypeBlock.class);
         registration.registerBlockDataProvider(BatteryProvider.INSTANCE, LargeBatteryBlock.class);
+        registration.registerBlockDataProvider(BatteryProvider.INSTANCE, com.arrl.radiocraft.common.blocks.BatteryMeterBlock.class);
         registration.registerBlockDataProvider(SolarPanelProvider.INSTANCE, SolarPanelBlock.class);
         registration.registerBlockDataProvider(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock.class);
         registration.registerBlockDataProvider(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock.class);
@@ -48,6 +50,7 @@ public class JadeCompat implements IWailaPlugin {
         registration.registerBlockComponent(ParrotControllerProvider.INSTANCE, ParrotControllerBlock.class);
         registration.registerBlockComponent(TeletypeProvider.INSTANCE, TeletypeBlock.class);
         registration.registerBlockComponent(BatteryProvider.INSTANCE, LargeBatteryBlock.class);
+        registration.registerBlockComponent(BatteryProvider.INSTANCE, com.arrl.radiocraft.common.blocks.BatteryMeterBlock.class);
         registration.registerBlockComponent(SolarPanelProvider.INSTANCE, SolarPanelBlock.class);
         registration.registerBlockComponent(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock.class);
         registration.registerBlockComponent(WeatherAlertProvider.INSTANCE, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock.class);

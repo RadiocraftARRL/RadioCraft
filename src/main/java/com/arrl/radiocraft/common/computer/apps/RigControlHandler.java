@@ -10,6 +10,7 @@ import com.arrl.radiocraft.common.computer.ComputerAppHandler;
 import com.arrl.radiocraft.common.computer.ComputerAppState;
 import com.arrl.radiocraft.common.computer.ComputerApps;
 import com.arrl.radiocraft.common.computer.ComputerContext;
+import com.arrl.radiocraft.common.computer.ComputerNetwork;
 import com.arrl.radiocraft.common.computer.ComputerReply;
 import com.arrl.radiocraft.common.computer.ComputerStorage;
 import com.arrl.radiocraft.common.computer.FrequencyList;
@@ -18,6 +19,10 @@ import com.arrl.radiocraft.common.computer.Waterfall;
 import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.BandEdges;
 import com.arrl.radiocraft.common.radio.BandScope;
+import com.arrl.radiocraft.common.radio.BEVoiceReceiver;
+import com.arrl.radiocraft.common.radio.voice.LinkAudio;
+import com.arrl.radiocraft.common.radio.voice.RemoteMics;
+import com.arrl.radiocraft.common.radio.voice.SpeakerKind;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -30,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -51,6 +57,21 @@ import java.util.UUID;
  * {steps}, {@code tune} {hz}, {@code band} {dir}, {@code mode}, {@code power}, {@code ptt} {on}, {@code scan}
  * {mode range|memory|off, low, high (Hz, range)}, {@code hold}, {@code squelch} {level 0-9}, {@code memories} {file},
  * {@code store} {name}, {@code zoom} {zoom}, {@code scope}, {@code leave}. Pushes {@code scope} to mirror watchers.
+ * <p>
+ * <b>Remote audio and remote control (2026-11-09).</b> Audio is LOCAL (as before: the rig is heard at its speaker and
+ * talked into at its mic) or REMOTE ({@code audio} {remote}): the computer is one more speaker of the rig it drives
+ * ({@link RadioBlockEntity#remoteListen}, everyone near it hears it), and while a player holds the PTT here their voice
+ * goes into the rig as the hand mic's would ({@link RemoteMics}). A computer may let another on its network
+ * ({@link ComputerNetwork}) drive its rig: {@code host} {access, anyone} and {@code code} {code} (owner only), OWNER or
+ * ANYONE WITH CODE. The other lists those hosts ({@code hosts}), {@code connect}s {id, code} and from then on every
+ * rig request it makes is carried out on the host's rig and the host's state, as if it ran there, until
+ * {@code disconnect}. One remote user at a time; a local user at the host can {@code takeover}. The session ends (the
+ * PTT let go, the scan stopped) when the remote player closes the screen, the link drops (wire broken, microwave NO
+ * SIGNAL), either computer goes, or the host turns remote access off. Over microwave the remote audio is delayed and
+ * spoilt with the link's grade ({@link LinkAudio}). The server checks every remote request: the session must be this
+ * computer's and this player's, and the host must still be on its network; nothing the client says about positions
+ * is used. {@code remote} answers the Remote page; pushes {@code remote} (something changed) and
+ * {@code remote_ended} {reason, host}.
  */
 public final class RigControlHandler implements ComputerAppHandler {
 
@@ -65,6 +86,20 @@ public final class RigControlHandler implements ComputerAppHandler {
 	public static final int PTT_TIMEOUT_TICKS = 3 * 60 * 20;
 	/** The memory channels: the Frequency Manager's list. */
 	public static final String DEFAULT_MEMORIES = "CHANNELS.FRQ";
+	/** Longest access code. */
+	public static final int MAX_CODE = 12;
+	/** How long a computer plays a rig remotely after it last said so, ticks (it says so every second). */
+	public static final int LISTEN_TICKS = 50;
+	/** Requests a local user at a host may make while a remote user has its rig (they look, they do not touch). */
+	private static final Set<String> LOOK_ONLY = Set.of("status", "scope", "leave");
+	/** The Remote page's requests: always about this computer, never carried to a host. */
+	private static final Set<String> REMOTE_REQUESTS = Set.of("remote", "audio", "host", "code", "hosts", "connect", "disconnect", "takeover");
+
+	/** Host side: who drives this computer's rig from where. */
+	public record Session(UUID clientId, BlockPos clientPos, UUID player, String playerName, String clientName) {}
+
+	/** Client side: the host whose rig this computer drives, for {@code player}. */
+	public record Remote(UUID hostId, BlockPos hostPos, UUID player, String hostName) {}
 
 	/** One computer's rig control. */
 	public static final class State implements ComputerAppState {
@@ -84,6 +119,22 @@ public final class RigControlHandler implements ComputerAppHandler {
 		@Nullable UUID lastViewer;
 		long lastViewAt = -100L;
 		final Map<UUID, Long> mirror = new HashMap<>();
+		// Remote audio and control (2026-11-09). Saved: the audio setting and the host settings.
+		boolean remoteAudio;
+		boolean hostAccess;
+		String accessCode = "";
+		boolean anyone;
+		// Not saved: sessions end with the server.
+		@Nullable UUID pttBy; // Who keyed the PTT, and at which computer (this one, or a remote client).
+		@Nullable BlockPos pttFrom;
+		/** The program is running: open, or left running with C. Its audio plays only then (not saved: off after a restart). */
+		boolean running;
+		@Nullable Session session;
+		ComputerNetwork.Link sessionLink = ComputerNetwork.Link.WIRE;
+		@Nullable Remote remote;
+		@Nullable RadioBlockEntity cachedRig;
+		long cachedRigAt = -100L;
+		@Nullable RadioBlockEntity listening; // The rig this computer plays (REMOTE audio).
 
 		public RigScan scan() {
 			return scan;
@@ -93,12 +144,36 @@ public final class RigControlHandler implements ComputerAppHandler {
 			return memories;
 		}
 
+		/** Host side: the remote user, or null. */
+		@Nullable
+		public Session session() {
+			return session;
+		}
+
+		/** Client side: the host this computer drives, or null. */
+		@Nullable
+		public Remote remote() {
+			return remote;
+		}
+
+		public boolean remoteAudio() {
+			return remoteAudio;
+		}
+
+		public boolean hostAccess() {
+			return hostAccess;
+		}
+
 		@Override
 		public void save(CompoundTag tag, HolderLookup.Provider registries) {
 			tag.putLong("selected", selected);
 			tag.putInt("squelch", squelch);
 			tag.putInt("zoom", zoom);
 			tag.putString("memoryFile", memoryFile);
+			tag.putBoolean("remoteAudio", remoteAudio);
+			tag.putBoolean("hostAccess", hostAccess);
+			tag.putString("accessCode", accessCode);
+			tag.putBoolean("anyone", anyone);
 		}
 
 		@Override
@@ -108,6 +183,10 @@ public final class RigControlHandler implements ComputerAppHandler {
 			zoom = Math.max(0, Math.min(Waterfall.ZOOMS - 1, tag.getInt("zoom")));
 			String file = ComputerStorage.normalise(tag.getString("memoryFile"));
 			memoryFile = file == null ? DEFAULT_MEMORIES : file;
+			remoteAudio = tag.getBoolean("remoteAudio");
+			hostAccess = tag.getBoolean("hostAccess");
+			accessCode = cleanCode(tag.getString("accessCode"));
+			anyone = tag.getBoolean("anyone");
 		}
 	}
 
@@ -132,6 +211,18 @@ public final class RigControlHandler implements ComputerAppHandler {
 		return radios.isEmpty() ? null : radios.getFirst();
 	}
 
+	/** {@link #rig}, looked up again at most every two seconds (for the ticks: no bus walk each tick). */
+	@Nullable
+	static RadioBlockEntity cachedRig(RadioComputerBlockEntity computer, State state, long now) {
+		RadioBlockEntity rig = state.cachedRig;
+		if(rig == null || rig.isRemoved() || now - state.cachedRigAt > 40L || now < state.cachedRigAt) {
+			rig = rig(computer, state);
+			state.cachedRig = rig;
+			state.cachedRigAt = now;
+		}
+		return rig;
+	}
+
 	/** Why the rig cannot be controlled (an error key), or null. */
 	@Nullable
 	static String cannotControl(StationBus bus, @Nullable RadioBlockEntity rig) {
@@ -148,15 +239,57 @@ public final class RigControlHandler implements ComputerAppHandler {
 	public void handle(ComputerContext context, String action, CompoundTag data, ComputerReply reply) {
 		RadioComputerBlockEntity computer = context.computer();
 		State state = state(computer);
+		if(action.equals("leave")) { // The program exits (2026-11-09): its audio stops, and a rig it drove elsewhere is let go.
+			state.running = false;
+			if(state.remote != null && context.player().getUUID().equals(state.remote.player()))
+				endRemote(computer, state, "disconnected");
+			stopListening(computer, state);
+		}
+		else
+			state.running = true; // In use: open, or left running with C.
+		if(REMOTE_REQUESTS.contains(action)) {
+			remoteRequest(context, state, action, data, reply);
+			return;
+		}
+		if(state.remote != null) { // Driving a host's rig: carried out there, if the session still holds.
+			RadioComputerBlockEntity host = remoteHost(computer, state);
+			if(host != null) {
+				if(!context.player().getUUID().equals(state.remote.player()) && !LOOK_ONLY.contains(action)) {
+					reply.error("remote_other_user", state.remote.hostName());
+					return;
+				}
+				run(context, host, state(host), computer, action, data, reply);
+				return;
+			}
+			endRemote(computer, state, "link_lost");
+			if(!action.equals("status")) {
+				reply.error("remote_lost");
+				return;
+			}
+		}
+		if(state.session != null && !LOOK_ONLY.contains(action)) { // A remote user has this rig.
+			reply.error("rig_remote_in_use", state.session.playerName());
+			return;
+		}
+		run(context, computer, state, computer, action, data, reply);
+	}
+
+	/**
+	 * Carries out a rig request on {@code computer}'s rig and state: this computer's own, or a host's for a remote
+	 * user at {@code from}.
+	 */
+	private void run(ComputerContext context, RadioComputerBlockEntity computer, State state, RadioComputerBlockEntity from, String action, CompoundTag data,
+					 ComputerReply reply) {
 		StationBus bus = RadioStation.bus(computer);
 		RadioBlockEntity rig = rig(computer, state);
 		long now = context.level().getGameTime();
 		if(action.equals("status")) {
-			reply.ok(status(computer, state, bus, rig));
+			reply.ok(withRemote(status(computer, state, bus, rig), context, from));
 			return;
 		}
-		if(action.equals("leave")) { // The program exits: stop what it started.
-			leave(state, rig);
+		if(action.equals("leave")) { // The program exits: stop what it started (a looker at a driven rig started nothing).
+			if(state.session == null || from != computer && context.player().getUUID().equals(state.session.player()))
+				leave(state, rig);
 			state.mirror.remove(context.player().getUUID());
 			reply.ok();
 			return;
@@ -174,7 +307,7 @@ public final class RigControlHandler implements ComputerAppHandler {
 						leave(state, rig);
 						state.selected = pos;
 						computer.setChanged();
-						reply.ok(status(computer, state, bus, radio));
+						reply.ok(withRemote(status(computer, state, bus, radio), context, from));
 						return;
 					}
 				reply.error("rig_no_radio");
@@ -230,9 +363,14 @@ public final class RigControlHandler implements ComputerAppHandler {
 					reply.error(refused);
 					return;
 				}
+				if(action.equals("ptt")) { // Whose PTT, and where: their voice goes in from there with REMOTE audio.
+					state.pttBy = state.pttOurs ? context.player().getUUID() : null;
+					state.pttFrom = state.pttOurs ? from.getBlockPos().immutable() : null;
+					feedMic(computer, state, now);
+				}
 			}
 		}
-		reply.ok(status(computer, state, bus, rig));
+		reply.ok(withRemote(status(computer, state, bus, rig), context, from));
 	}
 
 	/** Tuning, mode, PTT and scanning; null if done, else the error key. */
@@ -446,12 +584,17 @@ public final class RigControlHandler implements ComputerAppHandler {
 	@Override
 	public void closed(ComputerContext context) {
 		State state = state(context.computer());
+		if(state.remote != null && state.remote.player().equals(context.player().getUUID())) {
+			releaseRemotePtt(context.computer(), state); // Up from the screen: the session (and its audio) stays, the PTT goes.
+			state.mirror.put(context.player().getUUID(), Long.MAX_VALUE); // And the host's waterfall goes on on this monitor.
+		}
 		long now = context.level().getGameTime();
-		// The screen closed with the waterfall in front (it asked just now): keep it going on the monitor for this player.
+		// The screen closed with RIGCTL running: keep the waterfall going on the monitor while this player is near it
+		// (2026-11-09: no time limit any more, like the music player left playing).
 		if(context.player().getUUID().equals(state.lastViewer) && now - state.lastViewAt <= 20L)
-			state.mirror.put(context.player().getUUID(), now + MIRROR_TICKS);
+			state.mirror.put(context.player().getUUID(), Long.MAX_VALUE);
 		RadioBlockEntity rig = rig(context.computer(), state);
-		if(rig != null && state.pttOurs && rig.isPTTDown()) { // Nobody at the keyboard to let go.
+		if(rig != null && state.pttOurs && rig.isPTTDown() && state.session == null) { // Nobody at the keyboard to let go (a remote user's is theirs).
 			rig.setPTTDown(false);
 			state.pttOurs = false;
 		}
@@ -516,6 +659,7 @@ public final class RigControlHandler implements ComputerAppHandler {
 		}
 		if(!state.mirror.isEmpty() && (gameTime + computer.getBlockPos().asLong()) % 10L == 0L)
 			tickMirror(computer, state, gameTime);
+		tickRemote(computer, state, gameTime);
 	}
 
 	private static void tickScan(RadioComputerBlockEntity computer, State state, long gameTime) {
@@ -540,7 +684,20 @@ public final class RigControlHandler implements ComputerAppHandler {
 	private static void tickMirror(RadioComputerBlockEntity computer, State state, long gameTime) {
 		if(!(computer.getLevel() instanceof ServerLevel level))
 			return;
-		RadioBlockEntity rig = rig(computer, state);
+		// Driving a rig elsewhere (2026-11-09): the waterfall on this monitor is the host's rig's.
+		State source = state;
+		RadioBlockEntity rig;
+		if(state.remote != null) {
+			RadioComputerBlockEntity host = remoteHost(computer, state);
+			if(host != null && host.existingState(ComputerApps.RIG_CONTROL) instanceof State hostState) {
+				source = hostState;
+				rig = rig(host, hostState);
+			}
+			else
+				rig = null;
+		}
+		else
+			rig = rig(computer, state);
 		BlockPos at = computer.getBlockPos();
 		CompoundTag sample = null;
 		var watchers = state.mirror.entrySet().iterator();
@@ -555,11 +712,406 @@ public final class RigControlHandler implements ComputerAppHandler {
 			if(computer.viewers().contains(player))
 				continue; // At the screen: it asks for itself.
 			if(sample == null)
-				sample = scope(state, rig, gameTime);
+				sample = scope(source, rig, gameTime);
 			RadioComputerBlockEntity.push(player, ComputerApps.RIG_CONTROL, "scope", sample);
 		}
-		if(state.mirror.isEmpty() && rig != null && gameTime - state.lastViewAt > SCOPE_LEASE_TICKS)
+		if(state.mirror.isEmpty() && rig != null && gameTime - source.lastViewAt > SCOPE_LEASE_TICKS)
 			rig.dropScope();
+	}
+
+	// -------------------- REMOTE CONTROL AND REMOTE AUDIO (2026-11-09) --------------------
+
+	/** {@code code} as an access code: printable ASCII, trimmed, at most {@link #MAX_CODE} long. */
+	public static String cleanCode(String code) {
+		if(code == null)
+			return "";
+		StringBuilder out = new StringBuilder();
+		for(int i = 0; i < code.length() && out.length() < MAX_CODE; i++) {
+			char c = code.charAt(i);
+			if(c > ' ' && c <= '~')
+				out.append(c);
+		}
+		return out.toString();
+	}
+
+	/** A computer's name for the lists, "?" for none. */
+	private static String nameOf(RadioComputerBlockEntity computer) {
+		String name = ComputerNetwork.name(computer);
+		return name.isEmpty() ? "?" : name;
+	}
+
+	/** The computer at {@code pos} if it is loaded there and still the one with {@code id}, else null (never loads a chunk). */
+	@Nullable
+	private static RadioComputerBlockEntity computerAt(@Nullable net.minecraft.world.level.Level level, BlockPos pos, UUID id) {
+		if(level == null || !level.isLoaded(pos))
+			return null;
+		return level.getBlockEntity(pos) instanceof RadioComputerBlockEntity computer && !computer.isRemoved() && id.equals(computer.getComputerId()) ? computer : null;
+	}
+
+	/**
+	 * The host {@code client} drives, if the session still holds: the host is where it was, still runs RIGCTL with
+	 * remote access, its session is this computer's and this player's, and it is still on this computer's network with
+	 * a link up. Null otherwise.
+	 */
+	@Nullable
+	static RadioComputerBlockEntity remoteHost(RadioComputerBlockEntity client, State state) {
+		Remote remote = state.remote;
+		if(remote == null)
+			return null;
+		RadioComputerBlockEntity host = computerAt(client.getLevel(), remote.hostPos(), remote.hostId());
+		if(host == null || !host.isInstalled(ComputerApps.RIG_CONTROL) || !(host.existingState(ComputerApps.RIG_CONTROL) instanceof State hostState))
+			return null;
+		Session session = hostState.session;
+		if(!hostState.hostAccess || session == null || !session.clientId().equals(client.getComputerId()) || !session.player().equals(remote.player()))
+			return null;
+		ComputerNetwork.Link link = ComputerNetwork.link(client, host);
+		return link != null && link.up() ? host : null;
+	}
+
+	/** The screen at {@code client} closed: the host's PTT, if the remote user had it, lets go. The session goes on. */
+	private static void releaseRemotePtt(RadioComputerBlockEntity client, State state) {
+		Remote remote = state.remote;
+		if(remote == null)
+			return;
+		RadioComputerBlockEntity host = computerAt(client.getLevel(), remote.hostPos(), remote.hostId());
+		if(host == null || !(host.existingState(ComputerApps.RIG_CONTROL) instanceof State hostState) || hostState.session == null
+				|| !hostState.session.clientId().equals(client.getComputerId()))
+			return;
+		RadioBlockEntity rig = rig(host, hostState);
+		if(rig != null && hostState.pttOurs && rig.isPTTDown())
+			rig.setPTTDown(false);
+		hostState.pttOurs = false;
+	}
+
+	/** {@code client} stops driving its host: the host's session ends too (if it is still ours). */
+	public static void endRemote(RadioComputerBlockEntity client, State state, String reason) {
+		Remote remote = state.remote;
+		if(remote == null)
+			return;
+		RadioComputerBlockEntity host = computerAt(client.getLevel(), remote.hostPos(), remote.hostId());
+		if(host != null && host.existingState(ComputerApps.RIG_CONTROL) instanceof State hostState && hostState.session != null
+				&& hostState.session.clientId().equals(client.getComputerId())) {
+			endSession(host, hostState, reason); // Tells this computer too.
+			return;
+		}
+		state.remote = null;
+		stopListening(client, state);
+		CompoundTag out = new CompoundTag();
+		out.putString("reason", reason);
+		out.putString("host", remote.hostName());
+		client.push(ComputerApps.RIG_CONTROL, "remote_ended", out);
+	}
+
+	/**
+	 * {@code host}'s remote session ends ({@code reason}: disconnected, taken, closed, link_lost, gone, no_access): as
+	 * when a program is left, the PTT goes and the scan stops; the client is told and plays the rig no more.
+	 */
+	public static void endSession(RadioComputerBlockEntity host, State hostState, String reason) {
+		Session session = hostState.session;
+		if(session == null)
+			return;
+		hostState.session = null;
+		RadioBlockEntity rig = rig(host, hostState);
+		leave(hostState, rig);
+		hostState.pttBy = null;
+		hostState.pttFrom = null;
+		RemoteMics.stop(session.player());
+		if(rig != null)
+			rig.stopRemoteListen(session.clientPos());
+		RadioComputerBlockEntity client = computerAt(host.getLevel(), session.clientPos(), session.clientId());
+		if(client != null && client.existingState(ComputerApps.RIG_CONTROL) instanceof State clientState && clientState.remote != null
+				&& clientState.remote.hostId().equals(host.getComputerId())) {
+			clientState.remote = null;
+			stopListening(client, clientState);
+			CompoundTag out = new CompoundTag();
+			out.putString("reason", reason);
+			out.putString("host", nameOf(host));
+			client.push(ComputerApps.RIG_CONTROL, "remote_ended", out);
+		}
+		CompoundTag changed = new CompoundTag();
+		changed.putString("reason", reason);
+		changed.putString("player", session.playerName());
+		host.push(ComputerApps.RIG_CONTROL, "remote", changed);
+	}
+
+	/** The Remote page's requests (about this computer, never a host's). */
+	private void remoteRequest(ComputerContext context, State state, String action, CompoundTag data, ComputerReply reply) {
+		RadioComputerBlockEntity computer = context.computer();
+		ServerPlayer player = context.player();
+		long now = context.level().getGameTime();
+		switch(action) {
+			case "remote" -> {}
+			case "audio" -> {
+				state.remoteAudio = data.getBoolean("remote");
+				computer.setChanged();
+				listen(computer, state, now);
+				if(state.pttBy != null)
+					feedMic(computer, state, now);
+			}
+			case "host", "code" -> {
+				if(!computer.mayChangePassword(player)) {
+					reply.error("remote_owner_settings");
+					return;
+				}
+				if(action.equals("code"))
+					state.accessCode = cleanCode(data.getString("code"));
+				else {
+					state.hostAccess = data.getBoolean("access");
+					state.anyone = data.getBoolean("anyone");
+				}
+				computer.setChanged();
+				if(!state.hostAccess)
+					endSession(computer, state, "no_access");
+			}
+			case "hosts" -> {
+				reply.ok(hosts(computer));
+				return;
+			}
+			case "connect" -> {
+				String refused = connect(computer, state, player, data.getString("id"), data.getString("code"), now);
+				if(refused != null) {
+					reply.error(refused.contains("|") ? refused.substring(0, refused.indexOf('|')) : refused,
+							refused.contains("|") ? refused.substring(refused.indexOf('|') + 1) : "");
+					return;
+				}
+			}
+			case "disconnect" -> {
+				if(state.remote == null) {
+					reply.error("remote_not_connected");
+					return;
+				}
+				endRemote(computer, state, "disconnected");
+			}
+			case "takeover" -> {
+				if(state.session == null) {
+					reply.error("remote_no_session");
+					return;
+				}
+				endSession(computer, state, "taken");
+			}
+			default -> {
+				reply.error("unknown_request");
+				return;
+			}
+		}
+		reply.ok(remoteTag(computer, state, player));
+	}
+
+	/** The hosts {@code computer} reaches that let others drive their rig: id, name, link, code, owner only, busy, on. */
+	static CompoundTag hosts(RadioComputerBlockEntity computer) {
+		ListTag list = new ListTag();
+		for(ComputerNetwork.Peer peer : ComputerNetwork.peersNow(computer)) { // Asked for: fresh.
+			RadioComputerBlockEntity host = peer.computer();
+			if(!host.isInstalled(ComputerApps.RIG_CONTROL))
+				continue;
+			State hostState = state(host);
+			if(!hostState.hostAccess)
+				continue;
+			CompoundTag entry = new CompoundTag();
+			entry.putString("id", host.getComputerId().toString());
+			entry.putString("name", nameOf(host));
+			entry.putString("link", peer.link().label());
+			entry.putBoolean("up", peer.link().up());
+			entry.putBoolean("code", !hostState.accessCode.isEmpty());
+			entry.putBoolean("ownerOnly", !hostState.anyone);
+			entry.putBoolean("busy", hostState.session != null && !hostState.session.clientId().equals(computer.getComputerId()));
+			entry.putBoolean("on", host.isPowered());
+			list.add(entry);
+		}
+		CompoundTag out = new CompoundTag();
+		out.put("hosts", list);
+		return out;
+	}
+
+	/**
+	 * {@code player} at {@code client} connects to the host with id {@code id}, found among the computers the server
+	 * finds on the client's network (never a position from the screen). Null if done, else the error key (with
+	 * "|arg").
+	 */
+	@Nullable
+	static String connect(RadioComputerBlockEntity client, State state, ServerPlayer player, String id, String code, long now) {
+		ComputerNetwork.Peer found = null;
+		for(ComputerNetwork.Peer peer : ComputerNetwork.peers(client))
+			if(peer.computer().getComputerId().toString().equals(id))
+				found = peer;
+		if(found == null || !found.link().up())
+			return "remote_not_reached";
+		RadioComputerBlockEntity host = found.computer();
+		if(!host.isInstalled(ComputerApps.RIG_CONTROL))
+			return "remote_no_access";
+		State hostState = state(host);
+		if(!hostState.hostAccess)
+			return "remote_no_access";
+		if(!host.isPowered())
+			return "remote_host_off";
+		if(!hostState.anyone && !host.mayChangePassword(player))
+			return "remote_owner_only";
+		if(!hostState.accessCode.isEmpty()) {
+			if(code.isEmpty())
+				return "remote_need_code";
+			if(!hostState.accessCode.equals(cleanCode(code)))
+				return "remote_bad_code";
+		}
+		Session busy = hostState.session;
+		if(busy != null && !(busy.clientId().equals(client.getComputerId()) && busy.player().equals(player.getUUID())))
+			return "remote_busy|" + busy.playerName();
+		if(state.remote != null && !state.remote.hostId().equals(host.getComputerId()))
+			endRemote(client, state, "disconnected");
+		leave(state, rig(client, state)); // Its own rig: the PTT and scan let go, as when the program is left.
+		state.pttBy = null;
+		state.pttFrom = null;
+		hostState.session = new Session(client.getComputerId(), client.getBlockPos().immutable(), player.getUUID(), player.getScoreboardName(), nameOf(client));
+		hostState.sessionLink = found.link();
+		state.remote = new Remote(host.getComputerId(), host.getBlockPos().immutable(), player.getUUID(), nameOf(host));
+		listen(client, state, now);
+		CompoundTag changed = new CompoundTag();
+		changed.putString("player", player.getScoreboardName());
+		host.push(ComputerApps.RIG_CONTROL, "remote", changed);
+		return null;
+	}
+
+	/** The Remote page: the audio, the host settings (the code only for who may change it), the session, the host driven. */
+	static CompoundTag remoteTag(RadioComputerBlockEntity computer, State state, ServerPlayer player) {
+		CompoundTag out = new CompoundTag();
+		boolean owner = computer.mayChangePassword(player);
+		out.putBoolean("audio", state.remoteAudio);
+		out.putBoolean("access", state.hostAccess);
+		out.putBoolean("anyone", state.anyone);
+		out.putBoolean("hasCode", !state.accessCode.isEmpty());
+		out.putString("code", owner ? state.accessCode : "");
+		out.putBoolean("mayConfigure", owner);
+		out.putString("myName", ComputerNetwork.name(computer));
+		if(state.session != null) {
+			out.putString("by", state.session.playerName());
+			out.putString("via", state.session.clientName());
+			out.putString("viaLink", state.sessionLink.label());
+		}
+		if(state.remote != null) {
+			out.putString("to", state.remote.hostName());
+			RadioComputerBlockEntity host = remoteHost(computer, state);
+			ComputerNetwork.Link link = host == null ? null : ComputerNetwork.link(computer, host);
+			out.putString("toLink", link == null ? "" : link.label());
+			out.putBoolean("mine", state.remote.player().equals(player.getUUID()));
+		}
+		return out;
+	}
+
+	/** A status answer with the Remote page under {@code remote}, as {@code from} (the computer asking) sees it. */
+	private static CompoundTag withRemote(CompoundTag status, ComputerContext context, RadioComputerBlockEntity from) {
+		status.put("remote", remoteTag(from, state(from), context.player()));
+		return status;
+	}
+
+	/**
+	 * Where the PTT's voice goes: while {@code computer}'s PTT is held by a player from a computer set to REMOTE audio
+	 * (this one, or the remote client), into the rig over that computer's link ({@link RemoteMics}); otherwise the
+	 * rig hears whoever stands at its mics, as before.
+	 */
+	static void feedMic(RadioComputerBlockEntity computer, State state, long now) {
+		UUID by = state.pttBy;
+		if(by == null)
+			return;
+		RadioBlockEntity rig = cachedRig(computer, state, now);
+		boolean remoteAudio = false;
+		LinkAudio.Impairment impairment = LinkAudio.Impairment.CLEAN;
+		if(computer.getBlockPos().equals(state.pttFrom))
+			remoteAudio = state.remoteAudio;
+		else if(state.session != null && state.session.clientPos().equals(state.pttFrom)
+				&& computerAt(computer.getLevel(), state.session.clientPos(), state.session.clientId()) instanceof RadioComputerBlockEntity client
+				&& client.existingState(ComputerApps.RIG_CONTROL) instanceof State clientState) {
+			remoteAudio = clientState.remoteAudio;
+			impairment = state.sessionLink.impairment();
+		}
+		if(rig != null && state.pttOurs && rig.isPTTDown() && remoteAudio)
+			RemoteMics.feed(by, rig, impairment);
+		else
+			RemoteMics.stop(by);
+	}
+
+	/**
+	 * With REMOTE audio, {@code computer} plays the rig it drives (its own, or its host's) through its speakers, or at
+	 * itself with none, as one more speaker of that rig; renewed every second, it lapses if the computer goes.
+	 */
+	static void listen(RadioComputerBlockEntity computer, State state, long now) {
+		RadioBlockEntity rig = null;
+		LinkAudio.Impairment impairment = LinkAudio.Impairment.CLEAN;
+		if(state.running && (state.remoteAudio || state.remote != null)) { // Driving a rig elsewhere, its audio is always here.
+			if(state.remote != null) {
+				RadioComputerBlockEntity host = remoteHost(computer, state);
+				if(host != null && host.existingState(ComputerApps.RIG_CONTROL) instanceof State hostState) {
+					rig = cachedRig(host, hostState, now);
+					ComputerNetwork.Link link = ComputerNetwork.link(computer, host);
+					impairment = link == null ? impairment : link.impairment();
+				}
+			}
+			else
+				rig = cachedRig(computer, state, now);
+		}
+		if(state.listening != null && state.listening != rig)
+			state.listening.stopRemoteListen(computer.getBlockPos());
+		state.listening = rig;
+		if(rig == null)
+			return;
+		List<BEVoiceReceiver.WiredSpeaker> speakers = computer.getSpeakers();
+		if(speakers.isEmpty())
+			speakers = List.of(new BEVoiceReceiver.WiredSpeaker(computer.getBlockPos(), SpeakerKind.STANDARD));
+		List<BEVoiceReceiver.RemoteSpeaker> out = new ArrayList<>();
+		for(BEVoiceReceiver.WiredSpeaker speaker : speakers)
+			out.add(new BEVoiceReceiver.RemoteSpeaker(speaker, impairment));
+		rig.remoteListen(computer.getBlockPos(), out, now + LISTEN_TICKS);
+	}
+
+	private static void stopListening(RadioComputerBlockEntity computer, State state) {
+		if(state.listening != null)
+			state.listening.stopRemoteListen(computer.getBlockPos());
+		state.listening = null;
+	}
+
+	/**
+	 * The remote ticks: a host checks its session once a second (the client still there and driving it, the link up),
+	 * a client checks the host still has it; a PTT held with REMOTE audio renews the voice feed and drains what waited
+	 * on a microwave link; REMOTE audio renews the speaker. All from caches: no wire walk on these ticks.
+	 */
+	private static void tickRemote(RadioComputerBlockEntity computer, State state, long gameTime) {
+		long phase = gameTime + computer.getBlockPos().asLong();
+		if(state.session != null && phase % 20L == 0L)
+			checkSession(computer, state);
+		if(state.remote != null && phase % 20L == 10L && remoteHost(computer, state) == null)
+			endRemote(computer, state, "link_lost");
+		if(state.pttBy != null) {
+			if(!state.pttOurs) { // Let go (time-out, leave, power): the voice no longer goes in.
+				RemoteMics.stop(state.pttBy);
+				state.pttBy = null;
+				state.pttFrom = null;
+			}
+			else {
+				if(phase % 5L == 0L)
+					feedMic(computer, state, gameTime);
+				if(computer.getLevel() instanceof ServerLevel level)
+					RemoteMics.drain(state.pttBy, level);
+			}
+		}
+		if((state.remoteAudio || state.remote != null || state.listening != null) && phase % 20L == 5L)
+			listen(computer, state, gameTime);
+	}
+
+	/** The host's session still holds: the client is there, still drives this host, and the link is up. */
+	private static void checkSession(RadioComputerBlockEntity host, State state) {
+		Session session = state.session;
+		if(session == null)
+			return;
+		RadioComputerBlockEntity client = computerAt(host.getLevel(), session.clientPos(), session.clientId());
+		if(client == null || !client.isPowered() || !client.isInstalled(ComputerApps.RIG_CONTROL) || !(client.existingState(ComputerApps.RIG_CONTROL) instanceof State clientState)
+				|| clientState.remote == null || !clientState.remote.hostId().equals(host.getComputerId())) {
+			endSession(host, state, "gone");
+			return;
+		}
+		ComputerNetwork.Link link = ComputerNetwork.link(host, client);
+		if(link == null || !link.up()) {
+			endSession(host, state, "link_lost");
+			return;
+		}
+		state.sessionLink = link;
 	}
 
 	// -------------------- FOR THE SCREEN --------------------
@@ -582,7 +1134,8 @@ public final class RigControlHandler implements ComputerAppHandler {
 		out.putBoolean("transmitter", rig.hasTransmitter());
 		out.putBoolean("ptt", rig.isPTTDown());
 		out.putBoolean("inhibited", rig.isTransmitInhibited());
-		out.putInt("meter", rig.getMeterReading());
+		// On the air the meter shows the voice driving it (2026-11-09), the S-meter otherwise.
+		out.putInt("meter", rig.isPTTDown() ? (int)Math.round(rig.getTxModulation() * 15.0D) : rig.getMeterReading());
 		out.putInt("step", rig.getFrequencyStep());
 		out.putString("scan", state.scan.mode().name());
 		out.putBoolean("scanStopped", state.scan.isStopped());

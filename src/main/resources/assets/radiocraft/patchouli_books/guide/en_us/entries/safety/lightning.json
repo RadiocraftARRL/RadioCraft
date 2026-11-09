@@ -11,7 +11,17 @@
     {
       "type": "patchouli:text",
       "title": "A strike on an antenna",
-      "text": "The surge comes down the coax. It $(thing)burns out$() the coax at the antenna and some of the rest of the run, $(thing)blows every radio$() on it (SWR protection does not help), and sometimes sets the batteries those radios run on alight.$(br2)A $(thing)lightning arrestor$() on the coax will stop it, once there is one."
+      "text": "The surge comes down the coax. It $(thing)burns out$() the coax at the antenna and some of the rest of the run, $(thing)blows every radio$() on it (SWR protection does not help), and sometimes sets the batteries those radios run on alight.$(br2)A $(l:radiocraft:safety/lightning#arrestor)lightning arrestor$(/l) on the coax stops it."
+    },
+    {
+      "type": "patchouli:text",
+      "anchor": "arrestor",
+      "title": "Lightning arrestor",
+      "text": "Put a $(item)lightning arrestor$() in the coax between the antenna and the radio. The signal goes straight through it, so the radio hears and sends as before.$(br2)When a strike hits the antenna, the surge $(thing)stops at the arrestor$(): the coax between the antenna and the arrestor can still burn out, but the radio, the coax on its side and the batteries behind it are safe. Keep it close to the antenna.$(br2)It needs a $(l:radiocraft:safety/grounding)ground$(/l): run ground wire from it to a ground rod. Without a good ground, half the strikes arc past it."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:lightning_arrestor"
     },
     {
       "type": "patchouli:text",
@@ -21,7 +31,7 @@
     {
       "type": "patchouli:text",
       "title": "Staying safe",
-      "text": "$(li)Put a real lightning rod higher than your antennas and away from the station.$(li)Keep power wire away from where strikes land: a strike near power wire sets its batteries alight.$(li)Keep spare coax and a spare radio."
+      "text": "$(li)Put a lightning arrestor in every antenna's coax.$(li)Put a real lightning rod higher than your antennas and away from the station.$(li)Keep power wire away from where strikes land: a strike near power wire sets its batteries alight.$(li)Keep spare coax and a spare radio."
     }
   ]
 }

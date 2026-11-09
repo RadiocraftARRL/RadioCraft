@@ -1,203 +1,52 @@
 {
-  "credit": "RadioCraft placeholder, made by tools/adsb_models.py (see doc/ModelDesignBounty.md)",
-  "parent": "block/block",
-  "texture_size": [
-    32,
-    32
-  ],
-  "textures": {
-    "0": "radiocraft:block/adsb_antenna",
-    "particle": "radiocraft:block/adsb_antenna"
-  },
-  "elements": [
-    {
-      "name": "ground_plane",
-      "from": [
-        4,
-        0,
-        4
-      ],
-      "to": [
-        12,
-        2,
-        12
-      ],
-      "faces": {
-        "up": {
-          "uv": [
-            0,
-            0,
-            4,
-            4
-          ],
-          "texture": "#0"
-        },
-        "down": {
-          "uv": [
-            0,
-            0,
-            4,
-            4
-          ],
-          "texture": "#0"
-        },
-        "north": {
-          "uv": [
-            0,
-            4,
-            4,
-            5
-          ],
-          "texture": "#0"
-        },
-        "south": {
-          "uv": [
-            0,
-            4,
-            4,
-            5
-          ],
-          "texture": "#0"
-        },
-        "east": {
-          "uv": [
-            0,
-            4,
-            4,
-            5
-          ],
-          "texture": "#0"
-        },
-        "west": {
-          "uv": [
-            0,
-            4,
-            4,
-            5
-          ],
-          "texture": "#0"
-        }
-      }
-    },
-    {
-      "name": "radiator",
-      "from": [
-        7.5,
-        2,
-        7.5
-      ],
-      "to": [
-        8.5,
-        13,
-        8.5
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            4,
-            0,
-            5,
-            5.5
-          ],
-          "texture": "#0"
-        },
-        "south": {
-          "uv": [
-            4,
-            0,
-            5,
-            5.5
-          ],
-          "texture": "#0"
-        },
-        "east": {
-          "uv": [
-            4,
-            0,
-            5,
-            5.5
-          ],
-          "texture": "#0"
-        },
-        "west": {
-          "uv": [
-            4,
-            0,
-            5,
-            5.5
-          ],
-          "texture": "#0"
-        }
-      }
-    },
-    {
-      "name": "tip",
-      "from": [
-        7,
-        13,
-        7
-      ],
-      "to": [
-        9,
-        14,
-        9
-      ],
-      "faces": {
-        "up": {
-          "uv": [
-            5,
-            0,
-            6,
-            1
-          ],
-          "texture": "#0"
-        },
-        "north": {
-          "uv": [
-            5,
-            0,
-            6,
-            0.5
-          ],
-          "texture": "#0"
-        },
-        "south": {
-          "uv": [
-            5,
-            0,
-            6,
-            0.5
-          ],
-          "texture": "#0"
-        },
-        "east": {
-          "uv": [
-            5,
-            0,
-            6,
-            0.5
-          ],
-          "texture": "#0"
-        },
-        "west": {
-          "uv": [
-            5,
-            0,
-            6,
-            0.5
-          ],
-          "texture": "#0"
-        },
-        "down": {
-          "uv": [
-            5,
-            0,
-            6,
-            1
-          ],
-          "texture": "#0"
-        }
-      }
-    }
-  ]
+	"format_version": "26.3",
+	"credit": "RadioCraft placeholder, made by tools/adsb_models.py (see doc/ModelDesignBounty.md)",
+	"parent": "block/block",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "radiocraft:block/adsb_antenna",
+		"particle": "radiocraft:block/adsb_antenna"
+	},
+	"elements": [
+		{
+			"name": "ground_plane",
+			"from": [6, 0, 6],
+			"to": [10, 1, 10],
+			"rotation": {"angle": 0, "axis": "y", "origin": [4, 0, 4]},
+			"faces": {
+				"north": {"uv": [0, 4, 4, 5], "texture": "#0"},
+				"east": {"uv": [0, 4, 4, 5], "texture": "#0"},
+				"south": {"uv": [0, 4, 4, 5], "texture": "#0"},
+				"west": {"uv": [0, 4, 4, 5], "texture": "#0"},
+				"up": {"uv": [0, 0, 4, 4], "texture": "#0"},
+				"down": {"uv": [0, 0, 4, 4], "texture": "#0"}
+			}
+		},
+		{
+			"name": "radiator",
+			"from": [7.75, 1, 7.75],
+			"to": [8.25, 6.5, 8.25],
+			"rotation": {"angle": 0, "axis": "y", "origin": [4, 0, 4]},
+			"faces": {
+				"north": {"uv": [4, 0, 5, 5.5], "texture": "#0"},
+				"east": {"uv": [4, 0, 5, 5.5], "texture": "#0"},
+				"south": {"uv": [4, 0, 5, 5.5], "texture": "#0"},
+				"west": {"uv": [4, 0, 5, 5.5], "texture": "#0"}
+			}
+		},
+		{
+			"name": "tip",
+			"from": [7.5, 6.5, 7.5],
+			"to": [8.5, 7, 8.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [4, 0, 4]},
+			"faces": {
+				"north": {"uv": [5, 0, 6, 0.5], "texture": "#0"},
+				"east": {"uv": [5, 0, 6, 0.5], "texture": "#0"},
+				"south": {"uv": [5, 0, 6, 0.5], "texture": "#0"},
+				"west": {"uv": [5, 0, 6, 0.5], "texture": "#0"},
+				"up": {"uv": [5, 0, 6, 1], "texture": "#0"},
+				"down": {"uv": [5, 0, 6, 1], "texture": "#0"}
+			}
+		}
+	]
 }

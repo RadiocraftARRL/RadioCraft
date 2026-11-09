@@ -166,7 +166,8 @@ public final class ComputerSession {
 		for(Iterator<ComputerSession> it = SESSIONS.values().iterator(); it.hasNext(); ) {
 			ComputerSession session = it.next();
 			boolean music = ComputerMusic.isPlayingAt(session.pos) && session.level == level; // Its music page stays while it plays.
-			if(!session.open && (now - session.closedAt > KEEP_MS && !music || session.level != level)) {
+			boolean unsaved = session.stack.stream().anyMatch(DosApp::holdsUnsavedWork); // And an editor with unsaved work.
+			if(!session.open && (now - session.closedAt > KEEP_MS && !music && !unsaved || session.level != level)) {
 				session.release();
 				if(active == session)
 					active = null;
@@ -280,6 +281,10 @@ public final class ComputerSession {
 			String app = data.getString("app");
 			if(ComputerApps.SCHEDULER.id().equals(app) && "notice".equals(data.getString("kind"))) // A reminder, whatever is in front.
 				session.message(Dos.tr("sched.notice", data.getCompound("data").getString("text")), false);
+			if(ComputerApps.RIG_CONTROL.id().equals(app) && "remote_ended".equals(data.getString("kind"))) { // RIGCTL's remote session, whatever is in front.
+				CompoundTag ended = data.getCompound("data");
+				session.message(Dos.tr("rig.remote.ended." + ended.getString("reason"), ended.getString("host")), true);
+			}
 			if(ComputerApps.SETUP.id().equals(app) && "settings".equals(data.getString("kind")))
 				session.learn(data.getCompound("data")); // Someone changed SETUP: every screen at the computer follows.
 			for(DosApp running : new ArrayList<>(session.stack))

@@ -35,6 +35,11 @@ public final class CuriosCompat {
         return LOADED ? CuriosIntegration.wornManpacks(player) : List.of();
     }
 
+    /** The CB portables a player wears on the back slot; empty without Curios. */
+    public static List<ItemStack> wornCbPortables(Player player) {
+        return LOADED ? CuriosIntegration.wornCbPortables(player) : List.of();
+    }
+
     /** The FCC badges a player wears; empty without Curios. */
     public static List<ItemStack> wornFccBadges(Player player) {
         return LOADED ? CuriosIntegration.wornFccBadges(player) : List.of();

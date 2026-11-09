@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class HFRadio80mScreen extends HFRadioScreen<HFRadio80mMenu> {
 
     public HFRadio80mScreen(HFRadio80mMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, guiTexture(menu, "hf_radio_80m", ""), guiTexture(menu, "hf_radio_80m", "_widgets"));
+        super(menu, playerInventory, title, guiTexture(menu, "hf_radio_80m", "_old"), guiTexture(menu, "hf_radio_80m", "_widgets_old"));
 
         this.imageWidth = 212;
         this.imageHeight = 211;
@@ -26,7 +26,7 @@ public class HFRadio80mScreen extends HFRadioScreen<HFRadio80mMenu> {
         addRenderableWidget(new ToggleButton(menu.isPowered(), leftPos + 10, topPos + 188, 14, 17, 0, 203, widgetsTexture, 256, 256, this::onPressPower).withPowerClick()); // Power button
         addRenderableWidget(new ValueButton(leftPos + 90, topPos + 74, 34, 19, -1, 0, widgetsTexture, 256, 256, () -> menu.blockEntity.getCWEnabled(), this::onPressCW)); // CW Button
         addRenderableWidget(new ValueButton(leftPos + 90, topPos + 54, 34, 19, -1, 38, widgetsTexture, 256, 256, () -> menu.blockEntity.getSSBEnabled(), this::onPressSSB)); // SSB Button
-        addRenderableWidget(new HoldButton(leftPos + 139, topPos + 163, 51, 19, -1, 76, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT)); // PTT button
+        addRenderableWidget(ptt(new HoldButton(leftPos + 139, topPos + 163, 51, 19, -1, 76, widgetsTexture, 256, 256, this::onPressPTT, this::onReleasePTT))); // PTT button
         addRenderableWidget(new Dial(leftPos + 87, topPos + 176, 28, 33, 143, 0, widgetsTexture, 256, 256, this::onFrequencyDialUp, this::onFrequencyDialDown)); // Frequency Dial (moved left of Mic Gain)
         micGainDial = addRenderableWidget(new Dial(leftPos + 122, topPos + 183, 15, 17, 94, 0, widgetsTexture, 256, 256, this::onMicGainUp, this::onMicGainDown)); // Mic Gain dial
         speakerGainDial = addRenderableWidget(new Dial(leftPos + 160, topPos + 183, 15, 17, 94, 0, widgetsTexture, 256, 256, this::onGainUp, this::onGainDown)); // Gain dial

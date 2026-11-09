@@ -1,0 +1,321 @@
+{
+  "texture": "radiocraft:textures/gui/vhf_base_station_proposed.png",
+  "width": 256,
+  "height": 128,
+  "controls": [
+    {
+      "name": "power",
+      "type": "button",
+      "x": 8,
+      "y": 10,
+      "w": 18,
+      "h": 11
+    },
+    {
+      "name": "on_lamp",
+      "type": "lamp",
+      "x": 14,
+      "y": 34,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "display",
+      "type": "display",
+      "x": 40,
+      "y": 12,
+      "w": 92,
+      "h": 28
+    },
+    {
+      "name": "tone_down",
+      "type": "button",
+      "x": 60,
+      "y": 49,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "tone_up",
+      "type": "button",
+      "x": 77,
+      "y": 49,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 140,
+      "y": 9,
+      "w": 64,
+      "h": 36
+    },
+    {
+      "name": "meter_po",
+      "type": "button",
+      "x": 150,
+      "y": 49,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "meter_swr",
+      "type": "button",
+      "x": 182,
+      "y": 49,
+      "w": 13,
+      "h": 8
+    },
+    {
+      "name": "busy_lamp",
+      "type": "lamp",
+      "x": 210,
+      "y": 12,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "tx_lamp",
+      "type": "lamp",
+      "x": 210,
+      "y": 32,
+      "w": 7,
+      "h": 7
+    },
+    {
+      "name": "af_gain",
+      "type": "knob",
+      "x": 230,
+      "y": 25,
+      "w": 19,
+      "h": 19
+    },
+    {
+      "name": "offset",
+      "type": "knob3",
+      "x": 14,
+      "y": 86,
+      "w": 21,
+      "h": 21
+    },
+    {
+      "name": "tuning",
+      "type": "dial",
+      "x": 52,
+      "y": 67,
+      "w": 56,
+      "h": 56
+    },
+    {
+      "name": "step_down",
+      "type": "button",
+      "x": 112,
+      "y": 77,
+      "w": 14,
+      "h": 9
+    },
+    {
+      "name": "step_up",
+      "type": "button",
+      "x": 129,
+      "y": 77,
+      "w": 14,
+      "h": 9
+    },
+    {
+      "name": "coarse",
+      "type": "button",
+      "x": 112,
+      "y": 111,
+      "w": 15,
+      "h": 8
+    },
+    {
+      "name": "quick",
+      "type": "button",
+      "x": 134,
+      "y": 111,
+      "w": 15,
+      "h": 8
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 154,
+      "y": 89,
+      "w": 19,
+      "h": 19
+    },
+    {
+      "name": "mic_gain",
+      "type": "knob",
+      "x": 184,
+      "y": 89,
+      "w": 19,
+      "h": 19
+    },
+    {
+      "name": "ptt",
+      "type": "button",
+      "x": 220,
+      "y": 87,
+      "w": 23,
+      "h": 23
+    }
+  ],
+  "labels": [
+    {
+      "name": "power_label",
+      "type": "label",
+      "x": 12,
+      "y": 24,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "on_lamp_label",
+      "type": "label",
+      "x": 14,
+      "y": 44,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "tone_label",
+      "type": "label",
+      "x": 40,
+      "y": 50,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "meter_po_label",
+      "type": "label",
+      "x": 141,
+      "y": 50,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "meter_swr_label",
+      "type": "label",
+      "x": 168,
+      "y": 50,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "busy_lamp_label",
+      "type": "label",
+      "x": 206,
+      "y": 21,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "tx_lamp_label",
+      "type": "label",
+      "x": 210,
+      "y": 41,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "vol_label",
+      "type": "label",
+      "x": 234,
+      "y": 18,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "offset_s",
+      "type": "label",
+      "x": 23,
+      "y": 78,
+      "w": 3,
+      "h": 5
+    },
+    {
+      "name": "offset_minus",
+      "type": "label",
+      "x": 8,
+      "y": 94,
+      "w": 3,
+      "h": 5
+    },
+    {
+      "name": "offset_plus",
+      "type": "label",
+      "x": 37,
+      "y": 94,
+      "w": 3,
+      "h": 5
+    },
+    {
+      "name": "offset_label",
+      "type": "label",
+      "x": 13,
+      "y": 111,
+      "w": 23,
+      "h": 5
+    },
+    {
+      "name": "step_label",
+      "type": "label",
+      "x": 120,
+      "y": 69,
+      "w": 15,
+      "h": 5
+    },
+    {
+      "name": "coarse_label",
+      "type": "label",
+      "x": 114,
+      "y": 104,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "quick_label",
+      "type": "label",
+      "x": 132,
+      "y": 104,
+      "w": 19,
+      "h": 5
+    },
+    {
+      "name": "sql_label",
+      "type": "label",
+      "x": 158,
+      "y": 82,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "mic_label",
+      "type": "label",
+      "x": 188,
+      "y": 82,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "ptt_label",
+      "type": "label",
+      "x": 226,
+      "y": 79,
+      "w": 11,
+      "h": 5
+    },
+    {
+      "name": "brand",
+      "type": "label",
+      "x": 160,
+      "y": 116,
+      "w": 67,
+      "h": 5
+    }
+  ]
+}

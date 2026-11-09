@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "A desk radio for the 2 m band with more power than a handheld. It needs $(l:radiocraft:power/overview)power$(/l) (2 FE/t listening, 13 transmitting) and an antenna on $(l:radiocraft:antennas/coax)coax$(/l): a $(l:radiocraft:antennas/vhf_antennas)J-pole, Slim Jim or Yagi$(/l).$(br2)The right-hand display shows the repeater $(thing)offset$() (OFS) and $(thing)tone$(); the soft buttons and big knobs change them."
+      "text": "A desk radio for the 2 m band with more power than a handheld. It needs $(l:radiocraft:power/overview)power$(/l) (2 FE/t listening, 13 transmitting) and an antenna on $(l:radiocraft:antennas/coax)coax$(/l): a $(l:radiocraft:antennas/vhf_antennas)J-pole, Slim Jim or Yagi$(/l).$(br2)Its $(l:radiocraft:radios/radio_panels)panel$(/l) has the dial, AF, MIC and SQL, QUICK and 10X. The $(thing)OFFSET$() knob sets the repeater offset (-, S for simplex, +) and TONE up and down the $(thing)tone$(); the display's corner shows both."
     },
     {
       "type": "patchouli:multiblock",

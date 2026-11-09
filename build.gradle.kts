@@ -163,6 +163,8 @@ neoForge {
             type = "gameTestServer"
             gameDirectory = file("runs/gametest")
             systemProperty("neoforge.enabledGameTestNamespaces", "radiocraft")
+            // Only some tests: ./gradlew runGameTestServer -Pgametests=RepeaterGameTests,SiteGameTests (GameTestFilter).
+            systemProperty("radiocraft.gametests", (project.findProperty("gametests") ?: "").toString())
             logLevel = org.slf4j.event.Level.INFO
         }
 

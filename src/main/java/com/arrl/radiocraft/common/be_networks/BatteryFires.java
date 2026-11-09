@@ -7,7 +7,6 @@ import com.arrl.radiocraft.common.be_networks.network_objects.BatteryNetworkObje
 import com.arrl.radiocraft.common.blockentities.LargeBatteryBlockEntity;
 import com.arrl.radiocraft.common.blocks.WireBlock;
 import com.arrl.radiocraft.common.capabilities.BENetworksCapability;
-import com.arrl.radiocraft.common.init.RadiocraftBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -21,7 +20,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -182,14 +180,14 @@ public final class BatteryFires {
 			level.setBlockAndUpdate(side, BaseFireBlock.getState(level, side));
 		for(Direction d : Direction.values()) {
 			BlockPos next = pos.relative(d);
-			if(level.getBlockState(next).is(RadiocraftBlocks.LARGE_BATTERY.get()) && !isBurning(level, next) && level.random.nextInt(3) == 0)
+			if(isBattery(level, next) && !isBurning(level, next) && level.random.nextInt(3) == 0)
 				spread.add(next);
 		}
 	}
 
 	/** Burned out: gone, and in a big enough group, an explosion. */
 	private static void consume(ServerLevel level, BlockPos pos) {
-		if(!level.getBlockState(pos).is(RadiocraftBlocks.LARGE_BATTERY.get()))
+		if(!isBattery(level, pos))
 			return;
 		Set<BlockPos> group = group(level, pos);
 		level.removeBlock(pos, false);
@@ -205,6 +203,11 @@ public final class BatteryFires {
 			level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
 	}
 
+	/** True for a large battery, or one built on it (the stable chemical battery burns the same way). */
+	private static boolean isBattery(Level level, BlockPos pos) {
+		return level.getBlockState(pos).getBlock() instanceof com.arrl.radiocraft.common.blocks.power.LargeBatteryBlock;
+	}
+
 	/** How many large batteries touch each other in the group {@code pos} belongs to (itself included). */
 	public static int groupSize(Level level, BlockPos pos) {
 		return group(level, pos).size();
@@ -212,7 +215,6 @@ public final class BatteryFires {
 
 	/** The large batteries touching each other in the group {@code pos} belongs to (itself included). */
 	private static Set<BlockPos> group(Level level, BlockPos pos) {
-		Block battery = RadiocraftBlocks.LARGE_BATTERY.get();
 		Set<BlockPos> seen = new HashSet<>();
 		ArrayDeque<BlockPos> queue = new ArrayDeque<>();
 		seen.add(pos);
@@ -221,7 +223,7 @@ public final class BatteryFires {
 			BlockPos at = queue.poll();
 			for(Direction direction : Direction.values()) {
 				BlockPos next = at.relative(direction);
-				if(level.getBlockState(next).is(battery) && seen.add(next))
+				if(isBattery(level, next) && seen.add(next))
 					queue.add(next);
 			}
 		}

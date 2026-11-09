@@ -1,0 +1,149 @@
+{
+	"credit": "RadioCraft (placeholder, see doc/ModelDesignBounty.md)",
+	"parent": "block/block",
+	"textures": {
+		"side": "radiocraft:block/wire_junction_side",
+		"top": "radiocraft:block/wire_junction_top",
+		"display": "minecraft:block/black_concrete",
+		"particle": "radiocraft:block/wire_junction_side"
+	},
+	"elements": [
+		{
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				16,
+				8,
+				16
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						8,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"south": {
+					"uv": [
+						0,
+						8,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"east": {
+					"uv": [
+						0,
+						8,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"west": {
+					"uv": [
+						0,
+						8,
+						16,
+						16
+					],
+					"texture": "#side"
+				},
+				"up": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#top"
+				},
+				"down": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#side"
+				}
+			}
+		},
+		{
+			"from": [
+				2,
+				1,
+				-0.5
+			],
+			"to": [
+				14,
+				7,
+				0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						2,
+						9,
+						14,
+						15
+					],
+					"texture": "#display"
+				},
+				"south": {
+					"uv": [
+						2,
+						9,
+						14,
+						15
+					],
+					"texture": "#display"
+				},
+				"east": {
+					"uv": [
+						0,
+						9,
+						1,
+						15
+					],
+					"texture": "#display"
+				},
+				"west": {
+					"uv": [
+						0,
+						9,
+						1,
+						15
+					],
+					"texture": "#display"
+				},
+				"up": {
+					"uv": [
+						2,
+						0,
+						14,
+						1
+					],
+					"texture": "#display"
+				},
+				"down": {
+					"uv": [
+						2,
+						0,
+						14,
+						1
+					],
+					"texture": "#display"
+				}
+			},
+			"name": "DISPLAY"
+		}
+	]
+}
