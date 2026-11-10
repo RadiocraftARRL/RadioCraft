@@ -8,6 +8,143 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## FCC jacket fit and the badge on the player (added 2026-11-09, 1.12)
+
+Run `./gradlew runData` first (the badge tooltip now names the belt slot). Change skins in the game's Skin
+Customization (or another account) to try both Steve (wide arms) and Alex (slim arms).
+
+- [ ] FCC jacket on a Steve skin: the body and sleeves sit just over the skin, not a pixel off it like a chestplate; no
+  flicker where it meets the skin's own jacket and sleeve layer; the tie and lapels read on the front.
+- [ ] FCC jacket on an Alex skin: the sleeves are as slim as the arms (no gap at the sides of the arm), the jacket
+  colour all round and the shirt cuff at the bottom of each sleeve.
+- [ ] The jacket with leggings on (iron, leather): the leggings' waist does not show through the jacket.
+- [ ] Walking, swinging a sword, crouching: the sleeves follow the arms and the jacket the body.
+- [ ] The FCC hat no longer covers the eyes: the band sits above them, the brim just over them.
+- [ ] FCC badge in the Curios body slot: a small gold shield on the left breast (the wearer's left), upright, not
+  mirrored, about 3 pixels across, readable; with no chestplate, with the FCC jacket (over the jacket, not sunk into it)
+  and with an iron chestplate. It stays on the chest when crouching and turning.
+- [ ] FCC badge in the Curios belt slot: at the front of the waist, just left of the middle on the belt line; over
+  leggings if worn; follows crouching.
+- [ ] The Curios render toggle for the slot hides the badge.
+- [ ] Badge tooltip (after runData) mentions both the body and the belt slot.
+
+## Distress alerting: DSC, DISTRESS and the beacon (added 2026-11-09, 1.12)
+
+- [ ] Marine Radio screen: the new row under the keypad (NAT, ACK, and the red DISTRESS button in its rim) and the top
+  line "RADIOCRAFT MARINE"; no text overlaps a key. The DISTRESS cover is shut (red, see-through, DISTRESS readable
+  under it); click it: it lifts into the strip above the button; click that strip or right click the button: it shuts.
+  Pointing at the button shows your MMSI (nine digits, starting 3).
+- [ ] Hold DISTRESS with the cover up: the display shows SEND DISTRESS / HOLD 3, 2, 1 with a beep a second; let go
+  early and nothing is sent. Hold the full 3 s: a beep, the radio goes to 16, the display shows DISTRESS SENT, the
+  nature and NEXT RPT counting down. With the radio off nothing happens.
+- [ ] NAT steps the nature (the display shows "NAT FIRE" for a moment, the tooltip names it); the call carries it.
+- [ ] A second marine radio within range (any channel, even 72 or WX1): the two-tone alarm sounds, the display flashes
+  DSC DISTRESS, shows the MMSI and nature and X/Z, for about two minutes. Any key stops the alarm; CLR clears it.
+- [ ] ACK on the second radio: the first radio's display says ACKNOWLEDGED BY (MMSI) and it stops repeating (wait
+  5 min). Holding DISTRESS again on the first sends a cancel: the second shows DSC CANCELLED.
+- [ ] Range: with the two radios on antennas far apart the call arrives as far as voice on 16 does; with bare
+  connectors only a few blocks. On a Sable ship the coordinates follow the ship.
+- [ ] DISTRESS program (craft the floppy, install, cable a marine radio and a commercial VHF mobile by data wire;
+  2026-11-09: no picker, it hears through both): the top right reads "DSC: 1 marine radio(s)" and "BEACONS: 1 radio(s)
+  on 161.975" (yellow "BEACONS: no commercial radio on 161.975" with the knob on another channel, and the off/none
+  wordings); the title shows your MMSI. The map shows your station's
+  box and a red flashing diamond for the call (orange ring for a beacon), grey once over; the list columns line up
+  under the header; a new alert plays the alarm; F5 acknowledges a call (a beacon gives an error); F6 prints a map
+  with the marker and a caption on paper or a map in the scanner.
+- [ ] Distress beacon: tooltip says "One use"; right click opens the cover (sound), sneak right click shuts it; hold
+  right click 2 s (beeps, bow pull) switches it on: the strobe model lights (other agent's art), the tooltip counts
+  down, the bar drains. A commercial VHF mobile on a 161.975 channel hears it (below); a marine radio does not
+  (2026-11-09: its DSC is channel 70 only); DISTRESS lists it as BEACON.
+- [ ] Handheld direction finder on 161.975 (and the direction finder block on 161.98) points at the beacon in an
+  inventory and floating in water. Thrown in water it floats and is still there after 5+ minutes.
+- [ ] Let a beacon run out (`/time add` does not drain it: it counts its own ticks; use a short test or wait 20 min):
+  it becomes a Spent Distress Beacon and the commercial radio's display shows "<name> SPENT".
+- [ ] (2026-11-09) Commercial VHF mobile with a channel on 161.975 (program it in the CPS, knob on it) hears a beacon:
+  one short DSC alarm, and its in-world front display shows DISTRESS DETECTED 161.975 big, and under it the beacon's
+  X Y Z and "<owner> BEACON" taking turns every 2 s, until cleared: sneak and use the radio with an empty hand clears
+  it (the next sneak-use takes the hand mic as usual). A radio on another channel, or the low band set, shows nothing.
+- [ ] (2026-11-09) DISTRESS F7 Send SOS: the bottom row shows "F7 SOS  MARINE: ready  PERSONAL: ..." (green when it can
+  go, grey with the reason when not: no radio cabled, radio off, one already on). F7 lists MARINE and PERSONAL (one
+  that cannot go says why and refuses), then the natures (UNDESIGNATED first), then "SEND MARINE SOS?" Yes/No.
+  MARINE: the cabled marine radio goes to 16 and shows DISTRESS SENT with that nature; another marine radio alarms.
+  PERSONAL: another commercial VHF mobile on 161.975 shows DISTRESS DETECTED with your name; it repeats every 50 s.
+  The bottom row flashes red "... SOS ON THE AIR (nature), repeat in ..."; F8 (asks which if both) cancels after a
+  Yes/No and the other radios mark it CANCELLED. Switch the commercial radio off: "PERSONAL SOS STOPPED: its radio
+  lost power" within a second.
+- [ ] Sounds: dsc_alarm (warble) and dsc_beep are not too loud; subtitles read "DSC distress alarm" / "DSC beep".
+- [ ] Handbook: Marine Radios has the three DSC pages; Distress (computer) and Distress Beacon (radios) entries read
+  well and their links and recipes work (after `runData`).
+
+## /contest (added 2026-11-09)
+
+- [ ] `/contest start Sprint` (op) announces to everyone; a second start says one is running; a non-op cannot use it.
+- [ ] Two players make a two-way voice contact (each hears the other within 5 minutes) on HF SSB and on 2m FM, then
+  `/contest stop`: the stopper and both players get a "Sprint" book by RadioCraft. Page 1 has the start/end times,
+  duration and counts; the winners page lists the right names (ties all listed); each player's page lists the other
+  player, the MHz, the mode (USB/LSB/FM/AM) and "Y.. to Y..". No line runs past the page edge or falls off the bottom.
+- [ ] Talking for several minutes is one contact, not one every few seconds. A contact made before `start` does not
+  count until the pair talks again after it.
+- [ ] Stop with a full inventory: the book drops at your feet. Stop from the server console: nobody gets a book and
+  the summary is in the log.
+- [ ] Restart the server mid-contest: the contest and its contacts are still there at `stop`.
+
+## Marine radio art (added 2026-11-09, late)
+
+- [ ] Marine Radio screen (use the block): cream case, black front. The red display shows the channel big,
+  USA/INT and HI/LO (RX on WX) and DW on the right, and the channel's name under it ("16 DISTRESS", "22A COAST GUARD",
+  "WX1 WEATHER"); no text overlaps a knob, key or switch, and every label is readable. PWR, HI/LO and DW switches move;
+  TX/RX lamps light; VOL, SQL and CH knob pointers turn (click up, right click down, wheel). The keypad: red 16 goes
+  to 16 and again back; 16/9; CH up/down; typing 2 then 2 goes to 22A, 6 then ENT to 6, 3 then 4 shows "NO CHANNEL";
+  CLR forgets. SQL shuts the speaker until a signal is strong enough. MIC jack: hold to talk, right click for the
+  hand mic.
+- [ ] Marine Handheld screen (sneak and use): looks like the old off-white portable (grille, red LED, plate, rubber
+  duck, knob and red key on top). The LCD shows the channel number only. VOL knob: its white mark moves; turning it
+  down past the lowest switches off, up switches on. Red top key: 16 and back. CH down/up, 16/9, H/L (amber strip
+  while on 1 W), DW (green strip while on). Side PTT bar: hold to talk. LED red while transmitting, green on receive.
+- [ ] Marine Handheld item: 3D model, the same size in hand (first and third person) and in the inventory as the VHF
+  handheld; antenna top left, knob top right, the red key between them. It sits in a desk charger as a 3D radio.
+- [ ] Marine Radio block: low cream box with the recessed black front (display left, keypad middle, grille right),
+  three knobs standing out, mic hook on the side. The lit channel text sits on the red display and the TX/RX lamps
+  light under it, on all four facings and hung from a ceiling.
+
+## Commercial mobile art and panels (added 2026-11-09, late)
+
+- [ ] Commercial VHF Mobile Radio (renamed from "Commercial Mobile Radio": item name, Handbook "Mobile Radios"
+  spotlight). Placed, the knob on the head's left shows a grey face with a white mark (it showed a squashed copy of the
+  whole front before), and the mic hook on the left side is plain dark grey (same). The head: green LCD in the middle,
+  a row of small keys under it (the last two yellow), a yellow stripe top left, TX and RX lamps right of the LCD.
+  The channel text sits on the LCD and the TX/RX lamps light over the painted ones (not beside them).
+- [ ] Commercial Low Band Radio: 2 px taller than the VHF set, a speaker grille across the top of the head, an orange
+  stripe; everything under the grille as on the VHF set, its display text and lamps lined up too. Its outline (hit
+  box) is the taller shape. Hung from a ceiling (after runData), its top meets the ceiling.
+- [ ] Right click either radio: the new panel, laid out as the block's head (compare with the placed block): the
+  badge (VHF / LOW BAND) top left with the MIC jack beside it, the PWR/VOL and CH knobs bottom left, the LCD large in
+  the middle with two rows of keys under it (1-8; 9 0 * # A B C D), TX and RX lamps stacked right of it, and under
+  them the VHF set's red DISMISS key (low band: "30-50 MHZ FM"); the low band's grille along the top. The case is the
+  block's dark grey whatever the dye. No lettering runs into a knob, key or lamp.
+- [ ] PWR/VOL: a click turns it up a step, right click down, the wheel over it either way. Down to OFF switches the
+  radio off (the LCD goes dark); up from OFF switches it on. 1-10 sets the speaker volume (5 is the old 100%).
+- [ ] CH: steps the channel 1-16 and stops at both ends; the wheel anywhere else on the panel steps the channel too.
+- [ ] LCD: line 1 the channel name (or who is talking, for a few seconds; the low band shows CH n), line 2 "CH n"
+  (low band: LOW BAND) and FM, DIG, ENC or TX on the right, line 3 the frequency. Off: dark glass, no text.
+- [ ] * shows the unit ID (or NO ID), # the frequency, for 3 s on line 1. A shows ZONE A; B, C, D show "ZONE A ONLY"
+  (a mobile holds 16 channels). Number keys click and do nothing more, as on the handheld.
+- [ ] MIC jack: hold to talk (TX lamp, red ring round the jack); right click takes the hand mic off the hook.
+- [ ] VHF set on a 161.975 channel hears a distress beacon: the alert shows on
+  the LCD in up to four lines (a long line breaks at a space; "DISTRESS DETECTED 161.975" goes over two lines) and
+  DISMISS clears it.
+
+## Picking the radio in RIGCTL and APRS (added 2026-11-09)
+
+- [ ] RIGCTL with two radios beside its radio interface: on opening it asks "Which radio to control?" (a radio that is
+  off says OFF); the pick is kept after closing and reopening the program and after a reload; R brings the list back.
+  With one radio it uses it at once; with none the red line says to put a radio interface and a radio beside it. Not
+  asked while connected to a remote host (F6 page and remote driving work as before).
+- [ ] APRS with two VHF radios on its radio interface: on opening it asks which radio sends ("All of them still
+  receive"); line 3 starts "TX: <radio>." (or "TX: every radio (F9 picks one).") and F9 changes it; the key bar shows
+  F9=Radio and fits. A beacon (F5) goes out only on the picked radio's frequency; stations heard on the other radio
+  still appear. The picked radio switched off: F5 says it is off.
+
 ## Dead air and SSB that follows the voice (added 2026-11-09)
 
 - [ ] Commercial radio module screen: a mode button, SSB/AM on HF (FM shown on VHF, AM forced for dead air). An AM
@@ -75,10 +212,33 @@ it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
 ## VHF receiver, power switches, chemical battery (added 2026-11-09, late)
 
-- [ ] VHF receiver: the display between the knobs reads well; every control has a tooltip; an empty memory button
-  stores, a stored one selects; two or more selected scan and stop on a signal; turning the knob leaves the scan;
-  the speaker button mutes; shift right click a cell in and out (a flat alkaline comes out dead); PWR on a flat cell;
-  the cell drops when the block breaks.
+- [ ] VHF receiver scanner, the block (2026-11-09, reworked into an eight-channel scanner; run `runData` first for
+  the lang and the ceiling model; previews: `python tools/vhf_receiver_assets.py --preview DIR`): a low wide box,
+  black case, chrome front, bail on top; the hitbox fits the case (not the whip), on the floor and hung from a ceiling. No text on it. The
+  slide switch handles show up or down as switched, the numeral of the channel it is on lights red (full bright in
+  the dark), the SET lamp lights; all line up with the painted slots and window, from every side.
+- [ ] VHF receiver scanner, the panel: it matches the block's front (key box with MAN/AUTO, SET and lamp top left,
+  VOLUME/SQUELCH/TUNE under it, the window with 1-8 over the eight switches). No text over any control; the knob
+  pointers read.
+- [ ] VHF receiver scanner, the label above the panel: hovering a switch shows "CH n · frequency"; otherwise the
+  channel heard (SCAN while it moves, HOLD with MAN), "SET CH n · frequency" while setting, "No channels on" with all
+  down, "No power" on a flat cell. It never covers the panel, at GUI scale 2, 3 and 4 and in a small window.
+- [ ] VHF receiver scanner, the scan: click or scroll a switch and it moves; two or more on scan (about 5 channels a
+  second), stop on a signal and move on about 2 s after it ends. SQUELCH up: a weak signal no longer stops it. MAN
+  holds on the channel; AUTO scans again.
+- [ ] VHF receiver scanner, SET: SET in with one channel on lights the lamp, and TUNE (scroll, click, right click;
+  shift 25 kHz, control 1 MHz) moves its frequency and you hear the new one; it stops at 144.000 and 174.000. Two
+  channels on: lamp dark, TUNE does nothing, the label says why. Try 156.800 (marine), 154.4375 (commercial) and
+  146.520 (2 m).
+- [ ] VHF receiver scanner, VOLUME and the cell: turning down past the lowest setting clicks OFF (quiet and dark);
+  turning up switches on. Only MAN/AUTO and SET have mouse tooltips. Shift right click a cell in and out (a flat alkaline comes out
+  dead); the cell drops when the block breaks.
+- [ ] VHF receiver scanner, old saves: a receiver from an earlier 1.12 build loads with its memories as the channels,
+  the selected ones on (one that was on its dial has that frequency in its first empty channel, on).
+- [ ] VHF receiver scanner, the whip: a thin steel rod from the back right of the case up to the top of the block, no
+  flicker where the bail's bar meets its arms; hung from a ceiling the whip points down under it instead. With nothing
+  coaxed to it, it hears a VHF handheld about as far off as another handheld would (a few hundred blocks in the open),
+  not past that; coax a J-pole to it and it hears further (the whip is cut out).
 - [ ] Power Switch On/Off and Left/Right: placeholder levers lean the right way; right click and a redstone pulse
   switch them; a radio wired through goes off / moves circuit.
 - [ ] Stable Chemical Battery: inert until redstone (fizz), then powers a radio; won't charge; broken while sealed it
@@ -696,10 +856,10 @@ clients) with Simple Voice Chat for the audio checks.
   ham handheld or base station on 155.500 hears a harsh buzz. Is the buzz too loud / too soft? Is the scramble
   convincing?
 - [ ] `/rcdebug commercial hand` lists the channels; the key on channel 2 reads -1 (hidden).
-- [ ] Commercial Mobile Radio and Commercial Low Band Radio: placeholder model (tinted box with a front panel, display,
+- [ ] Commercial Mobile Radio (now Commercial VHF Mobile Radio) and Commercial Low Band Radio: placeholder model (tinted box with a front panel, display,
   knob). The display shows the channel name (low band: "CH 1") and "1 FM 151.8200" when on; the TX/RX lamps light
   left of the display (lamp positions are guesses: say if they float). Right click opens the panel (PWR, CH -/+, VOL,
-  PTT, display, lamps). Sneak and use takes the hand mic; the cord draws. Sneak and scroll steps channels.
+  PTT, display, lamps; replaced 2026-11-09 by the panel in "Commercial mobile art and panels"). Sneak and use takes the hand mic; the cord draws. Sneak and scroll steps channels.
 - [ ] Mobiles talk to the handhelds on a VHF antenna (J-pole) with power; the low band mobile on a dipole with long
   arms (30-50 MHz) to another low band mobile.
 - [ ] Dye: craft each radio with red dye: the handheld item, the mobile item, and the placed mobile turn red (the

@@ -27,7 +27,8 @@ import java.util.Locale;
  * pages, Tab between them: STATIONS (every station heard, its distance and bearing from here, when, its comment), the
  * MESSAGES to and from this station (with delivery: sending, retrying, sent once acked, failed), and a MAP of them in the
  * H19's style. F5 beacons now; N writes a message (R replies to the one picked, or messages the station picked); F6 sets
- * the beacon (comment, symbol, automatic beaconing); F7 sets the station's callsign. The server side
+ * the beacon (comment, symbol, automatic beaconing); F7 sets the station's callsign; F9 picks the radio that transmits
+ * when the bus has more than one VHF radio (asked by itself the first time, 2026-11-09). The server side
  * ({@code AprsHandler}) keeps the station going while nobody is at the computer.
  */
 public final class AprsApp extends DosApp {
@@ -83,8 +84,10 @@ public final class AprsApp extends DosApp {
 	private void refresh() {
 		lastAsked = System.currentTimeMillis();
 		session.app(app, "status", new CompoundTag(), response -> {
-			if(response.ok())
+			if(response.ok()) {
 				status = response.data();
+				offerPick();
+			}
 		});
 		if(page == MESSAGES)
 			session.app(app, "read", new CompoundTag(), response -> {});
@@ -96,6 +99,39 @@ public final class AprsApp extends DosApp {
 			if(response.ok() && response.data().getByteArray("pixels").length == 128 * 128) {
 				map = response.data().getByteArray("pixels");
 			}
+		});
+	}
+
+	// -------------------- WHICH RADIO SENDS (2026-11-09) --------------------
+
+	/** Asked once per opening which radio transmits. */
+	private boolean pickOffered;
+
+	/** More than one VHF radio on the bus and none picked: ask which one transmits, once (F9 asks again). */
+	private void offerPick() {
+		CompoundTag data = status;
+		if(pickOffered || data == null || hasDialog() || data.getBoolean("picked") || data.getInt("vhfRadios") < 2)
+			return;
+		pickOffered = true;
+		pickRadio();
+	}
+
+	/**
+	 * F9: the radio APRS transmits through, from {@link RadioPicker} (at once if there is one; how to connect one if
+	 * none). Every radio on the interfaces still receives.
+	 */
+	private void pickRadio() {
+		RadioPicker.pick(this, session, app, Dos.tr("aprs.radio_none"), Dos.tr("aprs.radio_pick"), radio -> {
+			CompoundTag data = new CompoundTag();
+			data.putString("id", radio.getString("id"));
+			session.app(app, "select", data, response -> {
+				if(response.ok()) {
+					session.message(Dos.tr("aprs.radio_picked", RadioPicker.name(radio)), false);
+					refresh();
+				}
+				else
+					showError(response);
+			});
 		});
 	}
 
@@ -228,6 +264,9 @@ public final class AprsApp extends DosApp {
 			long last = status.getLong("lastBeacon");
 			String beacon = Dos.tr(status.getBoolean("auto") ? "aprs.beacon_auto" : "aprs.beacon_manual", status.getInt("interval") / 60,
 					last < 0 ? Dos.tr("aprs.never") : Dos.tr("aprs.ago", StationLine.ago(last)), status.getString("icon"), status.getString("comment"));
+			if(status.getInt("vhfRadios") > 1) // Which radio sends (2026-11-09).
+				beacon = (status.getBoolean("picked") ? Dos.tr("aprs.tx_via", net.minecraft.client.resources.language.I18n.get(status.getString("txName")))
+						: Dos.tr("aprs.tx_all")) + "  " + beacon;
 			g.put(2, 3, Dos.fit(beacon, TextGrid.COLS - 4), DosColours.BODY_FG, bg);
 		}
 		switch(page) {
@@ -346,6 +385,7 @@ public final class AprsApp extends DosApp {
 			case GLFW.GLFW_KEY_F6 -> settings();
 			case GLFW.GLFW_KEY_F7 -> callsign();
 			case GLFW.GLFW_KEY_F8 -> clear();
+			case GLFW.GLFW_KEY_F9 -> pickRadio();
 			default -> {
 				if(page == STATIONS)
 					return stations.keyPressed(key);

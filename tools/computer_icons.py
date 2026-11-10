@@ -363,9 +363,20 @@ def qsl():
     i.save('qsl')
 
 
+def distress():
+    """A life ring (red and white quarters) with red signal arcs above it (distress alerting, 2026-11-09)."""
+    i = Icon(); i.ellipse(4, 8, 27, 31, fill=W); i.ellipse(10, 14, 21, 25, fill=None)
+    for (x0, y0, x1, y1) in ((14, 9, 17, 13), (14, 26, 17, 30), (5, 18, 9, 21), (22, 18, 26, 21)):
+        i.rect(x0, y0, x1, y1, fill=LR, outline=None)
+    i.ellipse(11, 15, 20, 24, fill=B, outline=K)
+    for r in (3, 6):  # Signal arcs rising from the top of the ring.
+        i.d.arc([15 - r, 8 - r, 16 + r, 9 + r], 215, 325, fill=rgb(LR))
+    i.save('distress')
+
+
 ALL = [edit, sysinfo, bandplan, install, setup, about, license_study, bookedit, logbook, freqman, programmer, solar,
        aprs, wefax, radiofax, sstv, df, snake, pileup, music, bible, adsb, rtty, bbs, propagation, repeaters, saver,
-       scheduler, rigctl, ft8, netlog, awards, qsl]
+       scheduler, rigctl, ft8, netlog, awards, qsl, distress]
 
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)

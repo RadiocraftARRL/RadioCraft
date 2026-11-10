@@ -1,20 +1,21 @@
 **RadioCraft 1.12.0 is out!** 📻 Our biggest update yet. Highlights:
 
 **New radios**
-- **CB radio**: a TRC-217-style portable and two mobiles (the 5875 with SSB, clarifier and a clock; the PC68), all 40 channels, no licence needed. Plus a CB ground plane antenna.
-- **Commercial radios** (handhelds, mobiles, repeaters, digital voice) and **marine radios** with weather channels.
-- **New HF panels** for the 10m, 20m, 40m, 80m and all-band radios, and the VHF base station: real meters, AGC, squelch, AM, QUICK recall, 10X tuning. The all-band radio has 50 memories.
+- **CB radio**: a portable and two mobiles (the 5875 with SSB and clarifier; the PC68), 40 channels, no licence, plus a CB ground plane.
+- **Marine radios** with **DSC distress**: lift the cover, hold DISTRESS, and every marine radio in range alarms with your position.
+- **Commercial radios**, a **scanner-style VHF receiver** (8 channels, SET to tune, its own whip), and **new HF panels** with AGC, squelch, AM, QUICK and 50 memories on the all-band.
+
+**Rescue and contests**
+- **Distress beacon**: one use, sends your position on 161.975 MHz, heard by commercial radios and direction finders.
+- **DISTRESS** computer app: maps every alert, ACKs DSC calls, prints a rescue map, and sends Marine or Personal SOS.
+- **/contest start** and **/contest stop**: a report book with every contact, the longest, most stations, and most biomes.
 
 **The radio computer**
-- A whole desktop: logbook, awards, QSL cards, APRS, RTTY, FT8, packet BBS, SSTV and fax, the propagation forecast, a repeater directory and more.
-- **Rig Control** with a live waterfall, scanning, and **remote control of a rig over wire or microwave**, audio and all.
+- Logbook, awards, QSL cards, APRS, RTTY, FT8, BBS, SSTV and fax, and **Rig Control** with a waterfall and **remote control over wire or microwave**.
 
 **How radio works**
-- SSB, AM and FM now hear each other as they really would. SSB is only there while someone talks, so the S-meter and squelch follow the voice.
-- Squelch, noise blankers, AGC and coax/grounding all matter. Grounding lowers noise; a lightning arrestor saves your station.
-- Repeaters that hear each other lock up with a feedback howl (or not: there's a server setting).
+- SSB, AM and FM hear each other as they really would; S-meter and squelch follow the voice. Grounding, coax and lightning arrestors matter. Looped repeaters howl.
 
-**Also new**
-- A camera, ADS-B for Sable aircraft, weather alerts, FCC field gear, advancements, the Real-World Interface, power switches, an emergency chemical battery, alkaline cells, junction boxes for data wire, and the guide book is now the **ARRL Radiocraft Handbook**.
+**Also new**: a camera, ADS-B, weather alerts, FCC field gear (now with a worn badge), advancements, power switches, alkaline cells, and the **ARRL Radiocraft Handbook**.
 
-Most new blocks still have placeholder art, so model help is welcome! Full notes are in `doc/ReleaseNotes-1.12.md`. 73!
+Some blocks still have placeholder art, so model help is welcome! 73!

@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Finds the commercial radio to work on for the radio programmer and the frequency manager (1.12 step 6): asks the
+ * Finds the radio to work on for the radio programmer and the frequency manager (1.12 step 6), and APRS's transmitter
+ * (2026-11-09): asks the
  * program's server side for the radios the computer reaches ({@code radios}: mobiles on its data wire), and
  * hands the one to use to {@code chosen}: at once if there is one, from a list if there are several. With none it
  * says how to connect one.
@@ -65,6 +66,15 @@ final class RadioPicker {
 	}
 
 	static void pick(DosApp owner, ComputerSession session, ComputerApp app, Consumer<CompoundTag> chosen) {
+		pick(owner, session, app, Dos.tr("radio.none"), Dos.tr("radio.pick"), chosen);
+	}
+
+	/**
+	 * As {@link #pick(DosApp, ComputerSession, ComputerApp, Consumer)} for any program whose server side answers
+	 * {@code radios} the same way (2026-11-09: APRS), with its own words for no radio ({@code none}) and for the list
+	 * ({@code prompt}). Each radio may carry {@code on} (false: "OFF" after it).
+	 */
+	static void pick(DosApp owner, ComputerSession session, ComputerApp app, String none, String prompt, Consumer<CompoundTag> chosen) {
 		session.app(app, "radios", new CompoundTag(), response -> {
 			if(!response.ok()) {
 				session.message(response.errorText(), true);
@@ -72,7 +82,7 @@ final class RadioPicker {
 			}
 			ListTag radios = response.data().getList("radios", Tag.TAG_COMPOUND);
 			if(radios.isEmpty()) {
-				session.message(Dos.tr("radio.none"), true);
+				session.message(none, true);
 				return;
 			}
 			if(radios.size() == 1) {
@@ -80,9 +90,12 @@ final class RadioPicker {
 				return;
 			}
 			List<String> lines = new ArrayList<>();
-			for(int i = 0; i < radios.size(); i++)
-				lines.add(Dos.fit(name(radios.getCompound(i)) + " - " + where(radios.getCompound(i)), 70));
-			owner.showDialog(new DosPickDialog(Dos.tr("radio.pick_title"), Dos.tr("radio.pick"), lines, index -> chosen.accept(radios.getCompound(index))));
+			for(int i = 0; i < radios.size(); i++) {
+				CompoundTag radio = radios.getCompound(i);
+				String off = radio.contains("on") && !radio.getBoolean("on") ? "  " + Dos.tr("radio.off") : "";
+				lines.add(Dos.fit(name(radio) + " - " + where(radio) + off, 70));
+			}
+			owner.showDialog(new DosPickDialog(Dos.tr("radio.pick_title"), prompt, lines, index -> chosen.accept(radios.getCompound(index))));
 		});
 	}
 }

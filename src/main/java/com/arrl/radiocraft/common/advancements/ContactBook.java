@@ -42,9 +42,15 @@ public final class ContactBook {
 
 	/**
 	 * {@code hearer} heard {@code talker} at game time {@code time}, the hearer's station at ({@code x}, {@code y},
-	 * {@code z}) in {@code dimension}, on {@code hz} in band {@code band} ("" if none).
+	 * {@code z}) in {@code dimension}, on {@code hz} in band {@code band} ("" if none). {@code mode} is how the talker
+	 * sent it: FM, AM, USB, LSB or FT8 ("" if not known), for the contest report (2026-11-09).
 	 */
-	public record Heard(UUID hearer, UUID talker, String dimension, int x, int y, int z, float hz, String band, long time) {
+	public record Heard(UUID hearer, UUID talker, String dimension, int x, int y, int z, float hz, String band, long time, String mode) {
+
+		/** A hearing whose mode is not known. */
+		public Heard(UUID hearer, UUID talker, String dimension, int x, int y, int z, float hz, String band, long time) {
+			this(hearer, talker, dimension, x, y, z, hz, band, time, "");
+		}
 
 		public boolean hf() {
 			return hz > 0.0F && hz < HF_MAX_HZ;

@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The $(item)APRS$() program makes the computer an $(l:radiocraft:digital/aprs)APRS$() station, like the H19 but on the big screen. It needs a $(item)Radio Interface$() cabled to the computer (touching it, or on its $(l:radiocraft:radios/data_wire)data wire$()) with a VHF radio on beside the interface. It sends under the interface's callsign; F7 sets it (empty for your own)."
+      "text": "The $(item)APRS$() program makes the computer an $(l:radiocraft:digital/aprs)APRS$() station, like the H19 but on the big screen. It needs a $(item)Radio Interface$() cabled to the computer (touching it, or on its $(l:radiocraft:radios/data_wire)data wire$()) with a VHF radio on beside the interface. It sends under the interface's callsign; F7 sets it (empty for your own). With more than one VHF radio there it asks which one transmits (F9 changes it, kept with the computer); every radio still receives."
     },
     {
       "type": "patchouli:text",

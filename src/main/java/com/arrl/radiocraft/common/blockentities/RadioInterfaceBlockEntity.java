@@ -105,6 +105,17 @@ public class RadioInterfaceBlockEntity extends BlockEntity implements MenuProvid
 		return sent;
 	}
 
+	/**
+	 * As {@link #transmit}, through {@code radio} alone (a computer program that picked its transmitter, 2026-11-09).
+	 * False if transmitting is switched off, the radio is not beside this interface, or it does not take it.
+	 */
+	public boolean transmitThrough(TncPacket packet, RadioBlockEntity radio) {
+		seen.remember(packet.id());
+		if(!transmitEnabled || !getRadios().contains(radio))
+			return false;
+		return radio.sendData(packet);
+	}
+
 	/** True if any radio next to this interface is on and tuned within 1 kHz of {@code hz}. */
 	public boolean isListeningOn(float hz) {
 		for(RadioBlockEntity radio : getRadios())

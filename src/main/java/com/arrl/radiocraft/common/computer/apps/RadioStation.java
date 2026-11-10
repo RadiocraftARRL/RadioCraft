@@ -112,6 +112,20 @@ public final class RadioStation {
 		return bus.transmit(packet);
 	}
 
+	/**
+	 * As {@link #transmit}, but only through {@code radio} (APRS's picked transmitter, 2026-11-09): the first radio
+	 * interface on the bus that has it beside it sends the packet through it alone. True if it took it.
+	 */
+	public static boolean transmitThrough(RadioComputerBlockEntity computer, StationBus bus, TncPacket packet, RadioBlockEntity radio) {
+		computer.sent(packet);
+		if(packet.kind() == TncPacket.Kind.FILE)
+			computer.sent(packet.header());
+		for(RadioInterfaceBlockEntity radioInterface : bus.interfaces())
+			if(radioInterface.getRadios().contains(radio))
+				return radioInterface.transmitThrough(packet, radio);
+		return false;
+	}
+
 	/** Seconds from game time {@code then} to {@code now} (0 if in the future). */
 	public static long secondsSince(long now, long then) {
 		return Math.max(0L, (now - then) / 20L);

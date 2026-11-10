@@ -405,7 +405,7 @@ public final class Ft8Handler implements ComputerAppHandler {
 		com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.grant(level.getServer(), owner, com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.WEAK_SIGNAL_WIZARD);
 		java.util.UUID talker = com.arrl.radiocraft.common.advancements.RadiocraftAdvancements.playerWithCallsign(level.getServer(), com.arrl.radiocraft.common.computer.PacketBbs.base(qso.call()));
 		if(talker != null && !talker.equals(owner))
-			com.arrl.radiocraft.common.advancements.ContactTracker.heard(level, owner, talker, com.arrl.radiocraft.compat.sable.Sublevels.world(level, computer.getBlockPos()), hz);
+			com.arrl.radiocraft.common.advancements.ContactTracker.heard(level, owner, talker, com.arrl.radiocraft.compat.sable.Sublevels.world(level, computer.getBlockPos()), hz, "FT8");
 	}
 
 	/** The logbook entry for a contact: mode FT8, the reports as sent, the grid in the notes and as where it was. */

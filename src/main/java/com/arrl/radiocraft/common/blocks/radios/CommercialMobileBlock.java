@@ -11,10 +11,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -37,13 +41,16 @@ import java.util.Map;
  */
 public class CommercialMobileBlock extends RadioBlock {
 
-	private static final Map<Direction, VoxelShape> SHAPES = new EnumMap<>(Direction.class);
+	/** The VHF set's shape, 4 px tall, and the low band set's, 6 px (its speaker on top; 2026-11-09). */
+	private static final Map<Direction, VoxelShape> SHAPES = shapes(4.0D), LOW_BAND_SHAPES = shapes(6.0D);
 
-	static {
-		SHAPES.put(Direction.NORTH, Block.box(2.0D, 0.0D, 3.0D, 14.0D, 4.0D, 15.0D));
-		SHAPES.put(Direction.SOUTH, Block.box(2.0D, 0.0D, 1.0D, 14.0D, 4.0D, 13.0D));
-		SHAPES.put(Direction.WEST, Block.box(3.0D, 0.0D, 2.0D, 15.0D, 4.0D, 14.0D));
-		SHAPES.put(Direction.EAST, Block.box(1.0D, 0.0D, 2.0D, 13.0D, 4.0D, 14.0D));
+	private static Map<Direction, VoxelShape> shapes(double height) {
+		Map<Direction, VoxelShape> shapes = new EnumMap<>(Direction.class);
+		shapes.put(Direction.NORTH, Block.box(2.0D, 0.0D, 3.0D, 14.0D, height, 15.0D));
+		shapes.put(Direction.SOUTH, Block.box(2.0D, 0.0D, 1.0D, 14.0D, height, 13.0D));
+		shapes.put(Direction.WEST, Block.box(3.0D, 0.0D, 2.0D, 15.0D, height, 14.0D));
+		shapes.put(Direction.EAST, Block.box(1.0D, 0.0D, 2.0D, 13.0D, height, 14.0D));
+		return shapes;
 	}
 
 	private final CommercialRadioModel model;
@@ -64,7 +71,21 @@ public class CommercialMobileBlock extends RadioBlock {
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-		return hanging(state, SHAPES.get(state.getValue(RadioBlock.HORIZONTAL_FACING)));
+		return hanging(state, (model == CommercialRadioModel.LOW_BAND_MOBILE ? LOW_BAND_SHAPES : SHAPES).get(state.getValue(RadioBlock.HORIZONTAL_FACING)));
+	}
+
+	/**
+	 * While a distress beacon alert is on the display (2026-11-09), sneak and use with an empty hand clears it instead of
+	 * taking the hand mic (until the new front panel has its own key); the next sneak and use takes the mic as usual.
+	 */
+	@Override
+	protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hitResult) {
+		if(player.isShiftKeyDown() && level.getBlockEntity(pos) instanceof CommercialMobileBlockEntity radio && radio.distressLines() != null) {
+			if(!level.isClientSide)
+				radio.dismissDistress();
+			return InteractionResult.sidedSuccess(level.isClientSide);
+		}
+		return super.useWithoutItem(state, level, pos, player, hitResult);
 	}
 
 	@Nullable

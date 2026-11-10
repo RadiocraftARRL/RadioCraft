@@ -8,6 +8,7 @@ import com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity;
 import com.arrl.radiocraft.common.blockentities.RadioInterfaceBlockEntity;
 import com.arrl.radiocraft.common.blockentities.StationBus;
 import com.arrl.radiocraft.common.blockentities.WeatherStationBlockEntity;
+import com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity;
 import com.arrl.radiocraft.common.computer.ComputerAppHandler;
 import com.arrl.radiocraft.common.computer.ComputerAppState;
 import com.arrl.radiocraft.common.computer.ComputerApps;
@@ -37,6 +38,12 @@ import java.util.List;
  * interfaces decode and sends under their callsign. It keeps the stations heard and the messages (per computer, in the
  * computer's save) and beacons on demand or on the server's beacon timer ({@code tnc_beacon_interval_seconds}). New
  * stations and messages are pushed to the screens at the computer as an {@code update} event.
+ * <p>
+ * Which radio transmits (2026-11-09): with more than one VHF radio on the bus the screen asks which one sends
+ * ({@code radios}, {@code select}); the choice is kept with the computer and everything APRS sends (beacons, messages,
+ * acks, retries) goes out through that radio only. Receiving is unchanged: every interface still decodes what every
+ * radio on it hears, so the station hears on all of them. With none picked (or the picked one gone) it sends through
+ * every interface, as before.
  * <ul>
  * <li>{@code status}: the station ({@link RadioStation#status}), {@code comment}, {@code icon}, {@code auto},
  * {@code interval}, {@code lastBeacon} (seconds ago, -1 never), {@code stations} (each {@code call}, {@code icon},
@@ -47,7 +54,9 @@ import java.util.List;
  * <li>{@code map}: {@code pixels}, a 128 square map of home and the stations (the H19's map style).</li>
  * <li>{@code beacon}, {@code send} ({@code to}, {@code text}), {@code settings} ({@code comment}, {@code icon},
  * {@code auto}), {@code callsign} ({@code callsign}, empty for the player's own), {@code clear} (forgets the
- * stations).</li>
+ * stations), {@code radios} (the VHF radios on the bus: {@code id}, {@code nameKey}, {@code custom}, {@code where},
+ * {@code on}), {@code select} ({@code id}, the radio that transmits). The status also has {@code vhfRadios} (how many),
+ * {@code picked} (one is picked and still there) and {@code txName} (its name key).</li>
  * </ul>
  */
 public final class AprsHandler implements ComputerAppHandler {
@@ -68,6 +77,12 @@ public final class AprsHandler implements ComputerAppHandler {
 		long lastBeacon = -1L;
 		long lastRead = -1L;
 		int nextNumber = 1;
+		long radio = 0L; // The radio that transmits, by position (2026-11-09); 0 = none picked: every interface.
+
+		/** The radio picked to transmit ({@link net.minecraft.core.BlockPos#asLong}), 0 if none. */
+		public long radio() {
+			return radio;
+		}
 
 		public List<Heard> stations() {
 			return List.copyOf(stations);
@@ -85,6 +100,7 @@ public final class AprsHandler implements ComputerAppHandler {
 			tag.putLong("lastBeacon", lastBeacon);
 			tag.putLong("lastRead", lastRead);
 			tag.putInt("nextNumber", nextNumber);
+			tag.putLong("radio", radio);
 			ListTag heard = new ListTag();
 			for(Heard station : stations) {
 				CompoundTag entry = station.packet().save();
@@ -114,6 +130,7 @@ public final class AprsHandler implements ComputerAppHandler {
 			lastBeacon = tag.contains("lastBeacon") ? tag.getLong("lastBeacon") : -1L;
 			lastRead = tag.contains("lastRead") ? tag.getLong("lastRead") : -1L;
 			nextNumber = Math.max(1, tag.getInt("nextNumber"));
+			radio = tag.getLong("radio");
 			stations.clear();
 			for(Tag entry : tag.getList("stations", Tag.TAG_COMPOUND)) {
 				CompoundTag c = (CompoundTag)entry;
@@ -147,7 +164,7 @@ public final class AprsHandler implements ComputerAppHandler {
 			case "status" -> reply.ok(status(computer, state));
 			case "map" -> reply.ok(map(computer, state));
 			case "beacon" -> {
-				String problem = cannotSend(context.bus());
+				String problem = cannotSend(context.bus(), state);
 				if(problem == null && !beacon(computer, state))
 					problem = "aprs_not_sent";
 				answer(reply, problem);
@@ -187,6 +204,40 @@ public final class AprsHandler implements ComputerAppHandler {
 				computer.setChanged();
 				reply.ok();
 			}
+			case "radios" -> {
+				ListTag radios = new ListTag();
+				for(RadioBlockEntity radio : vhfRadios(context.bus())) {
+					CompoundTag entry = new CompoundTag();
+					entry.putString("id", Long.toString(radio.getBlockPos().asLong()));
+					entry.putString("nameKey", radio.getBlockState().getBlock().getDescriptionId());
+					entry.putString("custom", "");
+					BlockPos at = radio.getBlockPos();
+					entry.putString("where", at.getX() + " " + at.getY() + " " + at.getZ());
+					entry.putBoolean("on", radio.isPowered());
+					radios.add(entry);
+				}
+				CompoundTag out = new CompoundTag();
+				out.put("radios", radios);
+				reply.ok(out);
+			}
+			case "select" -> {
+				long pos;
+				try {
+					pos = Long.parseLong(data.getString("id"));
+				}
+				catch(NumberFormatException e) {
+					reply.error("aprs_no_such_radio");
+					return;
+				}
+				for(RadioBlockEntity radio : vhfRadios(context.bus()))
+					if(radio.getBlockPos().asLong() == pos) {
+						state.radio = pos;
+						computer.setChanged();
+						reply.ok();
+						return;
+					}
+				reply.error("aprs_no_such_radio");
+			}
 			case "clear" -> {
 				state.stations.clear();
 				computer.setChanged();
@@ -211,6 +262,48 @@ public final class AprsHandler implements ComputerAppHandler {
 		return bus.interfaces().stream().anyMatch(RadioInterfaceBlockEntity::hasVhfRadioOn) ? null : "aprs_no_vhf";
 	}
 
+	/** As {@link #cannotSend(StationBus)}, and the radio picked to transmit must be on (2026-11-09). */
+	static String cannotSend(StationBus bus, State state) {
+		String problem = cannotSend(bus);
+		if(problem != null)
+			return problem;
+		RadioBlockEntity picked = picked(bus, state);
+		return picked != null && !picked.isPowered() ? "aprs_picked_off" : null;
+	}
+
+	// -------------------- WHICH RADIO SENDS (2026-11-09) --------------------
+
+	/** The VHF radios on the bus's radio interfaces (APRS is on 2m), each once. */
+	static List<RadioBlockEntity> vhfRadios(StationBus bus) {
+		List<RadioBlockEntity> out = new ArrayList<>();
+		for(RadioBlockEntity radio : RadioStation.radios(bus))
+			if(radio.getBand() != null && radio.getBand().isVhf())
+				out.add(radio);
+		return out;
+	}
+
+	/** The radio picked to transmit, if it is still on the bus; null otherwise. */
+	@org.jetbrains.annotations.Nullable
+	static RadioBlockEntity picked(StationBus bus, State state) {
+		if(state.radio == 0L)
+			return null;
+		for(RadioBlockEntity radio : vhfRadios(bus))
+			if(radio.getBlockPos().asLong() == state.radio)
+				return radio;
+		return null;
+	}
+
+	/**
+	 * Sends {@code packet} for APRS: through the picked radio only when more than one VHF radio is on the bus and one is
+	 * picked, else through every interface as before. True if a radio took it.
+	 */
+	static boolean transmit(RadioComputerBlockEntity computer, State state, StationBus bus, TncPacket packet) {
+		RadioBlockEntity picked = vhfRadios(bus).size() > 1 ? picked(bus, state) : null;
+		if(picked == null)
+			return RadioStation.transmit(computer, bus, packet);
+		return RadioStation.transmitThrough(computer, bus, packet, picked);
+	}
+
 	// -------------------- SENDING --------------------
 
 	/** Where the computer really is (its place in the world on a Sable ship). */
@@ -231,7 +324,7 @@ public final class AprsHandler implements ComputerAppHandler {
 		String weather = station == null ? "" : station.aprsWeather();
 		TncPacket packet = weather.isEmpty() ? TncPacket.beacon(RadioStation.newId(level), bus.callsign(), here(computer), state.comment, state.icon.name())
 				: TncPacket.weatherBeacon(RadioStation.newId(level), bus.callsign(), here(computer), weather, state.comment);
-		return RadioStation.transmit(computer, bus, packet);
+		return transmit(computer, state, bus, packet);
 	}
 
 	/** Sends {@code text} to {@code to}; null if it went, else the error key. */
@@ -239,7 +332,7 @@ public final class AprsHandler implements ComputerAppHandler {
 		if(!(computer.getLevel() instanceof ServerLevel level))
 			return "aprs_not_sent";
 		StationBus bus = RadioStation.bus(computer);
-		String problem = cannotSend(bus);
+		String problem = cannotSend(bus, state);
 		if(problem != null)
 			return problem;
 		String target = TncPacket.sanitizeCallsign(to);
@@ -250,7 +343,7 @@ public final class AprsHandler implements ComputerAppHandler {
 		boolean everyone = TncPacket.isForEveryone(target);
 		TncPacket packet = everyone ? TncPacket.message(RadioStation.newId(level), bus.callsign(), target, text)
 				: TncPacket.message(RadioStation.newId(level), bus.callsign(), target, text, state.nextNumber);
-		if(!RadioStation.transmit(computer, bus, packet))
+		if(!transmit(computer, state, bus, packet))
 			return "aprs_not_sent";
 		if(!everyone)
 			state.nextNumber = state.nextNumber % 99999 + 1;
@@ -291,7 +384,7 @@ public final class AprsHandler implements ComputerAppHandler {
 					return;
 				String number = packet.messageNumber();
 				if(!number.isEmpty() && !TncPacket.isForEveryone(packet.to())) { // Ack it every time: the last ack may have been lost.
-					RadioStation.transmit(computer, bus, TncPacket.ack(RadioStation.newId(level), packet.to(), packet.from(), number));
+					transmit(computer, state, bus, TncPacket.ack(RadioStation.newId(level), packet.to(), packet.from(), number));
 					boolean again = state.messages.stream().anyMatch(logged -> !logged.outgoing() && logged.packet().from().equals(packet.from())
 							&& logged.packet().messageNumber().equals(number));
 					if(again)
@@ -346,7 +439,7 @@ public final class AprsHandler implements ComputerAppHandler {
 			long interval = RadiocraftServerConfig.TNC_BEACON_INTERVAL_SECONDS.get() * 20L;
 			if(state.lastBeacon < 0 || gameTime - state.lastBeacon >= interval || gameTime < state.lastBeacon) {
 				StationBus bus = RadioStation.bus(computer);
-				if(cannotSend(bus) == null)
+				if(cannotSend(bus, state) == null)
 					beacon(computer, state);
 				else
 					state.lastBeacon = gameTime - interval + Math.min(interval, RETRY_BEACON_TICKS); // No radio yet: try again in a minute.
@@ -374,7 +467,7 @@ public final class AprsHandler implements ComputerAppHandler {
 			if(bus == null)
 				bus = RadioStation.bus(computer);
 			TncPacket again = logged.packet().withId(RadioStation.newId(computer.getLevel()));
-			RadioStation.transmit(computer, bus, again);
+			transmit(computer, state, bus, again);
 			state.messages.set(i, new Logged(again, true, logged.gameTime(), Delivery.RETRYING, logged.retries() + 1, now));
 		}
 		if(changed) {
@@ -389,6 +482,10 @@ public final class AprsHandler implements ComputerAppHandler {
 		long now = computer.getLevel() == null ? 0L : computer.getLevel().getGameTime();
 		StationBus bus = RadioStation.bus(computer);
 		CompoundTag out = RadioStation.status(bus);
+		RadioBlockEntity picked = picked(bus, state);
+		out.putInt("vhfRadios", vhfRadios(bus).size());
+		out.putBoolean("picked", picked != null);
+		out.putString("txName", picked == null ? "" : picked.getBlockState().getBlock().getDescriptionId());
 		out.putString("comment", state.comment);
 		out.putString("icon", state.icon.name());
 		out.putBoolean("auto", state.auto);

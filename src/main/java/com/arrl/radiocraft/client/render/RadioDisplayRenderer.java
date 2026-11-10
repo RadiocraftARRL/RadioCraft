@@ -70,6 +70,12 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 			frequency = channelized.displayLine();
 			status = radio.isCoaxShared() ? "COAX SHARED" : channelized.displayStatus();
 		}
+		java.util.List<String> distress = radio instanceof com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity commercial
+				? commercial.distressLines() : null;
+		if(distress != null) { // A beacon alert heard on 161.975 (2026-11-09): until dismissed; the small line takes turns at where and who.
+			frequency = distress.get(0);
+			status = distress.get((radio.getLevel().getGameTime() / 40L) % 2L == 0L ? 1 : Math.min(2, distress.size() - 1));
+		}
 		float width = (display.x2() - display.x1()) / 16.0F, height = (display.y2() - display.y1()) / 16.0F;
 		float big = Math.min(width * 0.9F / font.width(frequency), height * 0.55F / font.lineHeight);
 		float small = Math.min(big * 0.6F, width * 0.9F / font.width(status));

@@ -40,5 +40,9 @@ public class RadiocraftSoundEvents {
 	public static Supplier<SoundEvent> POWER_OUT = SOUND_EVENTS.register("power_out", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("power_out"), 8.0F));
 	/** A recording of FM static; the voice path decodes the file itself (FmStatic), this is the same for the sound engine. */
 	public static Supplier<SoundEvent> FM_STATIC = SOUND_EVENTS.register("fm_static", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("fm_static"), 32.0F));
+	/** A marine radio's DSC distress alarm: the two-tone warble (2026-11-09, {@code tools/dsc_sounds.py}). */
+	public static Supplier<SoundEvent> DSC_ALARM = SOUND_EVENTS.register("dsc_alarm", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("dsc_alarm"), 24.0F));
+	/** One short beep: the DISTRESS button's countdown, and a DSC burst or beacon alert going out. */
+	public static Supplier<SoundEvent> DSC_BEEP = SOUND_EVENTS.register("dsc_beep", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("dsc_beep"), 12.0F));
 
 }

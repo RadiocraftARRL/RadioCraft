@@ -177,6 +177,8 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.LOW_BAND_MOBILE.get());
         output.accept(RadiocraftItems.MARINE_HANDHELD.get());
         output.accept(RadiocraftItems.MARINE_RADIO.get());
+        output.accept(RadiocraftItems.DISTRESS_BEACON.get()); // 2026-11-09: distress alerting.
+        output.accept(RadiocraftItems.SPENT_DISTRESS_BEACON.get());
         output.accept(com.arrl.radiocraft.common.items.CbPortableItem.charged(RadiocraftItems.CB_PORTABLE.get())); // Charged, ready to use.
         output.accept(RadiocraftItems.CB_MOBILE_PC68.get());
         output.accept(RadiocraftItems.CB_MOBILE_5875.get());

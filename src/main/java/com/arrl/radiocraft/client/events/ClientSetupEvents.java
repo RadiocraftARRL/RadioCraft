@@ -11,6 +11,7 @@ import com.arrl.radiocraft.common.blockentities.DeskChargerBlockEntity;
 import com.arrl.radiocraft.client.render.DeskChargerBlockRenderer;
 import com.arrl.radiocraft.client.render.RadioDisplayRenderer;
 import com.arrl.radiocraft.client.render.RadioDisplays;
+import com.arrl.radiocraft.client.render.VHFReceiverRenderer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import com.arrl.radiocraft.common.init.RadiocraftMenuTypes;
 import net.neoforged.api.distmarker.Dist;
@@ -101,7 +102,7 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.COMMERCIAL_MOBILE.get(), RadioDisplayRenderer::new); // Channel display, lamps, mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MARINE_RADIO.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.CB_RADIO.get(), com.arrl.radiocraft.client.render.CbRadioRenderer::new); // Channel, clock, meters, lamps, mic cord.
-		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_RECEIVER.get(), RadioDisplayRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_RECEIVER.get(), VHFReceiverRenderer::new); // No display: switches, the lit numeral, SET (2026-11-09).
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_20M.get(), RadioDisplayRenderer::new); // No screen; draws the mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_40M.get(), RadioDisplayRenderer::new);
 	}
@@ -127,12 +128,16 @@ public class ClientSetupEvents {
 			event.enqueueWork(() -> {
 				com.arrl.radiocraft.compat.curios.HandheldBeltRenderer.register();
 				com.arrl.radiocraft.compat.curios.CbPortableBackRenderer.register(); // The CB portable on the back slot.
+				com.arrl.radiocraft.compat.curios.FccBadgeRenderer.register(); // The FCC badge on the chest or belt (2026-11-09).
 			});
 		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_DIRECTION_FINDER.get(),
 				Radiocraft.id("lit"), (stack, level, entity, seed) -> entity == net.minecraft.client.Minecraft.getInstance().player && com.arrl.radiocraft.client.HandheldDfClient.isLit() ? 1.0F : 0.0F));
 		// The CB portable's whip is pulled out while it is on.
 		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.CB_PORTABLE.get(),
 				Radiocraft.id("extended"), (stack, level, entity, seed) -> com.arrl.radiocraft.common.items.CbPortableItem.isOn(stack) ? 1.0F : 0.0F));
+		// The distress beacon's strobe is lit while it transmits (2026-11-09; models/item/distress_beacon.json).
+		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.DISTRESS_BEACON.get(),
+				Radiocraft.id("active"), (stack, level, entity, seed) -> com.arrl.radiocraft.common.items.DistressBeaconItem.isActive(stack) ? 1.0F : 0.0F));
 	}
 
 	/** Tape reels: the reel and its label tinted by the tape's colourway. */
@@ -191,6 +196,7 @@ public class ClientSetupEvents {
 				return com.arrl.radiocraft.client.render.HandheldItemRenderer.get();
 			}
 		}, com.arrl.radiocraft.common.init.RadiocraftItems.VHF_HANDHELD_VARIANTS.values().toArray(net.minecraft.world.item.Item[]::new));
+		event.registerItem(com.arrl.radiocraft.client.render.FccJacketModel.extensions(), com.arrl.radiocraft.common.init.RadiocraftItems.FCC_JACKET.get()); // Cut close to the body (2026-11-09).
 	}
 
 	@SubscribeEvent

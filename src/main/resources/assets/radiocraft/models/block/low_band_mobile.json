@@ -1,6 +1,10 @@
 {
   "credit": "Placeholder from tools/commercial_radio_assets.py (see doc/ModelDesignBounty.md)",
   "parent": "block/block",
+  "texture_size": [
+    64,
+    64
+  ],
   "textures": {
     "case": "radiocraft:block/commercial_mobile_case",
     "front": "radiocraft:block/low_band_mobile_front",
@@ -16,7 +20,7 @@
       ],
       "to": [
         14,
-        4,
+        6,
         15
       ],
       "faces": {
@@ -91,16 +95,52 @@
       ],
       "to": [
         13.5,
-        3.5,
-        3
+        5.5,
+        3.0
       ],
       "faces": {
+        "east": {
+          "uv": [
+            15.0,
+            0.0,
+            16.0,
+            1.0
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            15.0,
+            0.0,
+            16.0,
+            1.0
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            15.0,
+            0.0,
+            16.0,
+            1.0
+          ],
+          "texture": "#front"
+        },
+        "down": {
+          "uv": [
+            15.0,
+            0.0,
+            16.0,
+            1.0
+          ],
+          "texture": "#front"
+        },
         "north": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            0.0,
+            0.0,
+            11.0,
+            5.0
           ],
           "texture": "#front"
         }
@@ -119,12 +159,48 @@
         2.75
       ],
       "faces": {
+        "east": {
+          "uv": [
+            12.0,
+            1.0,
+            13.0,
+            2.0
+          ],
+          "texture": "#front"
+        },
+        "west": {
+          "uv": [
+            12.0,
+            1.0,
+            13.0,
+            2.0
+          ],
+          "texture": "#front"
+        },
+        "up": {
+          "uv": [
+            12.0,
+            1.0,
+            13.0,
+            2.0
+          ],
+          "texture": "#front"
+        },
+        "down": {
+          "uv": [
+            12.0,
+            1.0,
+            13.0,
+            2.0
+          ],
+          "texture": "#front"
+        },
         "north": {
           "uv": [
-            5,
-            4,
-            12,
-            10
+            2.0,
+            2.25,
+            8.0,
+            4.25
           ],
           "texture": "#front"
         }
@@ -143,57 +219,57 @@
         2.75
       ],
       "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#front"
-        },
         "east": {
           "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#front"
-        },
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
+            13.0,
+            0.0,
+            14.0,
+            1.0
           ],
           "texture": "#front"
         },
         "west": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            13.0,
+            0.0,
+            14.0,
+            1.0
           ],
           "texture": "#front"
         },
         "up": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            13.0,
+            0.0,
+            14.0,
+            1.0
           ],
           "texture": "#front"
         },
         "down": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            13.0,
+            0.0,
+            14.0,
+            1.0
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            13.0,
+            0.0,
+            14.0,
+            1.0
+          ],
+          "texture": "#front"
+        },
+        "north": {
+          "uv": [
+            12.0,
+            0.0,
+            13.0,
+            1.0
           ],
           "texture": "#front"
         }
@@ -214,55 +290,55 @@
       "faces": {
         "north": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            14.0,
+            0.0,
+            15.0,
+            1.0
           ],
           "texture": "#front"
         },
         "east": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            14.0,
+            0.0,
+            15.0,
+            1.0
           ],
           "texture": "#front"
         },
         "south": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            14.0,
+            0.0,
+            15.0,
+            1.0
           ],
           "texture": "#front"
         },
         "west": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            14.0,
+            0.0,
+            15.0,
+            1.0
           ],
           "texture": "#front"
         },
         "up": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            14.0,
+            0.0,
+            15.0,
+            1.0
           ],
           "texture": "#front"
         },
         "down": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            14.0,
+            0.0,
+            15.0,
+            1.0
           ],
           "texture": "#front"
         }

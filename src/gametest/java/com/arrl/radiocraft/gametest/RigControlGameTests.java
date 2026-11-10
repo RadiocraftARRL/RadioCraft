@@ -190,4 +190,41 @@ public class RigControlGameTests {
 				})
 				.thenSucceed();
 	}
+
+	/**
+	 * Two radios on the radio interface (2026-11-09): the status says none is picked, so the screen asks; picking one
+	 * makes it the rig, is kept with the computer, and a radio no longer on the bus cannot be picked.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200)
+	public static void pickingTheRigIsKept(GameTestHelper helper) {
+		helper.setBlock(RADIO_A, RadiocraftBlocks.VHF_BASE_STATION.get());
+		helper.setBlock(RADIO_A.north(), RadiocraftBlocks.RADIO_INTERFACE.get());
+		helper.setBlock(RADIO_A.north(2), RadiocraftBlocks.VHF_BASE_STATION.get()); // A second radio beside the interface.
+		RadioComputerBlockEntity computer = computer(helper, AT_A, ComputerApps.RIG_CONTROL);
+		FakePlayer player = player(helper, "pick");
+		helper.startSequence()
+				.thenExecute(() -> {
+					powerOn(helper, RADIO_A);
+					powerOn(helper, RADIO_A.north(2));
+				})
+				.thenIdle(1)
+				.thenExecute(() -> {
+					CompoundTag status = data(app(computer, player, "status", new CompoundTag()));
+					helper.assertTrue(status.getList("radios", net.minecraft.nbt.Tag.TAG_COMPOUND).size() == 2, "two radios on the bus: " + status);
+					helper.assertFalse(status.getBoolean("picked"), "nothing picked yet, so the screen asks");
+					long second = helper.absolutePos(RADIO_A.north(2)).asLong();
+					CompoundTag select = new CompoundTag();
+					select.putLong("pos", second);
+					ok(helper, app(computer, player, "select", select), "select");
+					status = data(app(computer, player, "status", new CompoundTag()));
+					helper.assertTrue(status.getBoolean("picked"), "the pick is kept: " + status);
+					helper.assertTrue(RigControlHandler.rig(computer, RigControlHandler.state(computer)).getBlockPos().asLong() == second, "the rig is the one picked");
+					CompoundTag saved = new CompoundTag();
+					RigControlHandler.state(computer).save(saved, helper.getLevel().registryAccess());
+					helper.assertTrue(saved.getLong("selected") == second, "the pick is saved with the computer: " + saved);
+					select.putLong("pos", helper.absolutePos(RADIO_B).asLong());
+					helper.assertTrue(app(computer, player, "select", select).getString("error").equals("rig_no_radio"), "a radio off the bus was picked");
+				})
+				.thenSucceed();
+	}
 }

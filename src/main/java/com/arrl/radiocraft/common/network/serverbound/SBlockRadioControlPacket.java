@@ -40,7 +40,8 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
         MEM_STORE, // stepCount: the memory channel (0-49) to store the VFO in (all-band radio).
         VFO_MEM, // VFO/MEM pressed: between the VFO and the memories.
         MEM_SELECT, // stepCount: the memory channel to recall.
-        MEM_TO_VFO // VFO/MEM held on a memory: copy it to the VFO, and back to VFO.
+        MEM_TO_VFO, // VFO/MEM held on a memory: copy it to the VFO, and back to VFO.
+        DISMISS_DISTRESS // A commercial VHF mobile: clear the beacon alert off its display (2026-11-09).
     }
 
     public static final CustomPacketPayload.Type<SBlockRadioControlPacket> TYPE = new CustomPacketPayload.Type<>(Radiocraft.id("s_block_radio_control"));
@@ -122,6 +123,10 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
                 case MEM_TO_VFO -> {
                     if(radio instanceof HFRadioAllBandBlockEntity allBand)
                         allBand.memoryToVfo();
+                }
+                case DISMISS_DISTRESS -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity commercial)
+                        commercial.dismissDistress();
                 }
                 case SET_BAND -> {
                     if(radio instanceof HFRadioAllBandBlockEntity allBand)

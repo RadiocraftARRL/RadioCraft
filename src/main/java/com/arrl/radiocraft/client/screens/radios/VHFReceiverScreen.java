@@ -1,201 +1,386 @@
 package com.arrl.radiocraft.client.screens.radios;
 
 import com.arrl.radiocraft.Radiocraft;
-import com.arrl.radiocraft.client.screens.widgets.*;
+import com.arrl.radiocraft.client.render.VHFReceiverRenderer;
 import com.arrl.radiocraft.common.be_networks.network_objects.RadioNetworkObject;
 import com.arrl.radiocraft.common.blockentities.radio.VHFReceiverBlockEntity;
 import com.arrl.radiocraft.common.menus.VHFReceiverMenu;
+import com.arrl.radiocraft.common.network.serverbound.SBlockRadioControlPacket;
 import com.arrl.radiocraft.common.network.serverbound.SVHFReceiverPacket;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
- * The VHF receiver's panel (2026-11-09): power, tuning knob, a display between the knobs, volume knob, mute, and six
- * memory buttons with a lamp over each. A memory button with nothing in it stores the frequency shown; one with a
- * frequency selects it (pressed in); two or more pressed in scan. Shift + click stores over a channel. Every control
- * says what it does on hover.
+ * The VHF receiver's front panel (2026-11-09), a 1970s eight-channel crystal scanner: a black wraparound case and a
+ * chrome front, laid out by {@code gui_layouts/vhf_receiver.json} over {@code textures/gui/vhf_receiver.png} (both from
+ * {@code tools/vhf_receiver_assets.py}), as the block's front has them.
+ * <ul>
+ *     <li>Top left, the key box: the blue MAN/AUTO key (out MAN, the scan holds; in AUTO, it scans), the red SET key
+ *     and the SET lamp, lit while SET is in and exactly one channel is switched on.</li>
+ *     <li>Under it, VOLUME (all the way down clicks OFF: the power switch), SQUELCH, and TUNE, which moves the one
+ *     switched-on channel's frequency while the SET lamp is lit: {@link VHFReceiverBlockEntity#STEP_HZ} a click, shift
+ *     {@link VHFReceiverBlockEntity#COARSE_STEP_HZ}, control {@link VHFReceiverBlockEntity#FAST_STEP_HZ}.</li>
+ *     <li>Top right, the channel window: the numeral of the channel the scan is on lights red. Under it the eight slide
+ *     switches, up on and down off.</li>
+ * </ul>
+ * No display: the frequency shows above the panel in a tooltip-like label ({@link #hint}), never over a control. Knobs
+ * turn with the wheel over them, a click one step up, a right click one down; the wheel over a switch moves it, and
+ * anywhere else it turns TUNE.
  */
-public class VHFReceiverScreen extends VHFRadioScreen<VHFReceiverMenu> {
+public class VHFReceiverScreen extends AbstractContainerScreen<VHFReceiverMenu> {
 
-	/** The display window drawn between the two knobs (texture coordinates). */
-	private static final int LCD_X = 64, LCD_Y = 13, LCD_W = 120, LCD_H = 29;
-	private static final int LCD_BACK = 0xFF16261A, LCD_INK = 0x9CFF9C, LCD_DIM = 0x4E7F4E, LCD_WARN = 0xFF7755;
-	private static final int[] MEMORY_X = { 42, 72, 101, 131, 160, 190 };
+	/** How long the label keeps showing the channel being set after TUNE last turned, ms. */
+	private static final long TUNED_SHOW_MS = 1500L;
 
-	private final LedIndicator[] leds = new LedIndicator[VHFReceiverBlockEntity.MEMORIES];
-	private final ToggleButton[] memoryButtons = new ToggleButton[VHFReceiverBlockEntity.MEMORIES];
-	private ToggleButton powerButton, muteButton;
-	private Dial tuningDial;
+	private final HfPanel panel = HfPanel.loadLayout("vhf_receiver");
+	/** When TUNE last turned (ms), and whether it could set anything then. */
+	private long tunedAt = 0L;
 
-	public VHFReceiverScreen(VHFReceiverMenu menu, Inventory playerInventory, Component title) {
-		super(menu, playerInventory, title, Radiocraft.id("textures/gui/vhf_receiver.png"), Radiocraft.id("textures/gui/vhf_receiver_widgets.png"));
-
-		this.imageWidth = 251;
-		this.imageHeight = 106;
+	public VHFReceiverScreen(VHFReceiverMenu menu, Inventory inventory, Component title) {
+		super(menu, inventory, title);
+		imageWidth = panel.width();
+		imageHeight = panel.height();
 	}
 
 	private VHFReceiverBlockEntity receiver() {
 		return menu.blockEntity;
 	}
 
-	@Override
-	protected void init() {
-		super.init();
-		powerButton = addRenderableWidget(new ToggleButton(menu.isPowered(), leftPos + 10, topPos + 11, 14, 19, 0, 0, widgetsTexture, 256, 256, this::onPressPower).withPowerClick());
-		muteButton = addRenderableWidget(new ToggleButton(receiver().isMuted(), leftPos + 220, topPos + 9, 22, 22, 0, 67, widgetsTexture, 256, 256, this::onPressMute));
+	/** Running: switched on, with the power to. */
+	private boolean on() {
+		return menu.isPowered() && menu.getDisplayPhase() == RadioNetworkObject.PHASE_ON;
+	}
 
-		for(int i = 0; i < leds.length; i++) { // Lamps: lit while a signal comes in on that channel. Not clickable.
-			leds[i] = new LedIndicator(Component.literal("LED " + (i + 1)), leftPos + MEMORY_X[i] + 1, topPos + 50, 17, 17, 0, 106, texture, 256, 256);
-			leds[i].setIsOn(false);
-			addRenderableWidget(leds[i]);
+	// -------------------- CONTROLS --------------------
+
+	private void click(float pitch) {
+		if(minecraft != null && minecraft.player != null)
+			minecraft.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3F, pitch);
+	}
+
+	/** A knob turned {@code steps} clicks. */
+	private void turn(String knob, int steps) {
+		VHFReceiverBlockEntity rx = receiver();
+		switch(knob) {
+			case "volume" -> { // Down past the lowest setting clicks OFF; up from OFF switches on.
+				int gain = Math.max(10, Math.round(rx.getSpeakerGain() * 100.0F));
+				if(!menu.isPowered()) {
+					if(steps > 0) {
+						SBlockRadioControlPacket.updateServer(rx.getBlockPos(), SBlockRadioControlPacket.Action.TOGGLE_POWER, true);
+						setGain(gain);
+						click(0.9F);
+					}
+					return;
+				}
+				int next = gain + 10 * steps;
+				if(next < 10) {
+					SBlockRadioControlPacket.updateServer(rx.getBlockPos(), SBlockRadioControlPacket.Action.TOGGLE_POWER, true);
+					click(0.7F);
+					return;
+				}
+				setGain(Math.min(200, next));
+				click(1.2F);
+			}
+			case "squelch" -> {
+				int next = Math.max(0, Math.min(100, Math.round(rx.getSquelchLevel() * 100.0F) + 10 * steps));
+				rx.setSquelchClient(next / 100.0F);
+				SBlockRadioControlPacket.updateServer(rx.getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, next);
+				click(1.2F);
+			}
+			case "tune" -> {
+				tunedAt = System.currentTimeMillis();
+				if(!on() || !rx.isSetLit())
+					return; // The label says why it does nothing.
+				int step = Screen.hasControlDown() ? VHFReceiverBlockEntity.FAST_STEP_HZ
+						: Screen.hasShiftDown() ? VHFReceiverBlockEntity.COARSE_STEP_HZ : VHFReceiverBlockEntity.STEP_HZ;
+				rx.tuneSetChannel(step * steps); // Shown at once; the server's answer follows.
+				SVHFReceiverPacket.send(rx.getBlockPos(), SVHFReceiverPacket.TUNE, step * steps);
+				click(1.5F);
+			}
+			default -> {}
 		}
-		for(int i = 0; i < memoryButtons.length; i++) {
-			int channel = i;
-			memoryButtons[i] = addRenderableWidget(new ToggleButton(receiver().isSelected(i), leftPos + MEMORY_X[i], topPos + 73, 19, 19, 93, 38 * i, widgetsTexture, 256, 256, btn -> onMemoryButton(channel)));
+	}
+
+	private void setGain(int percent) {
+		receiver().setSpeakerGainClient(percent / 100.0F);
+		SBlockRadioControlPacket.updateServer(receiver().getBlockPos(), SBlockRadioControlPacket.Action.SET_SPEAKER_GAIN, percent);
+	}
+
+	/** Channel {@code channel}'s switch pushed up ({@code up}) or down. */
+	private void flip(int channel, boolean up) {
+		if(receiver().isChannelOn(channel) == up)
+			return;
+		receiver().setChannelOn(channel, up); // Client copy only; the server saves and syncs it.
+		SVHFReceiverPacket.send(receiver().getBlockPos(), SVHFReceiverPacket.SET_CHANNEL, channel * 2 + (up ? 1 : 0));
+		click(up ? 1.3F : 1.1F);
+	}
+
+	private void pressKey(String name) {
+		VHFReceiverBlockEntity rx = receiver();
+		if(name.equals("key_set")) {
+			boolean in = !rx.isSetMode();
+			rx.setSetMode(in);
+			SVHFReceiverPacket.send(rx.getBlockPos(), SVHFReceiverPacket.SET_KEY, in ? 1 : 0);
 		}
+		else if(name.equals("key_man")) {
+			boolean hold = !rx.isScanHold();
+			rx.setScanHold(hold);
+			SVHFReceiverPacket.send(rx.getBlockPos(), SVHFReceiverPacket.HOLD_KEY, hold ? 1 : 0);
+		}
+		click(0.8F);
+	}
 
-		tuningDial = addRenderableWidget(new Dial(leftPos + 30, topPos + 12, 28, 31, 28, 0, widgetsTexture, 256, 256, this::onFrequencyDialUp, this::onFrequencyDialDown));
-		speakerGainDial = addRenderableWidget(new Dial(leftPos + 188, topPos + 12, 28, 31, 28, 0, widgetsTexture, 256, 256, this::onGainUp, this::onGainDown)); // Volume
+	private static int channelOf(HfPanel.Control c) {
+		return Integer.parseInt(c.name().substring(c.name().lastIndexOf('_') + 1)) - 1;
 	}
 
 	@Override
-	protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
-
+	public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+		if(scrollY == 0.0D)
+			return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+		HfPanel.Control c = MarinePanels.at(panel, leftPos, topPos, mouseX, mouseY);
+		if(c != null && c.type().equals("switch"))
+			flip(channelOf(c), scrollY > 0.0D);
+		else
+			turn(c != null && c.type().equals("knob") ? c.name() : "tune", scrollY > 0.0D ? 1 : -1);
+		return true;
 	}
 
 	@Override
-	protected void renderLabels(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
-		// Don't render the default title and inventory labels
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		HfPanel.Control c = MarinePanels.at(panel, leftPos, topPos, mouseX, mouseY);
+		if(c != null && (button == 0 || button == 1)) {
+			switch(c.type()) {
+				case "knob" -> {
+					turn(c.name(), button == 0 ? 1 : -1);
+					return true;
+				}
+				case "switch" -> {
+					int channel = channelOf(c);
+					flip(channel, !receiver().isChannelOn(channel));
+					return true;
+				}
+				case "key" -> {
+					if(button == 0) {
+						pressKey(c.name());
+						return true;
+					}
+				}
+				default -> {}
+			}
+		}
+		return super.mouseClicked(mouseX, mouseY, button);
 	}
 
-	/** The buttons and lamps follow the receiver (the server may change them: a scan, the dial leaving the channels). */
+	// -------------------- DRAWING --------------------
+
 	@Override
 	public void render(@NotNull GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		VHFReceiverBlockEntity rx = receiver();
-		boolean on = menu.getDisplayPhase() == RadioNetworkObject.PHASE_ON;
-		for(int i = 0; i < memoryButtons.length; i++) {
-			memoryButtons[i].isToggled = rx.isSelected(i);
-			leds[i].setIsOn(on && rx.getLitChannel() == i);
-		}
-		muteButton.isToggled = rx.isMuted();
-		powerButton.isToggled = menu.isPowered();
 		super.render(graphics, mouseX, mouseY, partialTick);
+		HfPanel.Control c = MarinePanels.at(panel, leftPos, topPos, mouseX, mouseY);
+		renderHint(graphics, hint(c));
+		List<Component> tip = c == null ? null : tooltip(c);
+		if(tip != null && !tip.isEmpty()) {
+			List<net.minecraft.util.FormattedCharSequence> lines = new ArrayList<>();
+			for(Component line : tip)
+				lines.addAll(font.split(line, 220));
+			graphics.renderTooltip(font, lines, mouseX, mouseY);
+		}
 	}
 
 	@Override
-	protected void renderAdditionalBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		graphics.fill(leftPos + LCD_X, topPos + LCD_Y, leftPos + LCD_X + LCD_W, topPos + LCD_Y + LCD_H, LCD_BACK);
+	protected void renderBg(@NotNull GuiGraphics g, float partialTick, int mouseX, int mouseY) {
+		g.blit(panel.texture(), leftPos, topPos, 0, 0, panel.width(), panel.height(), panel.width(), panel.height());
+		VHFReceiverBlockEntity rx = receiver();
+		boolean on = on();
+		for(HfPanel.Control c : panel.controls()) {
+			switch(c.type()) {
+				case "knob" -> MarinePanels.knob(g, leftPos, topPos, c, knobValue(c));
+				case "key" -> key(g, c, c.name().equals("key_set") ? rx.isSetMode() : !rx.isScanHold());
+				case "switch" -> slideSwitch(g, c, rx.isChannelOn(channelOf(c)));
+				case "lamp" -> {
+					if(!on)
+						break;
+					if(c.name().equals("set_lamp") && rx.isSetLit())
+						MarinePanels.lamp(g, leftPos, topPos, c, c.colour("colour", 0xFFFF3020));
+					else if(c.name().startsWith("numeral_") && rx.getScanChannel() == channelOf(c) && rx.isChannelOn(channelOf(c)))
+						numeral(g, c);
+				}
+				default -> {}
+			}
+		}
+	}
+
+	/** Where a knob's pointer sits, 0 to 1 of its travel. VOLUME on starts past OFF ({@code on_min_deg}). */
+	private double knobValue(HfPanel.Control c) {
+		VHFReceiverBlockEntity rx = receiver();
+		return switch(c.name()) {
+			case "volume" -> {
+				if(!menu.isPowered())
+					yield 0.0D;
+				double min = c.num("min_deg", -135), max = c.num("max_deg", 135), onMin = c.num("on_min_deg", min);
+				double gain = Math.max(0.0D, Math.min(1.0D, rx.getSpeakerGain() / 2.0D));
+				yield (onMin - min + gain * (max - onMin)) / (max - min);
+			}
+			case "squelch" -> rx.getSquelchLevel();
+			case "tune" -> {
+				int channel = rx.onlyChannel() >= 0 ? rx.onlyChannel() : rx.getScanChannel();
+				yield channel < 0 ? 0.0D
+						: (rx.getChannelHz(channel) - VHFReceiverBlockEntity.MIN_HZ) / (double)(VHFReceiverBlockEntity.MAX_HZ - VHFReceiverBlockEntity.MIN_HZ);
+			}
+			default -> 0.0D;
+		};
+	}
+
+	/** A latching key's ribbed cap, standing out or pushed in (lower and darker). */
+	private void key(GuiGraphics g, HfPanel.Control c, boolean in) {
+		var handles = c.rects("handles");
+		if(handles.size() < 2)
+			return;
+		int[] h = handles.get(in ? 1 : 0);
+		int face = c.colour("cap_colour", 0xFF3076C4), light = c.colour("cap_light", 0xFF6EA8E4), dark = c.colour("cap_dark", 0xFF184078);
+		if(in) {
+			light = face;
+			face = darker(face);
+		}
+		int x = leftPos + h[0], y = topPos + h[1];
+		g.fill(x, y, x + h[2], y + h[3], face);
+		g.fill(x, y, x + h[2], y + 1, light);
+		g.fill(x, y + h[3] - 1, x + h[2], y + h[3], dark);
+		for(int rx = x + 2; rx < x + h[2] - 1; rx += 3)
+			g.fill(rx, y + 2, rx + 1, y + h[3] - 2, dark);
+	}
+
+	/** A slide switch's chrome handle, with its dark cap, up (on) or down. */
+	private void slideSwitch(GuiGraphics g, HfPanel.Control c, boolean up) {
+		var handles = c.rects("handles");
+		int i = c.strings("positions").indexOf(up ? "ON" : "OFF");
+		if(i < 0 || i >= handles.size())
+			return;
+		int[] h = handles.get(i);
+		int x = leftPos + h[0], y = topPos + h[1];
+		g.fill(x, y, x + h[2], y + h[3], c.colour("handle_shadow", 0xFF46484C));
+		g.fill(x, y, x + h[2] - 1, y + h[3] - 1, c.colour("handle_colour", 0xFFD6D8DC));
+		g.fill(x + 2, y + 2, x + h[2] - 3, y + h[3] - 3, c.colour("cap_colour", 0xFF28282C));
+	}
+
+	/** The lit numeral: the painted glyph again, bright, over a dim glow a pixel round each of its dots. */
+	private void numeral(GuiGraphics g, HfPanel.Control c) {
+		int digit = (int)c.num("digit", 0);
+		if(digit < 1 || digit > VHFReceiverRenderer.DIGITS.length)
+			return;
+		String glyph = VHFReceiverRenderer.DIGITS[digit - 1];
+		int s = (int)c.num("glyph_scale", 2), x0 = leftPos + (int)c.num("glyph_x", c.x()), y0 = topPos + (int)c.num("glyph_y", c.y());
+		int lit = c.colour("colour", 0xFFFF4A30), glow = c.colour("glow", 0xFF6E160C);
+		for(int pass = 0; pass < 2; pass++)
+			for(int gy = 0; gy < 5; gy++)
+				for(int gx = 0; gx < 3; gx++) {
+					if(glyph.charAt(gy * 3 + gx) != '1')
+						continue;
+					int x = x0 + gx * s, y = y0 + gy * s;
+					if(pass == 0)
+						g.fill(x - 1, y - 1, x + s + 1, y + s + 1, glow);
+					else
+						g.fill(x, y, x + s, y + s, lit);
+				}
+	}
+
+	private static int darker(int argb) {
+		int r = (argb >> 16) & 0xFF, gr = (argb >> 8) & 0xFF, b = argb & 0xFF;
+		return (argb & 0xFF000000) | (r * 4 / 5) << 16 | (gr * 4 / 5) << 8 | b * 4 / 5;
 	}
 
 	@Override
-	protected void renderAdditionalTooltips(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-		renderLcd(graphics);
-		Component tip = tooltipAt(mouseX, mouseY);
-		if(tip != null)
-			graphics.renderTooltip(font, font.split(tip, 200), mouseX, mouseY);
-	}
+	protected void renderLabels(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {} // The panel art has its labels.
 
-	/** The display: frequency, what it listens to (dial, a channel, scan), mute and the cell. Dark while off. */
-	private void renderLcd(GuiGraphics graphics) {
-		int phase = menu.getDisplayPhase();
-		float cx = leftPos + LCD_X + LCD_W / 2.0F, cy = topPos + LCD_Y + LCD_H / 2.0F;
-		if(phase == RadioNetworkObject.PHASE_OFF)
-			return;
-		if(phase == RadioNetworkObject.PHASE_PWR) { // Switched on but starved: a flat cell, or not enough on the wire.
-			drawScaled(graphics, "PWR", cx, cy, 1.0F, LCD_WARN);
-			return;
-		}
-		VHFReceiverBlockEntity rx = receiver();
-		drawScaled(graphics, String.format(Locale.ROOT, "%.3f MHz", menu.getFrequency() / 1_000_000.0F), cx, cy, 1.0F, LCD_INK);
-		float small = 0.6F, top = topPos + LCD_Y + 4.0F, bottom = topPos + LCD_Y + LCD_H - 4.0F;
-		int left = leftPos + LCD_X + 3, right = leftPos + LCD_X + LCD_W - 3;
-		drawLeft(graphics, "FM", left, top, small, LCD_INK);
-		String mode;
-		if(rx.isScanning())
-			mode = rx.getLitChannel() >= 0 ? "SCAN " + (rx.getLitChannel() + 1) : "SCAN";
-		else if(rx.selectedCount() == 1)
-			mode = "MEM " + (Integer.numberOfTrailingZeros(selectedMask(rx)) + 1);
-		else
-			mode = "DIAL";
-		drawRight(graphics, mode, right, top, small, LCD_INK);
-		if(rx.isMuted())
-			drawLeft(graphics, "MUTE", left, bottom, small, LCD_WARN);
-		if(rx.hasCell()) {
-			int percent = rx.getCellPercent();
-			drawRight(graphics, "CELL " + percent + "%", right, bottom, small, percent < 10 ? LCD_WARN : LCD_DIM);
-		}
-	}
+	// -------------------- THE LABEL ABOVE THE PANEL --------------------
 
-	private static int selectedMask(VHFReceiverBlockEntity rx) {
-		int mask = 0;
-		for(int i = 0; i < VHFReceiverBlockEntity.MEMORIES; i++)
-			if(rx.isSelected(i))
-				mask |= 1 << i;
-		return mask;
-	}
-
-	private void drawLeft(GuiGraphics graphics, String text, float x, float cy, float scale, int colour) {
-		drawScaled(graphics, text, x + font.width(text) * scale / 2.0F, cy, scale, colour);
-	}
-
-	private void drawRight(GuiGraphics graphics, String text, float x, float cy, float scale, int colour) {
-		drawScaled(graphics, text, x - font.width(text) * scale / 2.0F, cy, scale, colour);
-	}
-
-	/** What the control under the mouse does, or null. */
-	private Component tooltipAt(int mouseX, int mouseY) {
-		VHFReceiverBlockEntity rx = receiver();
-		if(over(powerButton, mouseX, mouseY))
-			return tip("power");
-		if(over(tuningDial, mouseX, mouseY))
-			return tip("tuning");
-		if(over(speakerGainDial, mouseX, mouseY))
-			return tip("volume");
-		if(over(muteButton, mouseX, mouseY))
-			return tip(rx.isMuted() ? "muted" : "mute");
-		for(int i = 0; i < memoryButtons.length; i++) {
-			float hz = rx.getMemory(i);
-			if(over(memoryButtons[i], mouseX, mouseY))
-				return hz == 0.0F ? Component.translatable(key("memory_empty"), i + 1)
-						: Component.translatable(key("memory"), i + 1, String.format(Locale.ROOT, "%.3f", hz / 1_000_000.0F));
-			if(over(leds[i], mouseX, mouseY))
-				return Component.translatable(key("lamp"), i + 1);
-		}
-		if(isHovering(LCD_X, LCD_Y, LCD_W, LCD_H, mouseX, mouseY))
-			return rx.hasCell() ? Component.translatable(key("display_cell"), rx.getCellPercent()) : tip("display");
-		return null;
-	}
-
-	private static boolean over(AbstractWidget widget, int mouseX, int mouseY) {
-		return widget != null && widget.isMouseOver(mouseX, mouseY);
+	/** "146.520", or "154.4375" off the 5 kHz grid. */
+	public static String mhz(float hz) {
+		long rounded = Math.round(hz / (double)VHFReceiverBlockEntity.STEP_HZ) * VHFReceiverBlockEntity.STEP_HZ;
+		return String.format(Locale.ROOT, rounded % 5_000L == 0L ? "%.3f" : "%.4f", rounded / 1_000_000.0D);
 	}
 
 	private static String key(String name) {
 		return Radiocraft.translationKey("screen", "vhf_receiver." + name);
 	}
 
-	private static Component tip(String name) {
-		return Component.translatable(key(name));
+	private Component channelLine(String kind, int channel) {
+		return Component.translatable(key("hint." + kind), channel + 1, mhz(receiver().getChannelHz(channel)));
 	}
 
-	/** The speaker button: pressed in, the receiver is muted. */
-	private void onPressMute(ToggleButton button) {
-		boolean mute = !receiver().isMuted();
-		receiver().setMutedClient(mute);
-		SVHFReceiverPacket.send(receiver().getBlockPos(), SVHFReceiverPacket.SET_MUTED, mute ? 1 : 0);
-	}
-
-	/** A memory button: shift + click stores the frequency shown; a click selects, lets go, or stores into an empty one. */
-	protected void onMemoryButton(int channel) {
+	/**
+	 * What the label over the panel says, or null for nothing: a hovered switch's channel; TUNE's channel while it is
+	 * hovered or was just turned (or why it cannot set one); else, running, the channel being set or heard, SCAN while
+	 * the scan moves, or that no channel is on.
+	 */
+	@Nullable
+	private Component hint(@Nullable HfPanel.Control hovered) {
+		VHFReceiverBlockEntity rx = receiver();
+		if(hovered != null && hovered.type().equals("switch"))
+			return channelLine("channel", channelOf(hovered));
+		boolean tuning = hovered != null && hovered.name().equals("tune") || System.currentTimeMillis() - tunedAt < TUNED_SHOW_MS;
+		boolean setKey = hovered != null && hovered.name().equals("key_set");
+		if(tuning || setKey && rx.isSetMode()) {
+			if(!rx.isSetMode())
+				return Component.translatable(key("hint.set_off"));
+			if(!rx.isSetLit())
+				return Component.translatable(key("hint.set_one"));
+			if(!on())
+				return Component.translatable(key("hint.off"));
+			return channelLine("set", rx.onlyChannel());
+		}
 		if(!menu.isPowered())
-			return; // Like the dial, the memories need it switched on.
-		SVHFReceiverPacket.send(receiver().getBlockPos(), Screen.hasShiftDown() ? SVHFReceiverPacket.STORE_MEMORY : SVHFReceiverPacket.PRESS_MEMORY, channel);
+			return null;
+		if(menu.getDisplayPhase() != RadioNetworkObject.PHASE_ON)
+			return Component.translatable(key("hint.no_power"));
+		if(rx.isSetLit())
+			return channelLine("set", rx.onlyChannel());
+		int channel = rx.getScanChannel();
+		if(rx.channelsOnCount() == 0 || channel < 0 || !rx.isChannelOn(channel))
+			return Component.translatable(key("hint.no_channels"));
+		if(rx.isScanning() && rx.isScanHold())
+			return channelLine("hold", channel);
+		if(rx.isScanning() && !rx.isScanStopped())
+			return Component.translatable(key("hint.scan"));
+		return channelLine("channel", channel);
 	}
 
+	/** {@code text} in a tooltip's box, centred over the panel just above it (inside the window's top if there is no room). */
+	private void renderHint(GuiGraphics g, @Nullable Component text) {
+		if(text == null)
+			return;
+		int w = font.width(text);
+		int x = leftPos + (imageWidth - w) / 2, y = Math.max(4, topPos - 16);
+		g.pose().pushPose();
+		g.pose().translate(0.0F, 0.0F, 400.0F);
+		TooltipRenderUtil.renderTooltipBackground(g, x, y, w, font.lineHeight - 1, 0);
+		g.drawString(font, text, x, y, 0xFFFFFFFF, false);
+		g.pose().popPose();
+	}
+
+	/**
+	 * What a key under the mouse does, or null. Only the two keys explain themselves: the knobs' tooltips covered the
+	 * panel (maintainer, 2026-11-09), and the switches say their channel in the label instead.
+	 */
+	@Nullable
+	private List<Component> tooltip(HfPanel.Control c) {
+		VHFReceiverBlockEntity rx = receiver();
+		return switch(c.name()) {
+			case "key_set" -> List.of(Component.translatable(key(rx.isSetMode() ? "set_in" : "set_out")));
+			case "key_man" -> List.of(Component.translatable(key(rx.isScanHold() ? "man" : "auto")));
+			default -> null;
+		};
+	}
 }

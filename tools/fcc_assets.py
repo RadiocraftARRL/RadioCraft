@@ -119,13 +119,15 @@ def armour_layer():
     img = canvas(64, 32)
     # Head box (8x8x8): top (8,0), sides y 8..15 at x 0, 8, 16, 24. The crown covers the top half of the head.
     fill(img, 8, 0, 16, 8, FELT)  # Crown top.
+    # Face rows are y 8..15 and the eyes are at y 12, so the hat stops above them (2026-11-09: the brim was on the
+    # eyes): felt to y 9, the band at y 10, and the brim one row higher at y 11.
     for x0 in (0, 8, 16, 24):
-        fill(img, x0, 8, x0 + 8, 11, FELT)
-        fill(img, x0, 11, x0 + 8, 12, BAND)  # The hat band.
+        fill(img, x0, 8, x0 + 8, 10, FELT)
+        fill(img, x0, 10, x0 + 8, 11, BAND)  # The hat band.
     fill(img, 9, 1, 15, 2, FELT_DARK)  # The pinch in the crown.
     # Hat overlay (a size bigger): only its band row shows, as the brim.
     for x0 in (32, 40, 48, 56):
-        fill(img, x0, 12, x0 + 8, 13, FELT_DARK)
+        fill(img, x0, 11, x0 + 8, 12, FELT_DARK)
     # Body box (8x12x4): top (20,16), right (16,20), front (20,20), left (28,20), back (32,20).
     fill(img, 20, 16, 36, 20, JACKET)
     fill(img, 16, 20, 40, 32, JACKET)

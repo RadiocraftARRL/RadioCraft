@@ -496,5 +496,17 @@
     "sounds": [
       "radiocraft:static_cw"
     ]
+  },
+  "dsc_alarm": {
+    "subtitle": "subtitles.radiocraft.dsc_alarm",
+    "sounds": [
+      "radiocraft:dsc_alarm"
+    ]
+  },
+  "dsc_beep": {
+    "subtitle": "subtitles.radiocraft.dsc_beep",
+    "sounds": [
+      "radiocraft:dsc_beep"
+    ]
   }
 }

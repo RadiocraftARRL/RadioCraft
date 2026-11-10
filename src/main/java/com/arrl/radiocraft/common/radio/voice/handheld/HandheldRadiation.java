@@ -54,13 +54,24 @@ public final class HandheldRadiation {
 
 	/** Sends a packet from {@code self} to every antenna on {@code network} in reach, at the strength its voice would have. */
 	public static void data(IAntenna self, AntennaNetwork network, ServerLevel level, TncPacket payload, Band band, float frequencyHertz) {
+		data(self, network, level, payload, band, frequencyHertz, true);
+	}
+
+	/**
+	 * As {@link #data(IAntenna, AntennaNetwork, ServerLevel, TncPacket, Band, float)}; with {@code logged} false the
+	 * packet goes past the moderation logs and the transmitter log (a distress beacon's homing tone, several times a
+	 * second, notes itself in the transmitter log under its own key; 2026-11-09).
+	 */
+	public static void data(IAntenna self, AntennaNetwork network, ServerLevel level, TncPacket payload, Band band, float frequencyHertz, boolean logged) {
 		IAntenna.AntennaPos here = self.getAntennaPos();
 		if(network == null || here == null || here.level() != level)
 			return;
-		com.arrl.radiocraft.common.radio.TransmitterLog.record(self, here, band, frequencyHertz);
-		com.arrl.radiocraft.common.radio.voice.RadioModeration.data(level, payload, frequencyHertz);
-		net.minecraft.world.entity.player.Player holder = self.getPlayer();
-		com.arrl.radiocraft.common.moderation.ModerationHooks.data(self, self, level, payload, frequencyHertz, band, holder == null ? null : holder.getUUID());
+		if(logged) {
+			com.arrl.radiocraft.common.radio.TransmitterLog.record(self, here, band, frequencyHertz);
+			com.arrl.radiocraft.common.radio.voice.RadioModeration.data(level, payload, frequencyHertz);
+			net.minecraft.world.entity.player.Player holder = self.getPlayer();
+			com.arrl.radiocraft.common.moderation.ModerationHooks.data(self, self, level, payload, frequencyHertz, band, holder == null ? null : holder.getUUID());
+		}
 		for(IAntenna antenna : others(network)) {
 			IAntenna.AntennaPos there = antenna.getAntennaPos();
 			if(antenna == self || there == null || there.level() != here.level() || BandUtils.outOfReach(band, here.world(), there.world()))
@@ -81,7 +92,8 @@ public final class HandheldRadiation {
 		}
 	}
 
-	private static double strength(IAntennaPacket packet, ServerLevel level, Band band, IAntenna.AntennaPos here, IAntenna.AntennaPos there) {
+	/** What a handheld at {@code here} puts into an antenna at {@code there} (public for the VHF receiver's GameTests, 2026-11-09). */
+	public static double strength(IAntennaPacket packet, ServerLevel level, Band band, IAntenna.AntennaPos here, IAntenna.AntennaPos there) {
 		double distance = Math.sqrt(here.world().distSqr(there.world()));
 		double lineOfSight = BandUtils.getBaseStrength(band, distance, 1.0F, 0.0F, level.isDay());
 		if(lineOfSight > 0.0D) // A handheld has no skip: only hills and roofs in the way.

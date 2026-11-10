@@ -8,6 +8,51 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 
 ### New
 
+#### Distress alerting
+- **DSC distress on the marine radio**: the fixed-mount marine radio has a red **DISTRESS** button under a flip cover.
+  Lift the cover and hold the button 3 seconds (it counts down with a beep a second) to send a DSC distress call on
+  channel 70 with your **MMSI** (a nine-digit number of your own, shown when you point at the button), the radio's
+  position (live on a Sable ship) and the nature of distress, picked first with the new **NAT** key (fire, flooding,
+  collision, grounding, capsizing, sinking, adrift, abandoning ship, man overboard; undesignated if none). The radio
+  then goes to channel 16 for the voice MAYDAY. The call repeats every 3.5 to 4.5 minutes until another station
+  acknowledges it (the display says ACKNOWLEDGED) or you hold the button again to cancel it.
+- Every marine radio that is on listens to channel 70 whatever channel it is on. A distress call sounds a two-tone
+  alarm and puts the caller's MMSI, the nature and the coordinates on the display for two minutes. Any key silences
+  the alarm, the new **ACK** key acknowledges the call (the caller stops repeating), CLR clears the display. The
+  bursts are data packets through the radio's antenna, so they reach as far as its voice: antenna and height count.
+  The marine handheld has no DSC.
+- **Commercial VHF radios hear distress beacons**: a commercial VHF mobile with a channel on 161.975 MHz (and the
+  knob on it) decodes beacon alerts. A new one sounds a short alarm and its display shows DISTRESS DETECTED 161.975
+  and the beacon's coordinates until cleared (sneak and use the radio). Marine radios do not hear beacons: their DSC
+  receiver is channel 70 only.
+- **DISTRESS program** for the radio computer, on its own floppy: it listens through every radio cabled to the
+  computer at once, with no picker: marine radios for DSC calls and commercial VHF mobiles on 161.975 for beacons, and
+  says what it can hear ("DSC: 1 marine radio", "BEACONS: no commercial radio on 161.975"). Every alert any of them
+  heard shows once on a map round your station (DSC calls red, beacons orange, flashing while active) and in a list
+  with the MMSI or beacon owner, nature, age, bearing and distance, and state (ACTIVE, ACKNOWLEDGED, CANCELLED,
+  SPENT). A new alert sounds the alarm. F5 acknowledges a DSC call through a marine radio; F6 prints a map of the
+  area round the alert, marked, with its details.
+- **Send an SOS from DISTRESS**: F7 picks a MARINE SOS (the cabled marine radio's DSC distress call, as its button
+  sends it, repeated until acknowledged) or a PERSONAL SOS (a beacon-style alert with your name on 161.975 MHz
+  through a cabled commercial VHF mobile, every 50 seconds until cancelled, or until that radio loses power or its
+  cable), then the nature of distress from a list, then confirms. The outgoing call shows at the bottom; F8 cancels
+  it. A kind that cannot go now is greyed with the reason.
+- **Distress beacon**: a one-use EPIRB. Right click opens its arming cover, holding right click switches it on, and then
+  nothing switches it off. For one Minecraft day it sends its position and your name on 161.975 MHz every 50 seconds,
+  heard by commercial VHF radios on 161.975 and DISTRESS, and a homing tone a direction finder can follow, from your inventory or floating
+  in the water (it does not despawn while it sends). Then it is a Spent Distress Beacon. Its recipe takes a diamond.
+- Two new sounds: the DSC alarm and the DSC beep.
+
+#### Contests
+- **Radio contests** for server operators: `/contest start [name]` announces a contest to everyone, and from then on
+  every verified two-way contact counts (the same contacts the advancements use: both stations heard each other).
+  `/contest stop` announces the end and hands out a **Contest Report** book, to whoever stopped it and to every
+  participant online. It has when the contest ran and for how long; the winners for the longest contact, the most
+  unique contacts, the most biomes activated (operated from) and the most biomes reached, with ties all listed; and
+  every player's contacts, with the other player, the frequency, the mode (FM, AM, USB, LSB, FT8) and both stations'
+  heights. The same pair talking on and on is one contact; working them again later is listed as a dupe. A contest
+  survives a server restart. Needs permission level 2.
+
 #### Bands, band edges and the MARS mod
 
 - **Two commercial bands**: **low band** (30-50 MHz, just above 10m) and **commercial VHF** (150-174 MHz, with the
@@ -38,7 +83,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     and encryption, and the 2m ham band too. Like 1990s fire radios it keeps the 16-position knob and adds **four
     zones** picked with its **A**, **B**, **C** and **D** keys (A = channels 1-16, B = 17-32, C = 33-48, D = 49-64);
     its display shows the channel name, zone and channel.
-  - **Commercial Mobile Radio** (150-174 MHz, analog and digital) and **Commercial Low Band Radio** (30-50 MHz, analog):
+  - **Commercial VHF Mobile Radio** (150-174 MHz, analog and digital) and **Commercial Low Band Radio** (30-50 MHz, analog):
     desk, vehicle and ship radios with a hand mic, powered and wired to an antenna like the base stations.
 - **Digital voice** has no static: clean until the signal would be 70% static on FM, a short warble, then nothing.
   An **encrypted** channel sounds like garbled digital noise without the key, and any digital signal is a harsh buzz
@@ -134,7 +179,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
     marked; zoom in up to 64 times round the dial, click a signal or Ctrl+arrow to tune to it. **Scan** a range
     or the **memory channels** (the Frequency Manager's CHANNELS.FRQ: store the dial with F4, load another .FRQ with
     F5): the scan stops on a signal over the squelch and goes on three seconds after it drops. The waterfall shows what
-    the antenna really hears, and costs nothing while nobody watches it.
+    the antenna really hears, and costs nothing while nobody watches it. With more than one radio on the interface
+    it asks which one to control, and remembers it per computer (R changes it).
   - **FT8** (a floppy: blank floppy + any pressure plate): the weak-signal digital mode. 15 second slots on game time,
     even and odd; short structured messages (CQ with a grid square, reply, signal report, R-report, RR73, 73) on the
     band's FT8 frequency (3.573, 7.074, 14.074, 28.074, 144.174 MHz, now on the band plan too), each station at its own
@@ -192,7 +238,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - **Radio programs**: these go on the air the way a shack computer does, through a **radio interface** cabled to the
   computer (touching it or on its data wire) and the radios beside that interface, under the interface's callsign.
   - **APRS**: the computer as an APRS station on a big screen: stations heard with distance and bearing, messages with
-    acks and retries, a map, beacons by hand or on the timer. Needs a VHF radio.
+    acks and retries, a map, beacons by hand or on the timer. Needs a VHF radio. With more than one VHF radio on the
+    interface it asks which one transmits (F9 changes it, remembered per computer); every radio still receives.
   - **Radio Fax** (FAX): faxes pictures, text files and books to fax machines and other computers; what comes in is
     kept on the disk until you print it. A fax machine on the same station answers calls instead.
   - **SSTV**: colour pictures to everyone in range (no addressing, as on the air), about half a minute each, coming in line by line and torn by
@@ -311,12 +358,13 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 #### FCC field gear
 
 - The **FCC Field Agent Hat** and **Jacket** (1970s felt and corduroy, with a wide tie) are armour that protects like
-  leather and mends with brown wool.
+  leather and mends with brown wool. The jacket is cut close to the body instead of standing off it like a chestplate,
+  and on slim (Alex) skins its sleeves are slim too.
 - The **FCC Banner Pattern** (paper and a lightning rod) puts the FCC seal on a banner or shield at a loom. A
   ready-made blue FCC banner is in the creative menu.
 - The **FCC Badge** cannot be crafted: an operator issues it with `/radiocraft fcc badge <player>`, stamped with the
-  player's name and a badge number. Right click shows it to the players around you. With Curios it is worn in the
-  chest (body) slot. It gives no powers, but the **Radio Moderation Computer marks badge holders** with `[FCC]` after
+  player's name and a badge number. Right click shows it to the players around you. With Curios it is worn on the
+  left breast (body slot) or clipped to the front of the belt (belt slot), and shows on the player, over the jacket. It gives no powers, but the **Radio Moderation Computer marks badge holders** with `[FCC]` after
   their name (talkers, hearers and admins).
 
 #### Real-World Interface
@@ -440,9 +488,15 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 - **QUICK** on every new radio panel: hold to store the frequency, press to jump there, press again to come back.
 - The **all-band radio** has **50 memories**: hold MEMORY to store (pick the channel with the dial, press MEMORY),
   VFO/MEM to switch, hold VFO/MEM on a memory to copy it to the VFO.
-- The **VHF receiver** works properly now: a frequency display, six memory buttons that store, select and **scan**,
-  a mute button, tooltips on every control, and it runs on a small NiCd or alkaline cell (shift right click) with no
-  power wire.
+- The **VHF receiver** is now an **eight-channel scanner** after a 1970s crystal set (new model and panel, with a
+  carry handle): 144 to 174 MHz FM, so 2 m ham, marine and commercial VHF. Each channel has a slide switch; it scans
+  the ones that are on, stops on a signal that opens the **SQUELCH** and moves on after it goes quiet, and the
+  channel's red numeral lights. **MAN/AUTO** holds the scan. With **SET** in and one channel on, the SET lamp lights
+  and **TUNE** changes that channel's frequency (2.5 kHz a click, shift 25 kHz, control 1 MHz). **VOLUME** turns it
+  off at the bottom. No display: the frequency shows in a label above the panel. Its own **whip antenna** hears as far
+  as a VHF handheld would from the same spot; a VHF antenna coaxed to it takes over. It runs on a small NiCd or alkaline
+  cell (shift right click) with no power wire. Receivers from earlier 1.12 builds keep their memories as channels;
+  the mute button is gone.
 - **Power Switch - On/Off** and **Power Switch - Left/Right**: switch power circuits by hand or with a redstone pulse.
 - The **Stable Chemical Battery**: not rechargeable, inert until its first redstone signal, then powers the circuit
   until flat. Stores full and sealed: an emergency reserve.
@@ -515,13 +569,13 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
 ### Not finished yet
 
 - Most new blocks and items have **placeholder art** (plain boxes and simple textures) until the models are drawn; the
-  FCC hat looks like a cap, not yet a fedora, and the badge is not drawn on the player when worn.
+  FCC hat looks like a cap, not yet a fedora.
 - **Real-World Interface**: not yet tried with real sound cards and serial ports. It carries voice only (no CW or
   data), and it does not hear commercial radio modules' broadcasts or the WEFAX coast station in Everywhere mode.
 - **ADS-B**: hills and buildings do not block 1090 MHz yet (only the craft's height sets the range). It is built on Sable;
   Create Aeronautics craft, which are built on Sable too, have not been tried yet.
-- **Marine radios**: no DSC distress button. A weather alert generator's data and alert tone can be heard on WX6, but
-  no spoken weather broadcast yet.
+- **Marine radios**: a weather alert generator's data and alert tone can be heard on WX6, but no spoken weather
+  broadcast yet. Satellites do not relay distress alerts yet.
 - The **Music Player** is heard only by the player who started it, not by other players.
 - Another Weather Mod's new sirens and recorded siren sounds are still to come.
 

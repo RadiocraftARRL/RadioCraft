@@ -49,9 +49,9 @@ public final class RadioDisplays {
 					new Lamp(5.5F, 6.0F, 1.5F, 2.0F, 0.75F, 0xFFFF3B30, true),
 					new Lamp(5.5F, 6.0F, 2.5F, 3.0F, 0.75F, 0xFF3BFF6A, false)),
 			"low_band_mobile", commercialLamps(),
-			"marine_radio", java.util.List.of( // TX and RX lamps right of the display (placeholder model, see ModelDesignBounty).
-					new Lamp(2.75F, 3.75F, 3.0F, 3.75F, 3.75F, 0xFFFF3B30, true),
-					new Lamp(2.75F, 3.75F, 1.5F, 2.25F, 3.75F, 0xFF3BFF6A, false)));
+			"marine_radio", java.util.List.of( // TX and RX lamps under the display, right of the switches (tools/marine_radio_assets.py, 2026-11-09).
+					new Lamp(10.0F, 10.25F, 2.25F, 2.5F, 4.5F, 0xFFFF3B30, true),
+					new Lamp(9.5F, 9.75F, 2.25F, 2.5F, 4.5F, 0xFF3BFF6A, false)));
 
 	/** The commercial mobiles' TX and RX lamps, right of the display (placeholder model, see ModelDesignBounty). */
 	private static java.util.List<Lamp> commercialLamps() {

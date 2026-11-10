@@ -118,4 +118,33 @@ class MarineRadioStateTest {
 		assertEquals("69", state.press(US, MarineRadioState.Key.TURN.ordinal(), 1).channel());
 		assertSame(state, state.press(US, 99, 0), "an unknown key does nothing");
 	}
+
+	@Test
+	void sixteenKeyGoesToSixteenAndBack() {
+		MarineRadioState working = MarineRadioState.DEFAULT.select(US, "22A");
+		MarineRadioState sixteen = working.press(US, MarineRadioState.Key.SIXTEEN.ordinal(), 0);
+		assertEquals("16", sixteen.channel());
+		assertEquals("22A", sixteen.previous());
+		assertEquals("22A", sixteen.sixteen(US).channel(), "pressed again: back to the working channel, never 9");
+		assertSame(MarineRadioState.DEFAULT, MarineRadioState.DEFAULT.sixteen(US), "on 16 with nothing to go back to");
+	}
+
+	@Test
+	void selectKeyTakesTheChannelByItsPlaceInTheTable() {
+		int at = MarineChannels.indexOf(US, "68");
+		assertEquals("68", MarineRadioState.DEFAULT.press(US, MarineRadioState.Key.SELECT.ordinal(), at).channel());
+		assertSame(MarineRadioState.DEFAULT, MarineRadioState.DEFAULT.press(US, MarineRadioState.Key.SELECT.ordinal(), -1));
+		assertSame(MarineRadioState.DEFAULT, MarineRadioState.DEFAULT.press(US, MarineRadioState.Key.SELECT.ordinal(), 999));
+	}
+
+	@Test
+	void channelLabelsFitTheDisplay() {
+		assertEquals("DISTRESS", MarineChannels.label(US, "16"));
+		assertEquals("COAST GUARD", MarineChannels.label(US, "22A"));
+		assertEquals("WEATHER", MarineChannels.label(US, "WX1"));
+		assertEquals("", MarineChannels.label(US, "99"));
+		for(Region region : Region.values())
+			for(MarineChannels.Channel channel : MarineChannels.table(region))
+				assertTrue(MarineChannels.label(region, channel.name()).length() <= 12, channel.name());
+	}
 }

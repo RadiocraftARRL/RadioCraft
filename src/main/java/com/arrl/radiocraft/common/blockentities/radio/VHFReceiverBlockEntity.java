@@ -2,6 +2,7 @@ package com.arrl.radiocraft.common.blockentities.radio;
 
 import com.arrl.radiocraft.CommonConfig;
 import com.arrl.radiocraft.api.benetworks.BENetworkObject;
+import com.arrl.radiocraft.common.be_networks.network_objects.RadioNetworkObject;
 import com.arrl.radiocraft.common.be_networks.network_objects.VHFReceiverNetworkObject;
 import com.arrl.radiocraft.common.init.RadiocraftBlockEntities;
 import com.arrl.radiocraft.common.init.RadiocraftItems;
@@ -9,6 +10,7 @@ import com.arrl.radiocraft.common.items.PortableBatteries;
 import com.arrl.radiocraft.common.items.SmallAlkalineBatteryItem;
 import com.arrl.radiocraft.common.menus.VHFReceiverMenu;
 import com.arrl.radiocraft.common.radio.Band;
+import com.arrl.radiocraft.common.radio.antenna.ReceiverWhipAntenna;
 import com.arrl.radiocraft.common.radio.wxalert.ReceiverSignals;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -25,31 +27,45 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
- * The 2m FM receiver: a radio that only listens. Besides its tuning dial it has (2026-11-09):
+ * The VHF receiver: since 2026-11-09 an eight-channel crystal-style scanner after a 1970s "scan FM monitor", 144 to 174
+ * MHz FM (2 m ham, marine and commercial VHF). It has no dial and no display:
  * <ul>
- * <li><b>Six memory channels.</b> A numbered button with nothing stored in it stores the frequency on the dial and
- * selects it; shift + click stores over it. Each selected channel's button stays pressed in. One selected: the receiver
- * listens there. Two or more: it <b>scans</b> them, {@link #SCAN_DWELL_TICKS} on each, stops on one with a signal and
- * stays {@link #SCAN_HANG_TICKS} after it goes quiet. Turning the tuning dial leaves the channels for the dial (the
- * buttons pop out). The lamp over a channel's button lights while a signal comes in on it.</li>
- * <li><b>A mute button</b> (the speaker icon): muted, it plays nothing, but its lamps and scan still see signals.</li>
+ * <li><b>Eight channels</b>, each with a slide switch: up on, down off. The ones switched on are <b>scanned</b>
+ * ({@link #tickScan}): {@link #SCAN_DWELL_TICKS} on each, stopping on one whose signal opens the squelch and moving on
+ * {@link #SCAN_HANG_TICKS} after it goes quiet. One switched on: it sits there. None: silence. The channel it is on has
+ * its numeral lit. The <b>MAN/AUTO</b> key holds the scan where it is (MAN) or lets it run (AUTO).</li>
+ * <li><b>SET</b>: with the SET key in and exactly one channel switched on, the SET lamp lights and the TUNE knob moves
+ * that channel's frequency, {@link #STEP_HZ} a click, inside {@link #MIN_HZ} to {@link #MAX_HZ}. Otherwise TUNE does
+ * nothing.</li>
+ * <li><b>VOLUME</b> with OFF (the power switch) and <b>SQUELCH</b>.</li>
  * <li><b>A small cell.</b> Shift + right-click with a Small NiCd or Small Alkaline Battery puts one in (and takes the
  * old one out); shift + right-click with an empty hand takes it out. With nothing on its power wire it runs from the
  * cell ({@link VHFReceiverNetworkObject}): a full one lasts about half as long as in the weather alert receiver while
  * it only listens ({@link #CELL_DAYS}), and {@link #ACTIVE_DRAW_FACTOR} times faster while it plays a signal. Wired
  * power never charges the cell, as the weather alert receiver never charges its own. A flat alkaline comes out dead.</li>
  * </ul>
+ * Saves from before the scanner (a dial and six memories) load: see {@link #readOldMemories}.
  */
 public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
 
-    /** Memory channels, one for each numbered button. */
-    public static final int MEMORIES = 6;
+    /** Channels, one for each numeral and slide switch. */
+    public static final int CHANNELS = 8;
+    private static final int ALL_CHANNELS = (1 << CHANNELS) - 1;
+    /** What it tunes: the bottom of 2 m to the top of commercial VHF (marine is inside it). */
+    public static final float MIN_HZ = 144_000_000.0F, MAX_HZ = 174_000_000.0F;
+    /**
+     * TUNE's step, and the grid every channel sits on: 2.5 kHz reaches the 5 kHz ham steps, the 25 kHz marine channels
+     * and the 12.5 kHz commercial ones. Shift + turn moves {@link #COARSE_STEP_HZ}, control + turn {@link #FAST_STEP_HZ}.
+     */
+    public static final int STEP_HZ = 2_500, COARSE_STEP_HZ = 25_000, FAST_STEP_HZ = 1_000_000;
+    /** The crystals it comes with: 2 m simplex calling, two 2 m repeater outputs, marine 16 and 9, fire and police mutual aid, NOAA weather. */
+    public static final float[] FACTORY_HZ = { 146_520_000.0F, 146_940_000.0F, 147_000_000.0F, 156_800_000.0F, 156_450_000.0F,
+            154_280_000.0F, 155_475_000.0F, 162_550_000.0F };
     /** How long the scan listens on each channel for a signal before it moves on, ticks. */
-    public static final int SCAN_DWELL_TICKS = 8;
+    public static final int SCAN_DWELL_TICKS = 4; // Twice the first speed (maintainer, 2026-11-09).
     /** How long the scan stays on a channel after its signal goes quiet, ticks (a reply usually comes within it). */
     public static final int SCAN_HANG_TICKS = 40;
     /** A signal heard this recently still counts as coming in (voice frames are 20 ms apart), ticks. */
@@ -59,20 +75,26 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
     /** How many times its idle draw it takes from the cell while it plays a signal (the speaker amplifier). */
     public static final double ACTIVE_DRAW_FACTOR = 4.0D;
 
-    /** Stored frequencies in Hz, 0 for an empty channel. */
-    private final float[] memories = new float[MEMORIES];
-    /** Selected channels, a bit each: none is the dial, one is that channel, more is a scan. */
-    private int selected = 0;
-    /** The channel whose lamp is lit (a signal coming in on it), -1 for none. Synced. */
-    private int litChannel = -1;
-    private boolean muted = false;
+    /** Each channel's frequency in Hz, on the {@link #STEP_HZ} grid. */
+    private final float[] channels = FACTORY_HZ.clone();
+    /** The channel switches that are up, a bit each. A new receiver has channel 1 on. */
+    private int channelsOn = 1;
+    private boolean setMode = false;
+    private boolean scanHold = false;
+    /** The channel the scan is on, -1 before it first goes to one. Synced. */
+    private int scanChannel = -1;
+    /** Stopped on a signal (or waiting out the hang after it). Synced. */
+    private boolean scanStopped = false;
+    /** Memories past the eighth from an old save (float bits), kept so nothing is lost. */
+    private int[] extraMemories = new int[0];
     private ItemStack cell = ItemStack.EMPTY;
 
     // Server only, not saved.
-    private int scanIndex = -1; // The selected channel the scan is on.
-    private float scanHz = 0.0F; // What the scan last tuned to: anything else means the dial was turned.
-    private long dwellStart = 0L;
+    @Nullable
+    private ReceiverWhipAntenna whip = null; // Its own whip, on the air while it runs with nothing on its coax.
+    private long dwellStart = 0L; // When the scan last moved: only a signal after it counts.
     private long lastHeard = Long.MIN_VALUE / 2;
+    private int syncedScanChannel = -2;
     private double cellDebt = 0.0D; // Fractions of FE owed to the cell's drain.
     private int syncedCellPercent = -1;
 
@@ -112,10 +134,10 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
 		return false;
 	}
 
-    /** Muted, it takes nothing in to play; the carrier a scan stops on is still seen (RadioBlockEntity#recordCarrier). */
+    /** With every channel switched off it hears nothing. */
     @Override
     protected boolean isListening() {
-        return !muted && super.isListening();
+        return channelsOn != 0 && super.isListening();
     }
 
     // -------------------- CELL --------------------
@@ -197,7 +219,7 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
         syncCell(false);
     }
 
-    /** Tells the client when the cell's percentage moves (the screen shows it). */
+    /** Tells the client when the cell's percentage moves (the VOLUME knob's tooltip shows it). */
     private void syncCell(boolean force) {
         int percent = hasCell() ? getCellPercent() : -1;
         if(force || percent != syncedCellPercent) {
@@ -206,137 +228,170 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
         }
     }
 
-    // -------------------- MEMORIES AND SCAN --------------------
+    // -------------------- CHANNELS AND SCAN --------------------
 
-    /** The frequency stored in {@code channel} (0 to 5), 0 if it is empty. */
-    public float getMemory(int channel) {
-        return channel >= 0 && channel < MEMORIES ? memories[channel] : 0.0F;
+    /** Puts {@code hz} on the {@link #STEP_HZ} grid inside {@link #MIN_HZ} to {@link #MAX_HZ}. */
+    public static float snapHz(double hz) {
+        if(!Double.isFinite(hz))
+            return MIN_HZ;
+        long steps = Math.round((hz - MIN_HZ) / STEP_HZ);
+        steps = Math.max(0L, Math.min((long)((MAX_HZ - MIN_HZ) / STEP_HZ), steps));
+        return (float)(MIN_HZ + steps * (double)STEP_HZ);
     }
 
-    public boolean isSelected(int channel) {
-        return channel >= 0 && channel < MEMORIES && (selected & (1 << channel)) != 0;
+    /** The frequency of {@code channel} (0 to 7), in Hz. */
+    public float getChannelHz(int channel) {
+        return channel >= 0 && channel < CHANNELS ? channels[channel] : 0.0F;
     }
 
-    /** How many channels are selected: 0 the dial, 1 a channel, 2 or more a scan. */
-    public int selectedCount() {
-        return Integer.bitCount(selected);
+    public boolean isChannelOn(int channel) {
+        return channel >= 0 && channel < CHANNELS && (channelsOn & (1 << channel)) != 0;
+    }
+
+    /** How many channel switches are up: 0 silence, 1 that channel, 2 or more a scan. */
+    public int channelsOnCount() {
+        return Integer.bitCount(channelsOn);
+    }
+
+    /** The only channel switched on, or -1 if none or more than one is. */
+    public int onlyChannel() {
+        return channelsOnCount() == 1 ? Integer.numberOfTrailingZeros(channelsOn) : -1;
     }
 
     public boolean isScanning() {
-        return selectedCount() >= 2;
+        return channelsOnCount() >= 2;
     }
 
-    public int getLitChannel() {
-        return litChannel;
+    /** The channel the scan is on (its numeral is lit while the receiver runs), -1 before it first goes to one. Synced. */
+    public int getScanChannel() {
+        return scanChannel;
     }
 
-    public boolean isMuted() {
-        return muted;
+    /** True while a scan is stopped on a signal, or waiting out {@link #SCAN_HANG_TICKS} after one. Synced. */
+    public boolean isScanStopped() {
+        return scanStopped;
     }
 
-    /** Client side, so the screen shows a change before the server syncs it back. */
-    public void setMutedClient(boolean value) {
-        muted = value;
+    /** The SET key is in. */
+    public boolean isSetMode() {
+        return setMode;
     }
 
-    public void setMuted(boolean value) {
-        if(muted != value) {
-            muted = value;
-            setChanged();
-            updateBlock();
+    /** MAN: the scan holds on the channel it is on (the key out); AUTO, the key in, scans. */
+    public boolean isScanHold() {
+        return scanHold;
+    }
+
+    /** True if the SET lamp may light and TUNE retunes: SET in and exactly one channel switched on (the receiver must also be running). */
+    public boolean isSetLit() {
+        return setMode && channelsOnCount() == 1;
+    }
+
+    /** A channel switch flipped up ({@code on}) or down. Works with the power off, as a switch does. */
+    public void setChannelOn(int channel, boolean on) {
+        if(channel < 0 || channel >= CHANNELS || isChannelOn(channel) == on)
+            return;
+        channelsOn = on ? channelsOn | (1 << channel) : channelsOn & ~(1 << channel);
+        changed();
+    }
+
+    public void setSetMode(boolean value) {
+        if(setMode != value) {
+            setMode = value;
+            changed();
         }
+    }
+
+    public void setScanHold(boolean value) {
+        if(scanHold != value) {
+            scanHold = value;
+            changed();
+        }
+    }
+
+    /** Sets {@code channel}'s frequency, put on the grid and inside the range ({@link #snapHz}). The radio follows if it is on that channel. */
+    public void setChannelHz(int channel, float hz) {
+        if(channel < 0 || channel >= CHANNELS)
+            return;
+        channels[channel] = snapHz(hz);
+        if(level != null && !level.isClientSide && channel == scanChannel && isChannelOn(channel))
+            tuneTo(channels[channel]);
+        changed();
     }
 
     /**
-     * A numbered button pressed: an empty channel stores the frequency on the dial and is selected; a stored one is
-     * selected or let go. With one channel left selected the receiver tunes to it. Server side.
+     * TUNE turned {@code deltaHz}: moves the one channel that is switched on, while SET is in ({@link #isSetLit}). False,
+     * and nothing changes, otherwise. The screen calls it too, to show the new frequency before the server answers.
      */
-    public void pressMemory(int channel) {
-        if(channel < 0 || channel >= MEMORIES)
-            return;
-        if(memories[channel] == 0.0F) {
-            memories[channel] = frequency;
-            selected |= 1 << channel;
-        }
-        else
-            selected ^= 1 << channel;
-        afterSelectionChange();
+    public boolean tuneSetChannel(int deltaHz) {
+        int channel = onlyChannel();
+        if(!setMode || channel < 0)
+            return false;
+        setChannelHz(channel, (float)(channels[channel] + (double)deltaHz));
+        return true;
     }
 
-    /** Shift + click on a numbered button: stores the frequency on the dial in it, whatever was there. Server side. */
-    public void storeMemory(int channel) {
-        if(channel < 0 || channel >= MEMORIES)
-            return;
-        memories[channel] = frequency;
-        afterSelectionChange();
-    }
-
-    private void afterSelectionChange() {
-        scanIndex = -1;
-        scanHz = 0.0F;
-        dwellStart = level == null ? 0L : level.getGameTime(); // scanIndex -1: the scan goes to its first channel at once.
-        lastHeard = Long.MIN_VALUE / 2;
-        if(selectedCount() == 1) {
-            int only = Integer.numberOfTrailingZeros(selected);
-            tuneTo(memories[only]);
-            scanIndex = only;
-            scanHz = frequency;
-        }
-        setChanged();
-        updateBlock();
-    }
-
-    /** The selected channels holding a frequency, in button order. */
-    private List<Integer> scanList() {
-        List<Integer> out = new ArrayList<>(MEMORIES);
-        for(int i = 0; i < MEMORIES; i++)
-            if(isSelected(i) && memories[i] != 0.0F)
-                out.add(i);
-        return out;
-    }
-
-    private void tickScan(ServerLevel serverLevel) {
-        long now = serverLevel.getGameTime();
-        boolean powered = isPowered();
-        long carrierAt = getCarrierGameTime(); // Heard since the scan last tuned: a frame from the channel it just left does not count.
-        boolean carrier = carrierAt >= 0 && now - carrierAt <= HEARD_HOLD_TICKS && carrierAt > dwellStart;
-        if(selected != 0 && scanHz != 0.0F && frequency != scanHz) { // The dial was turned: back to the dial.
-            selected = 0;
-            scanIndex = -1;
-            scanHz = 0.0F;
+    /** Saved and sent to the client (server side; the client only keeps its own copy). */
+    private void changed() {
+        if(level != null && !level.isClientSide) {
             setChanged();
             updateBlock();
         }
-        if(powered && selected != 0) {
-            List<Integer> channels = scanList();
-            if(channels.isEmpty())
-                selected = 0;
-            else if(carrier)
+    }
+
+    /** The next switched-on channel after {@code from}, round to the first; -1 if none is on. */
+    private int nextOn(int from) {
+        for(int k = 1; k <= CHANNELS; k++) {
+            int channel = Math.floorMod(from + k, CHANNELS);
+            if(isChannelOn(channel))
+                return channel;
+        }
+        return -1;
+    }
+
+    /**
+     * True if a signal came in since the scan last moved, recently enough to still count, and strong enough to open the
+     * squelch: a carrier (voice from a radio in the world, CW, data tones) or a frame played straight in (playBroadcast).
+     */
+    private boolean heardSince(long since, long now) {
+        long carrierAt = getCarrierGameTime(), signalAt = getLastSignalGameTime();
+        boolean carrier = carrierAt > since && now - carrierAt <= HEARD_HOLD_TICKS && squelchOpens(getCarrierStrength());
+        boolean signal = signalAt > since && now - signalAt <= HEARD_HOLD_TICKS && squelchOpens(getLastSignalStrength());
+        return carrier || signal;
+    }
+
+    private void stepTo(int channel, long now) {
+        scanChannel = channel;
+        dwellStart = now;
+        lastHeard = Long.MIN_VALUE / 2;
+        if(channel >= 0)
+            tuneTo(channels[channel]);
+    }
+
+    /**
+     * The scan, as on a crystal scanner: it steps through the switched-on channels, {@link #SCAN_DWELL_TICKS} on each,
+     * stops on one with a signal that opens the squelch, and moves on {@link #SCAN_HANG_TICKS} after it goes quiet. MAN
+     * holds it where it is. One channel on: it sits there. Off, or no channel on: it waits where it was.
+     */
+    private void tickScan(ServerLevel serverLevel) {
+        long now = serverLevel.getGameTime();
+        int count = channelsOnCount();
+        boolean stopped = false;
+        if(isPowered() && count > 0) {
+            if(!isChannelOn(scanChannel))
+                stepTo(nextOn(scanChannel), now);
+            else if(heardSince(dwellStart, now))
                 lastHeard = now;
-            else if(!channels.contains(scanIndex) || (now - lastHeard > SCAN_HANG_TICKS && now - dwellStart >= SCAN_DWELL_TICKS && channels.size() > 1)) {
-                int next = channels.get(0);
-                for(int channel : channels)
-                    if(channel > scanIndex) {
-                        next = channel;
-                        break;
-                    }
-                scanIndex = next;
-                tuneTo(memories[next]);
-                scanHz = frequency;
-                dwellStart = now;
-            }
+            else if(count > 1 && !scanHold && now - lastHeard > SCAN_HANG_TICKS && now - dwellStart >= SCAN_DWELL_TICKS)
+                stepTo(nextOn(scanChannel), now);
+            if(scanChannel >= 0 && frequency != channels[scanChannel])
+                tuneTo(channels[scanChannel]); // Something else moved the frequency (a rig control app): it has no dial, only its channels.
+            stopped = count > 1 && now - lastHeard <= SCAN_HANG_TICKS;
         }
-        int lit = -1;
-        if(powered && carrier) {
-            if(selected != 0)
-                lit = scanIndex;
-            else
-                for(int i = 0; i < MEMORIES && lit < 0; i++)
-                    if(memories[i] != 0.0F && memories[i] == frequency)
-                        lit = i;
-        }
-        if(lit != litChannel) {
-            litChannel = lit;
+        if(stopped != scanStopped || scanChannel != syncedScanChannel) {
+            scanStopped = stopped;
+            syncedScanChannel = scanChannel;
+            setChanged();
             updateBlock();
         }
     }
@@ -345,9 +400,73 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
     protected void additionalTick() {
         super.additionalTick();
         if(level instanceof ServerLevel serverLevel) {
+            tickWhip();
             tickCell(serverLevel);
             tickScan(serverLevel);
         }
+    }
+
+    // -------------------- THE WHIP --------------------
+
+    /**
+     * Its own whip stands in for the bare connector (2026-11-09): with nothing on its coax it hears as a VHF handheld
+     * held here would ({@link ReceiverWhipAntenna}). An antenna coaxed to it takes over completely (the whip comes off
+     * the air), as plugging an antenna into a scanner's jack cuts its whip out: a real VHF antenna is the better one.
+     */
+    @Override
+    protected boolean usesBareConnector() {
+        return false;
+    }
+
+    private void tickWhip() {
+        boolean wanted = isPowered() && getNetworkObject(level, worldPosition) instanceof RadioNetworkObject radio && radio.getAntennas().isEmpty();
+        if(wanted && whip == null)
+            whip = new ReceiverWhipAntenna(this);
+        if(whip != null)
+            whip.setActive(wanted);
+    }
+
+    /** The whip, while it is on the air (it runs with nothing on its coax); null otherwise. Server side. */
+    @Nullable
+    public ReceiverWhipAntenna getWhip() {
+        return whip != null && whip.isActive() ? whip : null;
+    }
+
+    private void dropWhip() {
+        if(whip != null)
+            whip.setActive(false);
+        whip = null;
+    }
+
+    @Override
+    public void setRemoved() {
+        if(level != null && !level.isClientSide())
+            dropWhip();
+        super.setRemoved();
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        if(level != null && !level.isClientSide())
+            dropWhip();
+        super.onChunkUnloaded();
+    }
+
+    /** Its tuning is the channels' grid, inside 144 to 174 MHz: anything that steps or types a frequency lands on it. */
+    @Override
+    protected float snapToTuningRange(float frequency, int stepCount) {
+        return snapHz((double)frequency + (double)stepCount * STEP_HZ);
+    }
+
+    @Override
+    public int getFrequencyStep() {
+        return STEP_HZ;
+    }
+
+    /** VOLUME and SQUELCH, as on the real set. */
+    @Override
+    public boolean hasSquelchKnob() {
+        return true;
     }
 
     // -------------------- SAVE AND SYNC --------------------
@@ -355,24 +474,76 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
     @Override
     protected void setupSaveTag(CompoundTag nbt) {
         super.setupSaveTag(nbt);
-        int[] bits = new int[MEMORIES];
-        for(int i = 0; i < MEMORIES; i++)
-            bits[i] = Float.floatToIntBits(memories[i]);
-        nbt.putIntArray("memories", bits);
-        nbt.putInt("memorySelected", selected);
-        nbt.putInt("litChannel", litChannel);
-        nbt.putBoolean("muted", muted);
+        int[] bits = new int[CHANNELS];
+        for(int i = 0; i < CHANNELS; i++)
+            bits[i] = Float.floatToIntBits(channels[i]);
+        nbt.putIntArray("channels", bits);
+        nbt.putInt("channelsOn", channelsOn);
+        nbt.putBoolean("setMode", setMode);
+        nbt.putBoolean("scanHold", scanHold);
+        nbt.putInt("scanChannel", scanChannel);
+        nbt.putBoolean("scanStopped", scanStopped);
+        if(extraMemories.length > 0)
+            nbt.putIntArray("extraMemories", extraMemories);
     }
 
     @Override
     protected void readSaveTag(CompoundTag nbt) {
         super.readSaveTag(nbt);
+        if(nbt.contains("channels")) {
+            int[] bits = nbt.getIntArray("channels");
+            for(int i = 0; i < CHANNELS; i++)
+                channels[i] = i < bits.length ? snapHz(Float.intBitsToFloat(bits[i])) : FACTORY_HZ[i];
+            channelsOn = nbt.getInt("channelsOn") & ALL_CHANNELS;
+            setMode = nbt.getBoolean("setMode");
+            scanHold = nbt.getBoolean("scanHold");
+            scanChannel = nbt.contains("scanChannel") ? Math.max(-1, Math.min(CHANNELS - 1, nbt.getInt("scanChannel"))) : -1;
+            scanStopped = nbt.getBoolean("scanStopped");
+            extraMemories = nbt.getIntArray("extraMemories");
+        }
+        else if(nbt.contains("memories") || nbt.contains("memorySelected"))
+            readOldMemories(nbt);
+    }
+
+    /**
+     * A receiver saved before it became a scanner (2026-11-09: a tuning dial and six memories, pressed in to select or
+     * scan). Its first eight memories become the channels (an empty one keeps the factory crystal), and the ones it had
+     * selected are switched on. One that listened on its dial instead gets the dial's frequency in its first empty
+     * channel, switched on, so it still hears what it heard. Memories past eight are kept as they were
+     * ({@code extraMemories}). Mute is gone: only VOLUME's OFF silences it now.
+     */
+    private void readOldMemories(CompoundTag nbt) {
         int[] bits = nbt.getIntArray("memories");
-        for(int i = 0; i < MEMORIES; i++)
-            memories[i] = i < bits.length ? Float.intBitsToFloat(bits[i]) : 0.0F;
-        selected = nbt.getInt("memorySelected") & ((1 << MEMORIES) - 1);
-        litChannel = nbt.contains("litChannel") ? nbt.getInt("litChannel") : -1;
-        muted = nbt.getBoolean("muted");
+        int empty = 0;
+        for(int i = 0; i < CHANNELS; i++) {
+            float hz = i < bits.length ? Float.intBitsToFloat(bits[i]) : 0.0F;
+            if(hz > 0.0F && Float.isFinite(hz))
+                channels[i] = snapHz(hz);
+            else {
+                channels[i] = FACTORY_HZ[i];
+                empty |= 1 << i;
+            }
+        }
+        channelsOn = nbt.getInt("memorySelected") & ALL_CHANNELS & ~empty;
+        if(channelsOn == 0) {
+            if(empty != 0 && frequency >= MIN_HZ - STEP_HZ && frequency <= MAX_HZ + STEP_HZ) {
+                int slot = Integer.numberOfTrailingZeros(empty);
+                channels[slot] = snapHz(frequency);
+                channelsOn = 1 << slot;
+            }
+            else
+                channelsOn = 1;
+        }
+        extraMemories = bits.length > CHANNELS ? Arrays.copyOfRange(bits, CHANNELS, bits.length) : new int[0];
+        setMode = false;
+        scanHold = false;
+        scanChannel = -1;
+        scanStopped = false;
+    }
+
+    /** Memories an old save had past the eighth, as float bits; kept and saved again, never used. */
+    public int[] getExtraMemories() {
+        return extraMemories.clone();
     }
 
     /** The cell needs the registries to save, so it goes here rather than in {@link #setupSaveTag} (also the sync tag). */

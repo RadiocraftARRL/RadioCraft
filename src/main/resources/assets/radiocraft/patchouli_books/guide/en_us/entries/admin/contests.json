@@ -1,0 +1,17 @@
+{
+  "name": "Running a Contest",
+  "icon": "minecraft:written_book",
+  "category": "radiocraft:admin",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Operators (permission level 2) can run a contest with $(thing)/contest start [name]$(). Everyone is told it has begun, and from then on every two-way contact counts: two players who each heard the other within five minutes, as for the $(thing)First Contact$() advancement.$(br2)Talking on and on is one contact; working the same station again later is listed as a dupe."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The report",
+      "text": "$(thing)/contest stop$() ends it and hands a $(item)Contest Report$() book to whoever stopped it and to every player in it who is online.$(br2)It names the winners (longest contact, most unique contacts, most biomes operated from and reached) and lists each player's contacts: frequency, mode and both heights."
+    }
+  ]
+}

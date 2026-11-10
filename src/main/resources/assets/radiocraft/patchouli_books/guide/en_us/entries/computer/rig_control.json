@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "RIGCTL",
-      "text": "$(item)Rig Control$() drives a radio from the keyboard, as CAT software drives a real rig. Like the other radio programs it goes through a $(l:radiocraft:radios/station_accessories)radio interface$() cabled to the computer: the radio beside the interface is the one it controls (R picks another if there are several)."
+      "text": "$(item)Rig Control$() drives a radio from the keyboard, as CAT software drives a real rig. Like the other radio programs it goes through a $(l:radiocraft:radios/station_accessories)radio interface$() cabled to the computer: the radio beside the interface is the one it controls. With several it asks which, once; the choice is kept with the computer, and R changes it."
     },
     {
       "type": "patchouli:text",

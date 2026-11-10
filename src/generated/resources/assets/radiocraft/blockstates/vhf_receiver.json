@@ -16,18 +16,18 @@
       "y": 270
     },
     "ceiling=true,facing=east": {
-      "model": "radiocraft:block/vhf_receiver_ceiling",
+      "model": "radiocraft:block/vhf_receiver_hanging",
       "y": 90
     },
     "ceiling=true,facing=north": {
-      "model": "radiocraft:block/vhf_receiver_ceiling"
+      "model": "radiocraft:block/vhf_receiver_hanging"
     },
     "ceiling=true,facing=south": {
-      "model": "radiocraft:block/vhf_receiver_ceiling",
+      "model": "radiocraft:block/vhf_receiver_hanging",
       "y": 180
     },
     "ceiling=true,facing=west": {
-      "model": "radiocraft:block/vhf_receiver_ceiling",
+      "model": "radiocraft:block/vhf_receiver_hanging",
       "y": 270
     }
   }

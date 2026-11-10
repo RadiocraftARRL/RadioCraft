@@ -98,13 +98,38 @@ public record MarineRadioState(String channel, String previous, boolean highPowe
 		return new MarineRadioState(MarineChannels.DISTRESS, on, highPower, dualWatch);
 	}
 
-	/** The radio's keys, as screens send them ({@link com.arrl.radiocraft.common.network.serverbound.SMarineRadioPacket}). */
-	public enum Key { TURN, SIXTEEN_NINE, HIGH_LOW, DUAL_WATCH }
+	/**
+	 * The 16 key (the red key, 2026-11-09): from a working channel straight to 16, remembering the working channel;
+	 * pressed again on 16, back to it. Unlike 16/9 it never goes to 9.
+	 */
+	public MarineRadioState sixteen(Region region) {
+		String on = channel(region).name();
+		if(on.equals(MarineChannels.DISTRESS)) {
+			if(!previous.isEmpty() && !previous.equalsIgnoreCase(MarineChannels.DISTRESS) && MarineChannels.byName(region, previous) != null)
+				return new MarineRadioState(previous, "", highPower, dualWatch);
+			return this;
+		}
+		return new MarineRadioState(MarineChannels.DISTRESS, on, highPower, dualWatch);
+	}
+
+	/**
+	 * The radio's keys, as screens send them ({@link com.arrl.radiocraft.common.network.serverbound.SMarineRadioPacket}).
+	 * New keys go on the end, so the numbers already sent keep their meaning: {@link #SIXTEEN} (the red key) and
+	 * {@link #SELECT} (the mobile's number keys, {@code value} the channel's place in the table), 2026-11-09. The DSC
+	 * keys of the fixed-mount radio (2026-11-09) change no channel state; the block entity acts on them
+	 * ({@code MarineRadioBlockEntity#dscKey}): {@link #DISTRESS} (the button held for its count, {@code value} 1 to send,
+	 * 0 to cancel), {@link #NATURE} (the next nature of distress), {@link #ACK} (acknowledge the alert on the display) and
+	 * {@link #DISMISS} (CLR: take it off the display).
+	 */
+	public enum Key { TURN, SIXTEEN_NINE, HIGH_LOW, DUAL_WATCH, SIXTEEN, SELECT, DISTRESS, NATURE, ACK, DISMISS }
 
 	/** Most clicks one key press may turn the knob (a fast scroll). */
 	public static final int MAX_TURN = 10;
 
-	/** This state with key number {@code key} pressed ({@code value} clicks for {@link Key#TURN}); unknown keys change nothing. */
+	/**
+	 * This state with key number {@code key} pressed ({@code value} clicks for {@link Key#TURN}, the table index for
+	 * {@link Key#SELECT}); unknown keys change nothing.
+	 */
 	public MarineRadioState press(Region region, int key, int value) {
 		if(key < 0 || key >= Key.values().length)
 			return this;
@@ -113,6 +138,9 @@ public record MarineRadioState(String channel, String previous, boolean highPowe
 			case SIXTEEN_NINE -> sixteenNine(region);
 			case HIGH_LOW -> togglePower();
 			case DUAL_WATCH -> toggleDualWatch();
+			case SIXTEEN -> sixteen(region);
+			case SELECT -> value >= 0 && value < MarineChannels.table(region).size() ? select(region, MarineChannels.table(region).get(value).name()) : this;
+			case DISTRESS, NATURE, ACK, DISMISS -> this; // DSC: the radio block acts on these, not the channel state.
 		};
 	}
 

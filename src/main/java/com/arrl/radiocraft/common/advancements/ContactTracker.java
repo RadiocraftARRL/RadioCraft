@@ -4,10 +4,12 @@ import com.arrl.radiocraft.Radiocraft;
 import com.arrl.radiocraft.api.antenna.IAntennaPacket;
 import com.arrl.radiocraft.common.init.RadiocraftData;
 import com.arrl.radiocraft.common.radio.Band;
+import com.arrl.radiocraft.common.contest.Contests;
 import com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket;
 import com.arrl.radiocraft.common.radio.solar.Aurora;
 import com.arrl.radiocraft.common.radio.solar.SolarEvent;
 import com.arrl.radiocraft.common.radio.solar.SolarEventManager;
+import com.arrl.radiocraft.common.radio.voice.Modulation;
 import com.arrl.radiocraft.compat.sable.Sublevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -64,7 +66,7 @@ public final class ContactTracker {
 
 	private static final ContactBook BOOK = new ContactBook();
 
-	private record Event(UUID talker, Level level, @Nullable BlockPos pos, @Nullable Player listener, float hz) {}
+	private record Event(UUID talker, Level level, @Nullable BlockPos pos, @Nullable Player listener, float hz, String mode) {}
 
 	private ContactTracker() {}
 
@@ -91,7 +93,24 @@ public final class ContactTracker {
 			QUEUED.decrementAndGet();
 			return;
 		}
-		QUEUE.add(new Event(talker, level, pos, listener, voice.getFrequency()));
+		QUEUE.add(new Event(talker, level, pos, listener, voice.getFrequency(), mode(voice.getModulation(), voice.isLowerSideband())));
+	}
+
+	/**
+	 * How a voice was sent, as a contest log writes it: FM, AM, USB or LSB (2026-11-09). A constant string, so taking it
+	 * when an event is queued (once per receiver and talker every 3 s, never per frame) allocates nothing.
+	 */
+	public static String mode(Modulation modulation, boolean lowerSideband) {
+		return switch(modulation) {
+			case FM -> "FM";
+			case AM -> "AM";
+			case SSB -> lowerSideband ? "LSB" : "USB";
+		};
+	}
+
+	/** The mode a hearing without one is taken to be in: its band's usual one ({@link Modulation#usual}), LSB below 10 MHz. */
+	public static String usualMode(float hz) {
+		return mode(Modulation.usual(Band.getBand(hz)), hz < 10_000_000.0F);
 	}
 
 	/** A numbers station is on the air under {@code voiceId}. */
@@ -112,7 +131,7 @@ public final class ContactTracker {
 				break;
 			QUEUED.decrementAndGet();
 			if(e.level() instanceof ServerLevel level && level.getServer() == server)
-				hear(level, e.talker(), e.pos(), e.listener(), e.hz());
+				hear(level, e.talker(), e.pos(), e.listener(), e.hz(), e.mode());
 		}
 	}
 
@@ -132,6 +151,11 @@ public final class ContactTracker {
 	 * here, and GameTests call it directly.
 	 */
 	public static void hear(ServerLevel level, UUID talker, @Nullable BlockPos pos, @Nullable Player listener, float hz) {
+		hear(level, talker, pos, listener, hz, usualMode(hz));
+	}
+
+	/** As {@link #hear(ServerLevel, UUID, BlockPos, Player, float)}, the talker sending in {@code mode} (FM, AM, USB, LSB). */
+	public static void hear(ServerLevel level, UUID talker, @Nullable BlockPos pos, @Nullable Player listener, float hz, String mode) {
 		List<ServerPlayer> hearers;
 		if(listener instanceof ServerPlayer holding)
 			hearers = List.of(holding);
@@ -154,7 +178,7 @@ public final class ContactTracker {
 				continue;
 			RadiocraftAdvancements.grant(speaker, RadiocraftAdvancements.IS_THIS_THING_ON);
 			BlockPos station = listener == hearer || pos == null ? hearer.blockPosition() : Sublevels.world(level, pos);
-			heard(level, hearer.getUUID(), talker, station, hz);
+			heard(level, hearer.getUUID(), talker, station, hz, mode);
 		}
 	}
 
@@ -163,12 +187,21 @@ public final class ContactTracker {
 	 * a voice reaching them, or an FT8 contact their computer logged. Grants what a contact this makes earns both.
 	 */
 	public static void heard(ServerLevel level, UUID hearer, UUID talker, BlockPos station, float hz) {
+		heard(level, hearer, talker, station, hz, usualMode(hz));
+	}
+
+	/**
+	 * As {@link #heard(ServerLevel, UUID, UUID, BlockPos, float)}, the talker sending in {@code mode} (FM, AM, USB, LSB,
+	 * FT8). A contact this makes also goes in the running contest's log ({@link Contests#contact}, 2026-11-09).
+	 */
+	public static void heard(ServerLevel level, UUID hearer, UUID talker, BlockPos station, float hz, String mode) {
 		Band band = Band.getBand(hz);
 		ContactBook.Contact contact = BOOK.heard(new ContactBook.Heard(hearer, talker, level.dimension().location().toString(),
-				station.getX(), station.getY(), station.getZ(), hz, band == null ? "" : band.name(), level.getGameTime()));
+				station.getX(), station.getY(), station.getZ(), hz, band == null ? "" : band.name(), level.getGameTime(), mode));
 		if(contact == null)
 			return;
 		MinecraftServer server = level.getServer();
+		Contests.contact(server, contact);
 		List<String> earned = ContactBook.earned(contact, level.getDayTime(), solarStorm(level));
 		for(UUID station2 : new UUID[] { contact.a(), contact.b() }) {
 			for(String event : earned)

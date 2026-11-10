@@ -18,17 +18,32 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:marine_radio",
       "title": "Marine Radio",
-      "text": "The fixed-mount radio for a boat's console or a harbour office: 25 W or 1 W, with a hand mic on a cord (sneak and use). It needs power and a VHF antenna, and it works on a ship that sails."
+      "text": "The fixed-mount radio for a boat's console or a harbour office: 25 W or 1 W, with a hand mic on a cord (sneak and use). Type a channel on its keypad. It needs power and a VHF antenna, and it works on a ship that sails."
     },
     {
       "type": "patchouli:text",
       "title": "The keys",
-      "text": "$(thing)16/9$(): to channel 16, press again for 9, and once more back to the channel you were on.$(br)$(thing)H/L$(): high or low power. Use 1 W for ships close by; channels 13, 15, 17 and 67 are always 1 W.$(br)$(thing)DW$() (dual watch): listen to your channel and 16 at once. While 16 is busy you hear only 16."
+      "text": "$(thing)16$() (the red key): straight to channel 16, again to go back.$(br)$(thing)16/9$(): to 16, then 9, then back to your channel.$(br)$(thing)H/L$(): high or low power. Use 1 W for ships close by; channels 13, 15, 17 and 67 are always 1 W.$(br)$(thing)DW$() (dual watch): listen to your channel and 16 at once. While 16 is busy you hear only 16."
     },
     {
       "type": "patchouli:text",
       "title": "Special channels",
-      "text": "Some channels are $(thing)duplex$(): you transmit on the ship frequency and hear the coast station 4.6 MHz higher, so two ships on one cannot hear each other. The $(thing)WX$() channels are NOAA weather and only receive. Channel 70 is DSC, digital calling only: no voice.$(br2)Servers use the US channel plan unless set to the international one."
+      "text": "Some channels are $(thing)duplex$(): you transmit on the ship frequency and hear the coast station 4.6 MHz higher, so two ships on one cannot hear each other. The $(thing)WX$() channels are NOAA weather and only receive. Channel 70 is DSC, digital calling only: no voice (see DSC Distress).$(br2)Servers use the US channel plan unless set to the international one."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "DSC Distress",
+      "text": "The marine radio (not the handheld) has $(thing)DSC$(), Digital Selective Calling. Its red $(thing)DISTRESS$() button sits under a flip cover: click the cover to lift it, then $(thing)hold the button 3 seconds$() while it counts down. It sends a distress call on channel 70 with your $(thing)MMSI$() (your nine-digit number, shown when you point at the button), where you are and the nature of distress, then goes to channel 16 for your spoken MAYDAY."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Until Someone Answers",
+      "text": "The call repeats every 4 minutes or so until another station acknowledges it: the display then says ACKNOWLEDGED. Hold the button again to $(thing)cancel$() a call sent by mistake. $(thing)NAT$() picks the nature before you send: fire, flooding, collision, grounding, capsizing, sinking, adrift, abandoning ship or man overboard. The bursts go as far as your voice would: a good antenna up high reaches further."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hearing a Call",
+      "text": "Every marine radio that is on listens to channel 70, whatever channel it is set to. When it hears a distress call it sounds the alarm and shows the caller's MMSI, the nature and the coordinates for a while. Any key silences the alarm, $(thing)ACK$() acknowledges the call (the caller's radio stops repeating) and CLR clears the display. Its DSC only hears channel 70: $(l:radiocraft:radios/distress_beacon)distress beacons$(/l) need a commercial VHF radio on 161.975. The $(l:radiocraft:computer/distress)DISTRESS$(/l) program puts them all on a map."
     },
     {
       "type": "patchouli:crafting",

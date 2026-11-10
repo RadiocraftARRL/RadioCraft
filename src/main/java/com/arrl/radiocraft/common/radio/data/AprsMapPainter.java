@@ -113,6 +113,16 @@ public final class AprsMapPainter {
 		return colors;
 	}
 
+	/** The terrain alone for {@code fit}, for pictures that draw their own markers (the DISTRESS program, 2026-11-09). */
+	public static byte[] terrain(ServerLevel level, Fit fit) {
+		return paintTerrain(level, fit);
+	}
+
+	/** The home station's box at world {@code x, z} on {@code colors} (a picture for {@code fit}). */
+	public static void home(byte[] colors, Fit fit, double x, double z) {
+		drawHome(colors, fit, fit.pixelX(x), fit.pixelZ(z));
+	}
+
 	private static byte[] paintTerrain(ServerLevel level, Fit fit) {
 		int w = fit.width(), h = fit.height(), stride = w + 1;
 		int[] height = new int[stride * (h + 1)]; // With a row and a column of neighbours to the north and west.

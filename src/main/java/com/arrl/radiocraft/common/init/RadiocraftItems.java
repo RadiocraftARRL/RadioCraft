@@ -89,6 +89,13 @@ public class RadiocraftItems {
 	/** A spent alkaline cell, out of a portable radio (2026-11-09): crafted alone, a little of its steel comes back. */
 	public static final Supplier<Item> DEAD_ALKALINE_BATTERY = simpleItem("dead_alkaline_battery",
 			Component.translatable("tooltip.radiocraft.dead_alkaline_battery").withStyle(net.minecraft.ChatFormatting.GRAY));
+	/** The distress beacon (2026-11-09): an EPIRB-style beacon, one use, a day of alerts on 161.975 MHz and a homing tone. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.DistressBeaconItem> DISTRESS_BEACON = ITEMS.register("distress_beacon",
+			() -> new com.arrl.radiocraft.common.items.DistressBeaconItem(new Properties().stacksTo(1)
+					.component(RadiocraftDataComponent.DISTRESS_BEACON.value(), com.arrl.radiocraft.common.radio.distress.BeaconState.NEW)));
+	/** A distress beacon whose battery ran out: it does nothing more. */
+	public static final Supplier<Item> SPENT_DISTRESS_BEACON = simpleItem("spent_distress_beacon",
+			Component.translatable("tooltip.radiocraft.spent_distress_beacon").withStyle(net.minecraft.ChatFormatting.GRAY));
 	/**
 	 * One floppy disk per radio computer program that is not built in, by app id ({@code floppy_<id>}; see
 	 * {@link com.arrl.radiocraft.common.computer.ComputerApps}). The secret ones (found in structures) are rare.

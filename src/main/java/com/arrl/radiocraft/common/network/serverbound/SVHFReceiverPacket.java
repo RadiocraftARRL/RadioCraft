@@ -1,6 +1,7 @@
 package com.arrl.radiocraft.common.network.serverbound;
 
 import com.arrl.radiocraft.Radiocraft;
+import com.arrl.radiocraft.common.blockentities.radio.VHFReceiverBlockEntity;
 import com.arrl.radiocraft.common.menus.VHFReceiverMenu;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
@@ -12,17 +13,21 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The VHF receiver's own buttons (2026-11-09): a memory button pressed or shift-clicked, and the mute button. Only a
- * player with that receiver's screen open can, and the memory buttons only work while it is switched on.
+ * The VHF receiver's own controls (2026-11-09, the scanner): a channel switch, the SET and MAN/AUTO keys, and the TUNE
+ * knob. Only a player with that receiver's screen open can. The switches and keys move with the power off, as switches
+ * do; TUNE only works while it runs with its SET lamp lit. VOLUME (with OFF) and SQUELCH go as every radio's do
+ * ({@link SBlockRadioControlPacket}).
  */
 public record SVHFReceiverPacket(long pos, int action, int value) implements CustomPacketPayload {
 
-	/** A numbered button: select, let go, or store into an empty channel ({@code value} is the channel, 0 to 5). */
-	public static final int PRESS_MEMORY = 0;
-	/** Shift + click on a numbered button: store the frequency shown in it. */
-	public static final int STORE_MEMORY = 1;
-	/** The speaker button: {@code value} 1 mutes, 0 unmutes. */
-	public static final int SET_MUTED = 2;
+	/** A channel switch: {@code value} is the channel (0 to 7) times two, plus 1 for up (on). */
+	public static final int SET_CHANNEL = 0;
+	/** The SET key: {@code value} 1 in, 0 out. */
+	public static final int SET_KEY = 1;
+	/** The MAN/AUTO key: {@code value} 1 MAN (hold the scan), 0 AUTO. */
+	public static final int HOLD_KEY = 2;
+	/** TUNE turned: {@code value} is how far, in Hz (at most a full turn of the range either way). */
+	public static final int TUNE = 3;
 
 	public static final Type<SVHFReceiverPacket> TYPE = new Type<>(Radiocraft.id("s_vhf_receiver"));
 
@@ -41,16 +46,16 @@ public record SVHFReceiverPacket(long pos, int action, int value) implements Cus
 		context.enqueueWork(() -> {
 			if(!(context.player().containerMenu instanceof VHFReceiverMenu menu) || !menu.blockEntity.getBlockPos().equals(BlockPos.of(pos)))
 				return;
+			VHFReceiverBlockEntity receiver = menu.blockEntity;
 			switch(action) {
-				case PRESS_MEMORY -> {
-					if(menu.blockEntity.isPowered())
-						menu.blockEntity.pressMemory(value);
+				case SET_CHANNEL -> receiver.setChannelOn(value >> 1, (value & 1) != 0);
+				case SET_KEY -> receiver.setSetMode(value != 0);
+				case HOLD_KEY -> receiver.setScanHold(value != 0);
+				case TUNE -> {
+					int range = (int)(VHFReceiverBlockEntity.MAX_HZ - VHFReceiverBlockEntity.MIN_HZ);
+					if(receiver.isPowered())
+						receiver.tuneSetChannel(Math.max(-range, Math.min(range, value)));
 				}
-				case STORE_MEMORY -> {
-					if(menu.blockEntity.isPowered())
-						menu.blockEntity.storeMemory(value);
-				}
-				case SET_MUTED -> menu.blockEntity.setMuted(value != 0);
 				default -> {}
 			}
 		});

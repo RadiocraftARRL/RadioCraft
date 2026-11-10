@@ -1,6 +1,6 @@
 # Station plans (2026-11-09)
 
-Plans for the maintainer's review: linear amplifier, coax loss, iambic keyer, contests. Nothing here is built yet.
+Plans for the maintainer's review: linear amplifier, coax loss, iambic keyer, contests. Only contests are built (2026-11-09).
 
 ## Linear amplifier
 
@@ -85,21 +85,34 @@ sticking out of the front, like a Bencher BY-1's (black base, chrome levers). Th
   - [Heathkit HD-10](https://hub.catalogit.app/radio-alpha/folder/entry/heathkit-hd-10)
   - [Bencher BY-1 (Vibroplex)](https://www.vibroplex.com/contents/en-us/p199.html)
 
-## Contests (`/contest`)
+## Contests (`/contest`) (built 2026-11-09)
 
-These are op-only (permission level 2) commands for running a timed contact count.
+Op-only (permission level 2). Kept to what the maintainer asked for: start and stop, no duration, no live score.
 
-- **`/contest start <name> [minutes]`:** starts counting, with no limit if the duration is left out. It announces in
-  chat and puts a boss bar with the time left on everyone with a radio.
-- **What counts:** only the verified two-way contacts the advancement tree already detects (both stations heard each
-  other within the window). There is no new detection code, just a listener on that event.
-  - **Score:** contacts, with a station worked once per band and mode. Points: 1 for line of sight, 2 by skip, and
-    one more for CW.
-  - **Multipliers:** distinct grid squares worked.
-- **`/contest score`:** anyone can see the live leaderboard. **`/contest stop`:** ends it, posts the final table to
-  chat, and writes a CSV log to the world folder.
-- **Storage:** the state is saved in the world's saved data, so it survives a restart. One contest at a time.
-- **Tests:** a GameTest runs a contest, makes two contacts and checks the scores.
+- **`/contest start [name]`:** starts counting and announces it in chat to everyone. Starting while one runs is an
+  error.
+- **What counts:** only the verified two-way contacts the advancement tree already detects (`ContactTracker` /
+  `ContactBook`: both stations heard each other within 5 minutes), and only when both hearings came after the start.
+  There is no second detector: `ContactTracker` calls `Contests.contact` at the moment it verifies a contact. The same
+  pair on the same band again within 10 minutes is the same contact still going on (the book re-verifies a talking
+  pair every few seconds) and is not logged again; later than that it is logged as a dupe.
+- **What each contact keeps:** both players' names, the frequency each heard the other on, both stations' heights (Y),
+  the mode each sent in (FM, AM, USB, LSB; FT8 for an FT8 contact; CW never reaches the contact book), the biome at
+  each station (looked up on the server thread when the contact is verified) and the distance (same dimension only).
+- **`/contest stop`:** announces the end and gives a written book (title: the contest's name, else "Contest Report";
+  author RadioCraft) to whoever stopped it, at their feet if their inventory is full, and a copy to every participant
+  online. From the console, nobody gets a book; the summary goes to the server log.
+- **The report:** the name, the start and end on the server's clock and how long it ran, the contact and station
+  counts; the winners (everyone tied is listed): longest contact, most unique contacts (distinct players), most biomes
+  activated (operated from), most biomes reached (worked into); then a page per player with each contact: who, MHz,
+  mode, "Y64 to Y112". Pages keep to 14 lines of 19 characters; past 100 pages the book says the full list is in the
+  server log.
+- **Storage:** the overworld's `radiocraft_contest` saved data, so it survives a restart. One contest at a time; the
+  log is forgotten once the book is made. At most 10,000 contacts are logged.
+- **Tests:** `ContestReportTest` (scoring, ties, dupes, pages) and `ContestGameTests` (a contact logged with its mode,
+  heights and biomes; the book item).
+- **Left out from the earlier plan:** a duration and boss bar, `/contest score`, points by path or mode, grid
+  multipliers and a CSV log.
 
 ## Bands (not planned)
 

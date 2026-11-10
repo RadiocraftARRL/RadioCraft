@@ -1,0 +1,212 @@
+{
+  "texture": "radiocraft:textures/gui/commercial/commercial_mobile.png",
+  "width": 256,
+  "height": 100,
+  "controls": [
+    {
+      "name": "display",
+      "type": "display",
+      "x": 92,
+      "y": 14,
+      "w": 108,
+      "h": 42,
+      "ink": "#1F2A14",
+      "off": "#283020"
+    },
+    {
+      "name": "volume",
+      "type": "knob",
+      "x": 18,
+      "y": 44,
+      "w": 24,
+      "h": 24,
+      "cx": 29.5,
+      "cy": 55.5,
+      "pointer_from": 2,
+      "pointer_r": 10,
+      "pointer_width": 1,
+      "pointer_colour": "#F0F0F0",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "channel",
+      "type": "knob",
+      "x": 54,
+      "y": 44,
+      "w": 24,
+      "h": 24,
+      "cx": 65.5,
+      "cy": 55.5,
+      "pointer_from": 2,
+      "pointer_r": 10,
+      "pointer_width": 1,
+      "pointer_colour": "#F0F0F0",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "ptt",
+      "type": "jack",
+      "x": 64,
+      "y": 14,
+      "w": 12,
+      "h": 12,
+      "glow": "#FF3020"
+    },
+    {
+      "name": "tx_lamp",
+      "type": "lamp",
+      "x": 214,
+      "y": 18,
+      "w": 6,
+      "h": 6,
+      "colour": "#FF3B30"
+    },
+    {
+      "name": "rx_lamp",
+      "type": "lamp",
+      "x": 214,
+      "y": 32,
+      "w": 6,
+      "h": 6,
+      "colour": "#3BFF6A"
+    },
+    {
+      "name": "key_1",
+      "type": "button",
+      "x": 95,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_2",
+      "type": "button",
+      "x": 108,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_3",
+      "type": "button",
+      "x": 121,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_4",
+      "type": "button",
+      "x": 134,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_5",
+      "type": "button",
+      "x": 147,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_6",
+      "type": "button",
+      "x": 160,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_7",
+      "type": "button",
+      "x": 173,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_8",
+      "type": "button",
+      "x": 186,
+      "y": 63,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_9",
+      "type": "button",
+      "x": 95,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_0",
+      "type": "button",
+      "x": 108,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_star",
+      "type": "button",
+      "x": 121,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_hash",
+      "type": "button",
+      "x": 134,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_a",
+      "type": "button",
+      "x": 147,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_b",
+      "type": "button",
+      "x": 160,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_c",
+      "type": "button",
+      "x": 173,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "key_d",
+      "type": "button",
+      "x": 186,
+      "y": 77,
+      "w": 12,
+      "h": 10
+    },
+    {
+      "name": "dismiss",
+      "type": "button",
+      "x": 206,
+      "y": 50,
+      "w": 38,
+      "h": 12
+    }
+  ]
+}

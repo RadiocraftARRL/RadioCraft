@@ -674,6 +674,11 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
 - [ ] Satellites (maintainer, 2026-10-26): launched (needs dragon's breath among other things) and commanded over a
   microwave link. Uses: mapping the area under its pass (marks it explored in JourneyMap or Xaero's Minimap when
   present; otherwise prints maps of given coordinates and locates structures), and acting as a VHF repeater.
+  - [ ] Distress relay (2026-11-09, for 1.12's distress alerting): a satellite repeats DSC distress calls (channel 70)
+    and distress beacon alerts (161.975 MHz) it hears, so they are heard anywhere with open sky. The alert is built
+    for it: `distress.DistressAlert` is whole in itself (id, type, state, position, owner/MMSI, nature, time raised,
+    ack-by) and `encode()` is one line a relay re-sends unchanged; receivers file bursts by id, so a relayed copy
+    merges with the direct one. Needs a sky check at the receiver and a way to not relay a relay.
 - [ ] Manpack radio (maintainer, 2026-10-23): a radio worn on the back
   - [ ] [Traveler's Backpack](https://www.curseforge.com/minecraft/mc-mods/travelers-backpack) version
   - [ ] [Sophisticated Backpacks](https://modrinth.com/mod/sophisticated-backpacks) version

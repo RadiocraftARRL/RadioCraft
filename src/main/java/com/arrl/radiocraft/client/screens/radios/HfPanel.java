@@ -122,7 +122,12 @@ public final class HfPanel {
 
 	/** Loads {@code gui_layouts/hf_<radio>.json}, e.g. {@code hf_radio_20m}. */
 	public static HfPanel load(String radio) {
-		ResourceLocation location = Radiocraft.id("gui_layouts/hf_" + radio + ".json");
+		return loadLayout("hf_" + radio);
+	}
+
+	/** Loads {@code gui_layouts/<file>.json} in the same format (the marine radios' panels use it too, 2026-11-09). */
+	public static HfPanel loadLayout(String file) {
+		ResourceLocation location = Radiocraft.id("gui_layouts/" + file + ".json");
 		try(Reader reader = Minecraft.getInstance().getResourceManager().getResourceOrThrow(location).openAsReader()) {
 			JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
 			List<Control> controls = new ArrayList<>();
@@ -134,7 +139,7 @@ public final class HfPanel {
 			return new HfPanel(ResourceLocation.parse(root.get("texture").getAsString()), root.get("width").getAsInt(), root.get("height").getAsInt(), controls);
 		}
 		catch(Exception e) {
-			throw new IllegalStateException("Cannot read the HF panel layout " + location, e);
+			throw new IllegalStateException("Cannot read the panel layout " + location, e);
 		}
 	}
 

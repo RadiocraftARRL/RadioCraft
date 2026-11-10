@@ -396,21 +396,38 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
     the right column; B and C switch zones), side PTT, belt clip, battery. 128x128 `upgraded_commercial_handheld.png`
     (8 px per unit): case regions light grey and tinted, everything else untinted; region map in the script, which the
     screen (`CommercialHandheldScreen`) also reads. A proper model and texture in the same layout are welcome.
-  - **Commercial Mobile Radio** and **Commercial Low Band Radio**: dash-mount mobiles (blocks), a box with a front panel,
-    display (the element named `DISPLAY` is where the channel text is drawn), channel knob, TX/RX lamps (positions in
-    `RadioDisplays`), a mic hook on the side. The low band one older and plainer. Models `commercial_mobile`,
-    `low_band_mobile`; textures `commercial_mobile_case`, `commercial_mobile_front`, `low_band_mobile_front`.
-  - The handhelds' screens now draw their item textures (2026-11-06); the mobile's front panel screen is still
-    plain fills: wants a texture.
-- **Marine radios** (1.12 step 3, placeholders from `tools/marine_radio_assets.py`):
-  - **Marine Handheld** (`marine_handheld`, item): a floating VHF marine handheld (Standard Horizon HX / Icom M-series
-    feel): dark grey, a yellow or orange float collar, rubber antenna, a big display for the channel number, keys for
-    CH up/down, 16/9 (red), H/L and DW. Ideally a 3D item model.
-  - **Marine Radio** (`marine_radio`, block): a fixed-mount VHF marine radio (Standard Horizon Eclipse / Icom M330
-    feel): white case, dark front panel, big channel display (the element named `DISPLAY` is where the channel text
-    is drawn), a channel knob, the red 16/9 key, TX/RX lamps (positions in `RadioDisplays`), a mic hook on the side.
-    Textures `marine_radio_case`, `marine_radio_front`. It works on Sable ships, so it may be seen on boat consoles.
-  - Both screens (handheld front, fixed-mount front panel) are drawn with plain fills: want textures.
+  - **Commercial VHF Mobile Radio** and **Commercial Low Band Radio**: dash-mount mobiles (blocks), a box with a front
+    panel, display (the element named `DISPLAY` is where the channel text is drawn), knob, TX/RX lamps (positions in
+    `RadioDisplays.commercialLamps`: x 3-4, y 2.25-3 and 1-1.75), a mic hook on the side. Models `commercial_mobile`,
+    `low_band_mobile`; textures `commercial_mobile_case`, `commercial_mobile_front`, `low_band_mobile_front`. Since
+    2026-11-09 a placeholder from `tools/commercial_radio_assets.py`: 64x64 front textures (4 px a unit) with the head,
+    a knob tile and a mic hook tile (the knob and hook took the whole front before), the low band set 2 px taller with
+    a speaker grille on top (display and lamps where the VHF set has them). Still wants a proper model.
+  - The handhelds' screens draw their item textures (2026-11-06); the mobiles' screens are panel PNGs from the same
+    script (`textures/gui/commercial/`, `gui_layouts/commercial_mobile.json`, `low_band_mobile.json`, 2026-11-09), each
+    part where the block's head has it,
+    welcome to be redrawn by hand in the same layout.
+- ~~**Marine radios**~~ Done (2026-11-09) from `tools/marine_radio_assets.py`, after two real 1980s sets the maintainer
+  picked (no brand names: the plate says MARINE VHF, the lettering RADIOCRAFT). Still welcome to be redrawn by hand in
+  the same layout:
+  - **Marine Handheld** (`marine_handheld`, item): 3D item model, a tall off-white case with a raised slotted grille, red
+    LED, silver plate, a small LCD in the lower half, black rubber duck top left, VOL knob top right and the red 16 key
+    on top; 128x128 texture (8 px a unit), the VHF handheld's hand transforms.
+  - **Marine Radio** (`marine_radio`, block): a low cream box with a recessed black front: red LED display (the
+    `DISPLAY` element), switches, TX/RX lamps (positions in `RadioDisplays`), three grey knobs, the keypad with its
+    yellow, green, blue and red keys, a speaker grille, and a mic hook on the side. 64x64 `marine_radio_front` and
+    `marine_radio_case`.
+  - Both screens are PNG panels (`textures/gui/marine/`) with layouts in `gui_layouts/marine_*.json`; the code draws
+    the knob pointers, switch handles, lamps and display text.
+- ~~**VHF Receiver**~~ Done (2026-11-09) from `tools/vhf_receiver_assets.py`, after a 1970s eight-channel crystal
+  scanner the maintainer picked (no brand: the lettering says SCAN FM MONITOR and RADIOCRAFT). A low, wide box in a
+  black wraparound case with a chrome bail over the top; the chrome front has the key box (blue MAN/AUTO, red SET, SET
+  lamp), the smoked channel window with numerals 1-8, VOLUME/SQUELCH/TUNE knobs (cubes) and eight slide switches. A thin steel whip rises from the back right of the case to the top of the block; the ceiling
+  variant is its own model, `vhf_receiver_hanging.json`, with the whip pointing down.
+  128x128 `vhf_receiver.png` (8 px a unit); the old art is `vhf_receiver_old.png` (block and gui). `VHFReceiverRenderer`
+  draws the switch handles, the lit numeral and the SET lamp over the front at the script's `B_*` positions, so a
+  redrawn front must keep those (or change both). The screen is a PNG panel (`textures/gui/vhf_receiver.png`,
+  `gui_layouts/vhf_receiver.json`) laid out as the block's front. Still welcome to be redrawn by hand.
 - **Camera and photo paper** (1.12 step 4, placeholders from `tools/camera_assets.py`):
   - **Camera** (`camera`, item): a mid-century press or box camera (Graflex / Kodak Brownie feel): black leather body,
     chrome top plate and lens ring, viewfinder, a red or chrome shutter button. Item texture `camera`; ideally a 3D item

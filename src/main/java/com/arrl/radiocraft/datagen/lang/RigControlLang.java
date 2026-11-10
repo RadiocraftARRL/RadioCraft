@@ -15,7 +15,7 @@ public final class RigControlLang {
 		s.accept("app.rigctl.description", "Tune, scan and watch the band: the radio from the keyboard, with a live waterfall.");
 		s.accept("rig.title", "Rig Control  %s");
 		s.accept("rig.keys", "<>=Tune  F=Freq  M=Mode  P=Pwr  T=PTT  S=Scan  ?=Keys  C=Close  Esc=Exit");
-		s.accept("rig.hint", "Ctrl+</>: next signal  Up/Down: memories  Q: squelch  X: stop scan  ?: all keys");
+		s.accept("rig.hint", "Ctrl+</>: next signal  Up/Dn: memories  Q: squelch  X: stop  R: radio  ?: keys");
 		s.accept("rig.help", "Click waterfall to tune. Click mode, PWR or SQL to change. F6: Remote");
 		s.accept("rig.guide.title", " Rig Control keys ");
 		s.accept("rig.guide.close", "Any key or click closes this.");
@@ -51,7 +51,8 @@ public final class RigControlLang {
 		s.accept("rig.load_title", "Memory channels from");
 		s.accept("rig.one_radio", "Only one radio on the radio interface");
 		s.accept("rig.pick_title", "Radio");
-		s.accept("rig.pick_prompt", "Which radio to control:");
+		s.accept("rig.pick_prompt", "Which radio to control? (Kept for this computer; R changes it.)");
+		s.accept("rig.pick_off", "OFF");
 		s.accept("rig.low_band", "Low band");
 		s.accept("rig.channelized", "channel radio");
 		s.accept("rig.power_on", " PWR ON ");

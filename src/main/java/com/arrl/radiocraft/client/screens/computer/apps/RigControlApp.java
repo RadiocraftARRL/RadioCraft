@@ -115,6 +115,7 @@ public final class RigControlApp extends DosApp {
 			rig = station.getCompound("rig");
 			remote = station.getCompound("remote");
 			offerRemote();
+			offerPick();
 			memoryNames.clear();
 			memoryMhz.clear();
 			ListTag list = station.getList("memories", Tag.TAG_COMPOUND);
@@ -206,6 +207,21 @@ public final class RigControlApp extends DosApp {
 		remotePage = true;
 		refreshRemote();
 		session.message(Dos.tr("rig.remote.no_local"), false);
+	}
+
+	/** Asked once per opening whether the computer's own radio should be picked. */
+	private boolean pickOffered;
+
+	/**
+	 * More than one radio on this computer's bus and none picked yet (2026-11-09): the picker comes up by itself, once
+	 * (R brings it back; the choice is kept with the computer). Not while driving a remote host's rig.
+	 */
+	private void offerPick() {
+		if(pickOffered || remote.contains("to") || remotePage || hasDialog() || station.getBoolean("picked")
+				|| station.getList("radios", Tag.TAG_COMPOUND).size() < 2 || !station.getString("problem").isEmpty())
+			return;
+		pickOffered = true;
+		pickRadio();
 	}
 
 	private void refreshRemote() {
@@ -478,7 +494,8 @@ public final class RigControlApp extends DosApp {
 		List<String> lines = new ArrayList<>();
 		for(int i = 0; i < radios.size(); i++) {
 			CompoundTag radio = radios.getCompound(i);
-			lines.add(Dos.fit(I18n.get(radio.getString("name")), 30) + "  " + mhz(radio.getDouble("hz")));
+			lines.add(Dos.fit(I18n.get(radio.getString("name")), 30) + "  " + mhz(radio.getDouble("hz"))
+					+ (radio.contains("on") && !radio.getBoolean("on") ? "  " + Dos.tr("rig.pick_off") : ""));
 		}
 		showDialog(new DosPickDialog(Dos.tr("rig.pick_title"), Dos.tr("rig.pick_prompt"), lines, index -> {
 			CompoundTag data = new CompoundTag();

@@ -602,21 +602,30 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     protected void transmitData(ServerLevel serverLevel, TncPacket packet) {
         if(isBlown() || isTransmitInhibited())
             return;
+        sendDataOn(serverLevel, packet, getTunedFrequency());
+    }
+
+    /**
+     * Puts a packet on the air on {@code hertz} through the radio's antenna (or its bare connector), whatever it is
+     * tuned to. {@link #transmitData} sends on the radio's own frequency; the marine radio's DSC sends its bursts on
+     * channel 70 with this (2026-11-09). Checks nothing about whether the radio may transmit: callers do.
+     */
+    protected void sendDataOn(ServerLevel serverLevel, TncPacket packet, float hertz) {
         if(!(IBENetworks.getObject(serverLevel, worldPosition) instanceof RadioNetworkObject networkObject))
             return;
-        RadioModeration.data(serverLevel, packet, getTunedFrequency()); // Operators reading along (/radio moderateall).
+        RadioModeration.data(serverLevel, packet, hertz); // Operators reading along (/radio moderateall).
         List<AntennaNetworkObject> antennas = networkObject.getAntennas();
         if(antennas.size() == 1) {
-            ModerationHooks.data(antennas.get(0).getAntenna(), this, serverLevel, packet, getTunedFrequency(), band, null);
-            antennas.get(0).transmitDataPacket(serverLevel, packet, band, getTunedFrequency());
+            ModerationHooks.data(antennas.get(0).getAntenna(), this, serverLevel, packet, hertz, band, null);
+            antennas.get(0).transmitDataPacket(serverLevel, packet, band, hertz);
         }
         else if(antennas.size() > 1)
             overdraw();
         else {
             BareConnectorAntenna bare = bareConnector;
             if(bare != null) {
-                ModerationHooks.data(bare, this, serverLevel, packet, getTunedFrequency(), band, null);
-                bare.transmitDataPacket(serverLevel, packet, band, getTunedFrequency());
+                ModerationHooks.data(bare, this, serverLevel, packet, hertz, band, null);
+                bare.transmitDataPacket(serverLevel, packet, band, hertz);
             }
         }
     }
@@ -632,7 +641,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     public boolean receiveData(AntennaDataPacket packet) {
         if(!(level instanceof ServerLevel serverLevel) || !(getNetworkObject(level, worldPosition) instanceof RadioNetworkObject networkObject) || !networkObject.isPowered)
             return false;
-        if(isDeafNow())
+        if(isDeafNow() || packet.getPayload().kind() == TncPacket.Kind.HOMING) // A beacon's homing tone carries nothing to decode (2026-11-09).
             return false;
         Detuning.Effect effect = getDetuning(packet.getFrequency());
         if(!effect.audible() || effect.pitchShiftHz() != 0.0D || effect.splatter() > 0.0D)

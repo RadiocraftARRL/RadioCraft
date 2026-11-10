@@ -672,6 +672,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			addAdsb(provider);
 			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
 			com.arrl.radiocraft.datagen.lang.VHFReceiverLang.add(provider); // VHF receiver: memories, scan, mute and its cell (2026-11-09).
+			com.arrl.radiocraft.datagen.lang.DistressLang.add(provider); // Distress alerting: DSC, the beacon, DISTRESS (2026-11-09).
 			addFccGear(provider);
 			addRealWorldInterface(provider);
 			provider.add(Radiocraft.translationKey("tooltip", "crystal_pure"), "Pure crystal: a little less noise.");
@@ -751,7 +752,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 	private static void addCommercialRadios(LanguageProvider provider) {
 		provider.addItem(RadiocraftItems.BASIC_COMMERCIAL_HANDHELD, "Basic Commercial Handheld");
 		provider.addItem(RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD, "Upgraded Commercial Handheld");
-		provider.addBlock(RadiocraftBlocks.COMMERCIAL_MOBILE, "Commercial Mobile Radio");
+		provider.addBlock(RadiocraftBlocks.COMMERCIAL_MOBILE, "Commercial VHF Mobile Radio"); // Was "Commercial Mobile Radio" (2026-11-09).
 		provider.addBlock(RadiocraftBlocks.LOW_BAND_MOBILE, "Commercial Low Band Radio");
 		provider.add(Radiocraft.translationKey("tooltip", "basic_commercial_handheld"), "16-channel 150-174 MHz FM brick. Sneak and use for the knob; hold right click to talk. Dyeable.");
 		provider.add(Radiocraft.translationKey("tooltip", "upgraded_commercial_handheld"), "Fire-service handheld: 150-174 MHz and 2m, digital voice and encryption, a channel display. Dyeable.");
@@ -1089,6 +1090,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("radio.none", "No commercial radio wired to the computer. A handheld is programmed in the CPS by hand (F9).");
 		s.accept("radio.in_hand", "in your hand");
 		s.accept("radio.wired", "wired, at %s");
+		s.accept("radio.off", "OFF");
 		s.accept("radio.pick_title", "Which radio?");
 		s.accept("radio.pick", "The computer reaches more than one commercial radio:");
 		s.accept("radio.pick_or_hand", "Read or write which radio?");
@@ -1369,6 +1371,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("err.station_no_own_callsign", "You have no callsign of your own yet: type one in");
 		s.accept("err.station_no_radio", "No radio switched on at the radio interface");
 		s.accept("err.aprs_no_vhf", "APRS needs a VHF radio switched on at the radio interface");
+		s.accept("err.aprs_picked_off", "The radio APRS sends through is off (F9 picks another)");
+		s.accept("err.aprs_no_such_radio", "That radio is no longer on the radio interface");
 		s.accept("err.aprs_not_sent", "No radio took the packet");
 		s.accept("err.aprs_no_recipient", "Who is it to?");
 		s.accept("err.aprs_no_text", "Nothing to send");
@@ -1396,7 +1400,12 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 
 		// APRS.
 		s.accept("aprs.title", "APRS - %s");
-		s.accept("aprs.keys", "Tab=Page  F5=Beacon  N=Message  R=Reply  F6=Setup  F7=Call  F8=Clear  Esc=Exit");
+		s.accept("aprs.keys", "Tab=Page F5=Beacon N=Msg R=Reply F6=Setup F7=Call F8=Clear F9=Radio Esc=Exit");
+		s.accept("aprs.radio_none", "No VHF radio on the radio interface. Put a Radio Interface beside the computer and a VHF radio beside that.");
+		s.accept("aprs.radio_pick", "Which radio sends APRS? (All of them still receive.)");
+		s.accept("aprs.radio_picked", "APRS now sends through the %s");
+		s.accept("aprs.tx_via", "TX: %s.");
+		s.accept("aprs.tx_all", "TX: every radio (F9 picks one).");
 		s.accept("aprs.tab_stations", "STATIONS");
 		s.accept("aprs.tab_messages", "MESSAGES");
 		s.accept("aprs.tab_map", "MAP");
@@ -1727,7 +1736,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			Map.entry("rtty", "RTTY"), Map.entry("bbs", "Packet BBS"), Map.entry("propagation", "Propagation Predictor"),
 			Map.entry("repeaters", "Repeater Directory"), Map.entry("saver", "Screensaver"),
 			Map.entry("scheduler", "Scheduler"), Map.entry("rigctl", "Rig Control"), Map.entry("ft8", "FT8"),
-			Map.entry("netlog", "Net Control"), Map.entry("awards", "Awards Tracker"), Map.entry("qsl", "QSL Designer"));
+			Map.entry("netlog", "Net Control"), Map.entry("awards", "Awards Tracker"), Map.entry("qsl", "QSL Designer"),
+			Map.entry("distress", "Distress"));
 
 	/** FCC field gear (1.12 step 10): the hat, jacket, seal banner pattern and banner names, the badge, its tooltips, messages and command. */
 	private static void addFccGear(LanguageProvider provider) {
@@ -1742,7 +1752,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("tooltip", "fcc_hat"), "A 1970s FCC field agent's felt hat. Keeps the rain off about as well as a leather cap.");
 		provider.add(Radiocraft.translationKey("tooltip", "fcc_jacket"), "A 1970s FCC field agent's corduroy jacket and tie. Protects like a leather tunic.");
 		provider.add(Radiocraft.translationKey("tooltip", "fcc_banner_pattern"), "Use at a loom to put the FCC seal on a banner or shield.");
-		provider.add(Radiocraft.translationKey("tooltip", "fcc_badge"), "Right click to show it to the players around you. Worn on the chest (body) slot with Curios.");
+		provider.add(Radiocraft.translationKey("tooltip", "fcc_badge"), "Right click to show it to the players around you. With Curios, wear it on the chest (body slot) or clipped to the belt (belt slot).");
 		provider.add(Radiocraft.translationKey("tooltip", "fcc_badge.agent"), "Field Agent %s");
 		provider.add(Radiocraft.translationKey("tooltip", "fcc_badge.number"), "Badge No. %s");
 		provider.add(Radiocraft.translationKey("tooltip", "fcc_badge.blank"), "Blank: not issued to anyone");
@@ -1752,6 +1762,16 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("message", "fcc_badge.issued"), "You have been issued an FCC badge. Right click it to show it.");
 		provider.add(Radiocraft.translationKey("commands", "fcc.badge.one"), "Issued an FCC badge to %s");
 		provider.add(Radiocraft.translationKey("commands", "fcc.badge.many"), "Issued FCC badges to %s players");
+		// /contest (2026-11-09).
+		provider.add(Radiocraft.translationKey("commands", "contest.started"), "The radio contest \"%s\" has started! Every two-way contact counts until it stops.");
+		provider.add(Radiocraft.translationKey("commands", "contest.started_unnamed"), "A radio contest has started! Every two-way contact counts until it stops.");
+		provider.add(Radiocraft.translationKey("commands", "contest.stopped"), "The radio contest \"%s\" is over: %s contacts between %s stations.");
+		provider.add(Radiocraft.translationKey("commands", "contest.stopped_unnamed"), "The radio contest is over: %s contacts between %s stations.");
+		provider.add(Radiocraft.translationKey("commands", "contest.already_running"), "The contest \"%s\" is already running. End it first with /contest stop.");
+		provider.add(Radiocraft.translationKey("commands", "contest.already_running_unnamed"), "A contest is already running. End it first with /contest stop.");
+		provider.add(Radiocraft.translationKey("commands", "contest.not_running"), "No contest is running.");
+		provider.add(Radiocraft.translationKey("commands", "contest.logged"), "The contest report was written to the server log.");
+		provider.add(Radiocraft.translationKey("message", "contest.book"), "You have been given the contest report.");
 	}
 
 	private static void addRealWorldInterface(LanguageProvider provider) {

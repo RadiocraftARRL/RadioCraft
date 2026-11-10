@@ -4,6 +4,7 @@
     "radiocraft:vhf_handheld",
     "radiocraft:vhf_handheld_poor",
     "radiocraft:small_battery",
-    "radiocraft:cb_portable"
+    "radiocraft:cb_portable",
+    "radiocraft:fcc_badge"
   ]
 }

@@ -88,6 +88,7 @@ public final class ComputerAppScreens {
 		register(ComputerApps.NET_CONTROL, com.arrl.radiocraft.client.screens.computer.apps.NetControlApp::new); // Computer batch 3C.
 		register(ComputerApps.AWARDS, com.arrl.radiocraft.client.screens.computer.apps.AwardsApp::new);
 		register(ComputerApps.QSL, com.arrl.radiocraft.client.screens.computer.apps.QslDesignerApp::new);
+		register(ComputerApps.DISTRESS, com.arrl.radiocraft.client.screens.computer.apps.DistressApp::new); // Distress alerting (2026-11-09).
 
 		// Floppy labels (0xRRGGBB): office programs blue, radio programs red, the secret ones gold, ADS-B green.
 		label(ComputerApps.BOOK_EDITOR, 0x3A6FD8);
@@ -116,6 +117,7 @@ public final class ComputerAppScreens {
 		label(ComputerApps.NET_CONTROL, 0xC04020); // Computer batch 3C: radio programs red; the awards gold; QSL cards an office blue.
 		label(ComputerApps.AWARDS, 0xD4A017);
 		label(ComputerApps.QSL, 0x3A6FD8);
+		label(ComputerApps.DISTRESS, 0xFF6A00); // 2026-11-09: international orange, a distress signal's colour.
 	}
 
 	private ComputerAppScreens() {}

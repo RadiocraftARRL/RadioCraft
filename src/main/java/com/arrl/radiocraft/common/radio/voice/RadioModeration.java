@@ -386,7 +386,11 @@ public final class RadioModeration {
 			case QUERY -> "[QUERY " + mhz + "] " + packet.from() + ": " + packet.text();
 			case WX_ALERT -> "[WX ALERT " + mhz + "] " + packet.from() + ": " + String.join(" / ", packet.solarLines());
 			case FT8 -> "[FT8 " + mhz + "] " + packet.from() + ": " + packet.ft8Message(); // Computer batch 3B.
-			case FILE_HEADER, ACK, FAX_ANSWER, FAX_PACKET, FAX_ACK -> null;
+			case DISTRESS -> { // 2026-11-09: a DSC call or beacon alert.
+				com.arrl.radiocraft.common.radio.distress.DistressAlert alert = com.arrl.radiocraft.common.radio.distress.DistressPackets.alert(packet);
+				yield alert == null ? null : "[DISTRESS " + mhz + "] " + alert.type() + " " + alert.state() + " " + alert.owner() + " " + alert.nature().label() + " " + alert.coordinates();
+			}
+			case FILE_HEADER, ACK, FAX_ANSWER, FAX_PACKET, FAX_ACK, HOMING -> null;
 		};
 		if(text == null)
 			return;

@@ -21,11 +21,15 @@
     {
       "type": "patchouli:text",
       "title": "VHF Receiver",
-      "text": "A 2 m FM listener. Press power and the display shows the frequency. The left knob tunes (drag it or scroll), the right one is the volume, and the speaker button mutes it. Hover any control in its screen to see what it does.$(br2)With no antenna it hears a few blocks; coax a VHF antenna to it for range."
+      "text": "An eight-channel $(thing)scanner$() for FM from 144 to 174 MHz: 2 m ham, marine and commercial VHF. Turn $(thing)VOLUME$() up to switch it on; all the way down clicks it off. Each channel has a slide switch under its red numeral: up is on.$(br2)Its own whip hears as far as a VHF handheld would from there; coax a VHF antenna to it for more (the whip is then cut out)."
     },
     {
       "type": "patchouli:text",
-      "text": "The six numbered buttons are $(thing)memories$(). An empty one stores the frequency shown; a stored one is pressed in to listen there. Press in two or more and it $(thing)scans$() them, stopping on a signal. Shift + click stores over a memory.$(br2)The lamp over a button lights while a signal comes in on it. Turning the tuning knob goes back to the dial."
+      "text": "With two or more channels on it $(thing)scans$() them, stops on a signal and moves on a moment after it ends; the numeral of the channel it is on lights. $(thing)SQUELCH$() sets how strong a signal must be to stop it. $(thing)MAN$() holds it on a channel, $(thing)AUTO$() scans. A label over the panel shows the frequency; point at a switch for its channel's."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "To change a channel's frequency, press $(thing)SET$() in and switch on only that channel: the SET lamp lights and $(thing)TUNE$() moves it, 2.5 kHz a click (shift 25 kHz, control 1 MHz).$(br2)It comes with 146.520, 146.940, 147.000, marine 16 and 9, 154.280, 155.475 and the 162.550 weather channel."
     },
     {
       "type": "patchouli:text",

@@ -32,5 +32,6 @@ public class RadiocraftCommands {
         event.getDispatcher().register(com.arrl.radiocraft.common.commands.PhotoCommands.BUILDER);
         event.getDispatcher().register(com.arrl.radiocraft.common.commands.FccCommands.BUILDER);
         event.getDispatcher().register(com.arrl.radiocraft.common.commands.RealWorldCommands.BUILDER);
+        event.getDispatcher().register(com.arrl.radiocraft.common.commands.ContestCommands.BUILDER); // /contest start|stop (2026-11-09).
 	}
 }

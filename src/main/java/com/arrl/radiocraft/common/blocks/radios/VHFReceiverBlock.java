@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * The VHF receiver (see {@link VHFReceiverBlockEntity}). Shift + right-click with a Small NiCd or Small Alkaline Battery
+ * The VHF receiver, an eight-channel scanner (see {@link VHFReceiverBlockEntity}). Shift + right-click with a Small NiCd or Small Alkaline Battery
  * puts the cell in (VHFReceiverEvents, since vanilla skips the block for a sneaking player holding something), with an
  * empty hand takes it out (2026-11-09). Broken, it drops the cell.
  */
@@ -38,11 +39,11 @@ public class VHFReceiverBlock extends RadioBlock {
 
 	public static final HashMap<Direction, VoxelShape> SHAPES = new HashMap<>();
 
-	static {
-		SHAPES.put(Direction.NORTH, Block.box(4.0D, 0.0D, 3.0D, 12.0D, 3.0D, 16.0D));
-		SHAPES.put(Direction.SOUTH, Block.box(4.0D, 0.0D, 0.0D, 12.0D, 3.0D, 13.0D));
-		SHAPES.put(Direction.WEST, Block.box(3.0D, 0.0D, 4.0D, 16.0D, 3.0D, 12.0D));
-		SHAPES.put(Direction.EAST, Block.box(0.0D, 0.0D, 4.0D, 13.0D, 3.0D, 12.0D));
+	static { // The scanner's case (2026-11-09): 12 wide, 4 high, 10 deep, its front a quarter block in; and the bail's bar over it.
+		SHAPES.put(Direction.NORTH, Shapes.or(Block.box(2.0D, 0.0D, 4.0D, 14.0D, 4.0D, 14.0D), Block.box(1.5D, 4.5D, 8.5D, 14.5D, 5.0D, 9.5D)));
+		SHAPES.put(Direction.SOUTH, Shapes.or(Block.box(2.0D, 0.0D, 2.0D, 14.0D, 4.0D, 12.0D), Block.box(1.5D, 4.5D, 6.5D, 14.5D, 5.0D, 7.5D)));
+		SHAPES.put(Direction.WEST, Shapes.or(Block.box(4.0D, 0.0D, 2.0D, 14.0D, 4.0D, 14.0D), Block.box(8.5D, 4.5D, 1.5D, 9.5D, 5.0D, 14.5D)));
+		SHAPES.put(Direction.EAST, Shapes.or(Block.box(2.0D, 0.0D, 2.0D, 12.0D, 4.0D, 14.0D), Block.box(6.5D, 4.5D, 1.5D, 7.5D, 5.0D, 14.5D)));
 	}
 
 	public VHFReceiverBlock(Properties properties) {

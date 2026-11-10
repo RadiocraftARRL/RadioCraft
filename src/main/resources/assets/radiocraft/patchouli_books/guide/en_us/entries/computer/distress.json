@@ -1,0 +1,38 @@
+{
+  "name": "Distress",
+  "icon": "radiocraft:floppy_distress",
+  "category": "radiocraft:computer",
+  "sortnum": 24,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Distress",
+      "text": "The $(item)DISTRESS$() program listens through every radio cabled to the computer (touching, or on its data wire): each $(l:radiocraft:radios/marine_radios)marine radio$(/l) hears DSC calls on channel 70, each $(l:radiocraft:radios/commercial_radios)commercial VHF mobile$(/l) set to 161.975 MHz hears $(l:radiocraft:radios/distress_beacon)distress beacons$(/l). On the left a map: DSC calls are red diamonds, beacons orange rings."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The List",
+      "text": "On the right, every alert any of the radios heard, once each: the caller's MMSI or the beacon owner's name, the nature, how long ago it was raised, the bearing and distance from your station, and its state: ACTIVE, ACKNOWLEDGED, CANCELLED or SPENT. A new alert sounds the alarm. Up and Down pick one; its details show underneath."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Answering",
+      "text": "$(thing)F5$() acknowledges the DSC call you picked: the acknowledgement goes out on channel 70 through a marine radio that heard it, and the caller's radio stops repeating. Then call them on channel 16. Beacons cannot be acknowledged: go and find them, with a $(l:radiocraft:direction_finding/handheld_df)direction finder$(/l) on 161.975 MHz.$(br2)$(thing)F6$() prints a map of the area round the alert, marked, with its details, on the $(l:radiocraft:computer/scanner)scanner$(/l)."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_distress",
+      "text": "A blank floppy and a firework rocket, the distress flare."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Sending an SOS",
+      "text": "$(thing)F7$() sends your own distress alert. Pick the kind, then the nature of distress from the list (UNDESIGNATED if you do not say), and answer Yes. The bottom row shows which kinds can go now; one that cannot is grey, with the reason.$(br2)$(thing)F8$() cancels it: a cancel goes out and every station that heard it marks it cancelled."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Marine or Personal",
+      "text": "$(thing)MARINE$(): a cabled marine radio's DSC distress call, as its DISTRESS button sends it, with your MMSI; it repeats every 4 minutes until acknowledged.$(br2)$(thing)PERSONAL$(): a beacon-style alert with your name and the nature, on 161.975 MHz through a cabled commercial VHF mobile, every 50 seconds until you cancel it, or that radio loses power or its cable."
+    }
+  ]
+}

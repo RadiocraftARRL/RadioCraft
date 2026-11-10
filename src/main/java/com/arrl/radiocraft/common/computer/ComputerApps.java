@@ -107,6 +107,13 @@ public final class ComputerApps {
 	/** The QSL Designer: QSL card templates, printed runs of blank cards, cards received by fax or from a BBS. */
 	public static final ComputerApp QSL = add("qsl", "QSL", ComputerApp.Kind.CRAFTED);
 
+	// Distress alerting (2026-11-09).
+	/**
+	 * DSC distress calls and distress beacon alerts heard by a cabled marine radio, on a map and in a list: acknowledge
+	 * the calls, print a map of the area round one.
+	 */
+	public static final ComputerApp DISTRESS = add("distress", "DISTRESS", ComputerApp.Kind.CRAFTED);
+
 	private ComputerApps() {}
 
 	/**

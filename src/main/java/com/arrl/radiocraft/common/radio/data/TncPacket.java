@@ -35,7 +35,14 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 		/** A Simple Weather Alert Generator's alerts on 162.500 MHz, a line each (see {@code wxalert.WeatherAlertPacket}). */
 		WX_ALERT,
 		/** An FT8 message ({@code ft8.Ft8Message}): "message|offset", and "|snr" added by the radio that decodes it. */
-		FT8 }
+		FT8,
+		/**
+		 * A distress alert (2026-11-09): a DSC call, its ack or cancel on channel 70, or a distress beacon's alert on
+		 * 161.975 MHz; the text is {@code distress.DistressAlert#encode}, whole in itself so a relay can send it on.
+		 */
+		DISTRESS,
+		/** A distress beacon's homing tone (2026-11-09): nothing to decode; direction finders take a bearing on it. */
+		HOMING }
 
 	/** A message to this callsign is for every station that hears it, as a bulletin. */
 	public static final String EVERYONE = "ALL";

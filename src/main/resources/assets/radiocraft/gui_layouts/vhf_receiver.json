@@ -1,0 +1,467 @@
+{
+  "texture": "radiocraft:textures/gui/vhf_receiver.png",
+  "width": 256,
+  "height": 104,
+  "controls": [
+    {
+      "name": "key_man",
+      "type": "key",
+      "x": 30,
+      "y": 17,
+      "w": 24,
+      "h": 16,
+      "positions": [
+        "OUT",
+        "IN"
+      ],
+      "handles": [
+        [
+          31,
+          18,
+          22,
+          9
+        ],
+        [
+          31,
+          23,
+          22,
+          9
+        ]
+      ],
+      "cap_colour": "#3076C4",
+      "cap_light": "#6EA8E4",
+      "cap_dark": "#184078"
+    },
+    {
+      "name": "key_set",
+      "type": "key",
+      "x": 62,
+      "y": 17,
+      "w": 24,
+      "h": 16,
+      "positions": [
+        "OUT",
+        "IN"
+      ],
+      "handles": [
+        [
+          63,
+          18,
+          22,
+          9
+        ],
+        [
+          63,
+          23,
+          22,
+          9
+        ]
+      ],
+      "cap_colour": "#E44A28",
+      "cap_light": "#FA8C6E",
+      "cap_dark": "#8C2412"
+    },
+    {
+      "name": "set_lamp",
+      "type": "lamp",
+      "x": 90,
+      "y": 22,
+      "w": 6,
+      "h": 6,
+      "colour": "#FF3020"
+    },
+    {
+      "name": "numeral_1",
+      "type": "lamp",
+      "x": 122,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 1,
+      "glyph_x": 123,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_2",
+      "type": "lamp",
+      "x": 138,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 2,
+      "glyph_x": 139,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_3",
+      "type": "lamp",
+      "x": 154,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 3,
+      "glyph_x": 155,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_4",
+      "type": "lamp",
+      "x": 170,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 4,
+      "glyph_x": 171,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_5",
+      "type": "lamp",
+      "x": 186,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 5,
+      "glyph_x": 187,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_6",
+      "type": "lamp",
+      "x": 202,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 6,
+      "glyph_x": 203,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_7",
+      "type": "lamp",
+      "x": 218,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 7,
+      "glyph_x": 219,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "numeral_8",
+      "type": "lamp",
+      "x": 234,
+      "y": 18,
+      "w": 8,
+      "h": 12,
+      "digit": 8,
+      "glyph_x": 235,
+      "glyph_y": 19,
+      "glyph_scale": 2,
+      "colour": "#FF4A30",
+      "glow": "#6E160C"
+    },
+    {
+      "name": "switch_1",
+      "type": "switch",
+      "x": 121,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          123,
+          68,
+          7,
+          8
+        ],
+        [
+          123,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_2",
+      "type": "switch",
+      "x": 137,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          139,
+          68,
+          7,
+          8
+        ],
+        [
+          139,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_3",
+      "type": "switch",
+      "x": 153,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          155,
+          68,
+          7,
+          8
+        ],
+        [
+          155,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_4",
+      "type": "switch",
+      "x": 169,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          171,
+          68,
+          7,
+          8
+        ],
+        [
+          171,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_5",
+      "type": "switch",
+      "x": 185,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          187,
+          68,
+          7,
+          8
+        ],
+        [
+          187,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_6",
+      "type": "switch",
+      "x": 201,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          203,
+          68,
+          7,
+          8
+        ],
+        [
+          203,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_7",
+      "type": "switch",
+      "x": 217,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          219,
+          68,
+          7,
+          8
+        ],
+        [
+          219,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "switch_8",
+      "type": "switch",
+      "x": 233,
+      "y": 49,
+      "w": 11,
+      "h": 29,
+      "positions": [
+        "OFF",
+        "ON"
+      ],
+      "handles": [
+        [
+          235,
+          68,
+          7,
+          8
+        ],
+        [
+          235,
+          52,
+          7,
+          8
+        ]
+      ],
+      "handle_colour": "#D6D8DC",
+      "handle_shadow": "#46484C",
+      "cap_colour": "#28282C"
+    },
+    {
+      "name": "volume",
+      "type": "knob",
+      "x": 14,
+      "y": 53,
+      "w": 22,
+      "h": 22,
+      "cx": 24.5,
+      "cy": 63.5,
+      "pointer_from": 3,
+      "pointer_r": 9,
+      "pointer_width": 1,
+      "pointer_colour": "#2A2A2E",
+      "min_deg": -135,
+      "max_deg": 135,
+      "on_min_deg": -108
+    },
+    {
+      "name": "squelch",
+      "type": "knob",
+      "x": 46,
+      "y": 53,
+      "w": 22,
+      "h": 22,
+      "cx": 56.5,
+      "cy": 63.5,
+      "pointer_from": 3,
+      "pointer_r": 9,
+      "pointer_width": 1,
+      "pointer_colour": "#2A2A2E",
+      "min_deg": -135,
+      "max_deg": 135
+    },
+    {
+      "name": "tune",
+      "type": "knob",
+      "x": 78,
+      "y": 53,
+      "w": 22,
+      "h": 22,
+      "cx": 88.5,
+      "cy": 63.5,
+      "pointer_from": 3,
+      "pointer_r": 9,
+      "pointer_width": 1,
+      "pointer_colour": "#2A2A2E",
+      "min_deg": -135,
+      "max_deg": 135
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Distress Beacon",
+  "icon": "radiocraft:distress_beacon",
+  "category": "radiocraft:radios",
+  "sortnum": 14,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Distress Beacon",
+      "text": "A last resort, after the old EPIRBs: a battery, a transmitter and a strobe in a floating orange case. $(thing)Right click$() opens its arming cover (sneak and right click shuts it); $(thing)hold right click$() to switch it on. Once on it cannot be switched off. It works in your inventory, or thrown in the water, where it floats and does not despawn while it sends."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:distress_beacon",
+      "title": "What It Sends",
+      "text": "Every 50 seconds, an alert with its position and your name on $(thing)161.975 MHz$(). A $(l:radiocraft:radios/commercial_radios)commercial VHF mobile$(/l) with a channel on 161.975 hears it (a marine radio does not: its DSC is channel 70 only), and the $(l:radiocraft:computer/distress)DISTRESS$(/l) program through one. All the time, a homing tone a $(l:radiocraft:direction_finding/handheld_df)direction finder$(/l) can follow."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "One Use",
+      "text": "Its battery lasts one Minecraft day of sending (the tooltip counts it down). Then it sends a last SPENT alert and is a $(item)Spent Distress Beacon$(), good for nothing. It goes as far as a handheld does, so hills and roofs cut it short: get to open water or high ground."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:distress_beacon",
+      "text": "A diamond for the transmitter, so it is not made lightly."
+    }
+  ]
+}

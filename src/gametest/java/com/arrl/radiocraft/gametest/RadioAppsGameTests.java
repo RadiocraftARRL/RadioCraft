@@ -122,6 +122,50 @@ public class RadioAppsGameTests {
 
 	// -------------------- APRS --------------------
 
+	/**
+	 * Two VHF radios on one radio interface (2026-11-09): APRS offers a choice ({@code vhfRadios} 2, nothing
+	 * {@code picked}), and once one is picked it alone transmits: a beacon goes out on its frequency and not the
+	 * other's. B listens on the second radio's 144.390.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 600, batch = BATCH)
+	public static void aprsSendsThroughThePickedRadio(GameTestHelper helper) {
+		station(helper, RADIO_A, 144_930, "W1APA");
+		BlockPos second = INTERFACE_A.north(); // Beside the interface too, on 144.390.
+		helper.setBlock(second, RadiocraftBlocks.VHF_BASE_STATION.get());
+		GameTestUtil.blockEntity(helper, second, RadioBlockEntity.class).setFrequency(144_390_000.0F);
+		station(helper, RADIO_B, 144_390, "W1APB");
+		RadioComputerBlockEntity a = computer(helper, AT_A, ComputerApps.APRS);
+		RadioComputerBlockEntity b = computer(helper, AT_B, ComputerApps.APRS);
+		FakePlayer player = player(helper, "aprs-pick");
+		String firstId = Long.toString(helper.absolutePos(RADIO_A).asLong()), secondId = Long.toString(helper.absolutePos(second).asLong());
+		helper.startSequence()
+				.thenExecute(() -> {
+					powerOn(helper, RADIO_A);
+					powerOn(helper, second);
+					powerOn(helper, RADIO_B);
+				})
+				.thenIdle(1)
+				.thenExecute(() -> {
+					CompoundTag status = app(a, player, ComputerApps.APRS, "status", new CompoundTag()).getCompound("data");
+					helper.assertTrue(status.getInt("vhfRadios") == 2 && !status.getBoolean("picked"), "two radios, none picked: " + status);
+					helper.assertTrue(app(a, player, ComputerApps.APRS, "radios", new CompoundTag()).getCompound("data").getList("radios", Tag.TAG_COMPOUND).size() == 2,
+							"the picker lists both");
+					helper.assertFalse(app(a, player, ComputerApps.APRS, "select", tag("id", firstId)).contains("error"), "could not pick the first radio");
+					helper.assertTrue(app(a, player, ComputerApps.APRS, "status", new CompoundTag()).getCompound("data").getBoolean("picked"), "the pick is kept");
+					helper.assertTrue(AprsHandler.state(a).radio() == helper.absolutePos(RADIO_A).asLong(), "kept with the computer");
+					helper.assertFalse(app(a, player, ComputerApps.APRS, "beacon", new CompoundTag()).contains("error"), "A could not beacon");
+				})
+				.thenIdle(100)
+				.thenExecute(() -> {
+					helper.assertTrue(AprsHandler.state(b).stations().isEmpty(), "B on 144.390 heard a beacon only the 144.930 radio should have sent");
+					helper.assertFalse(app(a, player, ComputerApps.APRS, "select", tag("id", secondId)).contains("error"), "could not pick the second radio");
+					helper.assertFalse(app(a, player, ComputerApps.APRS, "beacon", new CompoundTag()).contains("error"), "A could not beacon");
+				})
+				.thenWaitUntil(() -> helper.assertTrue(AprsHandler.state(b).stations().stream().anyMatch(s -> s.packet().from().equals("W1APA")),
+						"B never heard the beacon through the second radio"))
+				.thenSucceed();
+	}
+
 	/** A message from one computer to another arrives once and is acked: the sender shows it SENT. */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 400, batch = BATCH)
 	public static void aprsMessageIsAcked(GameTestHelper helper) {

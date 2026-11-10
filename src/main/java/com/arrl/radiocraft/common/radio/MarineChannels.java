@@ -134,6 +134,48 @@ public final class MarineChannels {
 		return null;
 	}
 
+	/**
+	 * What the channel is for in a word or two, upper case, for a display beside its number (the marine radio's LED
+	 * window, 2026-11-09): "DISTRESS", "COAST GUARD", "WEATHER". The US names follow the Coast Guard's channel list;
+	 * the international ones are broader. Empty for an unknown channel.
+	 */
+	public static String label(Region region, String name) {
+		Channel channel = byName(region, name);
+		if(channel == null)
+			return "";
+		if(channel.isReceiveOnly())
+			return "WEATHER";
+		String digits = channel.name().replaceAll("[^0-9]", "");
+		int number = digits.isEmpty() ? 0 : Integer.parseInt(digits);
+		if(region == Region.INTERNATIONAL)
+			return switch(number) {
+				case 16 -> "DISTRESS";
+				case 6 -> "SAFETY";
+				case 13 -> "BRIDGE";
+				case 15, 17 -> "ON BOARD";
+				case 70 -> "DSC";
+				case 8, 10, 72, 77 -> "INTERSHIP";
+				default -> channel.isDuplex() ? "PUBLIC CORR" : "PORT OPS";
+			};
+		return switch(number) {
+			case 16 -> "DISTRESS";
+			case 9 -> "CALLING";
+			case 6 -> "SAFETY";
+			case 13, 67 -> "BRIDGE";
+			case 70 -> "DSC";
+			case 22 -> "COAST GUARD";
+			case 21, 23, 81, 82, 83 -> "USCG";
+			case 17 -> "STATE";
+			case 15 -> "ON BOARD";
+			case 68, 69, 71, 72, 78 -> "NON-COMM";
+			case 1, 5, 11, 12, 14 -> "PORT OPS VTS";
+			case 20, 63, 65, 66, 73, 74, 77 -> "PORT OPS";
+			case 24, 25, 26, 27, 28, 84, 85, 86, 87 -> "MARINE OPER";
+			case 61, 64 -> "GOVERNMENT";
+			default -> "COMMERCIAL";
+		};
+	}
+
 	private static List<Channel> build(Region region) {
 		List<Channel> out = new ArrayList<>();
 		for(int number = 1; number <= 88; number++) {

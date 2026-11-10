@@ -62,7 +62,7 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		radio(RadiocraftBlocks.QRP_RADIO_40M.get());
 		radio(RadiocraftBlocks.QRP_RADIO_20M.get());
 		RadiocraftBlocks.VHF_BASE_STATION_VARIANTS.values().forEach(this::radio);
-		radio(RadiocraftBlocks.VHF_RECEIVER.get());
+		radio(RadiocraftBlocks.VHF_RECEIVER.get(), "vhf_receiver_hanging"); // Its own ceiling model: the whip points down (2026-11-09).
 		radio(RadiocraftBlocks.HF_RECEIVER.get());
 		radio(RadiocraftBlocks.VHF_REPEATER.get());
 		radio(RadiocraftBlocks.COMMERCIAL_MOBILE.get()); // Placeholder models (ModelDesignBounty), case tinted (tintindex 0).
@@ -121,11 +121,25 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 	 * radio looks the same, so {@link RadioBlock#BLOWN} is left out of the variants.
 	 */
 	private void radio(Block block) {
+		radio(block, null);
+	}
+
+	/**
+	 * A radio on the floor or hanging from a ceiling. The ceiling model is the floor one raised so its top meets the
+	 * block above, or {@code hangingModel} (a model of its own in {@code models/block/}, already raised) when raising
+	 * it would not do: the VHF receiver's whip would poke up into the ceiling, so its hanging model points it down.
+	 */
+	private void radio(Block block, @org.jetbrains.annotations.Nullable String hangingModel) {
 		String name = key(block).getPath();
 		ModelFile floor = models().getExistingFile(modLoc("block/" + name));
-		float rise = 1.0F - modelTop(modLoc("models/block/" + name + ".json"));
-		ModelFile ceiling = models().getBuilder("block/" + name + "_ceiling").parent(floor)
-				.rootTransforms().translation(0.0F, rise, 0.0F).end();
+		ModelFile ceiling;
+		if(hangingModel != null)
+			ceiling = models().getExistingFile(modLoc("block/" + hangingModel));
+		else {
+			float rise = 1.0F - modelTop(modLoc("models/block/" + name + ".json"));
+			ceiling = models().getBuilder("block/" + name + "_ceiling").parent(floor)
+					.rootTransforms().translation(0.0F, rise, 0.0F).end();
+		}
 		getVariantBuilder(block).forAllStatesExcept(state -> ConfiguredModel.builder()
 				.modelFile(state.getValue(RadioBlock.CEILING) ? ceiling : floor)
 				.rotationY(((int)state.getValue(RadioBlock.HORIZONTAL_FACING).toYRot() + 180) % 360)

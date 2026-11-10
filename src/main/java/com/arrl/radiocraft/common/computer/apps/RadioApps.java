@@ -32,5 +32,6 @@ public final class RadioApps {
 		ComputerAppHandlers.register(ComputerApps.NET_CONTROL, new NetControlHandler());
 		ComputerAppHandlers.register(ComputerApps.AWARDS, new AwardsHandler());
 		ComputerAppHandlers.register(ComputerApps.QSL, new QslHandler());
+		ComputerAppHandlers.register(ComputerApps.DISTRESS, new DistressHandler()); // Distress alerting (2026-11-09).
 	}
 }

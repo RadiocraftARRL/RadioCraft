@@ -1150,14 +1150,19 @@ public final class RigControlHandler implements ComputerAppHandler {
 		out.putString("problem", problem == null ? "" : problem);
 		out.putString("myCall", bus.callsign());
 		ListTag radios = new ListTag();
+		boolean picked = false;
 		for(RadioBlockEntity radio : radios(computer)) {
 			CompoundTag entry = new CompoundTag();
 			entry.putLong("pos", radio.getBlockPos().asLong());
 			entry.putString("name", radio.getBlockState().getBlock().getDescriptionId());
 			entry.putDouble("hz", radio.getFrequency());
+			entry.putBoolean("on", radio.isPowered());
 			radios.add(entry);
+			picked |= radio.getBlockPos().asLong() == state.selected;
 		}
 		out.put("radios", radios);
+		// A radio was picked (R) and is still on the bus (2026-11-09): with more than one and none picked, the screen asks.
+		out.putBoolean("picked", picked);
 		if(rig != null)
 			out.put("rig", rigTag(state, rig));
 		out.putString("memoryFile", state.memoryFile);

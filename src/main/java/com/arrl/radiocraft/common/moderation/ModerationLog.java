@@ -651,6 +651,12 @@ public final class ModerationLog {
 			case QUERY -> packet.from() + ": " + packet.text();
 			case FT8 -> packet.from() + ": " + packet.ft8Message();
 			case ACK -> packet.from() + ">" + packet.to() + " ack";
+			case DISTRESS -> { // 2026-11-09: a DSC call or beacon alert, in words.
+				com.arrl.radiocraft.common.radio.distress.DistressAlert alert = com.arrl.radiocraft.common.radio.distress.DistressPackets.alert(packet);
+				yield alert == null ? packet.text() : alert.type() + " " + alert.state() + " " + alert.owner() + " " + alert.nature().label() + " " + alert.coordinates()
+						+ (alert.ackBy().isEmpty() ? "" : " ack by " + alert.ackBy());
+			}
+			case HOMING -> "homing tone";
 		};
 		if(!packet.item().isEmpty())
 			text += " [" + packet.item().getCount() + "x " + packet.item().getHoverName().getString() + "]";

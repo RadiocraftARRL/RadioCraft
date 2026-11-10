@@ -20,7 +20,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * A key pressed on a marine radio: the marine handheld in inventory slot {@code slot}, or (with {@code slot} -1) the
  * fixed-mount radio at {@code pos} whose screen the player has open. The keys are all a user has: the channel knob
- * ({@link MarineRadioState.Key#TURN}, {@code value} clicks), 16/9, HI/LO and DW. Frequencies always come from the channel.
+ * ({@link MarineRadioState.Key#TURN}, {@code value} clicks), 16/9, HI/LO, DW, the red 16 key, and a channel typed on the
+ * keypad ({@link MarineRadioState.Key#SELECT}, {@code value} its place in the table). Frequencies always come from the channel.
  */
 public record SMarineRadioPacket(int slot, long pos, int key, int value) implements CustomPacketPayload {
 
@@ -50,7 +51,14 @@ public record SMarineRadioPacket(int slot, long pos, int key, int value) impleme
 			}
 			else if(context.player().containerMenu instanceof MarineRadioMenu menu && menu.blockEntity.getBlockPos().asLong() == pos) {
 				MarineRadioBlockEntity radio = menu.blockEntity;
-				radio.setRadioState(radio.getRadioState().press(region, key, value));
+				MarineRadioState.Key pressed = key >= 0 && key < MarineRadioState.Key.values().length ? MarineRadioState.Key.values()[key] : null;
+				if(pressed == MarineRadioState.Key.DISTRESS || pressed == MarineRadioState.Key.NATURE || pressed == MarineRadioState.Key.ACK
+						|| pressed == MarineRadioState.Key.DISMISS) // DSC (2026-11-09): the radio block acts on them.
+					radio.dscKey(pressed, value, context.player().getUUID());
+				else {
+					radio.silence(); // Any key stops the DSC alarm, as on a real set.
+					radio.setRadioState(radio.getRadioState().press(region, key, value));
+				}
 			}
 		});
 	}

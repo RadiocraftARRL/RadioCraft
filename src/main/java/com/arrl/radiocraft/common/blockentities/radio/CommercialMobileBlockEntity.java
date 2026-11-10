@@ -9,11 +9,17 @@ import com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock;
 import com.arrl.radiocraft.common.init.RadiocraftBlockEntities;
 import com.arrl.radiocraft.common.init.RadiocraftDataComponent;
 import com.arrl.radiocraft.common.menus.CommercialMobileMenu;
+import com.arrl.radiocraft.common.init.RadiocraftSoundEvents;
+import com.arrl.radiocraft.common.radio.antenna.AntennaDataPacket;
 import com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket;
 import com.arrl.radiocraft.common.radio.commercial.CommercialChannel;
 import com.arrl.radiocraft.common.radio.commercial.CommercialProgram;
 import com.arrl.radiocraft.common.radio.commercial.CommercialProgramming;
 import com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel;
+import com.arrl.radiocraft.common.radio.distress.DistressAlert;
+import com.arrl.radiocraft.common.radio.distress.DistressLog;
+import com.arrl.radiocraft.common.radio.distress.DistressNature;
+import com.arrl.radiocraft.common.radio.distress.DistressPackets;
 import com.arrl.radiocraft.common.radio.voice.Detuning;
 import com.arrl.radiocraft.common.radio.voice.DigitalVoice;
 import net.minecraft.core.BlockPos;
@@ -21,8 +27,12 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -33,6 +43,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -41,6 +53,14 @@ import java.util.Locale;
  * to the next channel. The frequency, tones and mode always come from the channel; a blank knob position hears nothing
  * and will not key. Transmissions go out on the radio's own commercial band, so they are in band (no splatter, see
  * {@link com.arrl.radiocraft.common.radio.BandEdges}). Programmed through {@link CommercialProgramming}.
+ * <p>
+ * Distress beacons (2026-11-09): a VHF mobile whose channel is on 161.975 MHz (programmed there in the CPS, with the
+ * knob on it) decodes the alerts distress beacons send there ({@link DistressPackets#BEACON_HZ}), as a radio with an
+ * AIS-SART decoder would. A new alert sounds a short alarm and puts {@code DISTRESS DETECTED 161.975} and the beacon's
+ * position on the display ({@link #distressLines}) until it is dismissed ({@link #dismissDistress}: the screen's
+ * {@code DISMISS_DISTRESS} control, or sneak and use the radio while the alert shows). What it has heard goes in its
+ * {@link DistressLog}, which the DISTRESS program reads. The program's personal SOS goes out through it too
+ * ({@link #sendBeaconAlert}). A low band mobile never hears them: it cannot be put on 161.975.
  */
 public class CommercialMobileBlockEntity extends RadioBlockEntity implements CommercialProgramming.Target, ChannelDisplay {
 
@@ -262,6 +282,133 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 		return program.callerText(caller);
 	}
 
+	// -------------------- DISTRESS BEACONS (2026-11-09) --------------------
+
+	/** The header line while a beacon alert is shown. */
+	public static final String DISTRESS_HEADER = "DISTRESS DETECTED 161.975";
+
+	// Server: what it has heard; client: from the last sync (the alert shown, for the display).
+	private final DistressLog distressLog = new DistressLog();
+
+	/** True for a radio that can be put on 161.975 MHz (the VHF mobile, not the low band one). */
+	public boolean hearsBeacons() {
+		return model().covers(DistressPackets.BEACON_HZ);
+	}
+
+	/** True while the knob is on a channel at 161.975 MHz: the radio hears distress beacons. */
+	public boolean isOnBeaconFrequency() {
+		return getChannel() != null && hearsBeacons() && DistressPackets.isBeacon(getTunedFrequency());
+	}
+
+	/** The beacon alerts it has heard. */
+	public DistressLog getDistressLog() {
+		return distressLog;
+	}
+
+	/**
+	 * The display's lines while a beacon alert is shown, null when none: {@link #DISTRESS_HEADER}, the beacon's
+	 * position ("X 120 Y 64 Z -340") and who it is (the owner, and the nature or, once it is over, its state). Shown
+	 * until dismissed; the position follows the beacon's repeats. Client side from the synced state (on the server,
+	 * the server's own).
+	 */
+	@Nullable
+	public List<String> distressLines() {
+		if(level == null)
+			return null;
+		DistressLog.Entry shown = distressLog.shown(level.getGameTime());
+		if(shown == null)
+			return null;
+		DistressAlert alert = shown.alert();
+		String what = alert.state() != DistressAlert.State.ACTIVE ? alert.state().name()
+				: alert.nature() == DistressNature.UNDESIGNATED ? "BEACON" : alert.nature().shortLabel();
+		return List.of(DISTRESS_HEADER, alert.coordinates(), (alert.owner() + " " + what).strip());
+	}
+
+	/** Clears the alert off the display. False if none was shown. Server thread. */
+	public boolean dismissDistress() {
+		if(level == null || distressLog.shown(level.getGameTime()) == null)
+			return false;
+		distressLog.dismiss();
+		setChanged();
+		updateBlock();
+		return true;
+	}
+
+	/**
+	 * A beacon alert reached the antenna: decoded if the radio is on, its knob is on 161.975 MHz and it is strong
+	 * enough. A DSC call is not for this radio (channel 70 is the marine radios'). Anything else goes to the radio as
+	 * usual.
+	 */
+	@Override
+	public boolean receiveData(AntennaDataPacket packet) {
+		DistressAlert alert = DistressPackets.alert(packet.getPayload());
+		if(alert == null)
+			return super.receiveData(packet);
+		if(alert.isDsc() || !DistressPackets.isBeacon(packet.getFrequency()) || !isOnBeaconFrequency())
+			return false;
+		if(!(level instanceof ServerLevel serverLevel) || !isPowered() || isDeafNow())
+			return false;
+		Detuning.Effect effect = getDetuning(packet.getFrequency());
+		if(!effect.audible() || !decodes(packet.getStrength() * effect.strength() * desense(packet), getNoiseFloor()))
+			return false;
+		hearBeacon(serverLevel, alert);
+		return true;
+	}
+
+	/** A beacon alert decoded: logged; a new active one shown on the display with a short alarm. Server thread. */
+	public void hearBeacon(ServerLevel serverLevel, DistressAlert alert) {
+		DistressLog.Change change = distressLog.hear(alert, serverLevel.getGameTime());
+		if(change == DistressLog.Change.NONE)
+			return;
+		if(change == DistressLog.Change.NEW && alert.state() == DistressAlert.State.ACTIVE) {
+			distressLog.show(alert.id(), Long.MAX_VALUE); // Until dismissed.
+			serverLevel.playSound(null, worldPosition, RadiocraftSoundEvents.DSC_ALARM.get(), SoundSource.BLOCKS, 1.0F, 1.2F);
+		}
+		setChanged();
+		updateBlock(); // The display follows the beacon's position and state.
+	}
+
+	/**
+	 * Sends {@code alert} on 161.975 MHz through the radio's antenna, whatever channel it is on (the DISTRESS program's
+	 * personal SOS). False if it cannot: off, blown, or a radio that cannot reach 161.975.
+	 */
+	public boolean sendBeaconAlert(DistressAlert alert) {
+		if(!(level instanceof ServerLevel serverLevel) || !hearsBeacons() || !isPowered() || isBlown())
+			return false;
+		sendDataOn(serverLevel, DistressPackets.packet(serverLevel.getRandom().nextLong(), alert), DistressPackets.BEACON_HZ);
+		return true;
+	}
+
+	/** Where the radio really is: on a Sable ship, the ship's place in the world. */
+	public BlockPos worldPos() {
+		return level == null ? worldPosition : com.arrl.radiocraft.compat.sable.Sublevels.world(level, worldPosition);
+	}
+
+	private CompoundTag saveDistress() {
+		CompoundTag tag = new CompoundTag();
+		ListTag heard = new ListTag();
+		for(DistressLog.Entry entry : distressLog.entries()) {
+			CompoundTag e = new CompoundTag();
+			e.putString("a", entry.alert().encode());
+			e.putLong("t", entry.heardAt());
+			heard.add(e);
+		}
+		tag.put("log", heard);
+		tag.putLong("shown", distressLog.shownId());
+		tag.putLong("shown_until", distressLog.shownUntil());
+		return tag;
+	}
+
+	private void loadDistress(CompoundTag tag) {
+		List<DistressLog.Entry> entries = new ArrayList<>();
+		for(Tag t : tag.getList("log", Tag.TAG_COMPOUND)) {
+			DistressAlert alert = DistressAlert.decode(((CompoundTag)t).getString("a"));
+			if(alert != null)
+				entries.add(new DistressLog.Entry(alert, ((CompoundTag)t).getLong("t")));
+		}
+		distressLog.restore(entries, tag.getLong("shown"), tag.getLong("shown_until"));
+	}
+
 	// -------------------- DISPLAY --------------------
 
 	/** The display's big line: the channel name (or the channel number on a radio without a name display). */
@@ -326,6 +473,7 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 		nbt.putInt("caseColour", caseColour);
 		boolean fresh = caller > 0 && System.nanoTime() - callerNanos < 2L * CALLER_REPEAT_NANOS;
 		nbt.putInt("caller", fresh ? caller : 0); // For the display (sent with every sync; 0 once it is stale).
+		nbt.put("distress", saveDistress()); // Saved, and synced for the display (2026-11-09).
 	}
 
 	@Override
@@ -345,6 +493,8 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 				callerShownMillis = System.currentTimeMillis();
 			}
 		}
+		if(nbt.contains("distress"))
+			loadDistress(nbt.getCompound("distress"));
 		if(nbt.contains("caseColour")) {
 			int colour = nbt.getInt("caseColour");
 			if(colour != caseColour) {

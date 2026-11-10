@@ -149,6 +149,14 @@ public class RadiocraftDataComponent {
                     .networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.VAR_INT)
     );
 
+    /** The distress beacon's cover, on/off, battery, alert number and owner (2026-11-09). */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.distress.BeaconState>> DISTRESS_BEACON = DATA_COMPONENTS.registerComponentType(
+            "distress_beacon",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.distress.BeaconState.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.distress.BeaconState.STREAM_CODEC)
+    );
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.marine.MarineRadioState>> MARINE_RADIO = DATA_COMPONENTS.registerComponentType(
             "marine_radio",
             builder -> builder
