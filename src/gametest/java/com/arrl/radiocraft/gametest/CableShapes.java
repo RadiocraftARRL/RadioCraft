@@ -154,8 +154,12 @@ final class CableShapes {
 		return dedupe(out);
 	}
 
+	/**
+	 * A piece too short to have a way it goes: shorter than most of the cable's width, it lies inside the cube it starts
+	 * from (2026-11-15: the half-pixel line down from a cable lying on the floor to the run under it).
+	 */
 	private static boolean point(WireGeometry.Segment s) {
-		return s.from().distanceTo(s.to()) < 1.0E-4D;
+		return s.from().distanceTo(s.to()) < Math.max(1.0E-4D, s.width() * 0.75D);
 	}
 
 	/** How far two pieces run along the same line (parallel, within a hundredth of a block), blocks; 0 if they do not. */

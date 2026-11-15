@@ -38,13 +38,54 @@ public final class WireGeometry {
 			WireLook.Lateral offset = drawn.offset();
 			boolean ceiling = WireBlock.isCeiling(state);
 			double w = wire.width() / 16.0D, h = w / 2.0D;
+			int first = out.size();
+			Vec3 arriveEnd = null, middle = null;
+			WireLook.Look look = wire.look(level, pos, state);
 			for(WireLook.Placed placed : parts)
 				for(Vec3[] line : local(placed.part(), w, h)) {
 					WireLook.Affine affine = WireLook.affine(placed, offset, faces, ceiling);
-					out.add(new Segment(wire, world(pos, line[0], placed, ceiling, affine), world(pos, line[1], placed, ceiling, affine), w));
+					Segment seg = new Segment(wire, world(pos, line[0], placed, ceiling, affine), world(pos, line[1], placed, ceiling, affine), w);
+					out.add(seg);
+					if(placed.part() == WireLook.Part.MIDDLE)
+						middle = seg.from();
+					Direction arrive = look.arrive();
+					if(arrive != null && arrive.getAxis().isHorizontal() && !placed.lifted())
+						for(Vec3 e : new Vec3[] { seg.from(), seg.to() })
+							if(onFace(e, pos, arrive))
+								arriveEnd = e; // Where the cable meets the edge it comes up on (a stub, or a squared one's last piece).
 				}
+			footOfRun(out, first, wire, state, pos, ceiling, arriveEnd != null ? arriveEnd : middle, w);
 		}
 		return out;
+	}
+
+	/**
+	 * A run from below that ends at this block's floor (2026-11-15): the cable turns onto the floor here, drawn as the
+	 * middle cube (or the stub to the edge it comes up on) lying on the floor, whose cube reaches down to the floor and
+	 * meets the run's top. Its centre line sits half the cable's width up, so the line is carried down to the floor where
+	 * the cube already is; without it the checks saw a half-pixel gap that is not on screen.
+	 */
+	private static boolean onFace(Vec3 p, BlockPos pos, Direction dir) {
+		return switch(dir) {
+			case NORTH -> Math.abs(p.z - pos.getZ()) < 1.0E-4D;
+			case SOUTH -> Math.abs(p.z - pos.getZ() - 1.0D) < 1.0E-4D;
+			case WEST -> Math.abs(p.x - pos.getX()) < 1.0E-4D;
+			case EAST -> Math.abs(p.x - pos.getX() - 1.0D) < 1.0E-4D;
+			default -> false;
+		};
+	}
+
+	private static void footOfRun(List<Segment> out, int first, WireBlock wire, BlockState state, BlockPos pos, boolean ceiling, Vec3 from, double w) {
+		Direction toRun = ceiling ? Direction.UP : Direction.DOWN;
+		if(from == null || !state.getValue(WireBlock.PROPERTY_BY_DIRECTION.get(toRun)))
+			return;
+		double floor = ceiling ? pos.getY() + 1.0D : pos.getY();
+		for(int k = first; k < out.size(); k++)
+			if(Math.abs(out.get(k).from().y - floor) < 1.0E-4D || Math.abs(out.get(k).to().y - floor) < 1.0E-4D)
+				return; // A piece of its own reaches the floor: the run carries on through it.
+		if(Math.abs(from.y - floor) > w)
+			return; // Not lying on the floor: something else.
+		out.add(new Segment(wire, from, new Vec3(from.x, floor, from.z), w));
 	}
 
 	/** A part's centre line(s) as its model draws it facing north, block units. */
