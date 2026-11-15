@@ -254,6 +254,9 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<Integer> ADSB_RECEIVER_POWER_USE;
 	public static final ModConfigSpec.ConfigValue<Boolean> REAL_WORLD_INTERFACE_ENABLED;
 	public static final ModConfigSpec.ConfigValue<Boolean> REAL_WORLD_INTERFACE_OP_ONLY;
+	public static final ModConfigSpec.ConfigValue<Boolean> REAL_WORLD_SELF_LICENCE;
+	public static final ModConfigSpec.ConfigValue<Boolean> CALLSIGN_SEARCH_PUBLIC;
+	public static final ModConfigSpec.ConfigValue<Boolean> REAL_WORLD_BRIDGE_STATIONS;
 	public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> REAL_WORLD_INTERFACES;
 
 	/**
@@ -383,6 +386,12 @@ public class RadiocraftServerConfig {
 				" the serial library is not even loaded, while this is false").define("real_world_interface_enabled", false);
 		REAL_WORLD_INTERFACE_OP_ONLY = BUILDER.comment(" Only operators (permission level 2) may pick an interface or change a Real-World Interface",
 				" block's frequency, mode or Everywhere setting, or switch it on and off").define("real_world_interface_op_only", true);
+		REAL_WORLD_SELF_LICENCE = BUILDER.comment(" Let players confirm their own amateur licence on a Real-World Interface's screen. Off by default:",
+				" an operator confirms it (on the screen for themselves, or /radiocraft realworld licence <player> grant). In single",
+				" player the world's owner always may").define("real_world_self_licence", false);
+		REAL_WORLD_BRIDGE_STATIONS = BUILDER.comment(" Let transmissions with no player behind them (FM broadcast stations, beacons, repeater IDs,",
+				" tapes, the weather radio's voice) go out through a Real-World Interface. Off by default: music or a recording on a",
+				" real amateur frequency is against the rules").define("real_world_bridge_stations", false);
 		REAL_WORLD_INTERFACES = BUILDER.comment(" The interfaces, one string each: key=value pairs separated by ;. Only name is needed:",
 				"   name=Shack 2m;input=USB Audio CODEC;output=USB Audio CODEC;rate=48000;serial=COM3;ptt=RTS;trigger=VOX",
 				" Keys (defaults in brackets): name (up to 24 characters, shown on the block's screen); input and output, part of",
@@ -405,6 +414,8 @@ public class RadiocraftServerConfig {
 
         BUILDER.push("Permissions");
         CALLSIGN_PERMISSIONS_ENABLED = BUILDER.comment(" Require op for callsign configuration").define("callsign_permissions_enabled", true);
+        CALLSIGN_SEARCH_PUBLIC = BUILDER.comment(" Let every player use /callsign search, which shows where a callsign's station is. Off by default:",
+                " operators only").define("callsign_search_public", false);
         BUILDER.pop();
 
 		BUILDER.push("CW");

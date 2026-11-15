@@ -45,7 +45,7 @@ public record SFireStationNamePacket(long pos, int zone, String name, String kin
 			if(!(context.player() instanceof ServerPlayer player))
 				return;
 			BlockPos pos = BlockPos.of(packet.pos());
-			if(!PacketChecks.nearAndLoaded(player, pos) || player.distanceToSqr(pos.getCenter()) > 64.0D
+			if(!PacketChecks.inReach(player, pos, 2.0D)
 					|| !(player.level().getBlockEntity(pos) instanceof FireAlarmBoxBlockEntity box))
 				return;
 			if(!box.setStation(player.serverLevel(), packet.zone(), packet.name(), com.arrl.radiocraft.common.radio.firealarm.AlarmKind.of(packet.kind())))

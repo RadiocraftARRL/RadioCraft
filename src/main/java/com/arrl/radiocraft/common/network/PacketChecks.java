@@ -15,6 +15,15 @@ public final class PacketChecks {
 	/** How far from the player a block they work through a screen can be: well past reach, for screens kept open. */
 	public static final double MAX_DISTANCE = 64.0D;
 
+	/**
+	 * True if {@code player} could use the block at {@code pos} by hand: loaded, not a spectator, and within their reach
+	 * plus {@code slack} blocks (a screen kept open while stepping back). For packets with no open menu to vouch for
+	 * the player (2026-11-15: they took anyone up to 64 blocks away, through walls, spectators too).
+	 */
+	public static boolean inReach(Player player, BlockPos pos, double slack) {
+		return player.level().isLoaded(pos) && !player.isSpectator() && player.canInteractWithBlock(pos, slack);
+	}
+
 	/** True if {@code pos} is loaded and within {@link #MAX_DISTANCE} of {@code player}. */
 	public static boolean nearAndLoaded(Player player, BlockPos pos) {
 		return player.level().isLoaded(pos) && player.blockPosition().distSqr(pos) <= MAX_DISTANCE * MAX_DISTANCE;

@@ -207,13 +207,32 @@ public class FmBroadcastTransmitterBlockEntity extends FmBroadcastRadioBlockEnti
 			}
 		}
 		// The stream follows the program choice and the server's rule.
-		boolean wantStream = onAir() && station.program() == FmStation.Program.STREAM && !streamUrl.isBlank() && streamsAllowed();
+		boolean wantStream = onAir() && station.program() == FmStation.Program.STREAM && !streamUrl.isBlank() && streamsAllowed() && listened(serverLevel);
 		if(wantStream && stream == null) {
 			stream = new InternetStream(streamUrl, owner);
 			stream.start();
 		}
 		else if(!wantStream && stream != null)
 			stopStream();
+	}
+
+	/** A minute's grace after the last listener goes, so tuning past it or stepping away does not drop and refetch the stream. */
+	private static final long LISTEN_GRACE_TICKS = 1200L;
+	/** Tuned this close counts as on the way to it: the stream is buffering by the time they land on it. */
+	private static final float LISTEN_WINDOW_HZ = 1_000_000.0F;
+	private long lastListened = Long.MIN_VALUE / 2;
+
+	/**
+	 * True while someone may hear the station (2026-11-15, the maintainer: a stream holds one of the server's few
+	 * slots, so only open it while a radio in range is on and tuned near it): a radio within reach tuned within a
+	 * megahertz, or one that was in the last minute.
+	 */
+	private boolean listened(ServerLevel serverLevel) {
+		long now = serverLevel.getGameTime();
+		double reach = com.arrl.radiocraft.common.radio.BandUtils.maxReach(com.arrl.radiocraft.common.radio.Band.getBand(com.arrl.radiocraft.common.radio.Band.FM_BROADCAST));
+		if(com.arrl.radiocraft.common.radio.station.FmListeners.anyNear(serverLevel, worldPosition, getFrequency(), LISTEN_WINDOW_HZ, reach, now))
+			lastListened = now;
+		return now - lastListened <= LISTEN_GRACE_TICKS;
 	}
 
 	private void stopStream() {

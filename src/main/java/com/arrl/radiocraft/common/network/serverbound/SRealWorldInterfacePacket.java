@@ -69,7 +69,12 @@ public record SRealWorldInterfacePacket(long pos, int action, String text) imple
 					if(!block.setEverywhere(text.trim().equals("1"), player))
 						refused = noRight;
 				}
-				case LICENCE -> RealWorldInterfaceBlockEntity.acknowledgeLicence(player); // "I hold a licence", once per player.
+				case LICENCE -> { // "I hold a licence", once per player: an operator's word unless the server trusts players' own (2026-11-15).
+					if(com.arrl.radiocraft.RadiocraftServerConfig.REAL_WORLD_SELF_LICENCE.get() || player.hasPermissions(2) || player.server.isSingleplayerOwner(player.getGameProfile()))
+						RealWorldInterfaceBlockEntity.acknowledgeLicence(player);
+					else
+						refused = Component.translatable(Radiocraft.translationKey("message", "real_world_interface.licence_by_op"));
+				}
 			}
 			if(refused != null)
 				player.displayClientMessage(refused, true);

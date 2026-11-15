@@ -114,7 +114,11 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
             switch(action) {
                 case TOGGLE_POWER -> radio.toggle();
                 case SET_SSB -> radio.setSSBEnabled(value);
-                case SET_PTT -> radio.setPTTDown(value);
+                case SET_PTT -> {
+                    if(value)
+                        radio.setPttHolder(context.player().getUUID());
+                    radio.setPTTDown(value);
+                }
                 case STEP_FREQUENCY -> radio.updateFrequency(stepCount);
                 case SET_CW -> {
                     if(radio instanceof HFRadioBlockEntity hf)
@@ -192,8 +196,10 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
         if(context.player().containerMenu instanceof RadioMenu<?> menu && menu.blockEntity == radio)
             return true;
 
+        // Letting go of PTT just as the screen closes: only whoever keyed it may (2026-11-15: anyone near could unkey another).
         return action == Action.SET_PTT
                 && !value
+                && context.player().getUUID().equals(radio.getPttHolder())
                 && context.player().distanceToSqr(targetPos.getX() + 0.5D, targetPos.getY() + 0.5D, targetPos.getZ() + 0.5D) <= 64.0D;
     }
 

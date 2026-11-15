@@ -71,7 +71,8 @@ public class CallsignCommands {
 					.then(Commands.literal("list")
 							.executes(command -> listCallsigns(command.getSource())))
 
-					.then(Commands.literal("search")
+					.then(Commands.literal("search") // Shows where a station is: operators only unless the server says (2026-11-15).
+							.requires(source -> source.hasPermission(2) || searchPublic())
 							.then(Commands.argument("callsign", StringArgumentType.string())
 									.executes(command -> getCallsign(command.getSource(), StringArgumentType.getString(command, "callsign")))))
 
@@ -368,6 +369,15 @@ public class CallsignCommands {
 				source.getPlayerOrException().getGameProfile() :
 				gameProfiles.stream().findFirst().get();
 	}
+
+    private static boolean searchPublic() {
+        try {
+            return RadiocraftServerConfig.CALLSIGN_SEARCH_PUBLIC.get();
+        }
+        catch(IllegalStateException e) { // The server config is not loaded yet.
+            return false;
+        }
+    }
 
     private static boolean isPrivileged(@NotNull ServerPlayer player) {
         if (player.serverLevel().getServer().isSingleplayer()) {

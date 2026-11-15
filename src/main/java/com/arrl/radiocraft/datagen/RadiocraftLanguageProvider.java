@@ -1953,6 +1953,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		m.accept("unknown", "No interface named %s in the server config");
 		m.accept("in_use", "%s is in use by the interface at %s");
 		m.accept("bad_frequency", "No band holds %s MHz");
+		m.accept("licence_by_op", "An operator confirms licences on this server: ask one to run /radiocraft realworld licence <you> grant");
 		java.util.function.BiConsumer<String, String> c = (key, text) -> provider.add(Radiocraft.translationKey("commands", "realworld." + key), text);
 		c.accept("disabled", "The Real-World Interface is off: set real_world_interface_enabled in the server config");
 		c.accept("listing", "Asking the sound system and serial ports...");
@@ -1961,6 +1962,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		c.accept("ports", "Serial ports (serial=):");
 		c.accept("none", "No interfaces in real_world_interfaces");
 		c.accept("line", "%s: block %s, %s");
+		c.accept("licence.granted", "%s may now go out through Real-World Interfaces");
+		c.accept("licence.revoked", "%s no longer goes out through Real-World Interfaces");
 	}
 
 	private static void addModerationComputer(LanguageProvider provider) {

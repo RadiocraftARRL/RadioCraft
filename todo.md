@@ -81,13 +81,8 @@ someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
 
 - [ ] LAN EMAIL attachments (maintainer, 2026-11-15): attach a file from the computer's drive (or floppy) to a mail
   for another user or computer; mail with a file is slow to send, taking longer the bigger the file
-- [ ] Security leftovers from the 2026-11-15 review (build/agy-notes/security.md), for the maintainer to decide:
-  the Real-World Interface's licence is self-declared and lets stations with no player (FM transmitters, beacons)
-  key the real radio; stations with no owner can be set up by anyone (claim on first setup?); FM streams stay open
-  with nobody listening and one player can hold every stream slot; pin the checked address for the stream
-  connection (DNS rebinding; the JVM's 30 s DNS cache covers most of it); menu-less packets (keyer, mesh setup,
-  fire alarm box names) accept players up to 8-64 blocks away and spectators; any player within 8 blocks can
-  release another's PTT; `/callsign search` shows a station's position
+- [ ] Security leftover from the 2026-11-15 review (build/agy-notes/security.md): pin the checked address for an FM
+  stream's connection (DNS rebinding; the JVM's 30 s DNS cache covers most of it). The rest was fixed 2026-11-15
 
 ### Wires & bundles
 

@@ -39,6 +39,8 @@ public record SRepeaterSettingsPacket(long pos, CompoundTag settings) implements
     public void handle(IPayloadContext context) {
         context.enqueueWork(() -> {
             if(context.player().containerMenu instanceof VHFRepeaterMenu menu && menu.blockEntity.getBlockPos().equals(BlockPos.of(pos))) {
+                if(menu.blockEntity.getPlacer() == null)
+                    menu.blockEntity.setPlacer(context.player().getUUID()); // A structure's repeater: the first to set it up owns it (2026-11-15).
                 if(settings.contains("callsign") && context.player() instanceof ServerPlayer player) { // Only what repeater_callsign_mode allows.
                     String callsign = Callsigns.resolveRepeaterCallsign(player, player.level(), menu.blockEntity.getBlockPos(), settings.getString("callsign"));
                     if(callsign == null) {

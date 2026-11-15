@@ -72,7 +72,7 @@ keeps the history).
 
 - [ ] Test the Airband Radio (model, screen, USE/STBY flip-flop, AM hiss, squelch/MON)
 - [ ] Test the aircraft VHF antenna and airband ground plane (top/underside placement, models)
-- [ ] Test the FM Broadcast Transmitter (two blocks, screen, quiet carrier, mic ducking, weather alerts, forecasts and IDs, stream program with `fm_internet_streams`, panel buttons)
+- [ ] Test the FM Broadcast Transmitter (two blocks, screen, quiet carrier, mic ducking, weather alerts, forecasts and IDs, stream program with `fm_internet_streams`, panel buttons; 2026-11-15: the stream only opens while a radio in range is tuned within 1 MHz, so tune towards it and it should be playing as you land; a structure's station becomes yours when you set it up)
 - [ ] Test the FM Broadcast Receiver (walnut model, screen, tunes while off, scroll to tune, BASS/TREBLE, battery, pointer on the block, POWER/MUTE toggles)
 - [ ] Test the tape player with the FM station (QUEUE mode from a hopper, no longer keys the transmitter)
 
@@ -264,7 +264,7 @@ keeps the history).
 - [ ] Test `/contest` (start/stop as op, contacts counted, results book, survives restart)
 - [ ] Test callsigns (choose screen for new players, repeater callsigns, `/radiocraft license info <callsign>`)
 - [ ] Test `/radio moderateall` (voice and RTTY/APRS readout)
-- [ ] Test the Real-World Interface (needs a real radio and sound card: config, PTT never keyed on open, downlink, VOX/COS uplink, time-out, licence button, op only)
+- [ ] Test the Real-World Interface (needs a real radio and sound card: config, PTT never keyed on open, downlink, VOX/COS uplink, time-out, licence button, op only; 2026-11-15: on a server the licence button needs an operator, or `/radiocraft realworld licence <player> grant`; FM stations and beacons no longer go out unless `real_world_bridge_stations` is on)
 - [ ] Test the config screen (readable names for every setting; delete old `radiocraft-common.toml` first)
 - [ ] Test the modding API example (`radiocraft_example` loads, example radio and ground plane, website `wiki/modding.html`)
 

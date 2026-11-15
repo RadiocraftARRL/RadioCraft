@@ -49,6 +49,8 @@ public record SFmStationPacket(long pos, String action, String text, int value) 
 
 	/** Carries out a setting (server). */
 	public static void apply(ServerPlayer player, FmBroadcastTransmitterBlockEntity station, String action, String text, int value) {
+		if(station.getOwner() == null)
+			station.setOwner(player.getUUID()); // One a structure placed (or an old save): the first to set it up owns it (2026-11-15).
 		switch(action) {
 			case "program" -> station.setProgram(value == 1 ? FmStation.Program.STREAM : FmStation.Program.TAPE);
 			case "forecast" -> station.setForecastMinutes(value);

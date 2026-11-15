@@ -40,6 +40,21 @@ public final class RealWorldLicences extends SavedData {
 	private static volatile MinecraftServer currentServer;
 	/** Whether a voice id is a player's (online, or known to the server's profile cache); replaced by GameTests. */
 	private static volatile Predicate<UUID> isPlayer = RealWorldLicences::knownPlayer;
+	private static volatile java.util.function.BooleanSupplier bridgeStations = RealWorldLicences::stationsAllowed;
+
+	private static boolean stationsAllowed() {
+		try {
+			return com.arrl.radiocraft.RadiocraftServerConfig.REAL_WORLD_BRIDGE_STATIONS.get();
+		}
+		catch(IllegalStateException e) { // The server config is not loaded (a unit test): the safe answer.
+			return false;
+		}
+	}
+
+	/** GameTests: whether transmissions with no player may go out (null puts the config back). */
+	public static void setStationBridgingForTesting(@org.jetbrains.annotations.Nullable java.util.function.BooleanSupplier allowed) {
+		bridgeStations = allowed == null ? RealWorldLicences::stationsAllowed : allowed;
+	}
 
 	public static SavedData.Factory<RealWorldLicences> factory() {
 		return new SavedData.Factory<>(RealWorldLicences::new, RealWorldLicences::load, null);
@@ -63,18 +78,26 @@ public final class RealWorldLicences extends SavedData {
 			data.setDirty();
 	}
 
+	/** An operator takes {@code player}'s licence away. Server thread. */
+	public static void revoke(MinecraftServer server, UUID player) {
+		RealWorldLicences data = of(server);
+		if(data.acknowledged.remove(player))
+			data.setDirty();
+	}
+
 	/** True if {@code player} has clicked "I hold a licence". Server thread. */
 	public static boolean hasAcknowledged(MinecraftServer server, UUID player) {
 		return of(server).acknowledged.contains(player);
 	}
 
 	/**
-	 * True if a voice frame from {@code source} may go out through an interface: it is from no player, or from a player
-	 * who has clicked "I hold a licence". Any thread; false for a player while the data is not loaded yet.
+	 * True if a voice frame from {@code source} may go out through an interface: from a player whose licence is
+	 * confirmed, or, only if the server allows it ({@code real_world_bridge_stations}, off by default, 2026-11-15), from
+	 * no player (a station, a beacon, a tape). Any thread; false for a player while the data is not loaded yet.
 	 */
 	public static boolean mayBridge(@Nullable UUID source) {
 		if(source == null || !isPlayer.test(source))
-			return true;
+			return bridgeStations.getAsBoolean();
 		RealWorldLicences data = current;
 		return data != null && data.acknowledged.contains(source);
 	}

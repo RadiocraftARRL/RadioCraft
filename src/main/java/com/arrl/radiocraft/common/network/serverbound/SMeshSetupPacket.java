@@ -48,7 +48,7 @@ public record SMeshSetupPacket(long pos, float hz, String callsign, String label
 			if(!(context.player() instanceof ServerPlayer player))
 				return;
 			BlockPos pos = BlockPos.of(packet.pos());
-			if(!PacketChecks.nearAndLoaded(player, pos) || player.distanceToSqr(pos.getCenter()) > 64.0D
+			if(!PacketChecks.inReach(player, pos, 2.0D)
 					|| !(player.level().getBlockEntity(pos) instanceof MeshDeviceBlockEntity device))
 				return;
 			String callsign = packet.callsign().trim().toUpperCase(Locale.ROOT);

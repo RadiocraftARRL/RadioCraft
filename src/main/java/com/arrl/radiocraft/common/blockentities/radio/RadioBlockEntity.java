@@ -214,6 +214,9 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             AntennaNetworkObject antenna = null;
             if(!level.isClientSide)
                 be.tickBareConnector(powered && be.usesBareConnector() && networkObject.getAntennas().isEmpty());
+            if(!level.isClientSide && powered && (level.getGameTime() + pos.asLong()) % 10L == 0L
+                    && !(be instanceof FmBroadcastTransmitterBlockEntity) && com.arrl.radiocraft.common.radio.station.FmListeners.onBand(be.getFrequency()))
+                com.arrl.radiocraft.common.radio.station.FmListeners.heard(level, pos, be.getFrequency(), level.getGameTime()); // So a station's stream knows to be ready.
             if(powered) {
                 List<AntennaNetworkObject> antennas = networkObject.getAntennas();
                 if(antennas.size() == 1) {
@@ -2206,6 +2209,19 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     public boolean isPTTDown() {
         return isPTTDown;
+    }
+
+    /** Who last keyed it from its screen (not saved): only they may release it without the screen open (2026-11-15). */
+    @Nullable
+    private java.util.UUID pttHolder;
+
+    public void setPttHolder(@Nullable java.util.UUID holder) {
+        pttHolder = holder;
+    }
+
+    @Nullable
+    public java.util.UUID getPttHolder() {
+        return pttHolder;
     }
 
     public void setPTTDown(boolean value) {

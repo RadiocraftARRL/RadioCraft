@@ -31,7 +31,7 @@ public record SKeyerPacket(BlockPos pos, int mode, int speed, int sidetone) impl
 
 	public static void handle(final SKeyerPacket packet, final IPayloadContext context) {
 		context.enqueueWork(() -> {
-			if(!com.arrl.radiocraft.common.network.PacketChecks.nearAndLoaded(context.player(), packet.pos()))
+			if(!com.arrl.radiocraft.common.network.PacketChecks.inReach(context.player(), packet.pos(), 2.0D))
 				return;
 			BlockState state = context.player().level().getBlockState(packet.pos());
 			if(!(state.getBlock() instanceof IambicKeyerBlock))

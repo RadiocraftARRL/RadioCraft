@@ -70,6 +70,8 @@ public class RealWorldInterfaceGameTests {
 				"name=GT Licence;input=fakeG;output=fakeG;serial=PORTG;ptt=RTS;ptt_hang=200;ptt_delay=0"));
 		// One made-up player for the licence test; every other voice id in these tests is no player's.
 		com.arrl.radiocraft.common.realworld.RealWorldLicences.setPlayerCheckForTesting(LICENSEE::equals);
+		// These tests talk with no player's voice ids: let them out (off by default, see stationsStayInUnlessAllowed).
+		com.arrl.radiocraft.common.realworld.RealWorldLicences.setStationBridgingForTesting(() -> true);
 	}
 
 	@AfterBatch(batch = BATCH)
@@ -78,6 +80,19 @@ public class RealWorldInterfaceGameTests {
 		RadiocraftServerConfig.REAL_WORLD_INTERFACES.set(List.copyOf(savedInterfaces));
 		Bridges.setBackendForTesting(null);
 		com.arrl.radiocraft.common.realworld.RealWorldLicences.setPlayerCheckForTesting(null);
+		com.arrl.radiocraft.common.realworld.RealWorldLicences.setStationBridgingForTesting(null);
+	}
+
+	/**
+	 * A transmission with no player behind it (a broadcast station, a beacon, a tape) goes out only if the server
+	 * allows it, off by default (2026-11-15: music on a real amateur frequency is against the rules).
+	 */
+	@GameTest(template = GameTestUtil.EMPTY)
+	public static void stationsStayInUnlessAllowed(GameTestHelper helper) {
+		helper.assertFalse(RadiocraftServerConfig.REAL_WORLD_BRIDGE_STATIONS.get(), "stations go out by default");
+		helper.assertFalse(com.arrl.radiocraft.common.realworld.RealWorldLicences.mayBridge(null), "a station's frame went out");
+		helper.assertFalse(com.arrl.radiocraft.common.realworld.RealWorldLicences.mayBridge(java.util.UUID.randomUUID()), "a beacon's frame went out");
+		helper.succeed();
 	}
 
 	// -------------------- HELPERS --------------------

@@ -49,7 +49,8 @@ public record SCWBufferPacket(BlockPos pos, List<CWBuffer> buffers) implements C
             if(!(context.player().level().getBlockEntity(packet.pos()) instanceof HFRadioBlockEntity radio))
                 return;
             boolean atScreen = context.player().containerMenu instanceof RadioMenu<?> menu && menu.blockEntity == radio;
-            if(!atScreen && !com.arrl.radiocraft.common.blocks.IambicKeyerBlock.keyerBeside(context.player().level(), packet.pos()))
+            if(!atScreen && (!com.arrl.radiocraft.common.blocks.IambicKeyerBlock.keyerBeside(context.player().level(), packet.pos())
+                    || !com.arrl.radiocraft.common.network.PacketChecks.inReach(context.player(), packet.pos(), 3.0D))) // At the keyer beside it.
                 return; // Keyed from its screen, or from an iambic keyer beside it (2026-11-12).
             if(!radio.canTransmitCW())
                 return;

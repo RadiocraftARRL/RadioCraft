@@ -33,7 +33,26 @@ public final class RealWorldCommands {
 			.then(Commands.literal("realworld")
 					.requires(source -> source.hasPermission(PERMISSION))
 					.then(Commands.literal("devices").executes(RealWorldCommands::devices))
-					.then(Commands.literal("status").executes(RealWorldCommands::status)));
+					.then(Commands.literal("status").executes(RealWorldCommands::status))
+					.then(Commands.literal("licence")
+							.then(Commands.argument("player", net.minecraft.commands.arguments.GameProfileArgument.gameProfile())
+									.then(Commands.literal("grant").executes(ctx -> licence(ctx, true)))
+									.then(Commands.literal("revoke").executes(ctx -> licence(ctx, false))))));
+
+	/** An operator confirms (or takes back) players' amateur licences for the Real-World Interface (2026-11-15). */
+	private static int licence(CommandContext<CommandSourceStack> ctx, boolean grant) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+		int count = 0;
+		for(com.mojang.authlib.GameProfile profile : net.minecraft.commands.arguments.GameProfileArgument.getGameProfiles(ctx, "player")) {
+			if(grant)
+				com.arrl.radiocraft.common.realworld.RealWorldLicences.acknowledge(ctx.getSource().getServer(), profile.getId());
+			else
+				com.arrl.radiocraft.common.realworld.RealWorldLicences.revoke(ctx.getSource().getServer(), profile.getId());
+			String name = profile.getName();
+			ctx.getSource().sendSuccess(() -> tr(grant ? "licence.granted" : "licence.revoked", name), true);
+			count++;
+		}
+		return count;
+	}
 
 	private RealWorldCommands() {}
 
