@@ -40,6 +40,56 @@ What was done for the parrot controller, as the pattern for the next one:
 
 ## Open bounties
 
+### Models: airband radio, aircraft antenna, FM broadcast transmitter and receiver (2026-11-13)
+
+First art drawn in code from the maintainer's reference photos (`tools/airband_fm_models.py`; no maker's names):
+- `airband_radio`: a vintage panel-mount NAV/COM, black faceplate, two amber seven-segment windows named `DISPLAY`
+  (the renderer writes USE and STBY on them), flip-flop key, button row, volume knob left, concentric tuner right.
+- `airband_antenna`: a white swept fin with a raked whip, one block tall; the blockstate turns it over to hang.
+- `fm_broadcast_transmitter` (bottom) and `fm_broadcast_transmitter_top`: a blue broadcast cabinet two blocks tall,
+  silver meter strip on the left, lamp panel, exciter with a bar graph; `_on` textures light it on the air.
+- `fm_broadcast_receiver`: a wood-sided table radio with a speaker grille, FM/AM dial windows, tone slider, two knobs.
+Their screens are drawn in code (`SimpleRadioScreen`), with no GUI art; GUI textures would be welcome.
+
+### Items: satellite contracts, satellite license and the SATTRACK icon (2026-11-11)
+
+Placeholders drawn by `tools/satellite_items.py` (16 x 16): `textures/item/amateur_satellite_contract.png` and
+`commercial_satellite_contract.png` (a rolled paper contract with a small satellite on it, green for amateur, red for
+commercial, and a ribbon of the same colour) and `textures/item/satellite_license.png` (a cream certificate with a navy
+border, a grey satellite and a gold seal). The SATTRACK launcher icon (`tools/computer_icons.py`, `sattrack`: a satellite
+with solar panels and signal arcs) is a placeholder too. The SATTRACK floppy comes with a contract and has no recipe.
+
+**Geostationary contracts (2026-11-12):** `amateur_geostationary_contract` and `commercial_geostationary_contract` have
+no art of their own yet: their item models (`models/item/*_geostationary_contract.json`) reuse the amateur and
+commercial contract textures. Wanted: the same rolled contract, told apart at a glance (a gold ribbon, or a satellite
+over a small globe), green and red as before.
+
+### WXSAT program icon (2026-11-12)
+
+The WXSAT launcher icon (`tools/computer_icons.py`, `wxsat`: a satellite with blue panels and a dish over a radar sweep
+with green, yellow and red echoes) is a placeholder. The WXSAT floppy reuses the floppy pattern with a radar-green label.
+The External CRT Monitor's model and texture are the maintainer's (`tools/crt_monitor_model.py`) and are not a bounty.
+
+### Models: radio fire alarms and SCADA (2026-11-10)
+
+Block states for all of them are written by `tools/mesh_placeholder_models.py`. Done from the maintainer's photos
+(2026-11-11): the fire alarm box (Simplex-style wall cabinet), the pull station, the new panic button and the box's
+inside screen (`tools/fire_alarm_assets.py`); the SCADA master's two halves, the RTU and the master's console screen
+(`tools/scada_assets.py`). Still placeholders:
+
+- `radiocraft:outdoor_pull_box` (+ `_pulled`): the red street pedestal.
+- `radiocraft:fire_alarm_controller` (+ `_alarm`): the DMP-704-style rack receiver, green CRT (red-lit while a box is
+  in alarm), NEXT/STOP/FAST keys and the slip printer. Its own screen is still to be made from the photo.
+- Items: the Fire Alarm Key (vanilla trial key for now) and the Fire Alarm Report slip (vanilla paper).
+- Program icons `fire_alarm` and `scada` (`tools/computer_icons.py`) are placeholders; the floppies have no recipe.
+
+### Items: commercial licenses and the FCC program icon (2026-11-10)
+
+Placeholders until the maintainer's art: the blank VHF and low band licenses use vanilla paper, the claimed license
+the vanilla filled map sprite (its framed picture is drawn in code, `CommercialLicenseCertificate`), the License Upgrade
+the writable book. The FCC program's launcher icon (`tools/computer_icons.py`, `fcc`) is a placeholder badge.
+Recipes for the FCC floppy are also still to be chosen.
+
 ### Models: power switches and the Stable Chemical Battery (2026-11-09)
 
 Placeholders written by hand from vanilla textures (blockstates hand-made in `src/main/resources`, except the
@@ -473,10 +523,9 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
   surge protector, like a Polyphaser or Alpha Delta box: a small grey or bronze body with an N or SO-239 connector on
   each end and a ground lug with a wing nut on top. Low (about 6 px high); coax meets it on any side, so keep the
   connectors at the sides. One model, no states.
-- **Battery meter** (built 2026-11-07, placeholder `models/block/battery_meter.json`): a panel voltmeter in a small
-  steel box (half a block high), a dark display window on the front (keep it at x 2-14, y 1-7, front face at z -0.5,
-  or tell us where it moves: `BatteryMeterRenderer` writes the voltage and charge on it in green), a terminal post or
-  two on top. Faces north as drawn.
+- **Battery meter** (done 2026-11-11 by `tools/battery_meter_model.py`): an analog DC voltmeter, black Bakelite case,
+  cream 8-16 V dial with red/green/amber bands, binding posts on top. `BatteryMeterRenderer` draws the needle from the
+  pivot at model x 8, y 3.25 on the face at z 4; keep those if the model is redrawn.
 - **CB mobiles** (built 2026-11-08, placeholders `models/block/cb_mobile_5875.json` and `cb_mobile_pc68.json`, drawn
   by `tools/cb_radio_assets.py`): the **5875** after a 1970s GE 3-5875 base (woodgrain lid, brushed silver case, black
   display strip with a red LED clock, two meters, a red 2-digit channel LED and an ON AIR lamp, speaker grille left and
@@ -496,3 +545,9 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
   is the base (coax connects there).
 - **Small Alkaline Battery** (2026-11-08, `textures/item/small_alkaline_battery.png`, a recolour of the NiCd one): a
   copper-top style cell, so it reads differently from the rechargeable pack.
+- **Linear amplifier** (built 2026-11-13, placeholder from `tools/linear_amplifier_model.py`): a desk HF amplifier,
+  14 x 8 x 12 px box, a plate-current meter (needle low, and kicked while keyed: models `linear_amplifier`,
+  `_on`, `_keyed`), an OPERATE lamp, a tuning knob. Block states: facing, lit, keyed (blown looks like off).
+- **Computer Redstone Block** (built 2026-11-13, placeholder from `tools/computer_redstone_model.py`): an interface box
+  for the radio computer with a red lamp, lit while it gives out (models `computer_redstone`, `_on`).
+- **Program icons** `relay` and `redstone` (2026-11-13, `tools/computer_icons.py`).

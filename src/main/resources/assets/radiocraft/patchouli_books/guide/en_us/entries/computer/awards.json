@@ -22,7 +22,7 @@
     {
       "type": "patchouli:text",
       "title": "Certificates",
-      "text": "F5 prints the selected award's certificate for the level you reached, on the $(l:radiocraft:computer/scanner)scanner$(): on paper or an empty map as a printout, on photo paper as a photo. Frame it."
+      "text": "F5 prints the selected award's certificate for the level you reached, on the $(l:radiocraft:computer/scanner)scanner$(): on an empty map as a printout, on photo paper as a photo, or on plain paper as a sheet with the certificate's words in its tooltip. Frame it."
     },
     {
       "type": "patchouli:crafting",

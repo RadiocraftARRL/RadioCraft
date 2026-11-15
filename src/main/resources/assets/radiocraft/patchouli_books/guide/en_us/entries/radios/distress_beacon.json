@@ -13,7 +13,7 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:distress_beacon",
       "title": "What It Sends",
-      "text": "Every 50 seconds, an alert with its position and your name on $(thing)161.975 MHz$(). A $(l:radiocraft:radios/commercial_radios)commercial VHF mobile$(/l) with a channel on 161.975 hears it (a marine radio does not: its DSC is channel 70 only), and the $(l:radiocraft:computer/distress)DISTRESS$(/l) program through one. All the time, a homing tone a $(l:radiocraft:direction_finding/handheld_df)direction finder$(/l) can follow."
+      "text": "Every 50 seconds, an alert with its position and your name on $(thing)161.975 MHz$(). Every $(l:radiocraft:radios/commercial_radios)commercial VHF radio$(/l) in reach hears it, whatever channel it is on (a marine radio does not: its DSC is channel 70 only), and the $(l:radiocraft:computer/distress)DISTRESS$(/l) program through one. All the time, a homing tone a $(l:radiocraft:direction_finding/handheld_df)direction finder$(/l) can follow."
     },
     {
       "type": "patchouli:text",

@@ -8,6 +8,152 @@ writes back here: `- [ ]` not tested, `- [x]` passed, `- [!]` needs work, with `
 `![caption](testing_shots/...)` screenshots indented under the item. Whoever picks up a `[!]` item fixes it (or moves
 it to [todo.md](../todo.md)), then sets it back to `[ ]` for the next playtest.
 
+## Radio fire alarms and SCADA (added 2026-11-10)
+
+`runData` has been run. Everything is in the creative tab after the licenses; nothing has a recipe yet. Get a license
+first: `/radiocraft license grant @s vhf 1`. Since 2026-11-11 the box, pull station, panic button, RTU and master have
+models from the maintainer's photos (`tools/fire_alarm_assets.py`, `tools/scada_assets.py`); the controller and the
+outdoor pull box are still placeholders.
+GameTests cover the mesh itself (`RadioMeshGameTests`): what needs eyes and ears is below.
+
+Fire alarm:
+- [ ] Place a Fire Alarm Controller and a Radio Fire Alarm Box (rename the box in an anvil first, e.g. "342 MAIN ST").
+  Right-click each with the license: chat says the frequency and the box number. Within a few seconds the box checks
+  in: right-click the controller shows "Boxes: 1".
+- [ ] Put a Pull Station on a wall touching the box (and an Outdoor Pull Box on data wire a few blocks off). Both sit
+  right: the wall one flat on the wall, facing out; the pedestal standing.
+- [ ] Pull one (right-click): it shows pulled, the box's lamp blinks until the ack, the box gives a short quiet chirp
+  (not an APRS burst), and the controller buzzes once a second, turns its screen red and powers redstone next to it.
+- [ ] Right-click the controller with paper: a Fire Alarm Report drops out in front, its tooltip "** ZONE 01 FIRE **",
+  the day and time, ACCT and R01L1, the box's name. The printer sound is short. No paper: status says PAPER OUT and
+  the report prints once paper goes in.
+- [ ] Right-click the controller: "Acknowledged", the buzzer and bells stop. Shift + right-click steps back through
+  the log in the action bar.
+- [ ] Reset the station with the Fire Alarm Key: the controller logs RESTORE and prints it. Break the box: the
+  controller logs TAMPER.
+- [ ] Models (2026-11-11): the box is a red wall cabinet (Simplex style) flat against the wall it was put on, its
+  TROUBLE lamp lit while it waits for an ack; the pull station is small, red with the white PULL DOWN bar and FIRE
+  strip, and the bar swings down when pulled. Hit boxes match the models.
+- [ ] The Fire Alarm Key on the box opens its inside (square, after the Kidde panel): NORMAL lamp green with a
+  frequency, TROUBLE amber blinking while it waits for an ack, ALARM and the zone lamps Z1-Z6 red for pulled stations,
+  the LINK meter's needle up when another box or the controller is in range, the plate "BOX 0001  151.xxx". No text
+  or control overlaps. TEST sends a test (the controller logs it); RESET puts every pulled station on the box back up. Buttons left to right: DRILL toggle, SILENCE (red), RESET, TEST; labels clear of each other.
+- [ ] Bells: with a station pulled, a redstone lamp on the far side of the wall behind the box lights (the box powers
+  the wall block). Press the red SILENCE button (2026-11-11, was a toggle; RESET is now the black button beside it): the lamp goes out but the ALARM and zone lamps stay lit until RESET, and the next alarm rings again.
+  DRILL lights it with nothing pulled and sends nothing. A lever on any other side of the box is still its zone 0.
+- [ ] Panic Button: goes on a wall, on a floor and under a block (under a desk), turned like a vanilla button. Press:
+  it stays in, the box sends FIRE for its zone; the key resets it.
+- [ ] Range: two boxes on their built-in antennas hear each other out to about 110 blocks; put a box 200 blocks from
+  the controller with another halfway: its alarm is relayed (the slip says VIA 1 RELAY). Coax a VHF antenna to one
+  end and it reaches about twice as far.
+- [ ] Walk away so the middle box's chunk unloads, pull again at the far one: it still gets through.
+- [ ] FIRE ALARM program (floppy from the creative tab) on a computer touching the controller or on its data wire:
+  boxes with their status, the log newest first, F2 acknowledges, F5 puts the picked box out of service (no bells,
+  never MISSING), Del forgets it. The header flashes red while an alarm is unacknowledged.
+
+SCADA:
+- [ ] Place a SCADA RTU and a SCADA Master, both set with the license (the RTU says "RTU 1"). The master is two
+  blocks: the CRT appears on your left as you face it (it will not place without room); breaking either half breaks
+  both and drops one master. The RTU is the low finned data radio. Shift + right-click the RTU's north face: IN; put a
+  lever there. Shift + right-click the master's top: OUT; put a lamp on it (redstone comes out of the right-hand
+  control panel half only).
+- [ ] Right-click either half of the master: its console. The CRT lists the master and each RTU with the six faces,
+  the rules on the DISPLAY switch's other position, scrolled with the arrow keys or the wheel; POLL SEC sets 1, 2 or
+  3 s an RTU (the PC program's header follows); the six LOCAL I/O toggles set the master's faces OFF/IN/OUT; the POLL,
+  TX and COMM FAIL lamps and the POLL OK meter move. Nothing overlaps.
+- [ ] Write `COPY 1.N TO 0.U` in a book and quill, use it on the master: "Loaded 1 rules". Flip the lever: the lamp
+  follows within a second or two. Quiet chirps from both.
+- [ ] `IF 1.N >= 1 THEN 1.S = 15` with the RTU's south face OUT: a lamp on the RTU's south side follows the lever.
+- [ ] Break the RTU: after three polls the master's status says COMM FAIL and its top lamp goes out.
+- [ ] SCADA program: the master and each RTU with six face columns, values updating, wanted outputs in cyan; Ins adds a
+  rule (a bad one gives an error), Del removes the picked one, F3 steps the poll speed 1 to 3 s an RTU (relaying is up to 8 RTUs, the server's
+  `mesh_hop_limit`).
+- [ ] `/radiocraft license info <callsign>` lists the devices set to it and how many are bases.
+
+## Fire alarm controller terminal, SCADA console TUI, setup without a license (added 2026-11-11)
+- [ ] Box programming panel (right-click a box): the cabinet inside with an unlit grey-green 16x2 LCD and five keys (left, up, down, right, ENTER), nothing overlapping. Up/down step through FREQUENCY, CALLSIGN, FACILITY NAME and LOCATION 01, 02... (one per pull station or panic button on its wire). ENTER edits: left/right move the blinking cursor, up/down change the character, typing works, ENTER saves (LCD says SAVED, or BAD FREQUENCY / BAD CALLSIGN), Escape cancels the edit.
+- [ ] Shift + right-click a pull station or panic button: "Location 03: KITCHEN" (no number before it is wired to a box); it does not pull it. A named station's alarm shows its name beside ZONE on the controller's screen and on the printed slip.
+- [ ] The lit ALARM lamp on the controller and the box's lamp glow in the dark (full bright).
+- [ ] The Swan's (20m premium) dial window: the numbers and ticks slide under the red hairline as you tune (14.200 MHz sits on 142).
+- [ ] Yellow and White Alarm Pull Stations and Outdoor Pull Boxes: in the creative tab, models in their colours (the bar reads ALERT; the white one has a red handle and bar), wired and pulled like the red ones.
+- [ ] Alarm types: on the box's SETUP, each location has a "LOC 03 ALARM" line after its name; ENTER, then up/down (or left/right) steps FIRE, THREAT, DISASTER, MEDICAL, ESCAPE, LOCKDOWN, FLOOD, BREACH, TORNADO; ENTER saves. A pull there shows "ZONE 03 MEDICAL" on the controller and its slip; shift + right-click the station shows the type.
+- [ ] Box programming panel: MAIN MENU first (SETUP, STATUS). STATUS shows ROUTE (DIRECT TO CTRL / n HOPS TO CTRL / NO CONTROLLER), SIGNAL (a bar and percent, live) and one NBR line per box or controller it hears (strength, number, location). Left goes back to the menu, Escape too. The LINK meter on this panel moves.
+- [ ] LINK meter redrawn (both box panels): cream face, arc scale, red to green band, six ticks, the needle from the pivot.
+- [ ] Comparator on a fire alarm box (or behind its wall): 15 while in alarm, still 15 after SILENCE, 0 after RESET.
+- [ ] Fire Bell: on a wall, rings (a rapid gong) while powered; a box in alarm rings bells on the wall behind it; SILENCE stops them. Hitbox matches the gong.
+- [ ] Wiring into wall devices (box, pull station, panic button on a wall): data wire run up the wall from below, down from above, or up the wall beside it goes straight into the device with no stub sticking out; a wire on the floor beside it runs along the floor and wall. Grey mounting plates behind the box and the pull station (the pull station's, the fire bell's and the wall panic button's cover the whole wall face of their block).
+- [ ] Panic button texture is clean on a wall, floor and under a desk (no black specks or smeared texture); data wire meets it on a floor or ceiling along the floor.
+- [ ] Outdoor pull box: red head with the indoor station's face and handle, fluted post, base plate, a red lamp on top that glows in the dark; turns to face the player when placed; hitbox fits.
+- [ ] Controller: the soft key is SILENCE (was STOP; S still works). It quiets the buzzer and bells; the screen says SILENCED: STILL IN ALARM UNTIL RESET; a new alarm within 5 minutes is logged and printed but does not sound again. Soft keys NEXT, SILENCE, FAST, E line up with their [ ] boxes and are clickable.
+- [ ] Controller event screen: TIME SINCE (game clock, HH:MM, or "2D 03:15", JUST NOW) on the line under VIA.
+- [ ] SCADA console SETUP page: FREQ, CALL and NAME fields typed straight in (no separate window), Up/Down pick a row, ENTER saves (SAVED, or a BAD FREQ / BAD CALL note), Escape undoes typing; POLL steps with Left/Right or a click; E and the number keys type instead of closing. Tab/Left/Right still change pages.
+- [ ] SCADA RTU hitbox matches the case and fins (not a full block).
+- [ ] VHF Base Station squelch: a new one comes on SQL 1 (just shut on the hiss); SQL OPEN plays FM hiss that a signal quiets; the knob steps OPEN, 1 (fine), 2 (the old 1) ... 11.
+- [ ] J-pole: the feed section on the lower block no longer flickers against the mast.
+- [ ] The controller's buzzer is louder (full volume, heard about 24 blocks off (its range is 24 now, was 16)). The SCADA boot logo is the same green as the rest of the text.
+
+- [ ] No license needed: right-click a box or RTU (or E, 3 on the controller; the master's SETUP page): the setup
+  screen takes a frequency (150-174 or 30-50 MHz, not the marine channels) and a callsign, and a location name. Bad
+  ones are refused in chat. A license used on a device still fills them in.
+- [ ] RTU setup: six face buttons, each click OFF > IN > OUT, the level shown; the tooltip explains IN and OUT.
+- [ ] Fire alarm controller: the new RC-704 model (cream rack unit, printer door, CRT with blue outline, ALARM lamp
+  lit while a box is in alarm); the hit box fits. Its CRT shows the newest event on the block in the world, like a
+  computer monitor, within about 24 blocks.
+- [ ] Right-click it: the terminal. Event screen as the DMP photo: kind and time boxed top, ACCOUNT boxed, location,
+  ZONE boxed, R01L1, NEXT STOP FAST [E] along the bottom (click them on the screen, or N, S, F, E keys), printer
+  state and clock bottom right. NEXT steps older, FAST back to newest, STOP acknowledges (the header stops flashing).
+  E: the menu, 1-5 (box list with Enter for service mode, setup, clear head jam). Text never runs off the CRT.
+- [ ] SCADA console: opening it boots (the logo, then four self-test lines) in about 3 s, then the TUI: tabs POINTS,
+  RULES, I/O, SETUP (click a tab, turn DISPLAY, or Tab/arrows). I/O lists the master's six faces with mode and
+  level; clicking a row or anywhere on a toggle steps it OFF > IN > OUT (right click back). The block's CRT shows
+  the POINTS page in the world.
+
+## Premium HF rigs: the Swan, TS-520R, RC-K2 and RTX-100 (added 2026-11-11)
+
+The Premium (pure crystal) 20m, 40m, 80m and 10m radios have their own model and front panel, after the Swan-350,
+TS-520S, Elecraft K2 and Realistic HTX-100 (`tools/hf_gui_proposals/hf_radio_*_pure.py`). Every HF radio now has RIT,
+a noise blanker and RF gain in its code (GameTest `PremiumRigGameTests`); only these four panels have the knobs.
+- [ ] Each of the four in the world: the model looks like its rig, the frequency is drawn on its screen on the block
+  (the Swan's is small: readable?), its TX lamp (and the TS-520R's and RTX-100's RX lamp) lights. Hung from a
+  ceiling, it sits right.
+- [ ] Each panel: every knob pointer on its knob, switch handles in their slots, the mode and AGC as labelled, no text
+  over a control. The K2's and RTX-100's bar meters light segment by segment (S on receive, PO or SWR on the air;
+  click the bar or DISPLAY to switch).
+- [ ] RIT: switch it on (the RIT key or toggle; its lamp where there is one), turn the RIT knob: the display corner
+  shows R+0.35 and a station on the dial moves off pitch while your transmissions stay put (check on a second
+  radio). RIT CLR goes back to 0.
+- [ ] NB: with redstone sparks or the aurora crackling, the noise blanker cuts most of the crackle. RF GAIN down
+  quiets both the band noise and signals.
+- [ ] The plain and Cheap 10/20/40/80m radios still open their old panels.
+
+## Commercial frequency licenses and the FCC program (added 2026-11-10)
+
+`runData` has been run. Give yourself licenses with `/radiocraft license grant @s vhf` (or `lowband`, with a tier after
+it), or buy a blank one from a journeyman cartographer (expert for the upgrade). The FCC program has no floppy recipe
+yet: use the creative tab or the all-apps floppy.
+
+- [ ] Right-click a Blank Commercial VHF License: chat says the callsign, frequency and units, and the blank becomes a
+  license in your hand.
+- [ ] Hold the license: it shows as a map in the hand? (it is our own item, so it may show as the flat placeholder
+  sprite instead). Its tooltip lists callsign, licensee, frequency, units/bases and the grant date.
+- [ ] Put it in an item frame: the certificate shows (navy frame, FEDERAL COMMUNICATIONS COMMISSION, the callsign big,
+  the lines readable, the seal bottom right).
+- [ ] Craft it with an empty map: you get a "(Copy)" with COPY stamped bottom left once it is in your inventory, and
+  the original stays in the grid. The cartography table no longer clones a license.
+- [ ] Craft an original with a Commercial License Upgrade: once carried it redraws with an INPUT frequency and 20 units,
+  1 base. A copy cannot be upgraded.
+- [ ] Cartographer trades show the blank licenses (journeyman) and the upgrade (expert).
+- [ ] CPS: write a codeplug with a commercial frequency and no license on the scanner: the License Check dialog lists
+  the frequencies and asks you to confirm; "I am licensed" goes on to the write. With the original license on the
+  scanner glass covering them: no dialog. With a copy on the glass: the dialog says the copy does not authorize.
+  Same check when starting F9 program-by-hand and the write-by-hand prompt.
+- [ ] FCC program with a direction finder touching the computer (or on data wire): tune with F3 (was F2) or the arrows. A
+  licensed frequency in use shows LICENSED and the holder; a commercial frequency with no license that someone
+  transmits on flashes UNLICENSED with a beep once, and the bearing shows once the finder locks. The log on the right
+  fills with what was heard.
+- [ ] Config `commercial_licensing = ADMIN`: a blank license refuses to be claimed; `OFF`: no License Check dialog, the
+  FCC program says NOT CHECKED.
+
 ## FCC jacket fit and the badge on the player (added 2026-11-09, 1.12)
 
 Run `./gradlew runData` first (the badge tooltip now names the belt slot). Change skins in the game's Skin
@@ -352,9 +498,10 @@ Customization (or another account) to try both Steve (wide arms) and Alex (slim 
   through it. In a storm (or `/summon lightning_bolt` on the antenna) the arrestor sparks and cracks, the coax on the
   antenna side can burn, and the radio behind it stays working. Does the placeholder box look acceptable and does coax
   visibly join it on its sides?
-- [ ] Battery meter: wire it to a battery or two. Is the green text on its face readable (voltage on top, percent and
-  an arrow below), and does it turn to face you when placed? "NO BATT" in red with nothing on its wire. Charge from a
-  solar panel: up arrow, voltage above 12.7. Transmit off the battery: down arrow, voltage sags. Use it: the chat line
+- [ ] Battery meter (an analog voltmeter since 2026-11-11): wire it to a battery or two. The dial reads clearly (8 to
+  16 V, red/green/amber bands), it faces you when placed, the hit box fits the case. Nothing on its wire: the needle
+  rests on 8. A full battery at rest: in the green (12.7). Charge from a solar panel: it eases up into the amber.
+  Transmit off the battery: it dips. The needle swings smoothly, not in jumps. Use it: the chat line
   with time to full or empty makes sense? A comparator beside it gives a signal that rises with the charge; Jade shows
   the reading.
 - [ ] Handbook: Safety > Lightning has the arrestor page and recipe; Power > Battery Meter reads well.
@@ -3130,4 +3277,695 @@ Lay coax (or power wire) along the ground up to a one-block step with more wire 
 - [ ] Moderation computer: the Live tab shows who is on the air even with recording off (nothing is written to disk);
   the Archive says "Logging is disabled" while recording is off; "Include system/world stations" sits between the
   heading and the listening line and shows commercial modules, server tapes and repeats when ticked.
+
+
+## Battery meter UVs, floppy names (added 2026-11-11)
+- [ ] Battery meter: the voltmeter front, black case and red/black posts show on every face, with no fire alarm
+  or other block art bleeding onto it.
+- [ ] All Applications Floppy used on the computer or monitor: "Every program installed (N new)", and it stays in
+  your hand (before, it went into the drive and INSTALL said the disk was blank). Picked from INSTALL it still
+  installs everything.
+- [ ] The FCC Monitor, Fire Alarm and SCADA floppies are named "... Floppy Disk", not "null Floppy Disk".
+
+## Outdoor sirens (added 2026-11-11; moved to Another Weather Mod 2026-11-13: test them there, `anotherweathermod:omni_siren` etc.)
+- [ ] Omnidirectional Siren and Horn Array Siren: two blocks tall, placed on a fence post or log; the seven grey cells
+  (or four black horns a side) look right from all sides, with no seam at the join between the halves. Breaking
+  either half takes both and drops one.
+- [ ] Their item icons show the whole siren, shrunk, in the hotbar, in the hand and on the ground.
+- [ ] Pole-Mounted Omnidirectional / Horn Array Siren: placing it stands a cabinet, nine blocks of pole with a conduit up
+  the side and the head on top (twelve blocks); the head's collar or box sits on the pole top.
+- [ ] Right click the cabinet: "Siren switched on" and its lamp lights (glows in the dark); again to switch off. Redstone at
+  the cabinet lights it too.
+- [ ] FCC Monitor icon: whole, even red signal arcs over the gold shield, no stray red bits above it or under the bar
+  (added 2026-11-11).
+- [ ] Computer, scanner, commercial radio in a row (scanner in the middle): the FCC Monitor, Distress and the other
+  programs find the radio as if it were cabled (added 2026-11-11).
+
+## CPS menus and read/write feedback (added 2026-11-11)
+- [ ] CPS: File / Program / Edit in the title bar; click one (or F10, then arrows and Enter) and every item works
+  (Open, Save, Save as, Exit; Read, Write, By hand, Factory; Edit, Clear, Copy, Paste, Unit ID, Contacts). The F keys
+  still work. Esc or a click elsewhere closes the menu.
+- [ ] Reading or writing a radio (cabled or by hand) shows a "Reading radio..." / "Writing radio..." box whose bar
+  fills over about a second, then the result.
+- [ ] Write by hand (Continue, right click the computer with the radio): back at the computer a "Write Successful"
+  box says which radio; closing the CPS then does not warn that the codeplug is unsaved. Same for a cabled write.
+- [ ] Saving (^S or File, Save) clears the "*" and the unsaved warning; editing a channel brings both back.
+- [ ] Two coax runs of different colours (red and black, or red and plain) bundled together for a few blocks, with
+  a bundle block against the other run's radio or antenna: each radio shows only its own antenna, no COAX SHARED, and
+  it stays so after leaving and rejoining the world. The radio or antenna beside a bundle takes only the coax that
+  ends there, not one that runs on past it; a lone coax block still takes everything it touches. Taking the second
+  strand out of that bundle block (sneak + empty hand) lets the passing coax take the device again. (added 2026-11-11)
+- [ ] CPS Edit, Import from Frequency Manager (or ^I): pick a .FRQ file, then an FM or digital entry; it lands in the
+  selected channel (or the first blank one) with its name, RX/TX and tone. SSB/CW/AM entries are not offered.
+- [ ] Red and black coax (or plain and a colour) through the same passthrough, each to its own radio and antenna:
+  neither radio says COAX SHARED, also after rejoining the world and after breaking and replacing the passthrough
+  (added 2026-11-11). A radio placed directly against the passthrough still takes every colour through it.
+
+## Wires hug walls (added 2026-11-11)
+- [ ] Coax (and power, data, dyed) laid on a floor beside a wall: it lies tucked into the floor/wall corner, touching
+  the wall, only along the stretch with a wall; past the wall's end it eases back to the middle of the floor. Wire laid
+  before this change moves there as soon as the chunk redraws.
+- [ ] A run along a wall with nothing under it (a ledge-less wall over a drop): the cable sits against the wall at the
+  bottom of each block, in a straight line, and carries on along that line over a one-block gap in the wall.
+- [ ] A run round the outside corner of a pillar with nothing under it: the cable wraps the pillar's corner, no
+  shortcut through the air.
+- [ ] An inside corner (two walls meeting) on a floor: the cable sits in the corner; a run up the wall there goes up
+  the corner itself.
+- [ ] A corridor one block wide with walls both sides: cable keeps to the wall the cable it joins is on. Lay a run from
+  each end on opposite walls (easiest: start one end against a radio or turn on one side), then join them: the block
+  laid last crosses the floor from one wall to the other, and the cable already laid does not move.
+- [ ] A run up a wall where the wall ends but another side has a wall higher up: the run goes over to the other wall
+  instead of on up through the air.
+- [ ] Cable up a wall to a ceiling and on under it (across a room): the run under the ceiling hangs from it, and the
+  top of the run up turns onto the ceiling cleanly (no gap at the turn).
+- [ ] A passthrough set in a wall at head height with cable running along the wall to it on both sides, no floor
+  under: the cable stays against the wall right up to the passthrough on both sides.
+- [ ] A one-block-wide wall climbed from both sides to a wire on top: both climbs are drawn joined to the wire on top,
+  and both sides are on the same network (a radio on one side sees an antenna on the other).
+- [ ] A wall-hugging run ending at a radio, antenna or other device: the cable jogs out to meet the device at the
+  middle of its face. A bundle against a wall: the whole bundle moves over, its outer strand touching the wall, and
+  its strands still spread into the devices as before.
+- [ ] Hitboxes still follow the cable after it moves against a wall (look at a tucked run and its corner pieces).
+
+## Launcher search (added 2026-11-11)
+- [ ] In the list and icon views, start typing: a Search box opens with matching programs first (names starting with
+  what you typed first), then files on the drive shown. Arrows pick, Enter (or a click) runs the program or opens the
+  file, Backspace edits (empty closes), Esc or a click outside closes. The command line view still takes typing as
+  before; Space alone does not start a search.
+
+## Satellites (added 2026-11-11)
+See doc/SatellitePlan.md. Quickest start: `/radiocraft satellite add amateur` (papers go to you), then
+`/radiocraft satellite overhead RO-1 10` hangs it over you for ten minutes.
+- [ ] A master cartographer may offer an Amateur or a Commercial Satellite Contract for 64 emeralds and a diamond (one
+  use before restocking). The contract, satellite license and SATTRACK floppy icons look right in the inventory and
+  creative tab (placeholder art from tools/satellite_items.py).
+- [ ] Right-clicking a contract: a rocket launch sound, a chat line with the name, uplink, downlink and tone, and three
+  items: a commercial frequency license (its picture shows the downlink, with the uplink as its input), a Satellite
+  License (name in its title; tooltip with both frequencies, tone, licensee and launch day) and the SATTRACK floppy.
+- [ ] Sky at night with a satellite passing (use `overhead` or wait for a pass SATTRACK lists): a tiny green dot (red
+  for a commercial one), a pixel or two, faint between flashes and flashing brighter about every 6 s, each flash a
+  different brightness. It sits where SATTRACK says (elevation and compass point) and moves across the sky over a few
+  minutes on a real pass. Nothing by day, nothing below the horizon, fading out in rain, nothing under water or in the
+  Nether. Near dusk and dawn an occasional grey flash halfway between the coloured ones. Check it costs nothing
+  noticeable in frame time.
+- [ ] A dot is the same size at different FOV settings and window sizes (about 1.5 px, 2 px in a flash), and is hidden
+  behind blocks and hills in front of it.
+- [ ] Voice through the satellite: a VHF radio (or handheld) with an antenna under open sky, tuned to the downlink with
+  the -600 offset and the satellite's tone, talks; another radio on the downlink far away (or right next to it) hears
+  it. Without the tone, from indoors, or with the radio's bare connector (no antenna) nothing goes up. After an over
+  the satellite sends its ID text in Morse on the downlink (at most every 5 minutes). A commercial satellite works the
+  same from a commercial radio programmed with the pair (CPS, with the license on you).
+- [ ] SATTRACK (install from the floppy): every satellite listed, green or red; the picked one with frequencies, tone,
+  ID, owner, allowed list, launch day and days to decay, "Passing now" with elevation and direction while it is up, and
+  its next passes (rises in, max elevation, from, up for) counting down. As owner while it passes: F2 on/off, F3 ID
+  text, F4 tone, F5/F6 allowed list all work; while it is below the horizon they refuse with a message; as another
+  player they refuse. The icon shows in the launcher.
+- [ ] A distress beacon set off under open sky while a satellite passes is heard by a commercial radio on 161.975 MHz
+  far beyond line of sight (a few thousand blocks), and a DSC distress call likewise by a far marine radio; the alert
+  shows once (copies merge).
+- [ ] `/radiocraft satellite list` from different places shows each satellite's elevation and direction (or distance)
+  from there; `remove` takes one off the sky at once for every player.
+- [ ] Handbook: Repeaters > Satellites and Computer > SATTRACK read right, their links work, and the contract
+  spotlight shows its item (added 2026-11-11).
+
+## DISTRESS as a background service (added 2026-11-11)
+- [ ] With DISTRESS installed and no one at the computer, a new beacon alert (commercial VHF on 161.975) or DSC distress
+  call (marine radio) heard by a cabled radio sounds the DSC alarm at the computer, again every 20 s until someone
+  opens DISTRESS. Opening the computer then opens straight on DISTRESS with the alert listed.
+- [ ] At the computer with another program open, a new alert brings DISTRESS to the front.
+- [ ] DISTRESS left open keeps running after the screen is closed for more than 10 minutes (it is not dropped).
+- [ ] Your own outgoing personal SOS does not set off your own computer's alarm. Alerts already logged when DISTRESS is
+  installed are not announced.
+- [ ] DISTRESS F6 prints the map round an alert on plain paper (as well as an empty map or photo paper). Elsewhere, a
+  picture print with only plain paper in the tray now says it needs an empty map or photo paper, not "not enough
+  paper" (added 2026-11-11).
+
+## Passive distress receiver (added 2026-11-11)
+- [ ] A powered commercial VHF mobile on an ordinary channel (not 161.975) hears a distress beacon a few blocks away:
+  no audio and nothing on its display beforehand, then the DSC alarm and "DISTRESS SOS RX x, y, z" (the beacon's
+  coordinates) scrolling across the in-world display, a character at a time, with the owner and BEACON on the small
+  line. The scrolling text keeps one size (it does not grow and shrink) and stays inside the display.
+- [ ] The same alert on the mobile's screen (open it): the top LCD line scrolls, whose beacon under it; the DISMISS key
+  and sneak-use both clear it, on the screen and in the world. A repeat of the same beacon does not bring it back.
+- [ ] A low band mobile never shows a beacon alert.
+- [ ] Upgraded commercial handheld (powered, any channel) in the inventory near an active beacon: the alarm plays to
+  the holder, and sneak-use opens a screen whose LCD scrolls "DISTRESS SOS RX x, y, z" with whose beacon under it.
+  A DISMISS button shows beside the radio; it clears the alert, the button goes away, and the alert stays dismissed
+  after closing and reopening the screen and through the beacon's repeats.
+- [ ] Basic commercial handheld (no LCD): the alert scrolls across a green plate to the right of the radio, with the
+  same DISMISS button. The plate and button do not overlap the radio or its knob readouts at the usual GUI scales.
+- [ ] Close the handheld's screen with an alert up and reopen it (and relog): the alert is still there until dismissed.
+- [ ] A commercial handheld that is switched off hears nothing; your own beacon does not set off your own handheld.
+- [ ] A commercial handheld in a desk charger hears a beacon: the alarm sounds at the charger, and taking the radio out
+  and opening its screen shows the alert.
+- [ ] DISTRESS on a computer cabled to a commercial VHF mobile on an ordinary channel: the top right reads
+  "BEACONS: 1 radio(s) listening on 161.975" in green, and a beacon's alert is listed and announced by the service.
+- [ ] Handbook: Commercial Radios, Distress Beacon, Marine Radios and Computer > DISTRESS read right with the new
+  any-channel wording, and the Commercial Radios page does not overflow.
+- [ ] Satellite in the night sky: a faint grey dot between flashes, the green or red only in the flash (added 2026-11-11).
+- [ ] SATTRACK: F7 turns your passing satellite on and off (F2 took a screenshot); the key bar says F7.
+- [ ] Launcher search: no program icons show through the search box in the icon view.
+- [ ] Icons: the CPS icon is a handheld (antenna, knobs, LCD, keypad, PTT, cable); the Packet BBS icon has no stray
+  pixel in its bottom right corner.
+
+## Plain paper prints, MURS, fire alarm key (added 2026-11-12)
+
+- [ ] Scanner with plain paper in the tray: DISTRESS F6, an Awards certificate (F5) and a picture file each print a sheet of
+  paper named for the print, with its details in the tooltip (and "Printed by"); an empty map or photo paper still prints the picture.
+- [ ] FCC Monitor on a MURS channel (151.820, 151.880, 151.940, 154.570, 154.600) says MURS: NO LICENSE NEEDED, and a radio
+  transmitting there is not flagged unlicensed.
+- [ ] Fire Alarm Key has its own texture (square stippled bow with a triangle hole and number plate, tubular barrel), not the trial key.
+- [ ] Panic button item: in the inventory its red button faces you (it showed its underside, tipped back); held, it sits like
+  a vanilla pressure plate. Ground and item frame unchanged.
+
+## Satellite modes (added 2026-11-12)
+See doc/SatellitePlan.md, "Modes, telemetry, Doppler and eclipses". Quickest start: `/radiocraft satellite add amateur`,
+then `/radiocraft satellite overhead RO-1 10`. Satellites from 2026-11-11 should get a telemetry frequency on load.
+- [ ] A new contract's chat line and Satellite License tooltip show three frequencies (uplink, downlink, telemetry); an
+  old license (from before) still shows its two without a blank line.
+- [ ] SATTRACK detail panel: "Up / Down / Tlm" line, the mode line, owner and allowed list on one line, decay, passing
+  line, telemetry lines and the passes all fit inside the box without overlapping the bottom line, for an amateur and a
+  commercial satellite. The key bar fits ("F7=On/Off ... F10=Picture").
+- [ ] As owner while it passes: F8 steps REPEATER > APRS > MAILBOX > SSTV > REPEATER; F9 sets the APRS frequency
+  (144.390 shows "NOT RECOMMENDED (terrestrial APRS)" in yellow, 150 refuses with a message, blank goes back to the
+  downlink); F10 uploads an .IMG and the mode line shows its name. On a commercial satellite F8-F10 refuse with "only
+  repeats". Below the horizon they refuse as F3-F7 do.
+- [ ] APRS mode: an APRS terminal or the APRS program on the satellite's downlink, far apart (a few thousand blocks),
+  both under open sky: each sees the other's beacons on its map and messages go through during a pass, not after it
+  sets. A radio on the downlink hears no voice repeat in this mode.
+- [ ] Mailbox mode: in the Packet BBS program's terminal page, call the satellite by its name (RO-1) with a radio on its
+  downlink: the greeting, `SP <call> subject`, the body, `/EX` ("MSG 1 SAVED"). On a later pass from somewhere else
+  (another station or another callsign) `L`/`LM` lists it and `R 1` reads it. After a server restart the message is
+  still there.
+- [ ] SSTV mode with a picture: the SSTV program on a computer with a radio on the downlink receives it line by line
+  during the pass (sounding like SSTV through the radio), keeps it as SSTV0001.IMG labelled with the satellite's name,
+  and it prints like any SSTV picture. Another comes about 30 s after the last ends while you are under it.
+- [ ] Telemetry: a radio on the telemetry frequency chirps a packet burst every 10 s while the satellite is up, and
+  sends the satellite's name in Morse about once a minute. SATTRACK (radio on the computer's station tuned to the
+  telemetry frequency, SATTRACK open) shows "Telemetry, heard 0:0x ago" with volts, amps, temperature, SUN/SHADOW, mode
+  and days; the values look plausible and change between day and night. "No telemetry heard: tune a radio to ..." before.
+- [ ] Doppler (set `satellite_doppler = true` in the server config): SATTRACK shows "Doppler +3.x kHz" as it rises,
+  near 0 overhead and negative as it sets; an FM radio left on the downlink loses the satellite near the ends of a pass
+  until retuned 2-3 kHz, and hears it fine overhead.
+- [ ] Eclipse: `/radiocraft satellite eclipse RO-1 3` while it passes: SATTRACK shows the blinking ECLIPSE line, the
+  repeater and its mode go quiet (a distress beacon is still relayed), and the telemetry radio hears only one packet
+  burst a minute, no Morse name; SATTRACK's telemetry shows "POWER SAVING: eclipsed, battery flat". After it ends the
+  next telemetry shows a low battery and SAFE, and SATTRACK shows "BATTERY LOW after an eclipse". With `satellite_eclipses = true`
+  they happen rarely by themselves, at night only.
+- [ ] Owner warning: with `satellite_decay_days` set so the satellite is in its last week, SATTRACK shows "OWNER: its
+  orbit decays in N days" under the telemetry, for the owner only.
+- [ ] Commercial satellite: its frequency license item's tooltip shows "Satellite telemetry: ... MHz" and its picture a
+  TLM line that does not run into the seal or the COPY box; the FCC Monitor hearing its telemetry beacon says LICENSED
+  with its callsign. A satellite launched on 2026-11-11 gets the line on its license after a restart (carry the item).
+- [ ] Handbook: Repeaters > Satellites (new pages Modes, APRS, Mailbox, SSTV, Telemetry, Doppler and eclipses) and
+  Computer > SATTRACK (Controlling yours, Its mode with F8-F10, Telemetry) read right, no page overflows, and the links
+  to Packet BBS and SSTV work.
+
+## Weather imaging and display (added 2026-11-12)
+See doc/SatellitePlan.md, "Weather imaging". Quickest start: `/radiocraft satellite add commercial`, then in SATTRACK
+(while it passes: `/radiocraft satellite overhead CS-1 10`) F8 to IMAGING. Put a VHF receiver (one channel on, set to
+the satellite's downlink) or a commercial radio touching a radio computer with WXSAT installed, under open sky.
+- [ ] SATTRACK on a commercial satellite: the mode line reads "Mode: REPEATER (F8: weather IMAGING)"; F8 while passing
+  switches to "Mode: IMAGING, weather pictures on its downlink" and back; the bottom line says "F3-F8". On an amateur
+  satellite F8 still steps REPEATER > APRS > MAILBOX > SSTV and never IMAGING.
+- [ ] The downlink sounds like NOAA APT on the radio: a steady tone with a tick-tock twice a second, its loudness
+  changing with the picture. A repeater user on the uplink is not repeated while it images.
+- [ ] WXSAT live view (F5): the strip fills in from the bottom as the pass comes in (256 px wide), with RECEIVING and
+  the signal bar in the right panel. High in the sky the lines are clean; low near the horizon they get snowy and some
+  go black (lost). The panel lists the imaging satellites with their next pass or elevation (and Doppler if on).
+- [ ] The picture looks right: seas blue, land in biome colours (deserts sand, forests green, snow white, badlands
+  orange) and real blocks where chunks are loaded; rain in the radar colours (light green to red); under AWM a severe
+  storm's core magenta and hail purple, snow blue in cold biomes; with vanilla rain, drifting rain cells, not a flat
+  green sheet. Check orientation: a known coastline or lake near the station is where the map says it is.
+- [ ] Mosaic (F6): the pass is stitched round the station with a white cross on it; arrows pan, F8 / +/- zoom 8, 16,
+  32, 64 blocks a pixel, Home comes back. A second pass lays over the first (newest on top); gaps show the older one.
+- [ ] Loop (F7): steps through the passes a second each, "Pass n/m CS-1 D3 0640" at the bottom; Space pauses ("PAUSED"),
+  PgUp/PgDn step. F10 opens File/View menus that do the same as the keys. The key bar fits on one line.
+- [ ] F3 saves WX0001.IMG (opens in the image viewer); F4 prints on the scanner: a map or photo paper gives the
+  picture (no-data black), plain paper a sheet whose tooltip has the area, the pass and time, and "PRECIP n%, WORST ..."
+  or "NO PRECIPITATION".
+- [ ] Background: with WXSAT installed and nobody at the screen, a pass is still recorded (open WXSAT afterwards); the
+  computer draws power meanwhile. The mosaic survives a server restart; old passes (more than 8, or days old) go.
+- [ ] Program Manager icon: the WXSAT icon (satellite with dish over a radar sweep) looks right in each colour scheme.
+- [ ] External CRT Monitor: placed, it faces you; beside the computer (or beside another linked display) it lights while the
+  computer is on and shows the mosaic centred on where it stands, north up, east to the right. Check all four facings:
+  the picture is never mirrored and a known landmark is in the right place.
+- [ ] Right-click cycles LIVE MOSAIC > LOOP > OFF (action bar message) for the whole wall. OFF: the picture collapses to
+  a bright line, then a dot that fades. Back on: a bright line opens into the picture.
+- [ ] A wall of displays (e.g. 3 x 2, all facing the same way) shows one picture across all tubes, the bezels hiding the
+  strips between (straight lines and coastlines continue across the bezels without a jump or squash). Breaking one
+  splits the wall into smaller screens within a second; placing it back rejoins them. A wall bigger than 8 x 6 splits.
+- [ ] CRT faults are subtle, not distracting: faint scanlines, darker corners, a faint glow, a slight colour fringe at
+  the edges, a very slight flicker, a little noise, now and then a faint bar rolling up. The picture is smoothly scaled
+  (no blocky pixels at close range) and full bright at night. No z-fighting with the glass from a distance.
+- [ ] Performance: a full 8 x 6 wall in LOOP during a pass does not stutter the client or the server.
+- [ ] Handbook: Computer > WXSAT and Computer > External CRT Monitor (spotlight pages show the floppy and the display), and
+  the new "Weather imaging" page in Repeaters > Satellites read right; the links work.
+
+## EB-VHF eggbeater antenna (added 2026-11-12)
+
+- [ ] Placed, it stands two blocks tall: mast, eight radials round its foot (reaching about a block out each side), a
+  black balun at the top of the lower block, and two crossed loops (copper and aluminium) on top. The loops are round,
+  with no zigzag segments or gaps (each loop is 16 turned rods; a wrong turn direction would show as a star shape).
+- [ ] All four facings look the same apart from turning; coax laid beside the lower half shows the run in to the mast.
+- [ ] Item in the inventory, hand and item frame: the whole antenna fits and is upright.
+- [ ] On a satellite pass (`/radiocraft satellite overhead`): with an eggbeater the downlink is strong all pass and best
+  overhead. Swap to a J-pole: fine low in the pass, fading past about 40 degrees, weak straight overhead, and right
+  under the satellite (within about 5 degrees of overhead) the satellite stops repeating you.
+- [ ] Handbook: Repeaters > Satellites has an "Antennas" spotlight page on the eggbeater.
+
+## External CRT Monitor rename, radio waterfall, background services switch (added 2026-11-12)
+
+The Weather Display is now the External CRT Monitor (`radiocraft:external_crt_monitor`; worlds that had the old block
+lose it, it was never released). The items above under "Weather imaging and display" still apply to it.
+
+- [ ] The block and item are named "External CRT Monitor" in JEI, the creative tab and the handbook; the model and
+  texture are the same as before. The tooltip has two lines: the WXSAT mosaic use and the radio waterfall use.
+- [ ] Recipe: iron ingots across the top and down the sides of a glass pane, then wire, copper ingot, wire (III / IGI /
+  WCW) makes one. A blank floppy and a lightning rod (shapeless) make the WXSAT floppy. Both show in JEI and on the
+  handbook pages (External CRT Monitor's last page, WXSAT's last page).
+- [ ] Radio waterfall: one monitor touching a premium radio (e.g. The Swan, or the premium VHF base station), nothing
+  else touching it: with the radio on it lights and a waterfall scrolls down, newest at the top, signals blue to
+  white, a faint line down the dial. Talk on SSB from another station nearby: the voice shows as a block beside the
+  dial line (upper or lower side), gone between words. CW shows as a thin line; FM on VHF as a wide band.
+- [ ] Right-click on it cycles NARROW WATERFALL > WIDE WATERFALL > OFF (action bar). WIDE shows the same signals
+  narrower; OFF does the collapse-to-a-dot animation. Retuning the radio moves the picture (it starts over).
+- [ ] The same tube effects as the mosaic (scanlines, glow, vignette, flicker, hum bar); the waterfall is smooth, not
+  smeared or upside down, on all four facings.
+- [ ] Not on a plain or cheap radio: the monitor stays dark. Not when a second monitor is beside it (a wall). Not when a
+  WXSAT computer is also touching it (the mosaic wins). Switching the radio off darkens it.
+- [ ] Rig control's waterfall on the same radio still works while the monitor shows (both at once, each its own span).
+- [ ] SETUP has a sixth page, Services: "Background services  On", the installed services listed (DISTRESS, WXSAT).
+  Enter on it asks "While background services are off, this computer cannot receive distress alerts, weather
+  satellite passes and the like unless you are in that program. ... Turn them off?" Yes turns it Off; No leaves it.
+  Enter again turns it back On with no question. Only the owner may change it. Text fits the panel.
+- [ ] With services Off and nobody at the computer, it goes dark (no power drawn) and a CRT monitor on it goes dark
+  too; sitting down at it lights the monitor again. A WXSAT pass while WXSAT is closed is not recorded; with WXSAT open
+  it is. A distress alert while DISTRESS is closed does not sound the alarm or pop DISTRESS up; it is in DISTRESS's list
+  when you open it. Sending a personal SOS and closing DISTRESS does not stop it (2026-11-12, maintainer): it keeps
+  repeating and the computer stays on until you end it; then, with DISTRESS closed, the computer goes dark.
+- [ ] With services Off, leaving DISTRESS open and closing the screen does not keep the computer's session (it boots
+  again after a while), unlike with services On.
+
+## Yagi aimed in 16 directions (added 2026-11-12)
+
+- [ ] Place VHF yagis facing between the compass points (e.g. NNE, NE, ENE): the beam points where you faced, in
+  22.5 degree steps. A turned yagi is drawn turned about its mast as one piece (boom, elements and the diagonal brace
+  together, nothing detached or doubled), lit like the blocks around it, and doesn't vanish when its block is just off
+  screen. Straight N/E/S/W yagis look exactly as before.
+- [ ] Breaking either half of a turned yagi breaks both (particles show the yagi texture).
+- [ ] Existing yagis in an old world load unchanged (straight along their facing).
+- [ ] Signals: a yagi aimed at a station 22.5 or 45 degrees off a compass point now hears it at full strength. (Before
+  this every yagi beamed north for the signal maths, whichever way it was drawn.)
+
+## Satellite transit delay, geostationary satellites, decommissioning, burnout (added 2026-11-12)
+
+`runData` has been run. Get satellites with `/radiocraft satellite add amateur` (or `commercial`), and geostationary
+ones with `/radiocraft satellite add geostationary amateur|commercial` (they point where you stand). Use
+`/radiocraft satellite overhead <name>` to bring an orbiting one up now; `/time set night` for the sky. GameTests cover
+the delays, the geostationary coverage and decommissioning on the server (`SatelliteGeoGameTests`); what needs eyes
+and ears is below.
+
+Transit delay:
+- [ ] Two players (or two radios) on an amateur satellite's downlink with the -600 kHz offset and its tone. Talk: you
+  hear yourself and each other come back about 0.3 s late, smooth, with no gaps, stutters or reordered words. A
+  normal back-and-forth still feels usable.
+- [ ] The same through a geostationary one: the echo is shorter (about 0.15 s).
+- [ ] The Morse ID after an over starts only after the delayed voice has finished (it never talks over your last words).
+- [ ] APRS mode: a beacon comes back as a digipeat about 2 s later (1 s via a geostationary one); MAILBOX: answers
+  start about 4 s after each line (2 s geostationary) and the conversation still works from the Packet BBS terminal.
+
+Geostationary satellites:
+- [ ] Right-click a geostationary contract (creative tab, after the satellite contracts): chat says it is parked and
+  pointing at your X, Z. The item shows the contract icon (placeholder) and its tooltip reads well. A master
+  cartographer's trades include both geostationary contracts for 64 emeralds and a block of diamonds.
+- [ ] At night it is a dot that stays put in the sky (not straight up where you used it: 50 to 80 degrees up, off to
+  one side) and flashes green/red about every 18 s, less often than an orbiting one (6 s). Two bought in one place sit
+  at different spots.
+- [ ] Walk or `/tp` 9,000 blocks away: still up, lower in the sky. 11,000 blocks away: gone, and a radio there does not
+  hear it.
+- [ ] SATTRACK: it is marked GEO; the list says "UP el dir" from inside its coverage and "NEVER UP" outside; the detail
+  page says "Geostationary: always up here, el X to the Y" (or "never up from here") and "No passes", no passes table.
+  Its decay date is about 45 days out (with the default 90).
+- [ ] A commercial geostationary one set to IMAGING (F8): WXSAT receives lines that build a strip through where the
+  contract was used (along one direction, then starting over), not a moving pass.
+
+Decommissioning:
+- [ ] SATTRACK on a satellite of yours while it passes: the bottom line now says "DEL ends it". DEL asks a Yes/No
+  question; Yes shows a FINAL WARNING whose buttons are No / Yes with No picked (Enter alone cancels); Escape or No at
+  either step leaves it working. Yes twice: the message "... is decommissioned" and it is listed DEAD.
+- [ ] A player on its allowed list (not the owner) presses DEL: nothing happens (the line does not offer DEL).
+- [ ] After: no repeater, no telemetry on its telemetry frequency, no relay; its detail page shows DECOMMISSIONED in
+  red, days to decay, where it is; F3-F10 give "decommissioned: it takes no more commands". A commercial one's
+  frequency license shows as not valid / the FCC Monitor no longer calls its frequencies LICENSED.
+- [ ] In the sky it no longer flashes or shows the grey dot. Only near dusk and dawn, an occasional faint, irregular
+  greyish-white glint as it tumbles in the sunlight; in full night nothing (it should look dead, not like a working
+  satellite).
+
+Burnout:
+- [ ] At night, bring one overhead (`/radiocraft satellite overhead <name>`), then `/radiocraft satellite decay <name>`
+  (it comes down as a decaying orbit does; chat says how many players saw it). A tiny 1-pixel orange-white streak with a short faint trail runs a little way across the sky and
+  sinks, fading out in 3 seconds. Barely noticeable, not a firework. A player far away (where it was below the
+  horizon) sees nothing.
+
+## Menu bars in every computer program (added 2026-11-12)
+- [ ] Every program (EDIT, BOOKEDIT, LOGBOOK, FREQ, RIGCTL, FT8, RTTY, APRS, BBS, FAX, SSTV, WEFAX, DFIND, DISTRESS,
+  NETCTL, AWARDS, QSL, PROPAG, SOLAR, REPEATER, SCHED, SETUP, INSTALL, FIRE, SCADA, FCC, ADSB, MUSIC, BIBLE, STUDY,
+  BANDPLAN, ABOUT, SYSINFO, SNAKE, PILEUP, the shell's file list and icon views) shows File / Edit / View-style menu
+  names at the left of its title bar, with the title right of them, not covered and not running into the clock.
+- [ ] Click a menu name: it drops down with each item's key at the right ("Send   F5"). Clicking an item does exactly
+  what its key does. F10 (or a click) opens the menus, arrows move, Enter picks, Esc or a click elsewhere closes
+  without leaving the program. BOOKEDIT, RTTY and STUDY keep F10 for their own job; their menus open by click only.
+- [ ] Items that only work on one page or in one mode are grey there and clicking them does nothing (STUDY's Grade
+  outside an exam, RIGCTL's Remote items off the Remote page, BBS mailbox items on the terminal page, SOLAR's PgUp/PgDn
+  on the solar page, etc.).
+- [ ] Pictures and icons (shell icons, FAX/SSTV/WEFAX pictures, DFIND map and 3D view, DISTRESS map, QSL card, ADSB
+  scope) do not cover an open menu.
+- [ ] Typing while a menu is open types nothing into the program; the program still works by keyboard alone with the
+  menus never opened.
+- [ ] RIGCTL: the PTT item toggles (first click keys, second unkeys), as T held does. FIRE: Acknowledge (F2) works from
+  the menu even though Minecraft takes F2 for screenshots. Shell: Exit leaves the shell as Esc does; the DOS prompt has
+  no bar.
+
+## Satellite tracking antenna and stealth mode (added 2026-11-12)
+
+- [ ] The Satellite Tracking Antenna (in the creative tab after the eggbeater) looks like the microwave dish on a wide
+  plinth and turntable, in hand, in the GUI and placed. Placed with nothing up, it stows pointing straight up.
+- [ ] Coax to a VHF radio and a power wire from a battery: with a satellite up it turns (the turntable rotates, the
+  plinth stays still) and tilts smoothly to it, then follows it across the sky. Using it says "turning to" then
+  "locked on <name> (az, el)". Tuned to a satellite's downlink or uplink it follows that one; otherwise the highest up.
+- [ ] Take the power wire away (or flatten the battery): it stops where it is and says "no power for its motors".
+  The battery drains a little faster while it tracks (8 a tick) and not at all once stowed.
+- [ ] Under an aurora (`/rcdebug` or a forecast) or in a thunderstorm, a satellite through a J-pole or eggbeater is
+  weaker and low in the pass the uplink fails; through a locked tracker it stays full strength.
+- [ ] Stealth: on a commercial satellite you own, while it passes and your tracker is locked on it, S in SATTRACK (or
+  Satellite > Stealth on/off) turns stealth on; the list shows STL. Without a tracker: "Stealth needs a satellite
+  tracking antenna...". In stealth, a station with only a J-pole or eggbeater hears nothing from it and is not
+  repeated; the tracker station is. Another player's SATTRACK shows only its name, STEALTH, where it is and its passes.
+- [ ] SATTRACK has a menu bar (File, View, Satellite), each item doing its key; items you may not use are greyed.
+
+## Moonbounce, CW keying, sidetone and the iambic keyer (added 2026-11-12)
+
+- [ ] SATTRACK lists MOON first (white, EME). After dusk it shows UP and an elevation; by day "below". With a tracking
+  antenna on the station's coax, T on MOON makes it turn to the Moon: `>` then `*` when locked. **Check the dish points
+  at the Moon you can see** (east in the evening, straight up at midnight, west before dawn), not the opposite side.
+- [ ] All-band radio on 2m in CW, tracker locked on the Moon, at night: send some CW. About 2.5 s later your own
+  echo comes back, faint, under the static, fading in and out over a minute or so. A second station with its own
+  tracker on the Moon anywhere in the world hears it too. A J-pole or eggbeater station hears nothing. By day,
+  nothing comes back.
+- [ ] New CW default: no text box under the radio; the screen's PTT button or Space keys CW. Typing in a radio
+  screen's other boxes is not broken by Space. With `cw_keying = CHAT_MORSE` the text box is back, and Space types in it.
+  (Existing config files keep their old value: delete the line to get the new default.)
+- [ ] While keying (Space, PTT, typed Morse or the keyer) you hear the sidetone and **no static**; the static comes
+  back about half a second after you stop. A second player standing by the radio hears the sidetone too.
+- [ ] Iambic Keyer (creative tab, after the tracking antenna): looks like the Bencher paddle (black base, round pivot,
+  springs, amber finger pieces). Placed beside the all-band radio and used, its panel opens. Hold A for dits and D for
+  dahs (rebindable in Controls), or hold the paddles with the mouse: the paddles light and the KEY lamp blinks. IAMBIC
+  A/B (squeeze for alternating dits and dahs; B adds one more after releasing mid-element), BUG (automatic dits,
+  hand dahs), STRAIGHT. SPEED 6/8/12/24 WPM, TONE off/low/med/high.
+- [ ] Craft the keyer with a dye, glass pane, honeycomb, iron/gold/copper/netherite ingot, diamond, emerald, lapis,
+  amethyst shard or quartz: the finger pieces change (amber and clear see-through), in hand, in the GUI and placed;
+  breaking it keeps the finish. The tooltip names the finish.
+
+## Linear amplifier, coax loss, hitboxes, fire alarm map, SCADA trends and power, LAN programs (added 2026-11-13)
+
+- [ ] Linear Amplifier (creative tab after the automatic tuner; placeholder desk box): on the coax between an HF radio
+  and its antenna, and on a power wire. Use it: OPERATE / STANDBY in the action bar. In OPERATE with power, its lamp
+  lights; transmitting through it, the meter needle kicks. A station 1.5 times louder on the far end's S-meter, but the
+  band's reach the same. Into a bad SWR it smokes and blows (STANDBY look, smoke puffs); a gold ingot mends it. Nearby
+  redstone gets RF from twice as far while it amplifies. 2m through it: no gain. Without power: no gain, no lamp.
+  CB through it: the FCC program on a direction finder tuned to that channel shows CB AMPLIFIED: ILLEGAL in red, beeps,
+  and logs it; the same station in STANDBY shows plain CB.
+- [ ] Coax loss: a 2m station with the radio 60 blocks from the antenna reads a little weaker both ways than one with
+  the radio beside it (about 1 dB, a fifth); on HF hardly any difference. `coax_loss = 0` in the server config turns it off.
+- [ ] You can no longer walk through the ionosonde (its corner posts and mast) or the 5-BTV (its mast), and you are not
+  held up by the 5-BTV's radials.
+- [ ] FIRE ALARM program, F4: the right pane shows a map round the controller with each box as a square in its status
+  colour (green normal, red alarm flashing, yellow trouble/missing, grey out of service), its number beside it, the
+  picked box ringed in white. F4 again: back to the log. A box the mesh has not heard: counted under the map.
+- [ ] SCADA program, F4: trends. Up/Down picks the unit (0 is the master), Left/Right the face; a graph of its last
+  readings (level 0 to 15 up the side, newest on the right). An OFF face says it has no readings.
+- [ ] SCADA RTUs and masters now need power: on a power wire they work as before; with `radios_need_power` on and no
+  power, an RTU's OUT faces drop and it stops answering (COMM FAIL), and the master stops polling (NO POWER in red at
+  the top of the SCADA program). Existing ones pick up the new draw by themselves.
+- [ ] Computer Redstone Block (creative tab after the radio computer): touching a computer (or on its data wire). The
+  REDSTONE program lists it; F6 names it; Ins "Door Open=4" names level 4; Enter gives out the picked level, P pulses
+  it, O turns it off, L sets any level. While off it reads redstone coming in, shown by the level names. Its lamp
+  lights while it gives out. Use the block: its name, out and in in the action bar.
+- [ ] LAN REDSTONE from another computer (both named in SETUP, joined by data wire or a microwave link): the other
+  computer's blocks show only once F3 there lists your player name or your computer's name; then Enter/P/O work from
+  here. Only the owner of the block's computer can name it or change who may set it.
+- [ ] LAN RELAY: F6 sets your username (kept per computer). F5 on a named computer with background services on makes
+  it a relay server; every computer on the LAN then sees its room and can type into it (Enter); who is in the room
+  shows on the right. With two servers, F3 steps between their rooms. Every key above is also in the menu bar. Background services off on the server: the room
+  is gone for everyone. The history (200 lines) stays with the server computer through a restart; F8 clears it.
+
+## Siren public address, LAN EMAIL, Moxon reflector strung last (added 2026-11-13)
+
+- [ ] Siren public address: a commercial mobile with data wire running to an Another Weather Mod omni or horn siren
+  (the head alone or the pole version; the wire may touch the pole, the cabinet or the head) plays what the radio
+  hears out of the siren's top: narrow, hard-driven, heard about 190 blocks away, with an echo. An amateur radio on
+  the same wire does not. Several sirens on the wire each play it.
+- [ ] LAN EMAIL (new built-in program, envelope icon): F6 sets your username (the same one LAN RELAY uses). N writes a
+  mail: To (`user@COMPUTER`), Subject, then the body in the editor, Ctrl+S sends. Enter reads, R replies, Del deletes,
+  F3 shows mail still waiting to go. Every key is also in the menu bar. Mail to a computer nobody is at goes at once
+  if its background services are on; otherwise it waits (the yellow line at the bottom) and goes when that computer
+  is back. Unread mail has a `*`.
+- [ ] Moxon: string the driven element first, wait for the balun to settle, then string the reflector: within about
+  5 seconds it is a Moxon (beam). Breaking the reflector wire turns it back into a plain antenna.
+
+## Airband radio and aircraft antenna, FM broadcast transmitter and receiver (added 2026-11-13)
+
+- [ ] Airband Radio (creative tab, after the CB mobiles): the model faces you; with it on, its two amber windows show
+  the USE (121.500) and STBY (122.750) frequencies. The screen: PWR, VOL-/+, the kHz and MHz buttons and the mouse
+  wheel (shift for MHz) tune STBY; `<->` swaps; PTT (hold) to talk. Two airband radios on one frequency hear each
+  other in AM (no hiss between overs, both voices when two talk), one 25 kHz off does not.
+- [ ] Aircraft VHF Antenna: placed on top of a block it stands with the whip raked back; placed against the underside
+  of a block it hangs upside down. Right click: "Antenna: Airband Antenna". Coax to an airband radio: low SWR on
+  airband; a J-pole on the airband reads about 2.2:1.
+- [ ] FM Broadcast Transmitter: placing it puts the top half on; breaking either half takes both down and drops one
+  item. Its screen: PWR, << >> (0.2 MHz) and ON AIR (hold). Held, the cabinet's lamps and bar graph light (both halves).
+  A desk microphone beside it also puts you on the air.
+- [ ] FM Broadcast Receiver: a wood-sided table radio. Its screen shows a dial 88-108 with a red pointer; << >> and the
+  mouse wheel tune 0.2 MHz, VOL-/+ the volume. On the transmitter's channel it plays the station; a channel off, not.
+- [ ] Look of all four models and the screens (first art from the reference photos; tell me what to change).
+
+## Airband ground plane, airband and keyer screens, tracker flicker (added 2026-11-13)
+
+- [ ] Airband Ground Plane Antenna (after the aircraft antenna): two blocks tall, a galvanised mast, four radials
+  drooping from the clamp, a white whip. Right click the foot: "Antenna: Airband Ground Plane". Coax to an airband radio.
+- [ ] Airband Radio screen: its faceplate, as on the block, four times as big. Amber USE / STBY windows; click the
+  flip-flop key to swap; the big knob on the right tunes STBY (outer ring MHz, inner knob 25 kHz: click a half or
+  scroll); top-left knob volume (scroll) and power (click); the knob under it squelch (scroll). Buttons: PWR, MON
+  (squelch open, lit green), PTT (hold, lit red), VOL-, VOL+.
+- [ ] Iambic keyer screen: the keyer from above, drawn from its model (your rescaled one), finger pieces in the keyer's
+  finish, lighting while pressed (A / D or click either half of the front). MODE, SPEED and SIDETONE plates below.
+- [ ] Satellite tracking antenna: no flicker on the plinth's ring, the turntable or the dish hub.
+
+## Airband screen redrawn; SAT TRACK Close / Exit (added 2026-11-13)
+
+- [ ] Airband Radio screen, redrawn after the first look (the block texture blown up showed its blank label bars and
+  unlit cells): a clean plate, round knurled knobs with pointers (volume, squelch, and the tuner showing the band and
+  the kHz), unlit 8s behind the amber readings, legends in place, a tooltip on each control.
+- [ ] SAT TRACK: File > Close (Esc) quits the program as before; File > Exit (X) shuts the computer's screen with the
+  tracker left up: reopen it (even after 10 minutes) and the tracker is still on screen.
+
+## SAT TRACK views: Details, Image, Location (added 2026-11-13)
+
+- [ ] View menu (or Tab; D, I, L): Details is the old page and the default. The right-hand box title follows the view.
+- [ ] Image: a half-block picture of the satellite on starry black, its kind picked at random at launch (polished
+  sphere with four whips, faceted drum, spinner with gold cone, small sphere with six rods, box with two solar wings,
+  cubesat); the Moon for MOON. Satellites launched before today get a kind from their name. Caption under it.
+- [ ] Location: the square world (grass on dirt, the station on top), the satellite going round it; the slice in view
+  lighter (blue), the rest dark. The slice is widest when the track passes overhead, narrower as it passes further
+  off, gone when out of range. The satellite turns yellow inside the slice exactly when the list says UP. GEO and the
+  Moon: the sky above the horizon, the satellite in it or below the world.
+
+## SAT TRACK pictures in full colour; airband hiss (added 2026-11-13, second round)
+
+- [ ] Image view: the satellite as a small 3D model, ray traced, tumbling slowly (a turn in 24 s) on a starfield; the
+  Moon still. The first turn is made in the background: for a moment it may show one frame or "reading".
+- [ ] Location view: a square globe (sea, continents, ice caps, cloud, a blue glow of air) with the station mast on
+  top, the dotted orbit, the lighter slice in view, the satellite glowing yellow while up.
+- [ ] Airband radio with the squelch open (or MON): a clear AM hiss, as a CB on a quiet band; a little even with no
+  antenna.
+
+## QRP radios: the home-built panel (added 2026-11-13)
+
+After the maintainer's photo of a home-built 40m QRP transceiver (no cigar box branding): a glossy panel in a pine box,
+red on the 40m radio, blue on the 20m one, drawn in code (`QrpPanelScreen`). No display: two band edge lamps.
+- [ ] Look: pine frame, glossy panel with screws; SUPPLY and PHONES jacks, ANTENNA socket, a clear label plate
+  ("QRP", "40m QRP Transceiver"), the CRYSTAL can (7030 KC on 40m, 14060 on 20m).
+- [ ] TUNING: the big black knob on its silver 0-10 skirt; the skirt turns so the marker above reads where you are
+  in the band. Scroll (anywhere on the panel, too), drag up / down, or click its left (down) or right (up) half.
+  Shift or the x10 switch: ten steps.
+- [ ] LOW EDGE / HIGH EDGE lamps: lit near each end of the band, blinking past it; dark when off.
+- [ ] OFF / RECEIVE / TRANSMIT pointer knob: click a legend or the knob's side, or scroll. OFF switches the radio
+  off, RECEIVE on; TRANSMIT holds it keyed on SSB (talk), and on CW leaves keying to the KEY.
+- [ ] VOLUME, MIC, SQUELCH, ATTEN (RF gain down) knobs: scroll, or left click up / right click down; tooltips show
+  the setting; pointers follow.
+- [ ] MODE (SSB / CW), AGC (OFF / SLOW / FAST, a three way bat) and x10 toggles; QUICK: press to go to the stored
+  frequency and back, hold to store this one.
+- [ ] KEY (the big knob, bottom right): hold to send CW or to talk on SSB; right click for the hand mic. Keyboard CW
+  key and chat Morse still work.
+
+## Radios with no antenna hiss faintly (added 2026-11-13)
+
+- [ ] A radio switched on with nothing on its coax: a faint hiss with the squelch open (it used to be silent), the
+  S-meter barely off zero. AGC on (slow or fast) makes the hiss a little louder than AGC off.
+- [ ] Two bare radios a few blocks apart on one frequency hear each other weakly (the bare connector, as before);
+  13 blocks apart they do not.
+- [ ] An airband radio with no antenna and the squelch open: a faint hiss (its loud AM hiss needs an antenna).
+
+## Wire climbing into a device meets its middle (added 2026-11-13)
+
+From the 2026-11-13 playtest: a data wire laid beside a desk climbed it at the desk's corner and went into the
+commercial radio on it at the radio's corner. A run up a wall into a device now comes out at the top across the middle
+of the device's face (a lone wire dead centre, a bundle's strands side by side about it), slanting over from where it
+runs on the floor.
+- [ ] Data wire along a desk, kept to a wall beside it, climbing into a radio on the desk: it rises slanting to the
+  middle of the face and goes into the radio there, not at its corner.
+- [ ] A bundle (data, power, coax) climbing into a radio: the strands end side by side about the middle, not on top of
+  one another.
+- [ ] Wire running straight up an edge to a device directly above it (UP_DEVICE) still turns into its middle.
+
+## FM broadcast receiver redrawn, its screen, battery and dial; transmitter depth (added 2026-11-13)
+
+- [ ] FM Broadcast Transmitter: the header, the silver meter strip and its knobs, the control panel, the exciter (with
+  handles), the power box, the door (with its handle) and the breaker now stand out of the cabinet. Both halves, on and
+  off air, and the item in the hand and the inventory.
+- [ ] FM Broadcast Receiver, after the walnut table radio photo: walnut case with a lip round the front, a woven tan
+  grille in chrome on the left, a chrome-framed panel on the right with a tall orange dial and TUNING (big), VOLUME,
+  BASS and TREBLE knobs and two small switches. All four facings.
+- [ ] Look at it and scroll (no sneak): it tunes 0.2 MHz a notch (it needs to be on). Other radios still want sneak.
+- [ ] Right click: its front as the screen. Click the dial to jump there; TUNING, VOLUME, BASS, TREBLE: scroll or click
+  a side; POWER and MUTE switches; scrolling elsewhere tunes (shift: 2 MHz). Tooltips on each part. The status line
+  shows the station, volume, tone and the battery.
+- [ ] BASS and TREBLE are heard: turn BASS up and TREBLE down on a broadcast, and back.
+- [ ] Battery: shift + right-click a Small Alkaline Battery in; with no power wire it plays from it and the status line
+  counts it down (about 2 game days, a tenth of the weather alert radio's 21). Shift + right-click empty-handed takes
+  it out; a flat one comes out dead. A receiver placed before this needs placing again to run from a battery.
+
+## FM table radio: tunes while off, switches, pointer on the block (added 2026-11-13)
+
+- [ ] Tune it while it is off: by its screen (TUNING knob, the dial, scrolling) and by looking at it and scrolling.
+- [ ] POWER and MUTE are bat-handle toggles: chrome plate with bevel and screws, a nut, a tapered lever up or down
+  with a ball end and a shadow, small ON/OFF marks.
+- [ ] The block's dial shows an orange pointer at the tuned frequency (88 at the bottom, 108 at the top), moving as
+  you tune; bright while on, dull while off; right on any facing and on a ceiling.
+
+## Coax into a J-pole: no flicker (added 2026-11-13)
+
+Today's data-wire fix (a run up an edge into a device bends in to the middle of its face) also bent coax running up
+to an antenna into the middle, inside the J-pole's mast, where it flickered. Antennas (the antenna_blocks tag) are left
+out of it again: coax keeps its line up to their own feed point.
+- [ ] Coax up the side of a block to a J-pole (and a 5-BTV) on top: no flicker where it meets it.
+- [ ] Data wire up a desk into a radio still goes into the middle of the radio's back.
+
+## Storm damage to a station, with AWM (added 2026-11-13)
+
+- [ ] Wire antennas: from a category 3 hurricane's wind a wire now and then snaps off its holder (the holder stays).
+- [ ] Mounted antennas (J-pole, BTV, yagi, ground planes, dishes, tracker, airband): stand through category 4; come
+  down only rarely in a category 5 or EF4+ tornado. Coax: only in a category 5 or EF5, rarely.
+
+## Antenna switch and power switches on a wall (added 2026-11-13)
+
+Click the side of a block to put one on the wall (the top of a block puts it on the floor as before). On a wall it is
+the floor box tipped up against the wall, as a lever: its terminal side at the bottom, where a cable comes up the wall.
+- [ ] On/Off on a wall: terminals at the bottom and top; throwing it parts and joins them (wire up to its bottom, wire
+  from its top).
+- [ ] Left/Right on a wall: input at the bottom, outputs left and right as you face the wall.
+- [ ] Antenna switch on a wall: the radio's coax up the wall to its bottom; outputs 1, 2, 3 to the left, top and right;
+  the pointer points at the live output on every facing; it does not turn to the radio (run the radio's coax to its
+  bottom).
+- [ ] Models look right on all four walls (tipped up, not sideways), hit boxes match, wires meet the terminals.
+- [ ] Switches already placed in a world are still on the floor and unchanged.
+
+## SAT TRACK: mouse in the list; bundle strand picking (added 2026-11-14)
+
+- [ ] SAT TRACK: click a satellite in the list to pick it (any view); the mouse wheel over the list steps up and down;
+  with a long list scrolled down, clicking still picks the row clicked.
+- [ ] Wire bundle: shift-right click on a strand takes the strand under the crosshair, on straight runs, corners,
+  climbs and strands bent toward a device.
+
+## VHF radios: tuning STEP (added 2026-11-14)
+
+From the playtest: a satellite on 164.4875 could not be tuned (20 kHz steps; 164.480 is 7.5 kHz off, too far to hear).
+- [ ] VHF base station: click the knob at the bottom left (tooltip STEP) to step 5, 6.25, 10, 12.5, 15, 20, 25 kHz; the
+  second display shows OFS, TONE and STEP on three lines (all readable?). Changing the step leaves the frequency; one
+  dial click then lands on the new grid: 164.480 on 12.5 kHz, up one click is 164.4875, shown with four decimals on the
+  screen and on the block.
+- [ ] Tune to the satellite on 164.4875 and hear it clearly.
+- [ ] VHF handheld: ENTER opens OFFSET, ENTER again opens STEP (arrows change it, KHZ), ENTER back. The arrows then tune
+  by that step; the LCD shows 164.4875. The step stays with the radio after relogging and in a dock.
+- [ ] A repeater and the scanner are unchanged (no STEP; the scanner keeps its 2.5 kHz steps).
+
+## Coax into a wall switch; cable under a block drops to a desk radio (added 2026-11-13)
+
+- [ ] Antenna switch on a wall, coax run up the wall into it from below: the cable keeps to the wall and goes
+  straight into the bottom connector, with no stub out under the switch to the middle of the block.
+- [ ] Coax on the switch's top (output 2) meets the top connector against the wall.
+- [ ] Known: the left and right connectors sit halfway up the wall switch, while a cable beside it lies at the
+  bottom of its block, so side cables still meet the switch low. They work; they just look low.
+- [ ] Coax for an output laid right beside the run up to the input joins it (same-kind wire links to its neighbour),
+  bypassing the switch: run each output out at least one block clear of the input run.
+- [ ] A K2 (or any low radio) on a desk with a block over the space beside it: coax and power wire laid there hang
+  from that block, then drop down the radio's face to its back instead of running in at the ceiling.
+
+## Cable test world (added 2026-11-14)
+
+- [ ] `./gradlew runClientTests`, a creative superflat world, `/test runall CableMatrixGameTests 1 false 0 16`: every cable case builds in a grid and goes lime (pass). Walk the rows and note any case that looks wrong though it passed (an overshoot, a V, a loop, a cable sticking out of a wall, a cable missing a radio's back): its name is on its structure block.
+- [ ] The tight turns (`sbend`, `uturn`, `jog`) and the three-strand bundles with devices in reverse order (`_rev`) look right.
+- [ ] Known bug kept as an optional test (`bundlePastADeviceBothStrandsFeed`): a power + data bundle passing a computer, both strands branch into it and one crosses the other. Look at it with `/test run bundlepastadevicebothstrandsfeed`.
+
+## Cables: hop over, round to a radio's back, drop to its connectors (added 2026-11-14)
+
+- [ ] A power + data bundle laid past a computer (on the floor beside the run): the far strand's branch rises a couple of pixels and passes over the near strand into the computer, no cable through another. Same hung under a ceiling (it hops downward).
+- [ ] A lone cable laid up to a radio's side (VHF base station turned side-on): it runs on through the gap beside the radio and round behind it to the middle of its back. Laid at the radio's front, it goes along the front gap, down a side and round to the back. No gaps at the bends.
+- [ ] Put a block behind that radio: the cable goes back to plugging into the side. (If the block behind is across a chunk-section border from the cable, the cable may keep the old look until something next to it changes.)
+- [ ] A cable under a ceiling block beside a desk radio drops down the radio's back and stops about halfway up it (at its connectors), not on the desk. To an antenna or battery it still drops to the floor.
+
+## Cable fixes from the house in Demo World (added 2026-11-14)
+
+- [ ] A cable turning a corner on the floor (or a bundle turning) bends where its two runs meet: no running on to a wall it leaves and slanting back in a V. Look at -36 86 546/547 and the bundles round -33 86 547.
+- [ ] A ceiling cable dropping to a battery meter or other desk device goes straight down its face (no diagonal) and plugs in halfway up it, like a radio. To an antenna it still drops to the floor.
+- [ ] A cable lying on top of a battery stays on it when cable beside it is broken and laid again (it used to turn over onto the ceiling for good): try -41 87 534.
+- [ ] Still to do (CableHouseGameTests lists 56): strands of a bundle that climb a wall to a device and also carry on along the run cross each other (-32 86 547); a run up an inside corner swaps walls block to block by under a pixel.
+
+## SAT TRACK: blocky satellites (added 2026-11-14)
+
+- [ ] (After `./gradlew runData`: the art names changed.) SAT TRACK's Image view: every kind is built of cubes and square beams, lit like Minecraft blocks (top brightest, bottom darkest) with a 16x16 pixel grain on each face, still tumbling smoothly: polished cube with four whips, square drum of solar cells, spinner with a stepped copper cone, small cube with six rods, gold box with two wings, cubesat. The Moon (moonbounce) is a still cube. The Location view's little satellite icon still reads at its size.
+
+## VHF base station: memory channels (added 2026-11-14)
+
+- [ ] The 2M FM TRANSCEIVER panel has two new keys under STEP: MW (memory write) and V/M (VFO/MEM), drawn like the other light keys, labels not touching STEP or 10X/QUICK, tooltips on both.
+- [ ] Hold MW: the display shows "MW 01" (top left) and what channel 1 holds (EMPTY, or its frequency with its offset and tone); turn the dial or press STEP up/down to pick a channel 1-50; press MW to store. "M01 SET" flashes. MW stays lit while picking.
+- [ ] Store two channels with different offsets/tones/STEPs. Press V/M: it goes to the last channel stored (V/M lit), the top line reads "M03 -600 T100.0 12.5K" style, and the frequency, offset, tone and step are the channel's. The dial and STEP keys go from stored channel to stored channel (skipping empty ones, wrapping).
+- [ ] Press V/M again: back on the VFO exactly where it was (frequency, offset, tone, step). Hold V/M on a memory: "TO VFO", the VFO takes that channel.
+- [ ] Break and replace the radio / leave and rejoin: the memories and MEM/VFO state stay (they live in the block's NBT; a broken radio drops without them, as before, unless the radio item keeps its settings).
+- [ ] Radio Cloner: read a base station, write a VHF handheld: the handheld gets the base's channels 1-10. Write that image to another base station: its channels 1-10 are replaced, 11-50 kept.
+
+## WXSAT: storms, map, menus, monitor, wider swath, geostationary frames (added 2026-11-14)
+
+- [ ] Storms on the mosaic have ragged, irregular outlines (lobes, stretched along their motion), the same shape from line to line and pass to pass; the green/yellow/red rings follow the outline and stay nested.
+- [ ] A storm reaching over cold (snowy) ground still shows red/magenta returns there, not the light snow colours.
+- [ ] The station is a red ring with a white dot (shows over black too), "Red ring: this station" above the map; off the view, a red arrow at the edge points to it.
+- [ ] Mouse wheel over the map zooms in/out about the mouse; left-drag pans; arrows, + / -, F8 and Home still work.
+- [ ] File and View menus open over the map (not behind it). File has Close (Esc, back to the PC's menu) and "Exit, WXSAT left up" (X: the screen closes with WXSAT still on it).
+- [ ] With an imager passing and nothing coming in, the panel says why: no radio linked, the radio on another frequency (shows both), the satellite off, or "up but not heard" (weak, roofed, radio off).
+- [ ] An External CRT Monitor placed beside the PC's screen (the monitor block on top of the computer) shows the mosaic; the panel's bottom line says so.
+- [ ] The swath is wider (8,192 blocks, 16 blocks a pixel): a pass covers much more ground; the live strip shows the whole swath at half scale; zooms are 16/32/64/128 blocks a pixel.
+- [ ] A geostationary commercial imager: WXSAT shows "Frame N, row r of R", the new frame replacing the old one row by row from the north, "Frame N complete" at the end; the loop (F7) and a CRT monitor in LOOP step through frames.
+
+## FM broadcast station (added 2026-11-14)
+
+- [ ] Switch the FM transmitter on with nothing linked: an FM receiver tuned to it hears a quiet carrier, not static, and the cabinet lamps stay lit without holding MIC.
+- [ ] With a tape player on its data wire playing, hold MIC (or a desk mic): the music drops to about 20% while you talk and comes back over about 1.5 s. ON AIR redstone lights a lamp while the mic is live.
+- [ ] A desk mic on a data wire to a radio, beside no radio: holding it talks through that radio.
+- [ ] With a weather alert receiver on the wire, a new warning goes out after the tone in the station's voice; if the mic is live it waits until you stop.
+- [ ] Forecasts (every 10 min by default) and the hourly station ID come between tapes, never cutting one off; on a stream, the stream ducks under them. The voice: forecast (period, outlook, tomorrow, wind km/h, current sky and degrees C), station ID (callsign letters, frequency), relayed alert (tone, then word by word) with natural gaps.
+- [ ] Stream program (with server config fm_internet_streams on): a direct MP3, an Ogg stream, an .m3u and a .pls each play with the song title shown. An HLS .m3u8, a 127.0.0.1 or 192.168.x link and an AAC stream each show a clear error. Stop the stream: the tape player takes over after about 5 s, and the stream returns when it is back. Pulling the network cable reconnects without freezing the server. With the setting off a link cannot be set.
+- [ ] The station panel's buttons and fields all take effect.
+- [ ] Tape player in QUEUE mode: a hopper on top feeds tapes into the queue (QUEUE n/9), each plays in turn with a short break, played tapes drop into a hopper below (OUT n/9); a comparator reads the queue. Right-clicking a tape on a playing QUEUE player queues it. Breaking it drops the playing tape, the queue and the out tray.
+- [ ] A tape player touching or data-wired to an FM transmitter no longer keys it (the station pulls it); it still keys other radios.
 

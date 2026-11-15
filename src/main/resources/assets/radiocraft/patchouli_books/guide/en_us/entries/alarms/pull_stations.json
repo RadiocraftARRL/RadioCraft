@@ -1,0 +1,38 @@
+{
+  "name": "Pull Stations",
+  "icon": "radiocraft:pull_station",
+  "category": "radiocraft:alarms",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:pull_station",
+      "text": "The $(item)Fire Alarm Pull Station$() goes on a wall, touching a $(l:radiocraft:alarms/fire_alarm_box)fire alarm box$(/l) or on its data wire. Right click to pull it: the bar comes down and the box sends the alarm. It stays pulled until reset.$(br2)Sneak and right click to see its location number, name and alarm type without pulling it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fire_alarm_key",
+      "text": "The $(item)Fire Alarm Key$() resets a pulled station or panic button: use it on one and the box sends RESTORE. It also opens a fire alarm box for its panel, whose RESET puts every station on it back up at once."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:outdoor_pull_box",
+      "text": "The $(item)Outdoor Fire Alarm Pull Box$() stands on its own post, with a red lamp on top, turned to face you as you place it. Run data wire from it to a box. It pulls and resets like the wall station."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:panic_button",
+      "text": "The $(item)Panic Button$() goes on a wall, on a floor or under a block, like under a desk. Press it and it stays in while the box sends its alarm; reset it with the key. Wire it like a pull station."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Colours",
+      "text": "For alarms that are not fire there are the $(item)Yellow Alarm Pull Station$() and $(item)White Alarm Pull Station$(), whose bar reads ALERT, and the $(item)Yellow Outdoor Alarm Pull Box$() and $(item)White Outdoor Alarm Pull Box$(). They wire and pull like the red ones; only the colour differs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Alarm types",
+      "text": "Each location has a kind of alarm, set on its box's programming panel after its name: FIRE, THREAT, DISASTER, MEDICAL, ESCAPE, LOCKDOWN, FLOOD, BREACH or TORNADO. The controller shows and prints it (\"ZONE 03 MEDICAL\"). Every kind buzzes, rings bells and needs an ack just as a fire does; it is up to you what the bells mean."
+    }
+  ]
+}

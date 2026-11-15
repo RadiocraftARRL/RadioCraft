@@ -7,7 +7,7 @@ the player:
   either side of the strip, a small light grey knob   -> POWER and its lamp on the left, AF VOL on the right
   bottom left, a knob with a light bar handle          -> the repeater OFFSET switch (- / S / +)
   next to it, the big tuning knob                      -> the main dial, with its 10x coarse key at the lower right
-  two light grey dots beside the knob                  -> the STEP down / up keys
+  two light grey dots beside the knob                  -> the STEP down / up keys, MW and V/M (memories) under them
   three small dark knobs along the bottom right        -> SQL, MIC gain, and the mic socket (PTT)
 CTCSS tone: TONE down / up keys under the display, as on the old screen's soft keys.
 Colours are the block texture's: charcoal 0x20-0x52, light grey 0x97-0xBF, the plum LCD 0x2E1130.
@@ -176,6 +176,12 @@ def build(runtime=False):
         light_key(img, "step_up", 129, 77, 14, 8)
         ab.arrow(img, 118, 81, False, ab.EDGE)
         ab.arrow(img, 135, 81, True, ab.EDGE)
+        # Under the STEP keys (2026-11-14, the maintainer: memories): MW (memory write; lit while picking the channel) and
+        # V/M (VFO/MEM; lit on the memories), the all-band radio's MEMORY and VFO/MEM in this rig's light keys.
+        label_c(img, "memory_label", 119, 88, "MW")
+        light_key(img, "memory", 112, 95, 14, 6, lit=True)
+        label_c(img, "vfo_mem_label", 136, 88, "V/M")
+        light_key(img, "vfo_mem", 129, 95, 14, 6, lit=True)
         label_c(img, "coarse_label", 119, 104, "10X")
         light_key(img, "coarse", 112, 111, 15, 7, lit=True)
         label_c(img, "quick_label", 141, 104, "QUICK")  # Lit on the quick-recall frequency.

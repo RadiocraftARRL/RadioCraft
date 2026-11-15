@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Pictures print on $(item)Color Photo Paper$() as a color photo, on an empty map as a plain color $(item)Printout$(), or on $(item)Photo Paper$() in black and white. Text prints as a written book, a sheet of paper a page.$(br2)Take each print out before the next, or the scanner jams. Without a scanner the computer does everything else."
+      "text": "Pictures print on $(item)Color Photo Paper$() as a color photo, on an empty map as a plain color $(item)Printout$(), or on $(item)Photo Paper$() in black and white. On plain paper a picture comes out as words only: a sheet with the picture's details in its tooltip. Text prints as a written book, a sheet of paper a page.$(br2)Take each print out before the next, or the scanner jams. Without a scanner the computer does everything else."
     },
     {
       "type": "patchouli:crafting",

@@ -1,6 +1,7 @@
 # Station plans (2026-11-09)
 
-Plans for the maintainer's review: linear amplifier, coax loss, iambic keyer, contests. Only contests are built (2026-11-09).
+Plans for the maintainer's review: linear amplifier, coax loss, iambic keyer, contests. Contests built 2026-11-09, the
+iambic keyer 2026-11-12, the linear amplifier and a lighter coax loss (no hardline) 2026-11-13.
 
 ## Linear amplifier
 
@@ -18,8 +19,8 @@ A block in the coax between an HF radio and its antenna (an `ICoaxPassThrough`, 
     unamplified, until it is mended.
 - **Switch:** an OPERATE/STANDBY switch. In STANDBY, or with no power, it passes the signal through, as real
   amplifiers do. It has a lamp, and a plate-current meter that kicks while keyed.
-- **Bands:** HF only (80/40/20/10m). On CB it works, but transmitting through it is logged as an illegal amplifier
-  for the moderation tools, as the FCC would see it. VHF is not amplified.
+- **Bands:** HF only (80/40/20/10m). On CB it works, but it is illegal: the FCC program flags the station (built
+  2026-11-13; not the moderation tools, which are for abuse, maintainer). VHF is not amplified.
 - **Model:** a desk box. Placeholder for now; it goes on the model bounty.
 - **Tests:**
   - A GameTest checks that strength at a fixed distance goes up and that the band's range edge does not move.

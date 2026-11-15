@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The $(item)TA-43 Field Phone$() needs no $(l:radiocraft:telephones/pabx)PABX$(/l) and no power. Field phones touching each other or on the same $(l:radiocraft:radios/data_wire)data wire$(/l) share one party line, up to about 16,000 blocks of wire. Only the phones need to be loaded, not the wire between them.$(br2)Right click with an empty hand to pick up the handset. The other phones ring like an old crank phone until someone answers. Everyone with a handset up hears everyone else."
+      "text": "The $(item)TA-43 Field Phone$() needs no $(l:radiocraft:telephones/pabx)PABX$(/l) and no power. Field phones touching each other or on the same $(l:radiocraft:radios/data_wire)data wire$(/l) share one party line, up to about 16,000 blocks of wire. Only the phones need to be loaded, not the wire between them.$(br2)Right click with an empty hand to pick up the $(item)Field Phone Handset$(). The other phones ring like an old crank phone until someone answers. Everyone with a handset up hears everyone else."
     },
     {
       "type": "patchouli:text",

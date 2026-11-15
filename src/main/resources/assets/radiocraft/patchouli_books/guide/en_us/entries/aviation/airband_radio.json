@@ -1,0 +1,24 @@
+{
+  "name": "Airband Radio",
+  "icon": "radiocraft:airband_radio",
+  "category": "radiocraft:aviation",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(thing)airband$() is where aircraft talk: $(thing)118 to 137 MHz$(), AM voice, in 25 kHz channels. Like CB it is AM: everyone on a frequency is heard at once, and a weak signal gets hissy before it fades.$(br2)$(thing)121.5$() is the emergency (guard) frequency; $(thing)122.75$() and $(thing)123.45$() are for chatting air-to-air."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:airband_radio",
+      "title": "Airband Radio",
+      "text": "A panel-mount COM with two windows: $(thing)USE$(), the frequency you talk and listen on, and $(thing)STBY$(), the next one. The knobs (or the mouse wheel; shift for whole MHz) tune STBY, and the $(thing)flip-flop$() swaps the two. Hold PTT to talk, or use a desk microphone. It needs power and an antenna."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:airband_antenna",
+      "title": "Aircraft VHF Antenna",
+      "text": "A small swept whip cut for the airband: close to 1:1 in the middle of it and under 2:1 at the edges. A J-pole or other 2m antenna works, but at around 2.2:1. Place it on top of a block, or against the underside of one to hang it, as on an aircraft's belly; run coax into its block."
+    }
+  ]
+}

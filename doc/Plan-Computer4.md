@@ -17,6 +17,20 @@ Radio computers can be **networked together over data wires and/or microwave lin
   - Each block is given a name in the computer.
   - Any computer on the LAN can trigger one by name: pulse, on or off. It could also read a block's input state.
 
+## Built (2026-11-13)
+- **LAN REDSTONE** and the **Computer Redstone Block**: named levels ("Door Open" = 4) for setting it and for reading
+  its input; access given to players by name or to other computers by SETUP name (the computer's owner and ops
+  always). Built-in program.
+- **LAN RELAY**: kept on a computer set as a relay server, which needs background services on; with more than one on
+  the LAN the player picks the room. History: 200 lines on the server. Built-in program.
+- Microwave LAN links need line of sight and are limited by the dishes' range (already so: `MicrowaveMath`,
+  `MicrowavePaths`).
+- **LAN EMAIL** (2026-11-13): `user@COMPUTER`, the user being the same username LAN RELAY uses on that computer.
+  Mail is delivered at once to a computer on the LAN that takes mail (someone at it, or its background services on
+  with power at hand); otherwise it waits in the sender's outbox, which the sender's computer retries (EMAIL is a
+  background service, and keeps its computer on while mail waits) and which a computer looking at its mail pulls
+  from. Mail still waiting after three Minecraft days comes back from MAILER-DAEMON. Built-in program.
+
 ## Open questions for later
 - Are the programs built in or floppies? If floppies, they need recipes.
 - What does the Computer Redstone block's recipe look like?

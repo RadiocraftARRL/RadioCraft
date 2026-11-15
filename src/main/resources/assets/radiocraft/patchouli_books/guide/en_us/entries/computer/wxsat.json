@@ -1,0 +1,39 @@
+{
+  "name": "WXSAT",
+  "icon": "radiocraft:floppy_wxsat",
+  "category": "radiocraft:computer",
+  "sortnum": 41,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:floppy_wxsat",
+      "title": "WXSAT",
+      "text": "Weather pictures from a $(l:radiocraft:repeaters/satellites)commercial satellite$() in $(thing)IMAGING$() mode: it scans the ground and sends the picture down line by line, as NOAA's APT satellites do."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The station",
+      "text": "Install WXSAT and link a radio to the computer (touching it, on its data wire, or beside its scanner), tuned to the satellite's downlink. A VHF receiver channel or a commercial radio will do; with Doppler on, retune as it passes.$(br2)WXSAT is a background service: the computer stays on and records every pass with nobody at the screen. It draws power while it is installed. SETUP's 197609thing)Services197609) page can turn that off: then WXSAT records only while it is open on the screen."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What you see",
+      "text": "Radar over the ground, in map colours: seas blue, land in its biome's colours, rain from light green through yellow and red, magenta in a severe storm's core and purple for hail, blues for snow.$(br2)A strong signal gives clean lines. Low in the sky the lines get snowy, and near the noise some go missing, as real APT does. About 8 blocks a pixel, 2,048 blocks wide."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Live, mosaic, loop",
+      "text": "$(li)$(thing)F5$(): the live strip, filling in as the pass comes in, with the signal and the next imaging passes.$(li)$(thing)F6$(): the mosaic. Passes are stitched onto the map round the station, newest on top. Arrows pan, $(thing)F8$() zooms, Home comes back.$(li)$(thing)F7$(): the loop, pass by pass, to watch storms move. Space pauses, PgUp/PgDn step."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Saving and printing",
+      "text": "$(thing)F3$() saves the view as a 128 by 128 .IMG. $(thing)F4$() prints it on the $(l:radiocraft:computer/scanner)scanner$(): an empty map or photo paper takes the picture; plain paper takes the area, the pass and its time, and how much rain or snow it shows.$(br2)The computer keeps the last eight passes, a few days at most, within about 3,500 blocks. Show them on an $(l:radiocraft:computer/external_crt_monitor)External CRT Monitor$()."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_wxsat",
+      "text": "A blank floppy and a lightning rod."
+    }
+  ]
+}

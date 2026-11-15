@@ -22,6 +22,12 @@
       "type": "patchouli:crafting",
       "recipe": "radiocraft:all_band_circuit_board",
       "recipe2": "radiocraft:all_band_radio"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "title": "Sending CW",
+      "item": "radiocraft:iambic_keyer",
+      "text": "In CW, hold the screen's $(thing)PTT$() button or $(thing)Space$() to key. You hear your own sidetone while you send.$(br2)An $(item)Iambic Keyer$() beside the radio makes it easier: hold $(thing)A$() for dits and $(thing)D$() for dahs, and it times them for you. Craft it with a dye, glass or a gem to change its paddles."
     }
   ]
 }

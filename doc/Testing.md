@@ -42,6 +42,34 @@ To run only some, name their classes (or single tests) with `-Pgametests` (`Game
 
 Use it while working on something; run the whole suite before a commit.
 
+### Looking at the tests in a world
+
+`./gradlew runClientTests` is a dev client with the GameTests loaded (its own folder, `runs/testworld`, and the
+GameTest server's config defaults). Make a creative superflat world, stand somewhere open and run, for example:
+
+```
+/test runall CableMatrixGameTests 1 false 0 16
+```
+
+That builds every cable case (`CableMatrixGameTests`, `cablematrixgametests.<case>`) in a grid 16 to a row, runs its
+checks and leaves it standing: a lime glass block marks a pass, red a failure, with a lectern holding the reason. A case
+with a cable laid beside the run keeps that cable at the end, to see the two together. `/test runthat` reruns the case
+you look at, `/test clearall` clears them all. One case alone: `/test run cablematrixgametests.cablematrix_bundle_jog_power_data_coax_r0`.
+Any other class works the same way (`/test runall CableShapesGameTests`).
+
+A failing cable case also writes every block's centre lines (`WireGeometry.describe`) to the log, so its shape can be
+read without a client.
+
+### Checking cable in a real world
+
+`/cablecheck <from> <to>` (or `/cablecheck <centre> <radius>`; dev runs only, it lives with the GameTests) runs the
+cable matrix's checks on every cable in a box of the world it is typed in and writes the problems, each named block's
+neighbours and its centre lines to `cablecheck.txt` in the game folder. To look at a save without touching it, copy it
+to `runs/server/<name>` and `DEVSERVER_WORLD=<name> tools/devserver.sh start`, `forceload add` the area, then
+`python tools/rcon.py "cablecheck ..."`. `/cablecheck save <name> <from> <to>` keeps the box as a GameTest structure in
+`src/gametest/resources/data/radiocraft/structure/`: `house_cables` is the maintainer's house (Demo World,
+-55 82 517 up), checked by `CableHouseGameTests` (optional until it is clean; its log lists what is left).
+
 Create is left out of dev runs unless asked for: add `-PwithCreate` (to `runGameTestServer`, `runClient` or
 `runServer`) to load Create, Ponder, Flywheel and Registrate, so `CreateGameTests` really turns an alternator
 (without Create it passes at once). Run the GameTests both ways before committing Create compat changes.

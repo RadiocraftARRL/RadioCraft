@@ -1,0 +1,24 @@
+{
+  "name": "FM Broadcasting",
+  "icon": "radiocraft:fm_broadcast_receiver",
+  "category": "radiocraft:radios",
+  "sortnum": 15,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The $(thing)FM broadcast band$() runs from $(thing)88.1 to 107.9 MHz$(), one station every 0.2 MHz. Run your own station with the $(item)FM Broadcast Transmitter$(), and anyone with an $(item)FM Broadcast Receiver$() tuned to it hears you.$(br2)It is VHF: line of sight, carried a little further than 2m, and the antennas are VHF antennas. A 2m antenna works on it, though badly matched (about 2.8:1)."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fm_broadcast_transmitter",
+      "title": "Broadcast Transmitter",
+      "text": "A two-block cabinet. Pick your channel with << and >> (or the mouse wheel), then hold $(thing)ON AIR$() and talk, or speak into a desk microphone beside it. It goes out three times as strong as a radio, and its lamps light while it is on the air. It draws a lot of power on the air and needs a VHF antenna on its coax."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fm_broadcast_receiver",
+      "title": "Broadcast Receiver",
+      "text": "A walnut table radio. Look at it and scroll to tune, or open it for the POWER switch, the dial, VOLUME, BASS and TREBLE. It hears on its own wire antenna; an antenna coaxed to it takes over and hears much further. It draws very little: a power wire, or a $(item)Small Alkaline Battery$() (shift + right-click) for about two days."
+    }
+  ]
+}

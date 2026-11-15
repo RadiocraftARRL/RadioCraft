@@ -43,7 +43,7 @@
     {
       "type": "patchouli:text",
       "title": "Hearing a Call",
-      "text": "Every marine radio that is on listens to channel 70, whatever channel it is set to. When it hears a distress call it sounds the alarm and shows the caller's MMSI, the nature and the coordinates for a while. Any key silences the alarm, $(thing)ACK$() acknowledges the call (the caller's radio stops repeating) and CLR clears the display. Its DSC only hears channel 70: $(l:radiocraft:radios/distress_beacon)distress beacons$(/l) need a commercial VHF radio on 161.975. The $(l:radiocraft:computer/distress)DISTRESS$(/l) program puts them all on a map."
+      "text": "Every marine radio that is on listens to channel 70, whatever channel it is set to. When it hears a distress call it sounds the alarm and shows the caller's MMSI, the nature and the coordinates for a while. Any key silences the alarm, $(thing)ACK$() acknowledges the call (the caller's radio stops repeating) and CLR clears the display. Its DSC only hears channel 70: $(l:radiocraft:radios/distress_beacon)distress beacons$(/l) need a commercial VHF radio, which hears them whatever its channel. The $(l:radiocraft:computer/distress)DISTRESS$(/l) program puts them all on a map."
     },
     {
       "type": "patchouli:crafting",

@@ -30,6 +30,11 @@
     {
       "type": "patchouli:crafting",
       "recipe": "radiocraft:auto_tuner"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Linear Amplifier",
+      "text": "Put a $(item)Linear Amplifier$() in the coax between an HF radio and its antenna, and run a power wire to it. Use it to switch $(thing)OPERATE$(): your signal arrives about half again as strong. It is louder, not further: the band still ends where it ends.$(br2)It draws a lot of power while you transmit, blows easily into a bad SWR (a gold ingot mends it), and it is illegal on CB."
     }
   ]
 }

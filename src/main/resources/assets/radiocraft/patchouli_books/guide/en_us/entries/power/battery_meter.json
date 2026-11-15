@@ -6,7 +6,7 @@
  "pages": [
   {
    "type": "patchouli:text",
-   "text": "Put a $(item)battery meter$() on a power wire. Its face shows the batteries on that wire as a 12 V bank: the $(thing)voltage$() and the $(thing)charge$(), with an arrow up while they charge and down while they discharge. Power passes through it from any side, like a wire junction.$(br2)At rest it reads 11.8 V empty to 12.7 V full. Charging lifts it towards 14.4 V; a heavy load sags it a little."
+   "text": "Put a $(item)battery meter$() on a power wire. Its needle reads the $(thing)voltage$() of the batteries on that wire as a 12 V bank, on a dial from 8 to 16 V. Power passes through it from any side, like a wire junction.$(br2)At rest it reads 11.8 V empty to 12.7 V full: the $(4)red$() band is flat, the $(2)green$() band charged. Charging lifts it into the $(6)amber$() band, towards 14.4 V; a heavy load sags it a little. Use it for the charge in percent and the time left."
   },
   {
    "type": "patchouli:text",

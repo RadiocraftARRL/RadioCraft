@@ -183,8 +183,25 @@ def freqman():
 
 
 def programmer():
-    i = Icon(); radio(i, 10, 4, 22, 28, face=D); i.rect(12, 6, 20, 10, fill=LG)
-    i.line([(2, 20), (10, 20)], K, 2); i.rect(0, 17, 3, 23, fill=Y); i.save('programmer')
+    """A handheld (2026-11-11, the maintainer: more like an HT): rubber duck antenna and knobs on top, a grey body with a
+    green LCD, a speaker grille and a keypad, the PTT on its side, and the programming cable plugged in."""
+    i = Icon()
+    i.rect(13, 1, 15, 9, fill=K, outline=None)  # The rubber duck.
+    i.rect(18, 6, 19, 8, fill=D)  # Volume and channel knobs.
+    i.rect(21, 5, 22, 8, fill=D)
+    i.rect(10, 8, 24, 30, fill=D)  # The body.
+    i.line([(11, 9), (23, 9)], L)
+    i.rect(12, 11, 22, 15, fill=K)  # The LCD.
+    i.rect(13, 12, 21, 14, fill=LG, outline=None)
+    for y in (17, 18 + 1):  # The speaker grille.
+        i.line([(13, y), (21, y)], K)
+    for r in range(3):  # The keypad.
+        for c in range(3):
+            i.rect(12 + c * 4, 21 + r * 3, 13 + c * 4, 22 + r * 3, fill=L, outline=None)
+    i.rect(8, 13, 9, 19, fill=K, outline=None)  # The PTT on its side.
+    i.line([(2, 24), (9, 24)], K, 2)  # The programming cable into the side jack.
+    i.rect(0, 21, 3, 27, fill=Y)
+    i.save('programmer')
 
 
 def solar():
@@ -272,7 +289,9 @@ def rtty():
 
 def bbs():
     i = Icon(); i.rect(3, 9, 28, 26, fill=W); i.poly([(3, 9), (15, 19), (28, 9)], fill=L)
-    antenna(i, 25, 1, 9); waves(i, 25, 3, LR, 2); i.save('bbs')
+    # Antenna and arcs moved in so the arcs stay inside the icon (2026-11-11: one clipped onto the top row and showed
+    # in the bottom right corner).
+    antenna(i, 23, 4, 9); waves(i, 23, 6, LR, 2); i.save('bbs')
 
 
 def propagation():
@@ -374,9 +393,133 @@ def distress():
     i.save('distress')
 
 
+def fcc():
+    """A gold badge shield with signal arcs over a navy seal dot, and a red bar (spectrum monitoring, 2026-11-10)."""
+    i = Icon()
+    i.poly([(8, 12), (24, 12), (24, 21), (16, 28), (8, 21)], fill=Y)
+    i.ellipse(12, 14, 20, 22, fill=B)
+    i.rect(15, 17, 16, 19, fill=W, outline=None)
+    # Signal arcs over the shield, drawn by hand so they are whole and even (2026-11-11: they ran off the top and broke up).
+    for y, x0, x1 in ((3, 12, 19), (4, 10, 12), (4, 19, 21), (5, 9, 10), (5, 21, 22), (7, 14, 17), (8, 12, 13), (8, 18, 19)):
+        i.line([(x0, y), (x1, y)], LR)
+    i.rect(4, 29, 27, 30, fill=LR, outline=None)
+    i.save('fcc')
+
+
+def fire_alarm():
+    """A red fire alarm box on its post, white pull handle, and a yellow lamp (the radio fire alarm, 2026-11-10)."""
+    i = Icon()
+    i.rect(14, 20, 17, 29, fill=D)
+    i.rect(8, 6, 23, 21, fill=R)
+    i.rect(12, 10, 19, 14, fill=W)
+    i.rect(14, 2, 17, 5, fill=Y)
+    i.rect(6, 29, 25, 30, fill=D, outline=None)
+    i.save('fire_alarm')
+
+
+def scada():
+    """A grey RTU with three bar levels and a green link lamp, and a cyan signal arc (SCADA, 2026-11-10)."""
+    i = Icon()
+    i.rect(5, 10, 26, 28, fill=L)
+    for n, h in enumerate((6, 10, 4)):
+        x = 9 + n * 5
+        i.rect(x, 25 - h, x + 3, 25, fill=C)
+    i.rect(22, 13, 24, 15, fill=LG)
+    for r in (3, 6):
+        i.d.arc([16 - r, 7 - r, 16 + r, 7 + r], 215, 325, fill=rgb(LC))
+    i.save('scada')
+
+
+def sattrack():
+    """Sputnik (maintainer, 2026-11-11): a polished silver ball with four long whip antennas swept back from it, and
+    yellow beep arcs over it."""
+    i = Icon()
+    for end in ((30, 30), (25, 31), (31, 24), (19, 31)):  # The whips, drawn first so the ball sits on their roots.
+        i.line([(14, 14), end], L)
+    i.ellipse(5, 6, 19, 20, fill=L)  # The ball, shaded towards the antennas.
+    i.ellipse(11, 12, 18, 19, fill=D, outline=None)
+    i.ellipse(7, 8, 16, 17, fill=L, outline=None)
+    i.rect(8, 9, 10, 10, fill=W, outline=None)  # The shine.
+    i.px(11, 9, W)
+    i.line([(7, 13), (17, 13)], D)  # The seam between its halves.
+    for y, x0, x1 in ((1, 2, 7), (2, 0, 1), (2, 8, 9), (4, 3, 6)):  # Beep arcs over its top left.
+        i.line([(x0, y), (x1, y)], Y)
+    i.save('sattrack')
+
+
+def wxsat():
+    """A weather satellite (maintainer, 2026-11-12): a box body with two blue solar panels and a dish pointed down at a
+    radar sweep below it, green, yellow and red rain echoes in its arc."""
+    i = Icon()
+    # The radar sweep under it: a quarter of a disc, dark, with echoes in the radar colours.
+    i.d.pieslice([2, 14, 30, 46], 225, 315, fill=rgb(K), outline=rgb(D))
+    for x, y, c in ((12, 20, G), (13, 21, G), (14, 20, LG), (15, 21, LG), (16, 19, LG), (17, 20, Y), (18, 21, Y),
+                    (17, 21, LR), (19, 20, G), (20, 21, G), (14, 22, G), (16, 22, LG), (12, 18, G), (19, 18, G)):
+        i.px(x, y, c)
+    i.line([(16, 30), (24, 18)], LG)  # The sweep's beam.
+    # Solar panels either side of the body, blue with grid lines.
+    for x0 in (1, 21):
+        i.rect(x0, 4, x0 + 9, 9, fill=B)
+        for x in range(x0 + 3, x0 + 9, 3):
+            i.line([(x, 5), (x, 8)], LB)
+    i.line([(10, 6), (12, 6)], K)
+    i.line([(20, 6), (21, 6)], K)
+    i.rect(12, 2, 20, 11, fill=L)  # The body.
+    i.line([(13, 4), (19, 4)], W)
+    # The dish under it, aimed down.
+    i.poly([(11, 12), (21, 12), (19, 15), (13, 15)], fill=W)  # The dish, its open face down.
+    i.line([(16, 15), (16, 17)], D)  # Its feed horn.
+    i.save('wxsat')
+
+
+def relay():
+    """LAN RELAY (2026-11-13): two small monitors joined by a cable, a speech bubble over them."""
+    i = Icon()
+    for x0 in (1, 18):
+        i.rect(x0, 14, x0 + 12, 24, fill=L)
+        i.rect(x0 + 2, 16, x0 + 10, 22, fill=B)
+        i.line([(x0 + 3, 18), (x0 + 8, 18)], LC)
+        i.line([(x0 + 3, 20), (x0 + 6, 20)], LC)
+        i.rect(x0 + 4, 25, x0 + 8, 26, fill=D, outline=None)
+    i.line([(7, 27), (7, 29), (24, 29), (24, 27)], Y)  # The cable between them.
+    i.rect(6, 1, 25, 9, fill=W)  # The speech bubble.
+    i.poly([(12, 9), (15, 9), (11, 12)], fill=W)
+    i.line([(9, 4), (22, 4)], D)
+    i.line([(9, 6), (18, 6)], D)
+    i.save('relay')
+
+
+def redstone():
+    """LAN REDSTONE (2026-11-13): a beige interface box with a lit red lamp, a redstone line running out of it."""
+    i = Icon()
+    i.rect(4, 6, 20, 22, fill=L)
+    i.rect(9, 10, 15, 16, fill=LR)
+    i.px(10, 11, W)
+    i.line([(6, 19), (18, 19)], D)
+    i.line([(21, 14), (29, 14)], R, 2)  # Dust out of its side.
+    i.line([(29, 14), (29, 26)], R, 2)
+    i.rect(26, 24, 31, 28, fill=LR)  # A lamp at the end, lit.
+    i.save('redstone')
+
+
+def email():
+    """LAN EMAIL (2026-11-13): a white envelope with its flap folded down, a small monitor behind it."""
+    i = Icon()
+    i.rect(14, 2, 30, 14, fill=L)  # The monitor behind.
+    i.rect(16, 4, 28, 11, fill=B)
+    i.line([(18, 6), (25, 6)], LC)
+    i.rect(20, 15, 24, 16, fill=D, outline=None)
+    i.rect(2, 12, 24, 28, fill=W)  # The envelope.
+    i.line([(3, 13), (13, 21), (23, 13)], D)  # Its flap.
+    i.line([(3, 27), (10, 20)], D)
+    i.line([(23, 27), (16, 20)], D)
+    i.rect(18, 15, 21, 18, fill=LR)  # The stamp.
+    i.save('email')
+
+
 ALL = [edit, sysinfo, bandplan, install, setup, about, license_study, bookedit, logbook, freqman, programmer, solar,
        aprs, wefax, radiofax, sstv, df, snake, pileup, music, bible, adsb, rtty, bbs, propagation, repeaters, saver,
-       scheduler, rigctl, ft8, netlog, awards, qsl, distress]
+       scheduler, rigctl, ft8, netlog, awards, qsl, distress, fcc, fire_alarm, scada, sattrack, wxsat, relay, redstone, email]
 
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)

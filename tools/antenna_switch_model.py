@@ -9,6 +9,8 @@ three outputs, a connector low on each side, and a pointer knob on top that the 
                                input is the north side (a brass connector); outputs 1, 2, 3 are east, south, west.
 - antenna_switch_pointer.json  the knob's lever, pointing north; rotate it with the blockstate (y = 90, 180, 270) to
                                point at the output in use.
+Then run tools/wall_switch_states.py: it writes the blockstate (floor and wall) and the pointer turned 90, 180 and 270
+degrees for the wall (2026-11-13).
 """
 import argparse
 import sys

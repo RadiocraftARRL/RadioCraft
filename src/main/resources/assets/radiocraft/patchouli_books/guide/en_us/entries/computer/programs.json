@@ -17,9 +17,23 @@
       "text": "Rumour has it some disks were never sold in shops: old programs and games turn up in chests here and there, deep underground and in old libraries, on wrecks, and now and then in a village house. Hams who lived out in the country, in a little shack with an antenna on the roof, had a few too.$(br2)Programs can be removed in INSTALL with Del; their files stay on the disk."
     },
     {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:all_apps_floppy",
+      "text": "Creative only: the $(item)All Applications Floppy$(). Use it on the computer or its monitor, or pick it in INSTALL, and every program that comes on a floppy is installed at once, except the secret ones. It never stays in the drive: the disk stays in your hand."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "radiocraft:floppy_disk",
       "recipe2": "radiocraft:floppy_logbook"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "LAN Relay and Redstone",
+      "text": "Computers joined by data wire or a microwave link form a $(thing)LAN$().$(br2)$(thing)RELAY$() is its chat room: one computer is set as a relay server (F5; it needs a name and background services on) and keeps the room.$(br2)$(thing)REDSTONE$() sets a $(item)Computer Redstone Block$() touching a computer, from there or from a computer it lets in. Name its levels: 4 can be \"Door Open\"."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)EMAIL$() sends mail to $(thing)user@COMPUTER$() on the LAN: your username there (the one RELAY uses) and the computer's SETUP name.$(br2)A computer takes mail while someone is at it, or with its background services on. Otherwise the mail waits in the sender's outbox and goes when that computer is back; after three days it comes back undelivered."
     }
   ]
 }

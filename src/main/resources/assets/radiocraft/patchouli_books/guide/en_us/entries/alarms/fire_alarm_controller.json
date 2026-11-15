@@ -1,0 +1,34 @@
+{
+  "name": "Fire Alarm Controller",
+  "icon": "radiocraft:fire_alarm_controller",
+  "category": "radiocraft:alarms",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fire_alarm_controller",
+      "text": "The $(item)Fire Alarm Controller$() is an RC-704 receiver for the fire station. It hears every $(l:radiocraft:alarms/fire_alarm_box)box$(/l) on its frequency and acks each message. Set its frequency and callsign in its menu (E, then 3), or use a commercial license on it.$(br2)Its own screen shows the newest event to anyone near, like a computer monitor."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "In alarm",
+      "text": "When a box sends an alarm the controller buzzes once a second, its screen and ALARM lamp turn red, and it powers redstone on every side for the station's bells. A TAMPER or MISSING box buzzes too.$(br2)Right click it for its terminal: the event, its ACCOUNT (box), location and ZONE, DIRECT or VIA relays, and TIME SINCE. Along the bottom: $(thing)NEXT$() steps back through the log, $(thing)SILENCE$(), $(thing)FAST$() back to the newest, $(thing)E$() the menu."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Silence",
+      "text": "SILENCE quiets the buzzer and bells, but the box stays in alarm until its stations are reset with the key. A new alarm within 5 minutes is logged and printed but does not sound again.$(br2)The menu (E) has the event display, the box list (Enter puts a box out of service: no bells, never MISSING), setup, CLEAR HEAD JAM and SILENCE. Sneak and right click steps back through the log in the action bar."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fire_alarm_report",
+      "text": "Right click the controller with paper to load its printer, up to 64 sheets. Each event prints a $(item)Fire Alarm Report$() slip in front of it: the zone and kind, day and time, account and location.$(br2)Out of paper it shows PAPER OUT and keeps the slips until you load more. Now and then the head jams: sneak and right click to clear it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:floppy_fire_alarm",
+      "title": "FIRE ALARM program",
+      "text": "On a $(l:radiocraft:computer/radio_computer)radio computer$(/l) touching the controller or on its data wire: every box and its state, and the log, newest first. The header flashes red while an alarm waits. $(thing)F2$() silences, $(thing)F5$() puts the picked box in or out of service, $(thing)Del$() forgets it.$(br2)The $(item)Fire Alarm Floppy Disk$() has no recipe yet: it is in the creative menu."
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "Commercial Licenses",
+  "icon": "radiocraft:blank_vhf_license",
+  "category": "radiocraft:radios",
+  "sortnum": 12,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Commercial VHF (150-174 MHz) and low band (30-50 MHz) belong to licensed businesses. A $(item)Commercial Frequency License$() grants you one frequency there and a WQ callsign (WQAB123) of your own. The marine and weather channels, 156 to 162.6 MHz, are never licensed and never need one, and neither do the five $(thing)MURS$() channels (151.820, 151.880, 151.940, 154.570, 154.600).$(br2)Carry the license, or lay it on the radio computer's $(l:radiocraft:computer/scanner)scanner$(/l), when you program radios for it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:blank_vhf_license",
+      "text": "A journeyman cartographer sells the $(item)Blank Commercial VHF License$() and the $(item)Blank Commercial Low Band License$() for 16 emeralds and a sheet of paper. Right click one to claim it: it becomes a license in your name for a random free frequency and callsign, for 10 units."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:commercial_license",
+      "text": "The license is a certificate: put it in an item frame to hang it on the wall. Its tooltip gives the callsign, licensee, frequency, units and grant date.$(br2)Craft it with an empty map for a $(thing)(Copy)$(), stamped COPY, to show off; the original stays in the grid. A copy does not license anything."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:commercial_license_upgrade",
+      "text": "An expert cartographer sells the $(item)Commercial License Upgrade$() for 32 emeralds and a compass. Craft it with an original license: the first adds a repeater input frequency, 1 to 5 MHz off yours, and one base; each one after doubles the units and bases, up to 640 units and 32 bases."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Units and bases",
+      "text": "$(thing)Units$() are the mobiles and portables on your license. $(thing)Bases$() are repeaters, $(l:radiocraft:alarms/scada)SCADA masters$(/l) and $(l:radiocraft:alarms/fire_alarm_controller)fire alarm controllers$(/l). Used on a fire alarm or SCADA device, a license sets its frequency and callsign.$(br2)Nothing counts your radios for you: the $(l:radiocraft:computer/fcc_monitor)FCC Monitor$(/l) shows who is on the air."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Programming",
+      "text": "When the $(l:radiocraft:computer/radio_programmer)programmer$(/l) writes a codeplug that transmits on a commercial frequency no license of yours covers, a $(thing)License Check$() asks you to confirm: \"I am licensed\" goes on. A copy on the scanner does not count.$(br2)A server may set licensing to ADMIN (only operators issue them, with $(thing)/radiocraft license grant$(); blanks cannot be claimed) or OFF (no checks at all)."
+    }
+  ]
+}

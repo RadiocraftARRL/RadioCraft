@@ -30,7 +30,7 @@
     {
       "type": "patchouli:text",
       "title": "SETUP",
-      "text": "$(thing)SETUP$(), built into every computer, has five pages: $(thing)Launcher$(), $(thing)Colours$(), $(thing)Password$(), $(thing)Name and Clock$() and $(thing)Screensaver$() (it needs a rare disk).$(br2)Colour schemes recolour every program: Classic Blue, RC-DOS Teal, High Contrast, and the monochrome Green Phosphor, Amber, Paper White and Gas Plasma. Moving through the list shows the whole screen in that scheme; Enter keeps it. Pictures (SSTV, maps, photos) keep their own colours."
+      "text": "$(thing)SETUP$(), built into every computer, has six pages: $(thing)Launcher$(), $(thing)Colours$(), $(thing)Password$(), $(thing)Name and Clock$(), $(thing)Screensaver$() (it needs a rare disk) and $(thing)Services$() (whether DISTRESS and WXSAT keep listening, and the computer on, with nobody at it).$(br2)Colour schemes recolour every program: Classic Blue, RC-DOS Teal, High Contrast, and the monochrome Green Phosphor, Amber, Paper White and Gas Plasma. Moving through the list shows the whole screen in that scheme; Enter keeps it. Pictures (SSTV, maps, photos) keep their own colours."
     },
     {
       "type": "patchouli:text",

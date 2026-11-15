@@ -1,0 +1,39 @@
+{
+  "name": "External CRT Monitor",
+  "icon": "radiocraft:external_crt_monitor",
+  "category": "radiocraft:computer",
+  "sortnum": 42,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:external_crt_monitor",
+      "title": "External CRT Monitor",
+      "text": "A vintage studio monitor with two uses: beside a radio computer running $(l:radiocraft:computer/wxsat)WXSAT$() it shows the weather satellite mosaic centred where it stands, about 1,000 blocks a tube; on its own touching a premium radio it shows the radio's waterfall."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weather pictures",
+      "text": "Place it beside the computer, or on its data wire, or beside another monitor that is linked: a whole chain of monitors shows from one computer. It needs no power of its own; it lights while the computer is on (with SETUP's background services off, only while someone is at the computer).$(br2)Right-click cycles $(thing)LIVE MOSAIC$() (refreshed as lines come in), $(thing)LOOP$() (the last passes, a second each) and $(thing)OFF$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A video wall",
+      "text": "Monitors facing the same way, edge to edge, make one screen, up to 8 wide and 6 high: the picture runs across them all, hidden behind the bezels between the tubes as on a real video wall. Break one and the wall splits into smaller screens.$(br2)It is an old tube: scanlines, a little flicker, a hum bar now and then."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A radio's waterfall",
+      "text": "Put a single monitor touching a $(thing)premium$() radio (one built with a Pure crystal: the premium HF rigs or the premium VHF base station; not a plain or cheap one) and it shows a waterfall round the radio's dial, as rig control's does but zoomed in: signals scroll down, faint blue to bright white.$(br2)Right-click cycles $(thing)NARROW$(), $(thing)WIDE$() and $(thing)OFF$(). It lights while the radio is on."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "How wide",
+      "text": "On HF and CB, NARROW is 6 kHz (one voice and its neighbours, or a few CW signals) and WIDE 24 kHz. On VHF, NARROW is 50 kHz (an FM channel and those either side) and WIDE 200 kHz. Near a band edge the span slides to stay in the band.$(br2)A WXSAT computer beside it wins, and a monitor that is part of a bigger screen never shows a radio."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:external_crt_monitor",
+      "text": "Iron round a glass pane, over wire and a copper ingot."
+    }
+  ]
+}

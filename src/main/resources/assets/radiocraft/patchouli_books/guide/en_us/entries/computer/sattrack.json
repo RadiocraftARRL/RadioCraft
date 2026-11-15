@@ -1,0 +1,36 @@
+{
+  "name": "SATTRACK",
+  "icon": "radiocraft:floppy_sattrack",
+  "category": "radiocraft:computer",
+  "sortnum": 40,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)SATTRACK$() lists every $(l:radiocraft:repeaters/satellites)satellite$() on the server and its next passes over the computer: when it rises, how high it gets and which way it comes up, with its three frequencies, tone, mode and decay date.$(br2)It comes on a floppy with every satellite contract, or make one from a blank floppy and a phantom membrane."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Controlling yours",
+      "text": "While your satellite is passing over the computer, its owner and the players on its allowed list can change it:$(li)$(thing)F7$(): on or off$(li)$(thing)F3$(): its Morse ID$(li)$(thing)F4$(): the tone$(li)$(thing)F5 / F6$(): allow or disallow a player$(br)Out of a pass the settings are locked."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Its mode",
+      "text": "An amateur satellite also has a mode, changed the same way while it passes:$(li)$(thing)F8$(): the next mode (repeater, APRS, mailbox, SSTV)$(li)$(thing)F9$(): its APRS frequency (blank for its downlink)$(li)$(thing)F10$(): upload an .IMG to send in SSTV mode$(br)On a commercial satellite F8 switches between repeater and weather $(l:radiocraft:computer/wxsat)imaging$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Telemetry",
+      "text": "With a radio on the computer's station tuned to a satellite's $(thing)telemetry$() frequency, SATTRACK decodes its beacon while the computer is in use: battery, current, temperature, sunlight or shadow, mode and days to decay. It shows POWER SAVING during an eclipse and a low battery after one, and warns the owner as the orbit nears decay. With Doppler on it shows the downlink's shift."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Geostationary and DEAD",
+      "text": "A $(thing)GEO$() satellite stays put: SATTRACK says it is always up here (and where) or never up from here, with no passes.$(br2)$(thing)DEL$() decommissions one of yours while it passes, the owner only: a question, then a final warning (No is first). It is then listed $(thing)DEAD$() until its orbit decays, and takes no more changes."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_sattrack"
+    }
+  ]
+}

@@ -17,6 +17,14 @@ Needs Python 3.10+ with numpy, soundfile (libsndfile with Ogg Vorbis) and piper-
 
 --tone-only makes the tone without Piper. The script prints the clips' lengths as Java enum entries for
 WeatherVoiceClip; paste them in if the words change.
+
+--station (2026-11-14) renders the FM broadcast station's extra words (STATION_WORDS: forecasts, station IDs, letters
+for callsigns), only those whose clip does not exist yet, so the weather radio's clips are never touched. The station
+reads them on the server (common/radio/station/StationVoice; its VOCABULARY lists the same ids). A local venv:
+
+    python -m venv tools/.venv && tools/.venv/Scripts/python -m pip install piper-tts numpy soundfile
+    (the model in tools/.venv/voices; both are git-ignored)
+    tools/.venv/Scripts/python tools/weather_voice.py --station --model tools/.venv/voices/en_US-ljspeech-high.onnx
 """
 import argparse
 import os
@@ -70,6 +78,32 @@ WORDS = [
     ('twenty', 'twenty'), ('thirty', 'thirty'), ('forty', 'forty'), ('fifty', 'fifty'), ('sixty', 'sixty'),
     ('seventy', 'seventy'), ('eighty', 'eighty'), ('ninety', 'ninety'), ('hundred', 'hundred'),
     ('thousand', 'thousand'),
+]
+
+# The FM broadcast station's words (2026-11-14): forecasts, station IDs, letters for callsigns, and single words so a
+# relayed alert's text can be read word by word. Ids are StationVoice's.
+STATION_WORDS = [
+    ('this_is', 'This is'), ('fm', 'F M'), ('point', 'point'), ('percent', 'percent'), ('degrees', 'degrees'),
+    ('minus', 'minus'), ('the_forecast_for', 'The forecast for'), ('today', 'today'), ('tonight', 'tonight'),
+    ('tomorrow', 'tomorrow'), ('this_morning', 'this morning'), ('this_afternoon', 'this afternoon'),
+    ('this_evening', 'this evening'), ('chance_of', 'chance of'), ('likely', 'likely'), ('rain', 'rain'),
+    ('snow', 'snow'), ('hail', 'hail'), ('thunderstorms', 'thunderstorms'), ('showers', 'showers'),
+    ('clear', 'clear'), ('sunny', 'sunny'), ('partly_cloudy', 'partly cloudy'), ('cloudy', 'cloudy'),
+    ('fog', 'fog'), ('windy', 'windy'), ('heavy', 'heavy'), ('light', 'light'), ('blowing_dust', 'blowing dust'),
+    ('dry', 'dry'), ('no_storms', 'no storms'), ('winds_from_the', 'Winds from the'), ('at', 'at'),
+    ('kilometers_per_hour', 'kilometers per hour'), ('calm', 'calm'), ('winds_calm', 'Winds calm.'),
+    ('currently', 'Currently'), ('high', 'high'), ('low', 'low'), ('and', 'and'), ('then', 'then'),
+    ('warning', 'warning'), ('watch', 'watch'), ('advisory', 'advisory'), ('tornado', 'tornado'),
+    ('severe', 'severe'), ('thunderstorm', 'thunderstorm'), ('storm', 'storm'), ('hurricane', 'hurricane'),
+    ('flood', 'flood'), ('wind', 'wind'), ('heat', 'heat'), ('cold', 'cold'), ('blizzard', 'blizzard'),
+    ('the', 'the'), ('for', 'for'), ('area', 'area'), ('is', 'is'), ('in', 'in'), ('your', 'your'),
+    ('of', 'of'), ('a', 'a'), ('possible', 'possible'), ('now', 'now'),
+    ('letter_a', 'ay'), ('letter_b', 'bee'), ('letter_c', 'see'), ('letter_d', 'dee'), ('letter_e', 'ee'),
+    ('letter_f', 'eff'), ('letter_g', 'jee'), ('letter_h', 'aitch'), ('letter_i', 'eye'), ('letter_j', 'jay'),
+    ('letter_k', 'kay'), ('letter_l', 'ell'), ('letter_m', 'em'), ('letter_n', 'en'), ('letter_o', 'oh'),
+    ('letter_p', 'pee'), ('letter_q', 'cue'), ('letter_r', 'are'), ('letter_s', 'ess'), ('letter_t', 'tee'),
+    ('letter_u', 'you'), ('letter_v', 'vee'), ('letter_w', 'double you'), ('letter_x', 'ex'), ('letter_y', 'why'),
+    ('letter_z', 'zee'),
 ]
 
 TONE_HZ = 1050.0
@@ -126,12 +160,31 @@ def words(model):
     print('\n'.join(lines))
 
 
+def station_words(model):
+    """The station's words whose clips do not exist yet (existing clips are left exactly as they are)."""
+    from piper import PiperVoice
+    voice = PiperVoice.load(model)
+    made = []
+    for word, text in STATION_WORDS:
+        if os.path.exists(os.path.join(ROOT, 'word_' + word + '.ogg')):
+            continue
+        samples, rate = speak(voice, text)
+        peak = float(np.max(np.abs(samples))) or 1.0
+        write_ogg('word_' + word, samples * (0.85 / peak), rate)
+        made.append(word)
+    print('made %d station clips: %s' % (len(made), ' '.join(made)))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', help='the Piper voice, en_US-ljspeech-high.onnx')
     parser.add_argument('--tone-only', action='store_true')
+    parser.add_argument('--station', action='store_true', help="only the FM station's new words")
     args = parser.parse_args()
     os.makedirs(ROOT, exist_ok=True)
-    tone()
-    if not args.tone_only:
-        words(args.model)
+    if args.station:
+        station_words(args.model)
+    else:
+        tone()
+        if not args.tone_only:
+            words(args.model)

@@ -1,0 +1,17 @@
+{
+  "name": "Outdoor Sirens",
+  "icon": "radiocraft:fire_bell",
+  "category": "radiocraft:alarms",
+  "sortnum": 4,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Outdoor warning sirens come with $(thing)Another Weather Mod$(): the tornado siren, the omnidirectional and horn array sirens, and their twelve-block pole versions, sounded by redstone or by a siren controller on their data wire.$(br2)Drive one from anything here that gives redstone: a $(l:radiocraft:alarms/scada)SCADA RTU$(/l) face set OUT sounds it from a master far away, and a $(l:radiocraft:alarms/fire_alarm_box)fire alarm box$(/l) or the $(l:radiocraft:alarms/fire_alarm_controller)controller$(/l) gives redstone while in alarm."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Public Address",
+      "text": "Run $(item)data wire$() from a $(l:radiocraft:radios/commercial_radios)commercial radio$(/l) to an omnidirectional or horn array siren (any part of it) and the siren becomes the radio's public address: whatever the radio hears comes out of the siren head, narrow and loud, heard a long way off, with an echo off the land.$(br2)Amateur radios cannot do this."
+    }
+  ]
+}

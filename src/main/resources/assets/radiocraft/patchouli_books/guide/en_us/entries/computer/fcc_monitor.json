@@ -1,0 +1,28 @@
+{
+  "name": "FCC Monitor",
+  "icon": "radiocraft:floppy_fcc",
+  "category": "radiocraft:computer",
+  "sortnum": 25,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "FCC Monitor",
+      "text": "The $(item)FCC Monitor$() program is spectrum monitoring: who is on a frequency, and whether they are allowed to be. It needs a $(l:radiocraft:direction_finding/direction_finder)direction finder$(/l) touching the computer or on its data wire, and tunes it for you.$(br2)$(thing)F3$() types a frequency in MHz, the arrows step a channel, PgUp and PgDn ten channels, $(thing)F8$() clears the log."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The verdict",
+      "text": "On the left, what the finder hears, its signal and its license status:$(li)$(thing)LICENSED$() and the holder, on a $(l:radiocraft:radios/commercial_licenses)licensed$(/l) frequency.$(li)$(thing)UNLICENSED$(), flashing with a beep, when someone transmits on a commercial frequency no license grants.$(li)AMATEUR BAND, CB, MARINE / WEATHER, or OUT OF BAND.$(br2)On the right, every signal heard while the program is open: how long ago, MHz, who and bearing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Finding them",
+      "text": "The bearing shows once the finder's modules lock on, with how sure it is. One bearing gives a line; take more from other places and the $(l:radiocraft:computer/direction_finding)Direction Finding$(/l) program finds where they cross. Fire alarm boxes and SCADA units show up here too: their bursts are on the air like any transmitter.$(br2)With licensing OFF on the server it says NOT CHECKED."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:floppy_fcc",
+      "text": "The $(item)FCC Monitor Floppy Disk$() has no recipe yet: it is in the creative menu."
+    }
+  ]
+}

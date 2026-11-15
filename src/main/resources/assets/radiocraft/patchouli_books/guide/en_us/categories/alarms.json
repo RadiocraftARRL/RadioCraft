@@ -1,0 +1,6 @@
+{
+  "name": "Alarms & Telemetry",
+  "description": "Radio fire alarm boxes that call a controller across town, SCADA units that carry redstone over the air, and fire bells (outdoor warning sirens come with Another Weather Mod).",
+  "icon": "radiocraft:fire_alarm_box",
+  "sortnum": 15
+}

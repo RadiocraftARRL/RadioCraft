@@ -30,6 +30,10 @@ See [doc/Testing.md](doc/Testing.md) for the full guide and the list of known bu
 - `./gradlew prodLaunchTest`: the shipped jar on a real NeoForge server and client, outside the dev environment.
 - `tools/devserver.sh start` + `python tools/rcon.py "<command>"`: a live headless dev server driven over RCON. Use `/rcdebug` to inspect and drive radios, antennas, networks and solar weather.
 
+Radio computer programs (every DOS app except SETUP) have a menu bar (`DosMenuBar`, File / Edit / View...) with every
+action the program has, clickable: when you add a key or button to a program, add it to the menu bar too. Avoid F2
+for new keys (Minecraft takes it for screenshots).
+
 Run the unit tests and GameTests before committing. Add a GameTest when fixing a bug or adding gameplay behavior that can be checked server-side. Rendering, GUIs and audio still need `runClient` and a human: list anything that needs that in [doc/NeedsTesting.md](doc/NeedsTesting.md) for the maintainer's next playtest. The maintainer works through that file with `tools/needs_testing.py`: at the start of a session look for items marked `- [!]` (needs work) and their `Note (date):` comments and screenshots under `doc/testing_shots/`, fix them, and set them back to `- [ ]`.
 
 ## Commit & Pull Request Guidelines

@@ -7,7 +7,7 @@
     {
       "type": "patchouli:text",
       "title": "Distress",
-      "text": "The $(item)DISTRESS$() program listens through every radio cabled to the computer (touching, or on its data wire): each $(l:radiocraft:radios/marine_radios)marine radio$(/l) hears DSC calls on channel 70, each $(l:radiocraft:radios/commercial_radios)commercial VHF mobile$(/l) set to 161.975 MHz hears $(l:radiocraft:radios/distress_beacon)distress beacons$(/l). On the left a map: DSC calls are red diamonds, beacons orange rings."
+      "text": "The $(item)DISTRESS$() program listens through every radio cabled to the computer (touching, or on its data wire): each $(l:radiocraft:radios/marine_radios)marine radio$(/l) hears DSC calls on channel 70, each $(l:radiocraft:radios/commercial_radios)commercial VHF mobile$(/l) hears $(l:radiocraft:radios/distress_beacon)distress beacons$(/l) on 161.975 MHz, whatever channel it is on. On the left a map: DSC calls are red diamonds, beacons orange rings."
     },
     {
       "type": "patchouli:text",
@@ -17,7 +17,7 @@
     {
       "type": "patchouli:text",
       "title": "Answering",
-      "text": "$(thing)F5$() acknowledges the DSC call you picked: the acknowledgement goes out on channel 70 through a marine radio that heard it, and the caller's radio stops repeating. Then call them on channel 16. Beacons cannot be acknowledged: go and find them, with a $(l:radiocraft:direction_finding/handheld_df)direction finder$(/l) on 161.975 MHz.$(br2)$(thing)F6$() prints a map of the area round the alert, marked, with its details, on the $(l:radiocraft:computer/scanner)scanner$(/l)."
+      "text": "$(thing)F5$() acknowledges the DSC call you picked: the acknowledgement goes out on channel 70 through a marine radio that heard it, and the caller's radio stops repeating. Then call them on channel 16. Beacons cannot be acknowledged: go and find them, with a $(l:radiocraft:direction_finding/handheld_df)direction finder$(/l) on 161.975 MHz.$(br2)$(thing)F6$() prints a map of the area round the alert, marked, with its details, on the $(l:radiocraft:computer/scanner)scanner$(/l): an empty map or photo paper takes the map, plain paper just the details, in its tooltip."
     },
     {
       "type": "patchouli:crafting",

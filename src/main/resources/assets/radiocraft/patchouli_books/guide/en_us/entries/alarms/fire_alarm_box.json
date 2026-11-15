@@ -1,0 +1,42 @@
+{
+  "name": "Radio Fire Alarm Box",
+  "icon": "radiocraft:fire_alarm_box",
+  "category": "radiocraft:alarms",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A radio fire alarm is three parts: $(l:radiocraft:alarms/pull_stations)pull stations$(/l) in a building, wired to a $(item)Radio Fire Alarm Box$() on the wall, which radios each alarm to a $(l:radiocraft:alarms/fire_alarm_controller)Fire Alarm Controller$(/l) at the fire station. Boxes pass each other's messages on, so one controller can watch a whole town.$(br2)None of it can be crafted yet: it is in the creative menu."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fire_alarm_box",
+      "text": "Hangs flat on a wall. Rename it in an anvil first (\"342 MAIN ST\"): that name is its location on the controller. Pull stations and panic buttons go touching it or on its $(l:radiocraft:radios/data_wire)data wire$(/l); each gets a location number, 01, 02 and so on."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Programming",
+      "text": "Right click the box for its programming panel: a small LCD and five keys. $(thing)SETUP$() steps through FREQUENCY, CALLSIGN, FACILITY NAME, then a name and an alarm type for each location. ENTER edits, the arrows move and change letters (or just type), ENTER saves.$(br2)The frequency is any commercial one, 150-174 or 30-50 MHz, but not the marine channels; give the controller the same. No license is needed. A commercial license used on the box fills both in."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Status",
+      "text": "$(thing)STATUS$() on the panel shows the ROUTE to the controller (DIRECT TO CTRL, or how many hops), the SIGNAL, and every box or controller it hears. Sneak and right click the box for its status in chat.$(br2)Once set up, the box checks in with the controller, then once a day. A box not heard for a day and a half is MISSING; breaking one sends TAMPER."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Inside",
+      "text": "Use the $(item)Fire Alarm Key$() on the box to open it: lamps for NORMAL, TROUBLE (blinks while a message waits for the controller's ack), ALARM and zones 1 to 6, and a LINK meter.$(li)$(thing)TEST$() sends a test.$(li)$(thing)RESET$() puts every pulled station on it back up.$(li)$(thing)SILENCE$() (red) stops its bells until the next alarm.$(li)$(thing)DRILL$() rings the bells and sends nothing."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:fire_bell",
+      "text": "The $(item)Fire Bell$() goes on a wall and rings while it has redstone power. In alarm the box powers the wall behind it, so put bells on that wall or run redstone from it. A comparator on the box reads 15 from the alarm until RESET, silenced or not: use it for doors or sprinklers."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Range",
+      "text": "On its built-in antenna a box reaches about 110 blocks to another box or the controller. $(l:radiocraft:antennas/coax)Coax$(/l) a VHF antenna to it and it goes about twice as far. Further out, put boxes in between: each relays the others, up to 8 hops by default, and the slip says VIA 2 RELAYS.$(br2)Boxes in unloaded chunks still relay, so an alarm crosses a town nobody is in. Redstone into any side but the back is the box's zone 0, for a detector."
+    }
+  ]
+}

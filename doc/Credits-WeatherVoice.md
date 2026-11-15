@@ -3,7 +3,7 @@
 The Simple Weather Alert Receiver (1.12) announces alerts by splicing pre-made word clips, as the real automated
 weather radio voice does. The clips and the attention tone were made once, on 2026-11-06, by `tools/weather_voice.py`,
 and are shipped as Ogg Vorbis files in `src/main/resources/assets/radiocraft/sounds/weather_alert/`
-(`tone.ogg` and `word_<word>.ogg`, 64 files). Nothing in them stops them being shipped in RadioCraft (GPLv3).
+(`tone.ogg` and `word_<word>.ogg`, 64 files; 154 since the FM station's words, below). Nothing in them stops them being shipped in RadioCraft (GPLv3).
 
 ## The voice
 
@@ -15,6 +15,16 @@ and are shipped as Ogg Vorbis files in `src/main/resources/assets/radiocraft/sou
 
 The model card was checked on 2026-11-06. The voice is a US English female voice. "RadioCraft" is spoken as "Radio
 craft"; no real agency or service is named in any clip.
+
+## The FM broadcast station's words (2026-11-14)
+
+90 more clips (`word_<id>.ogg`, now 154 files with the tone) for the FM broadcast station's spoken forecasts, station IDs
+and relayed alerts (`common/radio/station/StationVoice`): forecast words, numbers' companions ("point", "percent",
+"degrees", "minus"), "This is", "F M", single words for reading an alert's text, and the letters A to Z spoken as
+"ay, bee, see..." for callsigns. Same engine and voice as above (`piper-tts` 1.8.0, en_US-ljspeech-high, checked again
+2026-11-14), made by `tools/weather_voice.py --station`, which renders only the station words whose clip does not exist,
+so the weather radio's 64 clips were not touched. The station reads the clips straight from the mod's resources on the
+server; they are not in `sounds.json` (nothing plays them as client sounds).
 
 ## The tone
 

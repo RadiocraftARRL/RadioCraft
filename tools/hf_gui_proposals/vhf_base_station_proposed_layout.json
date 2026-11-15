@@ -124,6 +124,22 @@
       "h": 9
     },
     {
+      "name": "memory",
+      "type": "button",
+      "x": 112,
+      "y": 95,
+      "w": 14,
+      "h": 7
+    },
+    {
+      "name": "vfo_mem",
+      "type": "button",
+      "x": 129,
+      "y": 95,
+      "w": 14,
+      "h": 7
+    },
+    {
       "name": "coarse",
       "type": "button",
       "x": 112,
@@ -267,6 +283,22 @@
       "x": 120,
       "y": 69,
       "w": 15,
+      "h": 5
+    },
+    {
+      "name": "memory_label",
+      "type": "label",
+      "x": 116,
+      "y": 88,
+      "w": 7,
+      "h": 5
+    },
+    {
+      "name": "vfo_mem_label",
+      "type": "label",
+      "x": 131,
+      "y": 88,
+      "w": 11,
       "h": 5
     },
     {

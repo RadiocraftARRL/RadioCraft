@@ -1,0 +1,38 @@
+{
+  "name": "SCADA",
+  "icon": "radiocraft:scada_master",
+  "category": "radiocraft:alarms",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(thing)SCADA$() is redstone over the radio. Each $(item)SCADA RTU$() out in the field reads redstone on some of its faces and puts it out on others; a $(item)SCADA Master$() polls them one by one and runs your rules on what they read. It is a few seconds slower than a wire, and reaches as far as the radio does.$(br2)Like the fire alarm, none of it can be crafted yet: it is in the creative menu."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:scada_rtu",
+      "text": "Right click the RTU to set its frequency (150-174 or 30-50 MHz, not the marine channels), callsign and its six faces: each OFF, IN (reads the redstone there) or OUT (puts out what the master says). Sneak and right click a face to step it too. It takes the next free number on its frequency: RTU 1, RTU 2..."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:scada_master",
+      "text": "A console two blocks wide: the CRT stands on your left as you face it, so leave room. Right click either half for its screen: POINTS, RULES, I/O (its own six faces, OFF, IN or OUT) and SETUP (frequency, callsign, name, poll speed). Redstone comes out of the control panel half only. Breaking either half takes both."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Rules",
+      "text": "Write the rules in a book and quill, one a line, and use it on the master. A point is unit.face: unit 0 is the master, faces N S E W U D.$(li)$(thing)IF 3.N >= 10 THEN 7.E = 15$(): when RTU 3's north face reads 10 or more, RTU 7's east face puts out 15.$(li)$(thing)COPY 1.N TO 0.U$(): the master's top puts out what RTU 1's north reads.$(li)$(thing)POLL 2$(): 2 seconds an RTU (1 to 3).$(br2)Also > < <= = !=; # starts a comment."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Polling",
+      "text": "The master asks one RTU at a time, every 1 to 3 seconds, so with many RTUs a change takes a while to get through. An RTU that misses three polls in a row is $(thing)COMM FAIL$(): rules that read it are false, so outputs they drive go to 0.$(br2)RTUs relay for each other like fire alarm boxes, up to 8 hops by default, and on their built-in antennas reach about as far. $(l:radiocraft:antennas/coax)Coax$(/l) an antenna to one for more range."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:floppy_scada",
+      "title": "SCADA program",
+      "text": "The HMI for a master touching a $(l:radiocraft:computer/radio_computer)radio computer$(/l) or on its data wire: the master and every RTU with their six faces live, wanted outputs in cyan, and the rules. $(thing)Ins$() adds a rule, $(thing)Del$() removes one, $(thing)F3$() steps the poll speed. The $(item)SCADA Floppy Disk$() is in the creative menu."
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "name": "Satellites",
+  "icon": "radiocraft:amateur_satellite_contract",
+  "category": "radiocraft:repeaters",
+  "sortnum": 20,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A $(thing)satellite$() is an FM repeater in orbit. While it passes over, anyone with open sky can work it from thousands of blocks away: talk on its $(thing)uplink$() with its tone, and it sends you out on its $(thing)downlink$() everywhere under it.$(br2)There is no launching: a satellite goes up on a $(item)contract$()."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:amateur_satellite_contract",
+      "title": "Contracts",
+      "text": "A master cartographer may sell an $(item)Amateur$() or $(item)Commercial Satellite Contract$() for 64 emeralds and a diamond. Right click it: the satellite is launched in your name and you get its $(item)Satellite License$() (its name, frequencies, tone and launch day) and the SATTRACK floppy."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Frequencies",
+      "text": "Each satellite has three frequencies, all on its $(item)Satellite License$():$(li)$(thing)Amateur$(): on 2m. The downlink is 145.800 to 145.990 MHz and the uplink 600 kHz below it, so a 2m radio on the downlink with a -600 kHz offset and the tone works it.$(li)$(thing)Commercial$(): a commercial VHF pair, with a frequency license.$(li)A $(thing)telemetry$() frequency for its beacon.$(br)Without the tone it ignores you."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Passes",
+      "text": "Each satellite passes over any one place once or twice a Minecraft day, for up to about two minutes, and is heard within about 5,000 blocks of the point under it. Most of the time it is out of view: launch more for more passes. It is stronger the higher it is in the sky.$(br2)Both ends need $(thing)open sky$(): wood, glass and leaves overhead are fine, stone is not. A dummy load or a bare connector cannot reach it."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "title": "Antennas",
+      "item": "radiocraft:eggbeater_antenna",
+      "text": "Any VHF antenna under open sky works a satellite, but a vertical ($(item)J-pole$(), slim jim, ringo, a handheld's whip) has a null straight up: it is fine low in the pass, fades as the satellite climbs past about 40 degrees, and right overhead the satellite stops hearing it. The $(item)EB-VHF Eggbeater$() is made for satellites: strong all pass long and best overhead."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "title": "Tracking antenna",
+      "item": "radiocraft:satellite_tracker",
+      "text": "The $(item)Satellite Tracking Antenna$() is a dish on a motor mount. Coax it to the radio and run a $(item)power wire$() to it: it turns and tilts after the satellite its radio is tuned to (or the highest one up), drawing power as it goes.$(br2)Locked on, it hears the satellite at full strength all pass long, even under an $(thing)aurora$() or in a storm, which fade every other antenna."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stealth mode",
+      "text": "A $(thing)commercial$() satellite's owner can put it in $(thing)stealth mode$() (S in SATTRACK, while a tracking antenna on their station is locked on it). It then whispers: only a tracker locked on it hears it, and only a tracker is heard by it, for private repeaters and mailboxes.$(br2)Others see only its name and where it is. Distress relays still go to everyone."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Moonbounce",
+      "text": "The Moon is a reflector anyone can use at night. In $(l:radiocraft:computer/sattrack)SATTRACK$(), pick $(thing)MOON$() and press $(thing)T$(): the station's tracking antenna turns to it. Send $(thing)CW$() on 2 m (the all-band radio) and about $(thing)2.5 seconds$() later your own echo comes back, faint and fading in and out.$(br2)Every station with a tracker on the Moon hears it, anywhere in the world: the longest path there is, if you can copy it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "In the sky",
+      "text": "At night a passing satellite is a tiny dot that flashes every six seconds or so: $(thing)green$() for amateur, $(thing)red$() for commercial. Near dusk and dawn it glints grey now and then as it tumbles in the sunlight.$(br2)Every satellite also $(l:radiocraft:computer/distress)relays distress$() beacon alerts and DSC distress calls it hears, in every mode, even when switched off."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Modes",
+      "text": "An $(thing)amateur$() satellite does one thing at a time; its owner switches it in $(l:radiocraft:computer/sattrack)SATTRACK$() while it passes:$(li)$(thing)Repeater$(): FM voice, uplink to downlink (the default).$(li)$(thing)APRS$(): a digipeater.$(li)$(thing)Mailbox$(): store and forward.$(li)$(thing)SSTV$(): sends a picture.$(br)A commercial satellite is a repeater or a weather imager."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weather imaging",
+      "text": "A $(thing)commercial$() satellite can be a $(thing)weather imager$() instead of a repeater: F8 in $(l:radiocraft:computer/sattrack)SATTRACK$() while it passes. Then it scans a swath 8,192 blocks wide under its track and sends the picture down on its downlink, line by line, sounding like NOAA APT's tick-tock.$(br2)Receive it with $(l:radiocraft:computer/wxsat)WXSAT$(). Amateur satellites cannot image."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "APRS",
+      "text": "In $(thing)APRS$() mode it repeats the APRS beacons, messages and acks it hears on its APRS frequency across its whole footprint, so stations, maps and messages reach thousands of blocks during a pass.$(br2)That frequency is its downlink unless the owner sets another one on 2m; 144.390 is allowed but busy on the ground."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Mailbox",
+      "text": "In $(thing)Mailbox$() mode it is a Packet BBS in orbit. From the $(l:radiocraft:computer/packet_bbs)Packet BBS$() terminal page, call it by its name (RO-3) on its uplink or downlink and use the usual commands.$(br2)Leave a message with SP while it passes; whoever it is for lists and reads it on a later pass, anywhere it is heard."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "SSTV",
+      "text": "In $(thing)SSTV$() mode the satellite sends its owner's picture (an .IMG uploaded from SATTRACK while it passes) as slow-scan TV on its downlink, every half minute or so while anyone is under it.$(br2)Any radio computer with the $(l:radiocraft:computer/sstv)SSTV$() program and a radio on the downlink receives it and keeps it like any other SSTV picture, to save or print."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Telemetry",
+      "text": "Every satellite sends a $(thing)telemetry beacon$() on its telemetry frequency in every mode: a data frame every ten seconds (battery, current, temperature, sunlight or shadow, mode, days to decay) and now and then its name in Morse. A commercial satellite's license grants that frequency too.$(br2)Tune a radio on the radio computer's station to it and SATTRACK shows the latest frame."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Doppler and eclipses",
+      "text": "Two server settings, both off unless the server turns them on:$(li)$(thing)Doppler$(): a satellite is heard a few kHz high as it rises, on frequency overhead and a few kHz low as it sets; retune an FM radio to keep it.$(li)$(thing)Eclipses$(): rarely, at night, it is in the Earth's shadow on a flat battery: no repeater and no mode, only a telemetry frame a minute saying POWER SAVING."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "The delay",
+      "text": "Nothing comes back down at once: a satellite holds your voice about $(thing)300 ms$() before it repeats it, so you hear yourself echo. A digipeat comes back after about 2 seconds and a mailbox answer after about 4.$(br2)Distress relays are never held: they go out at once."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:amateur_geostationary_contract",
+      "title": "Geostationary",
+      "text": "A dearer contract (64 emeralds and a block of diamonds, amateur or commercial) parks a satellite that $(thing)stays put$() in the sky near where you use it. It is always up within 5,000 blocks of that spot and never anywhere else, and has half the delay. As a weather imager it sends whole $(thing)frames$() of the ground round that spot over and over, each replacing the last row by row in WXSAT; but its orbit decays twice as fast. It flashes less often."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:commercial_geostationary_contract",
+      "title": "Commercial Geostationary",
+      "text": "The commercial geostationary contract works the same way for commercial VHF: it needs a $(l:radiocraft:radios/commercial_licenses)commercial license$(/l), and the satellite repeats commercial traffic where it is parked."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Its life",
+      "text": "An orbit decays: after about 90 real days (a server setting; 45 for a geostationary one) the satellite burns up, a tiny streak in the night sky if it was overhead, and is gone; its license stays as a keepsake. $(l:radiocraft:computer/sattrack)SATTRACK$() warns you in its last week.$(br2)Only its owner, and players they allow, can change it, and only while it passes over."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Decommissioning",
+      "text": "Its owner can $(thing)decommission$() it from SATTRACK (DEL, while it passes, confirmed twice). It goes silent for good: no repeating, beacon, relays or pictures, and its frequencies go back to the pool (a commercial one's license is revoked).$(br2)It stays on orbit, dark but for a grey glint near dusk and dawn as it tumbles, until its orbit decays."
+    }
+  ]
+}

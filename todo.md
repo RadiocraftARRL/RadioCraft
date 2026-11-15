@@ -130,8 +130,8 @@ In order. Each step gets GameTests where the server side can be checked; audio s
   their owner's callsign; `repeater_callsign_mode` EITHER / AUTO / OWN
 - [x] Operator moderation (2026-10-24, maintainer): `/radio moderateall` hears all voice radio traffic clean with
   who is talking over the hotbar, and RTTY/APRS in chat; `/radio moderate <player>` one player; `/radio moderate off`
-- [ ] Optional voice recording (maintainer, 2026-10-24): a server config to record radio voice traffic (for
-  moderation), off by default
+- [x] Optional voice recording (maintainer, 2026-10-24): a server config to record radio voice traffic (for
+  moderation), off by default (done with the Radio Moderation Computer: `moderation_record_radio`, 2026-11-04)
 - [ ] Extend server config to cover HF static squelch, modern/vintage toggles, and “talk everywhere” overrides promised in the proposal
 - [x] Add `/bandcalculate` helper to complement antenna tuning (2026-10-23, see World & Progression)
 - [x] Redstone interference, receive side (2026-10-20): redstone switching near the feedline/antenna boosts the
@@ -215,7 +215,7 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   repeater (maintainer, 2026-10-21, undecided)
 - [x] Radios and wires placed on the underside of a block hang from it (2026-10-21): radios the right way up (raised copies of their models made in datagen), wires as the floor logic upside down (hug, climb down beams)
 - [x] Add multi-channel scan indicator to VHF receiver UI (2026-11-09: memories, scan, lamps per channel)
-- [ ] Ionosonde and 5-BTV antenna hitboxes for players (maintainer, 2026-10-24): collision shapes that match the
+- [x] Ionosonde and 5-BTV antenna hitboxes for players (maintainer, 2026-10-24; done 2026-11-13): collision shapes that match the
   models, so players cannot walk through them
 - [ ] Repeater speaker volume and antenna switch (proposal): the power, TX, mic and speaker switches work; volume
   (2026-10-26) is the mouse wheel over the SPEAKER button (no room for a knob on the panel art); a switch for a second
@@ -266,7 +266,7 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   paper/book/map supplies will live in the TNC (maintainer, 2026-10-21).
 - [x] TNC APRS map terrain (2026-10-21): painted like a vanilla map from the chunks the client has loaded, zooming
   with the stations heard; beyond render distance it is dark
-- [ ] TNC APRS map: terrain beyond render distance (optional Xaero's / JourneyMap integration for explored areas)
+- [ ] TNC APRS map: terrain beyond render distance (Xaero's / JourneyMap: see `doc/ModIntegrationPlans.md`)
 - [x] TNC screen scales up to 80% of the window in whole-pixel steps (2026-10-21)
 - [x] TNC RTTY (2026-10-21): live typing at 45.45 baud, prints a line per sender, 20 lines per paper, garbles when
   weak; supplies by right click, hopper or the FILES slots
@@ -365,14 +365,17 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
     range and do no damage. Left for the alpha testers (maintainer, 2026-10-28).
   - [x] Antenna damage (2026-10-25): with Another Weather Mod, winds over 33 m/s may blow antenna parts and wire
     holders down (up to 30 % each time the wind picks one, at 60 m/s); `wind_antenna_damage_enabled`
-- [ ] WEFAX receiver model: its Rotary elements are turned -85, 80 and 42.5 degrees, which Minecraft 1.21.1 cannot
+- [x] (fixed: the model loads, `ModelFilesTest` has nothing on KNOWN_BROKEN) WEFAX receiver model: its Rotary elements are turned -85, 80 and 42.5 degrees, which Minecraft 1.21.1 cannot
   load (it shows as missing). Re-export with Blockbench set to 1.21.1 and 22.5 degree steps (`ModelFilesTest` lists it)
 - [x] WEFAX receiver (maintainer, 2026-10-23; screen done 2026-10-26, see the WX items): prints weather charts, after the WX work. The block and model are in
   (dev tab, decorative; recipe 2026-10-23: a board, paper drum and a clock); the UI comes once the rest of the WX work is done
 
 ### New bands and services (maintainer, 2026-10-23)
-- [ ] Airband (VHF AM aircraft band): the AM receive mode exists now (CB, 2026-11-08: `RadioBlockEntity.isAM`,
-  `Detuning.am`, `ReceiverMix.amHiss`); airband needs its band, radios and aircraft traffic
+- [x] Airband (VHF AM aircraft band, built 2026-11-13): the `airband` band (118-137 MHz, AM, 25 kHz), the Airband
+  Radio (a vintage panel-mount COM: USE and STBY windows, flip-flop) and the Aircraft VHF Antenna (on top of a block
+  or hanging under one; about 1.1:1 mid-band, under 2:1 at the edges). 2m antennas read about 2.2:1 there now
+  (`Band.twoMetreAntennaSwr`). No recipes yet (awaiting review).
+  - [ ] Aircraft traffic: recorded or generated ATC chatter on the airband (needs audio)
 - [ ] ISM band
 - [x] CB radio (11m, maintainer, 2026-11-08): the CB band (26.965-27.405 MHz, 10m's reach less 25% line of sight and
   30% skip for 5 W), the 40 FCC channels, AM receive (no static until a signal weakens, bleedover from the next
@@ -393,9 +396,12 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   5875's AWI lamp has no job yet; the maintainer's models use `#missing` on some knobs and the PC68 DISPLAY
 - [x] Small battery renamed Small NiCd Battery; new non-rechargeable Small Alkaline Battery (fits the weather alert
   receiver; recipe awaiting review); creative-only All Applications Floppy (2026-11-08)
-- [ ] A Sputnik-style radio satellite (beeping beacon in orbit to listen for)
-- [ ] FM broadcast radio station: a transmitter block for the broadcast band (maintainer, 2026-10-27)
-- [ ] FM broadcast receiver: a plain consumer radio for that band (maintainer, 2026-10-27)
+- [x] FM broadcast radio station (built 2026-11-13): the `fm_broadcast` band (88.1-107.9 MHz, 200 kHz channels; the VHF
+  antenna network now starts at 80 MHz) and the FM Broadcast Transmitter, a two-block cabinet, three times a radio's
+  strength, lit while on the air. No recipe yet (awaiting review).
+- [x] FM broadcast receiver (built 2026-11-13): a wood-sided table radio, receive only, on its own wire antenna until an
+  antenna is coaxed to it. No recipe yet (awaiting review).
+  - [ ] AM broadcast band on the receiver (its dial has an AM scale; the band would be MF, 530-1700 kHz)
 - [ ] Internet radio streams: a block that plays an IP radio stream onto the air or a speaker (maintainer, 2026-10-27)
 - [ ] A global internet radio stream: heard anywhere above ground (maintainer, 2026-10-27)
 
@@ -404,7 +410,7 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   [doc/DeltaLoopAndMoxonPlan.md](doc/DeltaLoopAndMoxonPlan.md)); the VHF Moxon block still needs a model
 - [x] Ringo antenna (maintainer, 2026-10-23): done 2026-10-27, VHF Ringo, 1.10x a J-pole, lightning resistant, craftable
 - [x] Industrial dipole antenna (maintainer, 2026-10-23): done 2026-10-27 as the 2-bay VHF folded dipole, 1.25x, lightning resistant, structures only
-- [ ] Figure out how we'll allow building of HF yagis (maintainer, 2026-10-21)
+- [ ] Figure out how we'll allow building of HF yagis (maintainer, 2026-10-21): options in `doc/Plan-HFYagiAndWireSag.md` (2026-11-13), for review
 - [x] Satellite dish: it is the small microwave dish now (links since 2026-10-26, recipe `microwave_dish`); satellites
   can use it later.
 - [x] Hustler 5-BTV multiband vertical (2026-10-23, maintainer's model): "5-BTV Multiband HF Antenna", seven blocks
@@ -412,7 +418,7 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   half as far and skip a quarter further (the far edge of the skip window). Dev tab; late-game recipe (2026-10-23):
   two copper blocks of tubing, four ferrite traps, two lightning rods, coax
 - [x] Delta loop (2026-10-24): a closed triangle on a 4:1 balun, upright or flat; analyzer messaging waits for the analyzer
-- [ ] Add sag-varying visuals for long unsupported antenna wire runs
+- [ ] Add sag-varying visuals for long unsupported antenna wire runs: plan in `doc/Plan-HFYagiAndWireSag.md` (2026-11-13), for review
 - [x] 4:1 balun and off-centre-fed dipole (2026-10-21, maintainer): new `balun_four_to_one` feeding an OCFD
   (short arm a third to two thirds of the long one, matched on the half wave and its 2nd and 4th harmonics, poor
   on the odd ones). The 2:1 stays for the quad loops. The 4:1 has its own texture (maintainer, 2026-10-23).
@@ -544,7 +550,7 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   another quality swaps it. QRP radios take only poor crystals and ignore them; the repeater takes only pure.
 - [ ] Crystals from pressing sand with the Create mod's mechanical press (maintainer, 2026-10-22)
 - [x] Insulation item texture (maintainer, 2026-10-23): `textures/item/insulation.png`
-- [ ] Microphone element and speaker crafting components (maintainer, 2026-10-22): a microphone item (its own
+- [x] Microphone element and speaker crafting components (maintainer, 2026-10-22): a microphone item (its own
   texture) used in the hand microphone and desk microphone recipes, and a speaker item used in radio recipes
   - [x] Microphone Element (2026-10-23, maintainer's texture): ` P `/`NCN` (paper, iron nuggets, coal or charcoal)
     makes 2; the hand microphone (in place of charcoal) and the desk microphone (in place of a hand mic) use it
@@ -671,15 +677,25 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
 - [x] Large microwave dish (maintainer, 2026-10-23): it is the microwave horn, a 2x2x4 block (2026-10-26) linking at 6x a dish's range; no recipe yet
 - [x] Microwave radio (maintainer, 2026-10-23; done): long-range, reliable point-to-point links, paired with
   the large microwave dish
-- [ ] Satellites (maintainer, 2026-10-26): launched (needs dragon's breath among other things) and commanded over a
-  microwave link. Uses: mapping the area under its pass (marks it explored in JourneyMap or Xaero's Minimap when
-  present; otherwise prints maps of given coordinates and locates structures), and acting as a VHF repeater.
-  - [ ] Distress relay (2026-11-09, for 1.12's distress alerting): a satellite repeats DSC distress calls (channel 70)
+- [ ] Satellites (maintainer, 2026-10-26): commanded from SATTRACK, by contract only: no launching or building, no
+  70cm, Doppler stays an off-by-default option (maintainer, 2026-11-13). See `doc/SatellitePlan.md`.
+  - [ ] Structure locating from a satellite pass
+  - [ ] Beacon-only (Sputnik) satellites
+  - Mapping into JourneyMap / Xaero's: see `doc/ModIntegrationPlans.md`
+  - [x] Satellites as FM repeaters (2026-11-11): amateur and commercial satellite contracts from master cartographers
+    (64 emeralds + a diamond) put one on orbit with a commercial license for its pair, a satellite license and the
+    SATTRACK floppy; 4-6 passes a Minecraft day, heard 10,000 blocks round the point under it with open sky, its tone
+    needed, a Morse ID after an over; green/red dots in the night sky; decays after `satellite_decay_days` (90);
+    `/radiocraft satellite add|remove|list|overhead`.
+  - [x] SATTRACK: every satellite, its next passes and decay date; owner and allowed players switch it on/off, set its
+    ID, tone and allowed list while it passes (2026-11-11)
+  - [x] Distress relay (2026-11-09, for 1.12's distress alerting): a satellite repeats DSC distress calls (channel 70)
     and distress beacon alerts (161.975 MHz) it hears, so they are heard anywhere with open sky. The alert is built
     for it: `distress.DistressAlert` is whole in itself (id, type, state, position, owner/MMSI, nature, time raised,
     ack-by) and `encode()` is one line a relay re-sends unchanged; receivers file bursts by id, so a relayed copy
-    merges with the direct one. Needs a sky check at the receiver and a way to not relay a relay.
-- [ ] Manpack radio (maintainer, 2026-10-23): a radio worn on the back
+    merges with the direct one. Needs a sky check at the receiver and a way to not relay a relay. Done 2026-11-11
+    (`satellite.SatelliteRadio`: every satellite, on or off; each burst relayed once by packet id).
+- [x] Manpack radio (maintainer, 2026-10-23): a radio worn on the back (built; the backpack mods' versions are open)
   - [ ] [Traveler's Backpack](https://www.curseforge.com/minecraft/mc-mods/travelers-backpack) version
   - [ ] [Sophisticated Backpacks](https://modrinth.com/mod/sophisticated-backpacks) version
 - [x] Power from other mods (2026-10-23, maintainer): the large battery takes and gives Forge Energy, so Create:
@@ -693,8 +709,9 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
 - [ ] Look for other mods that would be easy to integrate with (maintainer, 2026-10-23)
 - [ ] Introduce random structures, auto-beacon radios, APRS Discord bridge, and external radio API hooks
 - [x] Squelch (2026-11-09): CB SQUELCH knobs, and a squelch on the 20m, 40m and HF receiver spare knobs, against the S-meter.
-- [ ] Station plans for review (2026-11-09, `doc/Plan-Station.md`): linear amplifier, coax loss and hardline, iambic
-  keyer block (HD-1410 style, A/D paddles), `/contest`. More bands on hold (too much choice on small servers).
+- [x] Station plans (2026-11-09, `doc/Plan-Station.md`): `/contest` (2026-11-09), iambic keyer (2026-11-12), linear
+  amplifier and light coax loss (2026-11-13). Hardline not built (the loss is light enough not to need it). More bands
+  on hold (too much choice on small servers).
 - [x] Review all recipes together (maintainer, 2026-10-20; finished 2026-11-09 with the CB radios, grounding, batteries, switches): align crafting costs (e.g., netherite-heavy radios) with the original spec or update the design doc to reflect lighter recipes; decide the simplex repeat controller recipe
 
 ## Radio Moderation Computer (maintainer, 2026-11-04; done 2026-11-04)
