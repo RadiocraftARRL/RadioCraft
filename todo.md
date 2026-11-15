@@ -1,770 +1,143 @@
 # Development Checklist
 
-The 2026-10 bug audit (save/load, network linking, power ticking, static, 40m band) and what is still open are
-listed in [doc/Testing.md](doc/Testing.md#bug-audit-2026-10); each fix has a test.
+Everything still to do, from this file, `1.12-ideas.txt` and the plan docs (combined 2026-11-15). Finished items are in
+[doc/Done.md](doc/Done.md); the 2026-10 bug audit is in [doc/Testing.md](doc/Testing.md#bug-audit-2026-10); art for
+someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
 
-## Ongoing cleanup (maintainer, 2026-10-27)
+## Open
 
-- **Flaky GameTests: fixed 2026-10-30** (propagation batches reset the sky with `GameTestDefaults.calmSky`, the weak
-  RTTY test sends three lines, the weak fax test has its own batch with more loss, the H19 boot test waits for both
-  flags). Kept below for the record; watch for new ones.
-  New 2026-10-30: `parrotEchoesVoiceAfterDelay` and `controllerEchoesVoiceAndLightsLeds` heard something on 20m 2 and 5
-  ticks after speaking, once, in the same default sub-batch; the rerun passed. Look for another 20m transmitter in
-  that sub-batch if it comes back.
-  Came back twice on 2026-10-31 (`parrotEchoesVoiceAfterDelay`, 2 and 5 ticks; reruns passed): worth chasing.
-  **(seen 2026-10-27 evening, two runs, different tests each time).** `wefaxAsksOverTheAir` and
-  `teletypeAsksOverTheAir` failed once: the `ionospheric` batch ran straight after `blackout_night`, whose solar
-  blackout (noise 1.0) was still on, so nothing got through on HF. `weakRttyPrintsGarbled` failed once on its own
-  randomness ("a weak signal printed perfectly"). Fix: the blackout batches should clear their event in `@AfterBatch`,
-  and the garble test should force its odds or retry. Neither is a gameplay bug.
-  `h19BootsWhenTheRadioComesOn` failed once on 2026-10-28 ("the radio coming on did not make it boot") and passed on
-  the rerun: the boot flag and the radio-on flag are set in different ticks.
-  `auroraCarriesVhfAndWeakensHf` and `sporadicEOpensVhfInGoodConditions` failed once together on 2026-10-28 (VHF
-  carried 1500-2000 blocks with no aurora) and passed on the rerun: another batch's propagation state still on.
-  `weakSignalSendsPacketsAgain` (fax) failed once on 2026-10-28 and passed twice after: its packet loss is random.
+### Ongoing
 
-- **Docs in step with the mod.** After each batch of features, bring the in-game guide book (Patchouli,
-  `assets/radiocraft/patchouli_books/guide`) and the website's wiki (`Radiocraft-Website` repo) up to date with
-  each other and with what the mod really does: new blocks and items, changed numbers, recipes. Fill gaps both ways.
+- [ ] Docs in step with the mod: after each batch bring the Handbook (Patchouli, `assets/radiocraft/patchouli_books/guide`)
+  and the website wiki (`Radiocraft-Website`) up to date with each other and with the mod (maintainer, 2026-10-27)
+- [ ] Watch for new flaky GameTests. `parrotEchoesVoiceAfterDelay` failures come from interference: ignore them
+  (maintainer, 2026-11-15)
+- [ ] Port to Minecraft 26.1 and its NeoForge, keeping a 1.21.1 branch alongside, once most of this list is done
+  (maintainer, 2026-10-23). Expect churn in GUI/render APIs, registries, mixins, SVC, Jade, TOP, GeckoLib
+- [ ] Recipes awaiting the maintainer's review: Airband Radio, Aircraft VHF Antenna, FM Broadcast Transmitter, FM
+  Broadcast Receiver (none yet, 2026-11-13); the 1.13 batch recipes (fire alarm, SCADA, keyer, amp, tracker, Computer
+  Redstone) are in the provider (check: maybe approved in the 2026-11-13 review, see RadiocraftRecipesProvider.java)
 
-## Current plan (2026-10): HF radios fully working, with solar weather
+- [ ] Performance leftovers from the 2026-11-15 review (build/agy-notes/performance.md; done: CRT textures reused, bundle
+  layouts worked out once a block, wire caches capped, audio not copied for out-of-reach antennas, CRT wall poll):
+  wire blockstates (52 wire blocks x 3,840 states, about 200,000; one MOUNT property for hug/climb/ceiling would halve
+  it but changes saved wires: maintainer to decide), the bundle solver re-reading every node per trial flip, and
+  radios working out their SWR every tick
 
-In order. Each step gets GameTests where the server side can be checked; audio still needs clients and ears.
+### Radios & bands
 
-1. ~~**Prove two HF radios can talk.**~~ Done (2026-10-19): `TransmissionGameTests` run two 20m stations through
-   the antenna network for voice and CW, checking strength, wrong frequency, wrong mode, power off and no antenna.
-   CW works end to end again (`SCWBufferPacket` / `CCWBufferPacket`, `SET_CW`). `rcdebug transmit` / `rcdebug key`
-   do the same on the dev server. Still to hear by ear in a client: morse tone playback and voice through SVC.
-2. ~~**Make solar weather shape propagation**~~ Done (2026-10-21): each solar event rates every HF band by day and
-   night and that scales skip; blackouts close HF; aurorae; the teletype prints the report. 10m skip added 2026-10-23.
-3. ~~**Static masking and squelch.**~~ Done (2026-10-21): received strength ducks the static on the client; the
-   voice is shaped like a radio's (see NeedsTesting "Radio-sounding voice and static ducking"). Still by ear.
-4. **Power.** ~~Radios draw from batteries and switch off when drained~~ Done (2026-10-21): block radios draw
-   their receive/transmit cost per tick from the power network and brown out (panel cycles on / PWR / dark, no
-   static) when starved; `radios_need_power` server config; `PowerGameTests`. The repeater draws 4/17 and the
-   handheld drains its battery over days (2026-10-23). The charge controller switch works (2026-10-24; controllers start switched on).
-5. ~~**VHF (FM) static model.**~~ Done (2026-10-24): silent between signals and on a good one, a hiss under a weak one (`ReceiverMix.fmHiss`). Needs ears.
-6. **Port to Minecraft 26.1** and the matching NeoForge, keeping a 1.21.1 branch running alongside it (maintainer,
-   2026-10-23; was 26.3 on 2026-10-21), once most of the rest of this list is done.
-   Expect the usual port churn: GUI and render APIs, registries, mixin targets, and new Simple Voice Chat, Jade,
-   TOP and GeckoLib versions.
+- [ ] Server config for the proposal's HF static squelch, modern/vintage toggles and "talk everywhere" overrides
+  (check: squelch knobs exist since 2026-11-09)
+- [ ] Redstone interference polish: a real buzz loop (asset bounty), chokes that cut feedline pickup, the interference
+  term joining static masking, handheld radios (no block antenna) on transmit
+- [ ] DTMF follow-ups: repeater control by DTMF (enable/disable TX, read the S-meter back; the autopatch is built), a
+  sidetone for the handheld's own keys, DTMF keys on the base station's panel
+- [ ] Repeater: a switch for a second antenna, after the UI rework (volume is the mouse wheel over SPEAKER, 2026-10-26)
+- [ ] Aircraft traffic: recorded or generated ATC chatter on the airband (needs audio)
+- [ ] ISM band
+- [ ] AM broadcast band (MF, 530-1700 kHz) on the FM broadcast receiver, whose dial has an AM scale
+- [ ] EAS on broadcast FM (doc/Plan-Computer3.md: "a separate later section")
+- [ ] Internet radio streams: a block that plays an IP radio stream onto the air or a speaker (maintainer, 2026-10-27)
+- [ ] A global internet radio stream, heard anywhere above ground (maintainer, 2026-10-27)
+- [ ] CB leftovers: the 5875's AWI lamp has no job; the maintainer's models use `#missing` on some knobs and the PC68
+  DISPLAY; SSB on the 5875's FUNCTION knob?
+- [ ] Commercial licenses leftovers (doc/Plan-FireAlarmScadaLicensing.md): the license callsign as the codeplug's
+  station ID and a commercial repeater's CW ID (check: maybe done, see MeshDeviceBlockEntity.java), OVER LIMIT in the
+  FCC program, the FCC floppy's recipe (none in RadiocraftRecipesProvider.java)
+- [ ] Battery self-discharge over time (proposal), if wanted
+- [ ] Once the microphone element exists the maintainer switches the VHF handheld recipe to it (it still takes a hand
+  microphone; check: maybe settled in the 2026-11-09 recipe review)
+- [ ] More radio models and brands (maintainer, 2026-10-23)
 
-## Phase 1 – Core Gameplay Readiness
+### Antennas
 
-### Radios & Networking
-- [x] Core HF radios (10m/20m/40m/80m) and their recipes are registered
-- [x] Provide working SWR and propagation hooks so core HF radios are usable (2026-10: SWR per antenna type, skip, solar weather)
-- [x] HF receiver, QRP radios, and the all-band radio shapeless combinations exist
-- [x] VHF handhelds have functional radios
-- [x] Hand mic on a cord (maintainer, 2026-10-23; done 2026-10-24): sneak-right-click a radio with an empty hand
-  to take its hand mic (a "Hand Microphone" item that looks like the crafting one but is its own, uncraftable item),
-  with a sagging cord drawn from the radio to your hand. Hold right click to talk. Walk more than 5 blocks away, put
-  it away or log out and the cord snaps back; right click the radio with it to hang it up. Dropped, it vanishes. HF,
-  QRP, all-band and VHF base stations; not receivers or the repeater.
-- [x] Comparator S-meter (2026-10-20): a comparator against any radio reads the received signal strength 0-15, falling
-  back to 0 a second after the signal ends. Jade shows the same reading, the interference level and the repeat delay.
-
-### Antennas & Signal Model
-- [x] Terrain-aware propagation (2026-10-24, [doc/TerrainPropagationResearch.md](doc/TerrainPropagationResearch.md)):
-  terrain atlas from chunk loads, knife-edge line of sight, HF cliff loss, horizon profiles cutting low-angle skip,
-  handhelds indoors, results kept `terrain_recalculate_seconds`, `terrain_enabled` master switch, `/rcdebug terrain`
-- [x] Terrain map saved with the world (2026-10-24, `radiocraft_terrain.dat` per dimension)
-- [x] `/bandcalculate` counts terrain losses (2026-10-24): both ends a few blocks above the mapped ground
-- [x] Terrain phase 3, worldgen fill (2026-11-07): a path that reads a chunk the atlas lacks notes it, and the server
-  fills it from `ChunkGenerator#getBaseHeight` (natural ground, never loads the chunk), `terrain_worldgen_chunks_per_tick`
-  (4) at a time, `terrain_worldgen_fill` to switch off; the real chunk replaces the estimate when it loads.
-  `unloadedChunksFillFromWorldgen`. `/bandcalculate` already reports "terrain -N dB" / "blocked by terrain".
-- [-] ~~Terrain losses in the antenna analyzer~~ Dropped (maintainer, 2026-11-08): an antenna analyzer only sweeps SWR
-  across the band the player picks; it knows nothing of paths or far stations. `/bandcalculate` covers path loss.
-  (was: horizon and path loss to known stations)
-- [x] Dipole, end-fed, quarter-wave vertical, loop, wide-band receive, and VHF Yagi/J-pole/Slim Jim antennas are implemented
-- [x] Antenna tuner runtime effect (2026-10-20): a tuner anywhere on the coax between a radio and its antenna is an
-  automatic tuner. Within `antenna_tuner_max_swr` (default 6) the radio sees SWR 1 (static, interference and the
-  radio's SWR all follow) and transmit keeps `1 - mismatchLoss * antenna_tuner_loss` (default 0.25, so a SWR 3
-  antenna goes from 75% to 94% power); beyond it the tuner does nothing. The tuner GUI shows antenna SWR, what the
-  radio sees and the state; the dials are still decorative. Overdraw (two radios or two antennas) is not tunable.
-  Deviation from the proposal: the tuner may sit anywhere on the run, not only radio-side of the balun.
-- [x] Inverted V dipole (2026-10-20): 1:1 balun up high, two opposite arms sloping down to lower ends (apex 90° or
-  wider, ends may differ in height). Resonant arm length is 5% under a quarter wave, measured along the wire; SWR
-  rises 0.5 per block like the dipole; transmit is 0.9 of a dipole's, 0.75 on 40m (proposal numbers).
-- [x] Random wire (2026-10-20): new 9:1 balun block (placeholder texture, see the bounty) with one wire run of any
-  shape, bending at poles/connectors, no forks or loops. Usable on any band where the run is at least a half wave;
-  SWR is 2 + 0.5 per block off a half-wave multiple, so it always needs the tuner; gain -3 dBi both ways. Deviation
-  from the proposal: fed straight from the 9:1 balun (a 1:1 balun in series would count as a second antenna).
-- [x] Antenna tuner made manual (2026-10-23, maintainer): three dials (0-50) each have a reading that matches the
-  antenna at the radio's frequency (seeded by antenna position, type, band and SWR, drifting across the band). The
-  screen's lamp blinks red, faster as the SWR the radio sees nears 3, then yellow-green, then solid green at a
-  match. `antenna_tuner_max_swr` default 6 -> 7; past it a tuner takes off (max - 1) at best (SWR 9 -> 3).
-- [x] Automatic antenna tuner (2026-10-23, maintainer's model): on coax and power (`auto_tuner_power_use`), tunes
-  itself on a new band or a 1 MHz move (SWR 3 for a second, relays clicking faster, then 1); past its range it clicks
-  slowly for 6 s and gives up: TUNE FAIL on the radio's screen, FAIL on its own. Late-game recipe: a manual tuner,
-  two boards, repeaters (relays), a comparator and a pure encased crystal of any band.
-- [x] Duplexer runtime effect (2026-10-23): six cavity screws (TX on the left, RX on the right), each showing its
-  frequency. Factory tuned: it follows its repeater until a player turns a screw. A screw off its signal loses power
-  (half at 25 kHz) and shows the transmitter a mismatch; receive cavities weaken what the repeater hears.
-- [x] Add in SWR consequences (maintainer, 2026-10-21; 2026-10-23: blown radios, poor-crystal explosions). A radio with
-  no antenna is not damaged: it works through its bare connector at a few blocks' range.
-- [x] Dummy load block (maintainer, 2026-10-21; done 2026-10-21, see the Digital section): a coax load to transmit into safely, once SWR has consequences
-- [x] Implement duplexer tuning (maintainer, 2026-10-21; done 2026-10-23, see above), with desense: while the
-  repeater transmits, its noise on the input (through the TX cavities) and its carrier (through the RX cavities) leak
-  into its receiver. About 1% with a 600 kHz split and a tuned duplexer; a cavity turned onto the other frequency
-  deafens it.
-- [x] Antenna analyzer readout (2026-10-31, proposal): right click an antenna, its balun, its coax or its radio; it
-  names the antenna, the band it is resonant on (SWR 1.5 or better) or the band it is near and whether it is too short
-  or too long (where its SWR dips, outside the band), or that it needs a tuner, plus the SWR on every band. Fixed the
-  crash on blocks with no antenna (a BlockPos as a chat argument).
+- [ ] HF yagis (maintainer, 2026-10-21): options and open questions in [doc/Plan-HFYagiAndWireSag.md](doc/Plan-HFYagiAndWireSag.md)
+  (plan only, 2026-11-13; waits for the maintainer)
+- [ ] Sag-varying visuals for long unsupported antenna wire: same plan, Part 2 (waits for the maintainer)
+- [ ] Loop antennas: play the horizontal/vertical quads (2:1 balun) and the delta loop, then settle the loop gains
+  (maintainer, 2026-10-21)
+- [ ] VHF Moxon block: needs a model (two tall like the Yagi, SWR 1 on 2m; doc/DeltaLoopAndMoxonPlan.md)
 - [ ] Antenna analyzer screen (a swept SWR graph) if chat turns out not to be enough
-- [x] Implement shared antenna behavior hooks so antenna blocks drive propagation (antenna types set SWR, gain, reach)
-- [x] Hook SWR consequences (fire/destruction) into `RadioBlockEntity` (2026-10-23: blown radios, see NeedsTesting)
-- [x] Integrate solar event noise and day/night skip changes so HF radios gain or lose range based on `SolarEventManager` (2026-10-21)
-- [x] Propagation scaling (2026-10-24): receivers beyond any possible reach are skipped with one distance check
-  (`BandUtils.maxReach`), and terrain between two fixed stations is kept until a chunk on the path changes
 - [ ] Index each network's antennas by area, if servers grow past a few hundred antennas per band
 
-### Events, Commands & Config
-- [x] Callsign capability with `/callsign` tools implemented
-- [x] Implement administrative callsign commands (`/callsign set`, `reset`, `generate`: permission level 3)
-- [x] Callsigns (2026-10-24, proposal): players choose their own, a real ham callsign (a prefix from `callsign_prefixes`, a digit, 1-3 letters), or "Choose one for me" (prefix + zone digit + 3 letters), asked the first time
-  they reach for a radio (once a session) or with `/callsign claim`; taken ones refused; `callsign_self_assign`,
-  `callsign_digits`. Repeaters get X#XX callsigns whose digit is the distance from spawn (`callsign_zone_radius`), or
-  their owner's callsign; `repeater_callsign_mode` EITHER / AUTO / OWN
-- [x] Operator moderation (2026-10-24, maintainer): `/radio moderateall` hears all voice radio traffic clean with
-  who is talking over the hotbar, and RTTY/APRS in chat; `/radio moderate <player>` one player; `/radio moderate off`
-- [x] Optional voice recording (maintainer, 2026-10-24): a server config to record radio voice traffic (for
-  moderation), off by default (done with the Radio Moderation Computer: `moderation_record_radio`, 2026-11-04)
-- [ ] Extend server config to cover HF static squelch, modern/vintage toggles, and “talk everywhere” overrides promised in the proposal
-- [x] Add `/bandcalculate` helper to complement antenna tuning (2026-10-23, see World & Progression)
-- [x] Redstone interference, receive side (2026-10-20): redstone switching near the feedline/antenna boosts the
-  radio's static, band and distance dependent, server configurable. Design in doc/RedstoneInterference.md.
-- [x] Redstone interference, transmit side (2026-10-20): transmitting induces a level in nearby dust (mixin on the
-  dust's power calculation) and flips levers, buttons and torches; reach by rig power and SWR, verticals only
-  sideways, predictable positions, never on command blocks. Design in doc/RedstoneInterference.md.
-- [ ] Redstone interference polish: a real buzz loop (asset bounty), chokes that cut feedline pickup, the
-  interference term joining static masking once plan step 3 lands, and handheld radios (no block antenna) on transmit.
+### Computer programs and data gear
 
-## Phase 2 – Power Systems
+- [ ] Ionospheric Processor: a Jade provider; the teletype's comparator and Jade still read the local conditions
+- [ ] Redesigned UI for the H19 (maintainer); for now the old APRS/MSG tabs
+- [ ] Radio Fax: real inventory panel art (bounty); for now the vanilla chest's bottom half under the fascia
+- [ ] WEFAX weather charts (radar, forecast, surface) at twice the resolution: 256 x 256 needs our own map data and
+  renderer, or four tiled maps; the solar report stays (check: maybe done, see WefaxReceiverScreen.java)
+- [ ] Microwave: keep linked radios' chunks loaded? (a far end in an unloaded chunk drops the link)
+- [ ] Fire alarm leftovers (doc/Plan-FireAlarmScadaLicensing.md): data-wire output for bells (redstone only today), a
+  box keeping its name when broken, floppy recipes for FIRE and SCADA (none in the provider; check: maybe intended)
+- [ ] Moderation Computer leftovers: scrubbing within a playback (play/stop only) and narrowband re-encoding (Simple
+  Voice Chat's server API has no bitrate setting)
+- [ ] Solar weather station, rest of the proposal: printed paper report (paper, hopper fed, redstone activated) and a
+  best-band calculator between two coordinates (`/bandcalculate` is the admin version)
+- [ ] Ender-quantum chest link set: a computer and a chest interface (with an ender chest) pair over the station; the
+  terminal lists linked remote chests to send items to and pull from (maintainer, 2026-10-27)
+- [ ] APRS Discord bridge (the rest of the old "random structures, auto-beacon radios, external API hooks" item is
+  built: sites, commercial radio modules, the 1.12 API)
 
-### Power & Components
-- [x] Make the solar panel and batteries actually use FE/other energy sources (2026-10-23, see "Power from other mods")
-- [x] Wire block recipe implemented
-- [x] Waterproof wire crafting implemented
-- [x] Radio crystal/speaker/microphone/HF circuit board recipes exist, albeit with lighter-cost ingredients than the proposal (iron/planks/redstone torch instead of diamond/iron)
-- [x] Finish small alkaline battery energy handling so `SmallBatteryItem` tracks charge and removes the “not implemented” message
-- [x] Implement handheld battery drain in `VHFHandheldItem#inventoryTick` (2026-10-23, spread over ticks)
-- [x] Curios belt slot for the handheld (and the small battery), with a "talk on worn radio" key (2026-10-24)
-- [x] Large batteries combine capacity when wired together, and radios brown out on an empty battery
-- [x] Battery fires (2026-10-24, maintainer): fire or lava beside a large battery, a flint and steel, or lightning on
-  power wire running to it sets it alight; it burns until consumed (`battery_burn_seconds`), setting fire around it and
-  spreading to batteries it touches. Water holds the flames down (hiss, steam) but it keeps being consumed and flares
-  up again if the water goes. A battery consumed in a group of 4+ explodes (power per battery, capped), setting the
-  rest of the group alight; a quarter of the explosions start fires. Server config `Battery Fires`
-- [ ] Battery self-discharge over time (proposal), if wanted
-- [x] Solar panel recipe uses glass + a daylight detector rather than kelp/iron
-- [x] Wire hazards (2026-10-24, maintainer), with power behind the wire: a wire joined back to itself (a closed loop
-  of power wire) shorts, smokes, catches fire and burns through in 4 s, draining a quarter of the stored energy a
-  second; plain wire touching water electrocutes anything in the water within 6 blocks (3 hearts a second) and drains
-  the same; an open end of plain wire in the rain sparks (a transmitting 20m rig's draw) and zaps whatever touches it
-  (2 hearts, six times the draw for a second). Waterproof wire only shorts. Server config `Electrical Hazards`
-- [x] Lightning rods are very basic VHF antennas when coax runs to them (SWR 6, a quarter of a J-pole's range), and
-  antennas draw lightning: a strike no lightning rod claimed lands on the highest antenna within 32 blocks a quarter of
-  the time (`Antenna Lightning`)
-- [x] A strike on an antenna (2026-10-24, maintainer) burns out the coax at the antenna (and 30% of the rest of the
-  run), blows every radio on the run (SWR protection does not help), and 10% of the time sets the batteries those
-  radios run on alight (`lightning_antenna_damage`, `lightning_coax_burn_chance`, `lightning_battery_ignite_chance`)
-- [x] Lightning arrestor (maintainer, 2026-10-24; done 2026-11-07): an in-line coax block that stops a strike's surge
-  (`AntennaStrikes.exposedDevices`: the coax walk from the antenna stops at an arrestor; coax on the antenna side can
-  still burn). `arrestorStopsTheSurge`. Placeholder model (bounty); recipe ` I /CRC/ I ` (iron, coax, lightning rod)
-  awaiting the maintainer's review. Grounded since 2026-11-08: its ground lug takes ground wire to a rod; without a
-  good ground half the strikes arc past it (`UNGROUNDED_ARC_CHANCE`)
+### Wires & bundles
 
-### Radios & Networking
-- [x] Tie radio power draw, on/off state, and static playback into battery/solar networks via `RadioNetworkObject` (2026-10-21)
-- [x] HF grounding (maintainer, 2026-11-08): ground rods (stack them down for depth) bonded with ground wire (green
-  wire, renamed; only green bonds) to a radio, or to a lightning arrestor's ground lug, which grounds every radio on its
-  coax (single point ground). Soil, biome downfall, frost, rain and nearby water set the quality
-  (`GroundQuality`, `Grounding`); rods add in parallel. A good ground takes up to 30% off the HF noise floor and 60%
-  off local (redstone/lightning) noise. Never required. Power on a ground run is a ground fault (sparks, battery
-  drain). `GroundingGameTests`, `GroundQualityTest`. Later maybe: a little efficiency for verticals on a good ground
-- [x] Lightning spikes (2026-10-20): a strike puts a crash of static on every powered radio in the dimension, fading
-  with distance and by band, server configurable (`Lightning Static`). Design in doc/RedstoneInterference.md.
-
-## Phase 3 – Extended Systems & Content
-
-Models and textures we want drawn by someone else are listed in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
-
-### VHF/UHF Channel and Repeater Features
-- [x] DTMF (maintainer, 2026-10-24 and 2026-11-04): real Q.23 dual tones as audio, decoded by Goertzel at the
-  receiving radio, each key copied or lost on its own by signal quality. VHF handheld DTMF page (ENTER twice; arrows
-  are * and #), DTMF Encoder (keypad, SEND, REDIAL) and DTMF Decoder (code, red lamp while it comes in, green lamp for
-  5 s on a match, pulse or toggle redstone), both against a radio or on its data wire. Placeholder models (bounty).
-- [ ] DTMF follow-ups (recipes done 2026-11-04: encoder `UUU/WBW`, decoder `WBW/RCR`): repeater control by DTMF (enable/disable TX, read
-  the S-meter back); a sidetone so the handheld's own keys are heard; DTMF keys on the base station's panel
-- [x] Simplex repeat controller ("parrot", id `parrot_controller`): links to the radio next to it and makes it echo
-  what it receives after a delay, with receive/transmit LEDs and a wire drawn to the radio (2026-10-20; model and
-  textures by the maintainer). Its recipe is a placeholder pending the recipe review below.
-- [x] Parrot controller polish (2026-10-20): a button click when the delay changes, a comparator output of the delay
-  in seconds, Jade lines (delay, linked side, state).
-- [x] Parrot controller: sneak and right click to link the next radio round it (2026-10-24)
-- [x] VHF repeater (2026-10-21): input/output frequencies, CTCSS access and output tones, CW ID in Morse tone, hang
-  time with courtesy beep, timeout timer, MIC/TX/SPEAKER, duplexer on the back/top/bottom (kerchunks without one),
-  bare connector without an antenna. Handhelds and the base station got a tone and a ±600 kHz offset.
-- [x] Repeater sleep/wake (2026-10-24): woken by use, IDs every interval while awake, sleeps after a silent interval.
-- [x] Fix the J-pole and duplexer models (maintainer fixed them, 2026-10-21): overlapping faces z-fight; nudge them apart by 0.01 px (maintainer, 2026-10-21)
-- [x] Duplexer sits right on top of the repeater (done 2026-10-21 with the maintainer's model) (the repeater is 12 px tall, so a duplexer above it floats 4 px), and
-  a clearer way to run coax to it: model the wire to where the antenna port is, or two coax ports on the back of the
-  repeater (maintainer, 2026-10-21, undecided)
-- [x] Radios and wires placed on the underside of a block hang from it (2026-10-21): radios the right way up (raised copies of their models made in datagen), wires as the floor logic upside down (hug, climb down beams)
-- [x] Add multi-channel scan indicator to VHF receiver UI (2026-11-09: memories, scan, lamps per channel)
-- [x] Ionosonde and 5-BTV antenna hitboxes for players (maintainer, 2026-10-24; done 2026-11-13): collision shapes that match the
-  models, so players cannot walk through them
-- [ ] Repeater speaker volume and antenna switch (proposal): the power, TX, mic and speaker switches work; volume
-  (2026-10-26) is the mouse wheel over the SPEAKER button (no room for a knob on the panel art); a switch for a second
-  antenna waits for the UI rework
-- [x] Sporadic E (2026-10-24, proposal): in good or great conditions about 5% a day that VHF opens for long range
-  (600-3000 blocks) for a quarter of a day to a day; `/rcdebug solar sporadic_e on|off`
-- [x] Block radio gain and mic gain dials work (2026-10-24); CW keyboard key (Left Alt, rebindable) and Chat Morse
-  (`cw_keying`, default CHAT_MORSE: a box under the radio sends typed text as Morse). CW already goes 1.5x as far as
-  voice, more than the proposal's 25%
-
-### Digital & APRS Features
-- [ ] Rework the digital interface (TNC) into separate blocks (maintainer, 2026-10-22; plan in
-  [doc/TncRework.md](doc/TncRework.md), with the solar weather teletype/observatory idea)
-  - [x] Steps 1 and 2 (2026-10-23): the TNC is now the **Radio Interface** (callsign and TX switch only), joined by
-    touch on the station bus to the **H19 APRS Terminal** (maps, messages, beacon and digipeat settings, the
-    maintainer's model with READY / CONTACT / MSG screens) and the Digital Transfer Interface (files; placeholder
-    box), since replaced by the **Radio Fax** (2026-10-27, below). The Radio Interface keeps the old recipe for now.
-    Recipes (2026-10-23): the H19 is a CRT (tinted glass, or stained glass with `allow_stained_glass_for_h19_aprs`),
-    a board and button keys.
-  - [x] Step 3 (2026-10-23): the Teletype Machine (the solar weather station renamed) with RTTY through its radios,
-    its own callsign and paper, and SOLAR WX printing the local report
-  - [x] Ionosonde Antenna (2026-10-23, maintainer's model): two blocks tall like the J-pole, its own antenna type.
-    On a radio it hears VHF well and HF weakly, and matches poorly: SWR 3 on VHF, 8 on HF. Dev tab; recipe (2026-10-23): lightning rods, antenna wire, copper, coax.
-  - [x] Ionospheric Processor block (2026-10-23, maintainer's model): two blocks tall, its three valves glow softly
-    (light 10) through translucent glass. Recipe (2026-10-23): redstone torch valves, glass, two amethyst shards, a
-    board and a clock
-  - [x] The processor works (2026-10-27, maintainer: "it's what sends the ionospheric weather out to the WEFAX
-    machines"): it reads the sky only with an Ionosonde Antenna on its coax, broadcasts a solar bulletin (packet kind
-    SOLAR) under the placer's call sign through a radio it touches (online, on any change of event, every
-    `ionospheric_bulletin_minutes`, default 5), straight to WEFAX receivers beside it or its radio; WEFAX SOLR WX
-    prints the last bulletin heard, AUTO prints each one; comparator 1-6; right click shows its status. Released.
-  - [x] Over the air and alerts (2026-10-27, maintainer): WEFAX SOLR WX and teletype SOLAR WX read a processor beside
-    them (or their radio) directly, else send a QUERY that any processor hearing it answers (at most every 3 s), or
-    time out after 15 s; the old local report only with the server configs. `SolarEventManager` picks the next event
-    `solar_forecast_minutes` (5) ahead (`getUpcoming`, `/rcdebug solar forecast <event>`); a processor with blackout
-    alerts on (default) sends an ALERT that WEFAX receivers print with three beeps. Amber terminal: timed bulletins
-    (now default off), blackout alerts, send now.
-  - [ ] Still open: a Jade provider for the processor; the teletype's comparator and Jade still read the local
-    conditions
-  - [ ] Redesigned UI for the H19 (maintainer); for now it is the old APRS/MSG tabs. The Transfer Interface's
-    redesign is the Radio Fax.
-  - [x] APRS maps (2026-10-23): right click an H19 with empty maps for a map (sneak: a 2 x 2 or 3 x 3 wall) of the
-    stations heard, in an old-terminal style with pixel-font callsigns, repainted every 5 seconds
-- [x] Digital interface (TNC), first slice (2026-10-21): packets ride the radio like voice (AFSK burst everyone on
-  the frequency hears, then the packet decodes whole if on frequency and above the noise, `tnc_min_snr`); APRS
-  beacons (button, redstone pulse, timer) with a map of heard stations, messages to a callsign or ALL with an unread
-  light/buzzer/comparator, digipeating across two radios, `/aprs beacon` and `/aprs broadcast`. No printer block:
-  paper/book/map supplies will live in the TNC (maintainer, 2026-10-21).
-- [x] TNC APRS map terrain (2026-10-21): painted like a vanilla map from the chunks the client has loaded, zooming
-  with the stations heard; beyond render distance it is dark
-- [ ] TNC APRS map: terrain beyond render distance (Xaero's / JourneyMap: see `doc/ModIntegrationPlans.md`)
-- [x] TNC screen scales up to 80% of the window in whole-pixel steps (2026-10-21)
-- [x] TNC RTTY (2026-10-21): live typing at 45.45 baud, prints a line per sender, 20 lines per paper, garbles when
-  weak; supplies by right click, hopper or the FILES slots
-- [x] TNC FILES (2026-10-21): books, paper and maps (SSTV, from the map's picture) to a callsign or everyone; each
-  receiver prints a copy on its own blank, the sender keeps the original; progress on the six LEDs. Replaced by:
-- [x] Radio Fax (maintainer's design, 2026-10-27; replaces the Digital Transfer Interface): a desk fax in every log
-  (`radio_fax_<wood>`, `tools/radio_fax_models.py`) that sends books, paper, maps and enchanted books (used up) to a
-  callsign, through the radio it touches or its station's Radio Interface, or straight over a microwave link serving
-  it. Call, answer (the far end checks its blanks and tray), then 30 acknowledged packets with fax tones on the air
-  (`FaxAudio`); a weak signal loses packets (`fax_packet_loss` below `fax_solid_signal`) and they go again, up to
-  `fax_packet_retries`. VHF: a map 20 s, a book 10 s a page, an enchanted book 40 s, paper 10 s; 10m 2x slower, 20m 4x,
-  40m 6x, 80m 8x, microwave 10x faster (all config, `FaxRates`). A grey LCD on the screen takes the callsign (with
-  the last six used), sets the machine's own, and shows SENDING PACKET x/30 with a bar and retries; the machine
-  monitors the line quietly through voice chat. Hoppers stock it and take its copies. `RadioFaxGameTests`,
-  `faxCrossesTheLink`.
-  - [ ] Radio Fax: real inventory panel art (bounty); for now the vanilla chest's bottom half under the painted fascia
-- [x] Teletype roll (maintainer, 2026-10-27): the roll keeps 400 lines; scroll back with the wheel, Page Up/Down,
-  Home/End. Sneak-right-click the machine with an empty hand to tear the printed roll off as a `teletype_roll` item
-  (its lines in `TeletypeRollContents`); right click it to read it anywhere; right click an empty teletype with it to
-  feed it back in. `rollTearsOffAndFeedsBackIn`.
-- [x] TNC digipeating (2026-10-21): blue lamp on the APRS tab toggles it (off by default), red RPT lamp while
-  repeating; repeats on every radio it touches incl. the one it heard on, 8-hop cap (config), never a message for itself
-- [x] Dummy load (2026-10-21, model by the maintainer): perfect SWR on every band, ~10 blocks, no skip; fits on a
-  radio directly or on its coax and follows the radio's band (HF or VHF network)
-- [x] Duplexer on top of the repeater shows its coax down the repeater's back (maintainer's `duplexer_on_repeater`)
-- [ ] TNC: handheld/Curios side (APRS from a handheld radio)
-- [x] WX reports move to the WEFAX machine (maintainer, 2026-10-24; done, teletype's SOLAR WX removed 2026-11-07): solar
-  and standard weather reports there, with its new UI; the teletype keeps only its solar-conditions comparator. Standard weather only with a
-  compatible weather mod
-  (see [doc/TncRework.md](doc/TncRework.md)); we may end up writing our own weather mod
-  - [x] Our own weather mod (2026-10-24): Another Weather Mod, MIT, github.com/RadiocraftARRL/AnotherWeatherMod (localized
-    moving storms, hail, blizzards, sandstorms, hurricanes, regrowth, forecasts, an API). Its jar is in `libs/`
-    (compile and dev runtime) until it is on a Maven; it stays optional for players.
-  - [x] Weather API (2026-10-25): `api/weather` `WeatherSource` (vanilla always, Another Weather Mod when installed,
-    others can register), `WeatherReports` text lines and the APRS `_` weather packet, solar panels and the slim
-    jim use the local weather. `/rcdebug wx [aprs]`.
-  - [x] WEFAX charts (2026-10-25): radar, forecast and surface analysis painted fax style on locked vanilla maps (hold,
-    frame, copy at a cartography table), the text report in the tooltip. `/rcdebug wefax <chart>` prints one until
-    the receiver has its screen.
-  - [x] WEFAX receiver screen (2026-10-26): the maintainer's art (tools/wefax_gui.py); paper used per sheet (64 in the
-    tray), WX REPT prints the next chart of the schedule (radar, forecast, surface), SOLR WX the solar report as a
-    text sheet, AUTO a forecast when dangerous weather is due (at most every 5 minutes). Needs a radio with an antenna
-    beside it (the teletype's rule). The sheet rises out of the slot as it prints, then drops out of the front.
-  - [x] WEFAX from the air (verified 2026-11-07): the radio computer's WEFAX app and the Scheduler send charts as fax
-    tones; a receiver with AUTO on prints them (`WefaxReceiverBlockEntity.chartHeard`)
-  - [x] Weather station block (2026-10-26): any H19 within 64 blocks beacons its weather (WX symbol, APRS `_` data
-    before the comment: wind, gust over 10 minutes, temperature, rain over the last hour, humidity, pressure);
-    receiving H19s decode it in the station list and details. Cups spin with the wind. Recipe C_C / QRQ / _B_.
-  - [x] Weather station: alert tone (1050 Hz) on hazards: covered by the Weather Alert Generator (1050 Hz on 162.500
-    MHz FM); maintainer, 2026-11-07: fine as is
-- [x] Microwave ALIGN reason (2026-10-27): the meter hears any powered radio on the frequency when no master is
-  set, and FAR END says why there is no signal (no radio on the frequency / out of range / not facing / path blocked).
-  The path is walked block by block (`MicrowavePaths`): the HF terrain atlas (4x4 averages, +1) blocked dishes on
-  short poles over a one-block step. The atlas only answers where chunks are not loaded.
-  The dish renderer turned the model 180 off its azimuth (`SatelliteDishRenderer`, fixed the same evening): the
-  maths and the picture disagreed, so dishes aimed by eye read NOT FACING. Then (maintainer): the screens only
-  grade the level (NO SIGNAL / TOO WEAK / POOR / FAIR / GOOD, `MicrowaveMath.Grade`), the reasons moved to
-  `/rcdebug microwave <pos>`, and past the edge of range the signal falls to the floor by 1.25x the range instead of
-  vanishing (`OUT_OF_RANGE_FACTOR`), so a dish just out of range still shows weak when aimed.
-- [x] Microwave signal level and ALIGN page (2026-10-26): links have an RSSI (distance, and a pointing loss at each
-  dish growing with the square of the error); they hold above -90 dBm within a 45 degree capture angle; the ALIGN page
-  shows it live with a graph and nudges the dish half a degree at a time; marginal links (below -75) make calls lossy.
-- [x] Dyed coax (2026-10-26): sixteen colours, one block each (a colour property would multiply coax's states);
-  coax joins only its own colour, plain being one (`WireBlock#joins`, used by the drawing and the network walk;
-  since 2026-10-28 plain no longer joins every colour, wire too, maintainer), so parallel
-  runs (direction finder modules) stay apart. Dye a laid run in place or craft 8 + dye. Assets from
-  tools/coax_colours.py and tools/wire_assets.py. Recipes that take coax still want plain coax.
-- [x] Commercial gear and tapes (2026-10-26, maintainer's design): commercial repeater (four-tall rack, duplexer
-  built in, twice the transmit strength and draw, not craftable, breaks into itself; since 2026-10-27 it wants the
-  station's power wire, to any cell of the rack: `WireUtils#linkTarget`/`wireLinksOf` send wire on an upper cell of a
-  stacked block to the bottom one; it has its own battery and charge controller (`commercial_repeater_battery`,
-  `commercial_repeater_charge_rate`): an indirect and a direct consumer, so batteries or bare solar panels feed it,
-  and it rides out an outage on what it stored, the cell-3 beacon blinking while it does); commercial radio module (sealed
-  all-band transmitter: numbers station, static beacon, dead air, DF beeper or CW beacon on a fixed frequency, own
-  antenna, breaks into one rare part; `/rcdebug module`); tape reels (60 colourways; blank, found server tapes from
-  config/radiocraft/tapes or the world with `tapes_in_world`, or recorded) and the tape player (plays out loud and
-  into touching radios; manual, loop, interval or redstone; records nearby voices up to a minute). JOrbis decodes the
-  .ogg files. Recipes 2026-10-27: tape player `PIP/SRS/PPP`, blank reel `NKN/KPK/NKN`. Still to do: structures
-  that spawn them (with found tapes), the tape player's screen art.
-- [x] Create alternator (2026-10-26): with Create and without Create Crafts & Additions, RadioCraft adds CC&A's
-  alternator (MIT, adapted in `compat/create`, see THIRD_PARTY.md) so Create rotation charges batteries. Dev runs
-  with Create: `-PwithCreate`; the dev NeoForge went to 21.1.248 for it (Create 6.0.10 needs 21.1.219+).
-- [x] Sable support (2026-10-28, requested by a player): radios, antennas and station gear work on Sable sub-levels
-  (airships, boats; Create Aeronautics). Sable Companion (MIT) is bundled and returns positions unchanged without Sable;
-  `compat/sable/Sublevels` gives the real place of a block on a ship, used for range, skip, terrain, solar weather,
-  weather reports, WEFAX, lightning, direction finding, the transmitter log, APRS beacons and maps, mics and speaker
-  audio (voice channels follow the ship); directional antennas (Yagi, Moxon, loops, dish) turn with the ship, microwave
-  dishes aim with it. `MixinSableAssembly` (@Pseudo) carries antenna wires onto a new ship when both ends go;
-  `data/sable/tags` gives our blocks Sable mass and volume and keeps antenna wires on ships. Another Weather Mod's side:
-  storms push ships and tornadoes lift them, and Sable reads its wind. Dev runs: `-PwithSable`. Playtest pending
-  (NeedsTesting).
-  - [ ] An antenna wire with only one end on a new ship is left behind and drops (Sable has no hook for that case)
-  - [ ] Lightning on ships: Sable stops strikes inside plots, so only our antennas draw a bolt to a ship (where it
-    really is). Open: lightning rods aboard do nothing (vanilla looks for rods in the world grid), a deck over an
-    antenna does not shelter it, the bolt sets no fire there, and on a turned ship it can land past the 2.5 block hit
-    range and do no damage. Left for the alpha testers (maintainer, 2026-10-28).
-  - [x] Antenna damage (2026-10-25): with Another Weather Mod, winds over 33 m/s may blow antenna parts and wire
-    holders down (up to 30 % each time the wind picks one, at 60 m/s); `wind_antenna_damage_enabled`
-- [x] (fixed: the model loads, `ModelFilesTest` has nothing on KNOWN_BROKEN) WEFAX receiver model: its Rotary elements are turned -85, 80 and 42.5 degrees, which Minecraft 1.21.1 cannot
-  load (it shows as missing). Re-export with Blockbench set to 1.21.1 and 22.5 degree steps (`ModelFilesTest` lists it)
-- [x] WEFAX receiver (maintainer, 2026-10-23; screen done 2026-10-26, see the WX items): prints weather charts, after the WX work. The block and model are in
-  (dev tab, decorative; recipe 2026-10-23: a board, paper drum and a clock); the UI comes once the rest of the WX work is done
-
-### New bands and services (maintainer, 2026-10-23)
-- [x] Airband (VHF AM aircraft band, built 2026-11-13): the `airband` band (118-137 MHz, AM, 25 kHz), the Airband
-  Radio (a vintage panel-mount COM: USE and STBY windows, flip-flop) and the Aircraft VHF Antenna (on top of a block
-  or hanging under one; about 1.1:1 mid-band, under 2:1 at the edges). 2m antennas read about 2.2:1 there now
-  (`Band.twoMetreAntennaSwr`). No recipes yet (awaiting review).
-  - [ ] Aircraft traffic: recorded or generated ATC chatter on the airband (needs audio)
-- [ ] ISM band
-- [x] CB radio (11m, maintainer, 2026-11-08): the CB band (26.965-27.405 MHz, 10m's reach less 25% line of sight and
-  30% skip for 5 W), the 40 FCC channels, AM receive (no static until a signal weakens, bleedover from the next
-  channel, talkers mix as on SSB). The TRC-217 style portable (whip pulls out ~3 blocks when on, half a mobile's range
-  both ways, own cells), the 5875 mobile (clock, signal/power and SWR/modulation meters, speech compressor; premium
-  10m crystal) and the PC68 (CH9 switch; any 10m crystal). No licence. Same receive draw as SSB rigs, a little more on
-  the air. Placeholder art by agy (`tools/cb_radio_assets.py`, `tools/cb_portable_models.py`); recipes approved 2026-11-09.
-  Later: make the squelch knobs work, SSB on the 5875's FUNCTION knob?
-- [x] Modes meet (maintainer, 2026-11-08): `Modulation` on every voice packet (pushed by the transmitter, else the band's
-  usual), `ModeMix` for SSB/AM/FM receivers hearing each other (AM carrier beat on SSB, FM warble, SSB only as QRM on
-  AM, FM deaf to AM); 10m tunes down to 26.9 MHz (freeband); all-band radio AM; no antenna = SWR 6 for blowouts;
-  `ModeMixTest`, `amAndSsbMeetOnTheFreeband`
-- [-] FRS radios: not added, and not wanted (too new for the mod's era; maintainer, 2026-11-08)
-- [x] CB second pass (maintainer, 2026-11-08): screens as textures from JSON layouts (`CbPanel`, `tools/cb_gui_assets.py`),
-  volume knob is the power switch (server owns it), 5875 clock on supply, in-world channel/clock/needles/lamps on the
-  maintainer's models (`CbRadioRenderer`), portable on a real battery capability, CB Ground Plane Antenna (5 tall, SWR
-  1.1 at ch 19, 1.8 at 28.0 MHz; placeholder model `tools/cb_ground_plane_models.py`, recipe awaiting review). Open: the
-  5875's AWI lamp has no job yet; the maintainer's models use `#missing` on some knobs and the PC68 DISPLAY
-- [x] Small battery renamed Small NiCd Battery; new non-rechargeable Small Alkaline Battery (fits the weather alert
-  receiver; recipe awaiting review); creative-only All Applications Floppy (2026-11-08)
-- [x] FM broadcast radio station (built 2026-11-13): the `fm_broadcast` band (88.1-107.9 MHz, 200 kHz channels; the VHF
-  antenna network now starts at 80 MHz) and the FM Broadcast Transmitter, a two-block cabinet, three times a radio's
-  strength, lit while on the air. No recipe yet (awaiting review).
-- [x] FM broadcast receiver (built 2026-11-13): a wood-sided table radio, receive only, on its own wire antenna until an
-  antenna is coaxed to it. No recipe yet (awaiting review).
-  - [ ] AM broadcast band on the receiver (its dial has an AM scale; the band would be MF, 530-1700 kHz)
-- [ ] Internet radio streams: a block that plays an IP radio stream onto the air or a speaker (maintainer, 2026-10-27)
-- [ ] A global internet radio stream: heard anywhere above ground (maintainer, 2026-10-27)
-
-### Antenna Expansions
-- [x] Moxon (HF wire, 1:1 balun; 20m 7 x 3, 10m 3 x 2) and delta loop (4:1 balun, closed triangle) (2026-10-24,
-  [doc/DeltaLoopAndMoxonPlan.md](doc/DeltaLoopAndMoxonPlan.md)); the VHF Moxon block still needs a model
-- [x] Ringo antenna (maintainer, 2026-10-23): done 2026-10-27, VHF Ringo, 1.10x a J-pole, lightning resistant, craftable
-- [x] Industrial dipole antenna (maintainer, 2026-10-23): done 2026-10-27 as the 2-bay VHF folded dipole, 1.25x, lightning resistant, structures only
-- [ ] Figure out how we'll allow building of HF yagis (maintainer, 2026-10-21): options in `doc/Plan-HFYagiAndWireSag.md` (2026-11-13), for review
-- [x] Satellite dish: it is the small microwave dish now (links since 2026-10-26, recipe `microwave_dish`); satellites
-  can use it later.
-- [x] Hustler 5-BTV multiband vertical (2026-10-23, maintainer's model): "5-BTV Multiband HF Antenna", seven blocks
-  tall, placed and broken as one, coax to the base. SWR 1.3 on every HF band and VHF; on HF line of sight reaches
-  half as far and skip a quarter further (the far edge of the skip window). Dev tab; late-game recipe (2026-10-23):
-  two copper blocks of tubing, four ferrite traps, two lightning rods, coax
-- [x] Delta loop (2026-10-24): a closed triangle on a 4:1 balun, upright or flat; analyzer messaging waits for the analyzer
-- [ ] Add sag-varying visuals for long unsupported antenna wire runs: plan in `doc/Plan-HFYagiAndWireSag.md` (2026-11-13), for review
-- [x] 4:1 balun and off-centre-fed dipole (2026-10-21, maintainer): new `balun_four_to_one` feeding an OCFD
-  (short arm a third to two thirds of the long one, matched on the half wave and its 2nd and 4th harmonics, poor
-  on the odd ones). The 2:1 stays for the quad loops. The 4:1 has its own texture (maintainer, 2026-10-23).
-- [ ] Loop antennas (maintainer, 2026-10-21): the horizontal and vertical quad loops exist on the 2:1 balun but
-  have never been played with. The delta loop is in (`DeltaLoopAntennaType`: a closed wire triangle fed at a corner
-  by the 4:1 balun, `DeltaLoopMoxonGameTests`, guide entry). Play the quads and the delta, then settle the loop gains.
-- [x] Release creative tab (2026-10-21, maintainer): the HF station (radios, receivers, VHF base station, coax,
-  wire holders, baluns, tuner, VHF antennas, parrot controller, weather station) moved out of the dev-only list
-  and lost the dev watermark. Everything finished followed on 2026-10-27 (maintainer): repeaters, power, packet,
-  speakers, tower beams, microwave dish/radio/telephone, direction finders and the manpack. Still dev-only, with the
-  dev watermark: nothing. The Ionospheric Processor and the microwave horn followed on 2026-10-27; the horn has no
-  recipe by design (maintainer, 2026-10-27): it is only found in structures.
-- [x] Solar panels join by touching (2026-10-21, maintainer request): a row of panels and the charge controller at
-  its end are one network without wire; batteries still need wire. Jade shows a panel's output and the row's.
-  Open: a device removed from the middle of a touching row does not split the row (wire removal does).
-- [x] Wire Passthrough (2026-10-21, maintainer request): an item that turns a plain solid block into a conductor
-  for both wire kinds while keeping its look (`PassthroughBlock` + mimic block entity + renderer). Open: should
-  Jade name the mimicked block; a 2-thick wall needs two of them.
-- [x] H19 needs power (2026-10-27, maintainer): `AprsTerminalNetworkObject` draws `aprs_terminal_power_use`; the
-  terminal is on only with power and a powered radio through the gear (or a microwave radio serving it); the screen
-  is dark glass otherwise and boots when it comes on. RFI sound follows the redstone part of the interference only.
-- [x] WEFAX tray and RFI sound (2026-10-27, maintainer): a printed sheet waits in the tray (blockstate `ready`, the
-  maintainer's model split by `tools/wefax_models.py` into idle/ready) and on the screen until clicked; the next
-  print pushes it out. `redstone_rfi.ogg` replaces the placeholder hum in `RadioInterferenceHumSoundInstance`.
-- [x] WEFAX readability (2026-10-27, maintainer): WX REPT prints the radar and a forecast text sheet (storms
-  numbered, named in plain words via `StormReport#chartName`, bearing, heading, arrival; `WeatherReports#stormList`),
-  "YOU" at the station; tornadic storms are "SVR T-STORM" until a tornado is down. Solar bulletins go out as
-  `wefax_bulletin_seconds` of fax tones (`FaxAudio.data`) instead of an AFSK burst; SOLR WX waits 45 s.
-- [x] Thin and coloured wire (2026-10-27, maintainer's design): power wire is 1 px square (coax 2 px: thin hookup
-  wire against fat RG-8), sixteen dyed wires exactly like dyed coax (`COLOURED_WIRE`, tinted textures from
-  `tools/coax_colours.py`, all part models from `tools/wire_assets.py`, `WireBlock#width`, hitbox pieces per width).
-  Bundles lay strands by width with a pixel between (`WireLook#layout`, `Strand#offsets`, fractional offsets); power
-  wires may share a block only if they do not join (`WireBundleBlock#canAdd`); faults walk per strand along the
-  colours it joins (`WireFaults`). Waterproof wire stays plain.
-- [x] Wire bundles (2026-10-27, maintainer request): up to 7 cables in one block (`WireBundleBlock` + block entity,
-  no item): a wire item used on a wire of another kind lays it in with it; sneak + empty hand takes out the strand
-  under the crosshair; breaking drops all. One power wire at most (two would be a shorted loop), no duplicate kinds.
-  Each strand is kept as the `BlockState` it would have as a lone wire, so bends, hugging, climbs and links are the
-  wire's own; the network walk (`WireUtils`) runs on `(pos, kind)` strands, so two coax colours in one bundle stay
-  apart. Strands draw side by side (`Strand#offset`, `WireLook#affine`: stubs stretched to the face so nothing gaps);
-  one hitbox, but clicks pick the nearest strand. Faults, lightning coax burn-out, Jade and the antenna coax stubs
-  know about bundles. Crossings between blocks meet halfway between the two sides' offsets and each stub slants to
-  the meeting point (`WireLook.Faces`, shear terms in `WireLook.Affine`), so a strand leaving a bundle for a lone
-  wire or a device no longer steps sideways (maintainer's screenshot, 2026-10-27 evening).
-- [x] Wires hug walls (2026-10-21, maintainer request): wire, waterproof wire and coax climb a solid block like
-  redstone dust and link diagonally to the wire or device on top, instead of a floating vertical piece. Also gave the
-  waterproof wire the blockstate it never had.
-
-### Ideas (maintainer, 2026-10-27)
-- [x] Receive-only antenna splitter (2026-10-30): a coax pass-through block; every radio behind it hears the antenna
-  at 1/sqrt(n) of the signal and none can transmit through it (`AntennaSplitterNetworkObject`, `SplitterGameTests`).
-  Placeholder box (bounty); recipe 4 coax round an iron ingot.
-- [ ] Combined coax-and-wire cable: power and coax run side by side in one block into a radio, split out later
-- [ ] Maybe: a redstone strand in cable bundles (maintainer, 2026-11-15: skipped for now, kept here)
-- [x] Lightning (2026-10-30): being struck breaks every handheld and manpack you carry into salvage; a manpack
-  switched on adds `lightning_manpack_extra_damage` (`CarriedRadioStrikes`, server config to switch it off).
-- [ ] Another Weather Mod: ball lightning, a rare event in swamps for players who have not slept
-- [ ] Flooding (some sort: water rising onto stations, shorts, in storms?)
-- [ ] Integration with seasons mods (Serene Seasons etc.): seasonal propagation, solar output, weather
-- [ ] Screenshots on the website wiki (and in the guide book: see the guide book item below)
-- [ ] Ender-quantum chest link set: a computer and a chest interface (built with an ender chest) that pair up over the
-  station. The computer's terminal lists the linked remote chests; pick one to send items from your inventory into it
-  and pull items from it into yours.
-
-### Ideas (maintainer, 2026-10-30)
-- [x] Antenna switch (2026-10-30): one radio, three antennas (`AntennaSwitchBlock`, the 2026-10-26 model). The input
-  turns to the coax that leads to a radio by itself; right click turns the knob to output 1, 2 or 3; the coax walk
-  passes through it only between the input and that output (`IPassThroughNetworkObject#passesSide`). Recipe: coax
-  round an iron ingot with a lever below. `AntennaSwitchGameTests`.
-- [x] WEFAX tornado watch (2026-10-30): `WeatherSource#tornadoWatch` (Another Weather Mod's watch days); weather
-  reports print "TORNADO WATCH" and today's and tomorrow's day type (`WeatherSource#outlook`, "RAIN LIKELY").
-- [x] WEFAX redstone output (2026-10-30): 1 for a message, 2 for a severe thunderstorm (or supercell, hail, damaging
-  wind), 3 for a tornado or tornado watch, 4 for a hurricane, the highest of what came in. On when a message starts
-  printing (so only with paper), off when the printed sheet is taken (`WefaxReceiverBlockEntity#alertLevel`).
-- [ ] WEFAX weather charts (radar, forecast, surface analysis) at twice the resolution, for more detail and easier
-  reading. The solar weather report stays as it is. A vanilla map is 128 x 128 pixels, so 256 x 256 needs our own
-  map data and renderer, or four maps tiled together.
-- [x] Data wire (2026-10-30): light grey 1 px wire (`DataWire`, tag `radiocraft:data_blocks`), in bundles too,
-  3 wire + 6 insulation makes 16. It links radios to teletypes, faxes, WEFAX receivers, radio interfaces, the tape
-  player and the Ionospheric Processor, wired speakers to radios, and microwave radios to the stations they serve and
-  their site's other radios; the station bus runs along it. Plain wire only carries power now. Existing worlds: wired
-  speakers and microwave stations on plain wire went quiet and need data wire laid (maintainer accepted, alpha).
-
-### Ideas (maintainer, 2026-10-31)
-- [ ] APRS handheld: a variant of the VHF handheld with a built-in APRS beacon that also receives APRS messages and
-  shows them on its screen. Needs the player's callsign set.
-
-- [x] Weather fax on the air (2026-10-31, maintainer): bulletins go out as real WEFAX audio (`WefaxAudio`: start tone,
-  phasing, the picture as 1500-2300 Hz, stop tone) and print line by line as they arrive, speckle where the radio stops
-  copying; radios show TX while data goes out; WX REPT plays the coast station's tones through the receiver's radio.
-- [x] Blackout keeps local contacts at half range (2026-10-31, maintainer): line of sight copies against
-  `los_solar_noise_share` (0.5) of the solar noise; skip is still dead.
-- [x] `/solarweather` works again (2026-10-31): shows the conditions; `set`, `forecast`, `aurora`, `sporadic_e` for ops.
-
-- [x] Dyed data wire (2026-10-31, maintainer): sixteen colours like dyed coax, each joining only its own colour.
-- [x] Creative search by number words (2026-10-31, maintainer): "twenty" finds the 20m radio (`SearchAliases`, added
-  to the tooltip only when the search indexes it, never shown).
-- [x] Blackout flutter (2026-10-31, maintainer): line of sight HF voice gets `blackout_los_distortion` (0.4) of the
-  aurora rasp in a blackout.
-
-### World & Progression Additions
-- [ ] In-game guide book like the Create mod's (Ponder-style scenes) explaining radios, antennas, power and the
-  digital interface (maintainer, 2026-10-21)
-  - [x] Patchouli guide book (2026-10-23): "Radiocraft Handbook", optional (only with Patchouli installed; dev runs
-    have it). 8 categories, 34 entries with crafting pages and Visualize-able builds (stations, antennas, power,
-    repeater site, APRS, teletype, sounding station). Book plus wire crafts it. Patchouli builds are inline block
-    patterns, not NBT structures. `PatchouliBookTest` checks every link, recipe, item and block state in it.
-  - [ ] Guide book: pictures (screenshots of the GUIs), the wide-band receive antenna, handheld APRS when it exists
-  - [ ] PonderLib scenes, shipped as a datapack (maintainer, 2026-10-23)
-- [ ] Cable trays (maintainer, 2026-10-21): one block carries several cables at once, colour coded; a coloured ring
-  where a cable leaves the tray, at cable ends and where a cable meets a block, so you can tell the runs apart
-- [x] Solar weather station, minimal (2026-10-20): right click reports the current conditions, noise floor and whether
-  10m is open (solar event JSONs carry an `openBands` list; good and great open 10m); a comparator reads 1 (blackout)
-  to 6 (great); Jade shows the same. Nothing uses "10m open" for propagation yet (plan step 2).
-- [ ] Solar weather station, rest of the proposal: printed paper report (consumes paper, hopper fed, redstone
-  activated), best-band calculator between two coordinates
-- [x] `/bandcalculate <from> <to>` (2026-10-23, proposal admin command): lists each band between two x z points as
-  line of sight, skip (with its condition), aurora or out of range, best first, from the band ranges in the server
-  config and the current solar conditions. An estimate: antennas, power and noise are not counted.
-- [x] 10m skip (2026-10-23): one long hop, 2500-8000 blocks by day and 2500-6000 at night, open only when the
-  solar event rates 10m (great and good). Existing config files keep their zeros until the `10mm_*Skip*` values are
-  set or the file is deleted.
-- [x] The solar weather station needs a radio (2026-10-23, maintainer): one of any kind next to it with a real antenna
-  on its coax (a dummy load does not count), else it reports "No signal" and its comparator reads 0. Server config
-  `solar_weather_station_needs_radio` (default on) turns it off. The radio does not need to be powered.
+- [ ] Known: `CableHouseGameTests.houseCablesLookRight` is optional until the maintainer's house is clean (15
+  problems on 2026-11-15: one three-strand crossing at house 17,14,25 with no room to bridge, and right-angle
+  detours to centred devices, which are by design)
+- [ ] Bundles: a strand that joins from the far side still crosses the others (check: maybe done by the 2026-11-15
+  bridges, see CableRoutes#bridges)
+- [ ] Cable trays (maintainer, 2026-10-21): one block, colour coded, a coloured ring where a cable leaves the tray, at
+  ends and at blocks (bundles carry up to 7 cables since 2026-10-27; the tray and rings are not built)
+- [ ] Combined coax-and-wire cable into a radio, split out later (check: maybe done by wire bundles, see WireBundleBlock.java)
 - [ ] Improve wire spool storage UX (bulk crafting/collapse)
-- [x] Crystals (2026-10-22): raw 80/40/20/10m and VHF crystals in pure, good and poor turn up when digging sand
-  (`crystal_sand_chance`, quality weights in the server config); one iron ingot encases them. Each crystal radio
-  comes as Premium (pure), plain (good) and Cheap (poor) blocks/items; crafting a radio with an encased crystal of
-  another quality swaps it. QRP radios take only poor crystals and ignore them; the repeater takes only pure.
-- [ ] Crystals from pressing sand with the Create mod's mechanical press (maintainer, 2026-10-22)
-- [x] Insulation item texture (maintainer, 2026-10-23): `textures/item/insulation.png`
-- [x] Microphone element and speaker crafting components (maintainer, 2026-10-22): a microphone item (its own
-  texture) used in the hand microphone and desk microphone recipes, and a speaker item used in radio recipes
-  - [x] Microphone Element (2026-10-23, maintainer's texture): ` P `/`NCN` (paper, iron nuggets, coal or charcoal)
-    makes 2; the hand microphone (in place of charcoal) and the desk microphone (in place of a hand mic) use it
-  - [ ] Once the microphone item exists, the maintainer will switch the VHF handheld recipe to use it
-- [x] Desk speakers (maintainer, 2026-10-22; built 2026-10-26): radios now play 80% of the voice passband through
-  their own speaker (handhelds too); a desk speaker (11 woods) or the large speaker touching the radio gives 90%, a
-  premium speaker (black, silver, gold) the whole passband (`SpeakerKind`, `SpeakerBlock`).
-- [x] More speakers (maintainer, 2026-10-23; built 2026-10-26): the wall speaker and the loudspeaker go on the radio's
-  power wire (it doubles as the speaker line) and each play the radio's voice where they stand, as many as wanted:
-  the wall speaker 80% with extra distortion, the loudspeaker distorted, louder and heard to 64 blocks
-  (`WiredSpeakerBlock`, `SpeakerNetworkObject`, wired outputs in `BEVoiceReceiver`). Static still plays only at the radio.
-  - [x] Recipes for every speaker (the loudspeaker last, 2026-10-27: a ring of iron round a radio speaker)
-- [x] Direction finder (maintainer, 2026-10-26): the DF-1 terminal with 3 to 8 modules, each needing an antenna of
-  the same type; modules lock one a second while the frequency is heard, bearing accuracy from 10 degrees (3) to 1.5
-  (8), doubled on skip; bearings typed in from other stations give a fix (`DirectionFinding`); the map enabled one
-  (crafted with the World Map Module, which journeyman cartographers sell) plots it on an amber map.
-  - [x] Recipes for the direction finder and its module (maintainer's, 2026-10-26)
-  - [x] The direction finder draws power (2026-10-27, maintainer request): `direction_finder_power_use` a tick
-    while on (`DirectionFinderNetworkObject`, still a microwave `StationLink`), dark without it. A wire to any module
-    feeds it: modules pass power on by touching (`IPassThroughNetworkObject#passesThrough(power)` and
-    `linksDirectlyTo(other, power)` keep the coax side untouched).
-  - [x] Handheld direction finder (2026-10-26): set a frequency, beeps and blinks faster facing the station
-    (`TransmitterLog`, `HandheldDfClient`); recipe from the maintainer
-- [x] Microwave links (2026-10-26): `MicrowaveRadioBlockEntity` (callsign + 4 digit hex ID, unique; 5925-7125 MHz in
-  10 MHz steps; broadcast master / search for master / confirm), the old satellite dish as the small dish (aimed in
-  azimuth and elevation), the horn at 6x range, links by signal level (`MicrowaveMath`, reworked 2026-10-27: RSSI in dBm, decodes at -90, good from -75, 45 degree beam default,
-  terrain atlas line of sight, blackout -20, interference within 30 MHz). Carries APRS between H19s (hops reset), DF
-  bearings, and telephone calls (`TelephoneBlockEntity`, extensions from 0). Stations attach by touching or by the
-  power wire. Both ends must be loaded.
-  - [x] Microwave radio and telephone recipes (maintainer's, 2026-10-26); wall speaker too
-  - [x] Telephone handset (maintainer, 2026-10-27): sneak + right click picks it up on a 5 block cord (answering a
-    ringing phone), the earpiece, handle and mouthpiece cubes leave the model (`off_hook`), only its holder is heard
-    and the far end plays at their ear; the arm comes up to the face and `PhoneEarLayer` draws the handset by the ear.
-    Sneak + right click with it hangs up. New bell ring (note block bell, two gongs alternating every tick, 2 s on 4 s
-    off). Wall phone when placed on the side of a block (`wall`). `tools/telephone_models.py` builds the off-hook
-    models and blockstate.
-  - [x] Maintainer's models in (2026-10-27): `telephone_wallmount.json` (drawn lying down, stood up by blockstate x 90)
-    and `phone_item.json` (renamed from `phone_Item.json`); the script works out the handset item's display slots
-  - [ ] Keep linked radios' chunks loaded? (today a far end in an unloaded chunk drops the link)
-  - [x] Phones draw power through their PABX (maintainer, 2026-11-02): `phone_power_use` 0.4 a tick on top of the PABX's
-    2 (20 phones match an HF receiver), a Phone PA triple on a call. The HF receiver now reads `hf_receiver`.
-  - [x] TA-43 field phone (maintainer, 2026-11-04): a party line on data wire, no PABX or power. Picking up rings the
-    others (magneto bell) until one answers; everyone off hook hears everyone. 6 phones to a line, 12 and louder with
-    power on any of them; more and the line is dead. Reaches 16384 strands of wire. Shares the telephone's handset
-    item class (`TelephoneHandsetItem.Owner`). Model and texture from `tools/field_phone_models.py`. `FieldPhoneGameTests`.
-  - [x] Data wire through unloaded chunks (maintainer, 2026-11-04): `DataWireMemory` keeps the strands every walk
-    passes (saved per dimension), and walks go on from it where chunks are unloaded, so telephones, PABXes and field
-    phones only need their own chunks loaded. Wire changes refresh it on the next tick.
-  - [x] RF passes through wood planks, stairs and slabs, glass, wool and leaves (maintainer, 2026-11-02): tag
-    `rf_transparent`, read by the terrain atlas and the handheld and manpack indoors check. Microwave paths still need a clear line.
-  - [x] Phone PA (maintainer, 2026-11-02): a phone with no handset that answers at once and plays the caller through
-    speakers touching it or on its data wire. Extension set on its screen, optional local calls only, skipped by
-    All-Call. `PhonePaGameTests`. Placeholder texture from `tools/phone_pa_assets.py`.
-  - [x] SSB with several stations (maintainer, 2026-11-02): weak voices keep their level and the static stays up with
-    them; a mix weights stations by strength and nearness (`ReceiverMix.nearness`), with one shared AGC, small per-station
-    pitch offsets, a late sky path on HF skip and slight overload from a transmitter right beside the receiver. A transmitting antenna
-    within 5 blocks desenses a receiving one, FM or SSB, scaling to nothing at 2 MHz apart (not on repeater inputs). Each is
-    a tuning guess until a playtest (doc/NeedsTesting.md).
-  - [x] Linked PABXes and All-Call (maintainer, 2026-11-02): PABXes on one network with the same master number dial
-    each other's bare extensions; a number used twice is dead and flashes EXT IN USE. An All-Call extension rings all
-    a PABX's phones, and those of linked PABXes with the same one; the first to answer takes it. `PabxGameTests`.
-  - [x] Phone PABX numbering like real phone systems (maintainer, 2026-10-31): no "behind" setting; PABXes on one data
-    wire or across microwave links are peers. A local extension wins, else a number starting with a powered PABX's
-    master number rings that extension there. `pabx_master_digits` (3) sets the master length. PABX names (10 characters) show on a phone keying the master number ("PABX 603: OFFICE"). Plain
-    settings screen (`PabxScreen`), and JEI keeps off every scaled station panel. `PabxGameTests`, `PabxNumbersTest`.
-- [x] HF manpack (2026-10-26): `HFManpackItem` worn on the chest or Curios back slot, `ManpackRadio` (QRP whip, SSB and
-  CW on 10m/20m, re-placed every tick like the VHF handheld), olive panel `ManpackScreen`, handset `ManpackMicItem`,
-  battery swapped with a small battery (sneak right click with one in the other hand)
-- [x] Tower beams, the "tower legs" (2026-10-26): thin, normal and thick, joining every beam they touch (26 directions,
-  `TowerBeamModel`). Recipes 2026-10-27, all iron, 4 at a time: thin `N N/NIN/N N`, normal `I I/ I /I I`, thick `I I/ B /I I`.
-- [x] Tower beams on a tower (maintainer, 2026-10-28): beams bear on solid blocks around them like iron bars (and on
-  antennas, baluns and poles above and below; `TowerBeamBlock#arms`), diagonal braces need the blocks beside their
-  edge or corner empty (`pathClear`), footholds hang on beams set back against the steel (`TowerFootholdBlock.Mount`,
-  models from `tools/foothold_reach_models.py`), and wires hug and climb beams drawn out against the steel
-  (`WireLook.Look#hugReach`, `Placed#foot/head`). Bends no longer z-fight (`tools/tower_beam_models.py` LAYER).
-  `TowerBeamGameTests`.
-- [x] Microwave sites (maintainer, 2026-10-28): radios touching or on one power wire are one data network, so links
-  relay site to site (`MicrowaveRoutes`, `microwave_max_hops` 8); the H19, direction finder, fax and telephone all
-  route through it. `sitesRelayAcrossTwoLinks`.
-- [x] Tower Beacon Controller (maintainer, 2026-10-28): a thin beam putting out redstone 2 s on, 2 s off with the
-  world clock, for obstruction lights; creative and structures only. `beaconControllerBlinks`. The Tower Beacon itself
-  crafts from a redstone torch, any tower beam and a redstone lamp (maintainer, 2026-10-28).
-- [x] Microwave horn (maintainer, 2026-10-28): coax at any base block feeds it, drawn to the middle of the base;
-  the horn is drawn by `MicrowaveHornRenderer` turned to its azimuth; it tilts +/-45 degrees inside, unseen.
-  `coaxAtAnyBaseBlockFeedsTheHorn`.
-- [x] Footholds stack with nothing behind them (maintainer, 2026-10-28), and stand 0.01 px off a beam. `footholdsStack`.
-- [x] Bundle drawing (maintainer, 2026-10-28): strands keep their order round bends (`BundleOrientation`: each
-  bundle turns its x or z layout round, solved along the run), splits peel off the near side, runs up lattice legs stay
-  straight (`WireBlock#runReach`), stubs to an edge run end at the strand's place, strands sit 0.01 px apart
-  (`WireModel.STRAND_LAYER`). `/rcdebug wires <from> <to>` (`WireGeometry`) checks drawn cable for gaps and crossings.
-  `BundleLayoutGameTests`. Open: a strand that joins a bundle from the far side still has to cross the others.
-- [x] Network objects keep a power and a coax network per side (`BENetworkObject.Slot`): a bundle of power wire and
-  coax into one face left a microwave radio on its coax network only, unpowered (2026-10-28). `MicrowavePowerGameTests`.
-- [x] Wire Junction (maintainer, 2026-10-28): joins power wire of any colour (a power pass-through, `WireJunctionNetworkObject`);
-  not coax. Half-height steel box from `tools/wire_junction_models.py`. `aJunctionJoinsColours`. Recipe ` I /IWI/ I ` (iron, plain wire), 2 (maintainer approved).
-- [x] Battery meter (maintainer, 2026-10-28; done 2026-11-07): on a power wire (passes through), its face shows the
-  batteries on the wire as a 12 V bank (`BatteryMeterReading`: volts, charge, trend), chat reading on use with time to
-  full/empty, comparator 0-15, Jade line. `BatteryMeterGameTests`, `BatteryMeterReadingTest`. Placeholder model
-  (bounty); recipe `IGI/WCW/III` (iron, glass pane, wire, comparator) awaiting the maintainer's review
-- [ ] More radio models and brands (maintainer, 2026-10-23)
-- [x] Structures (maintainer, 2026-10-23; done 2026-10-28): `radiocraft:site` (`SiteStructure`, `SitePiece`,
-  `SiteProcessor`), structure sets `radio_sites` (spacing 28, separation 9) and `radio_mountain_sites` (spacing 8,
-  separation 3: the repeater site and Long Lines, only on ground at y 130 and up, so a closer grid to find any). Six sites, templates in
-  `data/radiocraft/structure/sites` built by `Sites` (dev only, `/rcsite build|save|capture|place|check`): AP&P Long
-  Lines (the maintainer's build: 1 to 4 horns, each with its microwave radio), repeater site (folded dipole, commercial
-  repeater, module), buried desert bunker (no power), ionospheric observatory, weather observatory (H19 and weather
-  station), FCC direction-finding station. Optional parts are `variants` in the structure JSON (kept by world seed and
-  spot); the other sites (not the bunker) have a module a third of the time (`min_y` for the height). In one test
-  world (8 by 8 km) that gave about 20 repeater sites and 1 to 3 Long Lines; the low sites come every ~850 blocks.
-  `SiteGameTests`.
-  - [x] Commercial radio modules on the air with their chunks unloaded (maintainer, 2026-10-28): `CommercialStations`
-    (saved per level) sends every module's station; sites not generated yet are worked out around players like
-    `/locate` does (`SitePrediction`, `commercial_station_range` 6000) with the very program the module will get.
-  - [ ] Prepper bunker (maintainer, 2026-10-23)
-- [ ] Add something radio-related to villages (maintainer, 2026-10-23)
-- [x] Tower foothold (2026-10-24): `tower_foothold` (crafted: 3 from iron + stick, never breaks) and
-  `old_tower_foothold` (structures and creative): climbed like a ladder, stood on from above; an old one gives way
-  `tower_foothold_break_chance` (0.05%) of the times a player climbs onto or steps on it, with a sped-up anvil clang,
-  showing the maintainer's bent rung; a broken one cannot be climbed or stood on and drops nothing
-- [x] Guide book on first join (2026-10-24, `guide_on_first_join`), and `/radiocraft guide` or `/radio guide`
-- [x] Industrial radio block (maintainer, 2026-10-23): built as the commercial radio module (2026-10-26). Broken and working versions, found in
-  structures, not usable by players; breaking it drops a random rare radio component (the all-band circuit board and
-  others to come)
-- [x] Large microwave dish (maintainer, 2026-10-23): it is the microwave horn, a 2x2x4 block (2026-10-26) linking at 6x a dish's range; no recipe yet
-- [x] Microwave radio (maintainer, 2026-10-23; done): long-range, reliable point-to-point links, paired with
-  the large microwave dish
-- [ ] Satellites (maintainer, 2026-10-26): commanded from SATTRACK, by contract only: no launching or building, no
-  70cm, Doppler stays an off-by-default option (maintainer, 2026-11-13). See `doc/SatellitePlan.md`.
-  - [ ] Structure locating from a satellite pass
-  - [ ] Beacon-only (Sputnik) satellites
-  - Mapping into JourneyMap / Xaero's: see `doc/ModIntegrationPlans.md`
-  - [x] Satellites as FM repeaters (2026-11-11): amateur and commercial satellite contracts from master cartographers
-    (64 emeralds + a diamond) put one on orbit with a commercial license for its pair, a satellite license and the
-    SATTRACK floppy; 4-6 passes a Minecraft day, heard 10,000 blocks round the point under it with open sky, its tone
-    needed, a Morse ID after an over; green/red dots in the night sky; decays after `satellite_decay_days` (90);
-    `/radiocraft satellite add|remove|list|overhead`.
-  - [x] SATTRACK: every satellite, its next passes and decay date; owner and allowed players switch it on/off, set its
-    ID, tone and allowed list while it passes (2026-11-11)
-  - [x] Distress relay (2026-11-09, for 1.12's distress alerting): a satellite repeats DSC distress calls (channel 70)
-    and distress beacon alerts (161.975 MHz) it hears, so they are heard anywhere with open sky. The alert is built
-    for it: `distress.DistressAlert` is whole in itself (id, type, state, position, owner/MMSI, nature, time raised,
-    ack-by) and `encode()` is one line a relay re-sends unchanged; receivers file bursts by id, so a relayed copy
-    merges with the direct one. Needs a sky check at the receiver and a way to not relay a relay. Done 2026-11-11
-    (`satellite.SatelliteRadio`: every satellite, on or off; each burst relayed once by packet id).
-  - [x] WXSAT over the LAN (2026-11-15, maintainer): every WXSAT computer on a LAN gets the lines any of them copies,
-    in the same pass's layer; Options > Block LAN sync (L, off by default) keeps one computer's mosaic its own.
-    `lanComputersShareThePictures`. The External CRT Monitor says WAITING FOR SATELLITE PASS until it has a picture.
-  - [-] ~~Combining or splitting licenses~~ Not wanted (maintainer, 2026-11-15).
-- [x] Manpack radio (maintainer, 2026-10-23): a radio worn on the back (built; the backpack mods' versions are open)
-  - [ ] [Traveler's Backpack](https://www.curseforge.com/minecraft/mc-mods/travelers-backpack) version
-  - [ ] [Sophisticated Backpacks](https://modrinth.com/mod/sophisticated-backpacks) version
-- [x] Power from other mods (2026-10-23, maintainer): the large battery takes and gives Forge Energy, so Create:
-  Crafts & Additions' [Alternator](https://create-mod-addon.fandom.com/wiki/Alternator) or any other mod's generator
-  can charge the power network. Power rebalanced around that: one large Create water wheel geared up to 8 RPM, or
-  two small wheels on one shaft (512 SU either way), driving one alternator makes about 11 FE/t, which just keeps up
-  with a VHF base station transmitting 80% of the time (2 FE/t listening, 13 transmitting). HF radios 8/26, QRP 2/13,
-  repeater 4/17, solar panel 9, large battery 260000 (one Minecraft day of that base station), small battery 60000.
-  The handheld's drain is now spread over ticks, so its battery really lasts the 2/6/12 days. Existing config files
-  keep the old numbers until deleted. (A single small wheel tops out at about 5 FE/t, geared down to 4 RPM.)
+- [ ] Solar panels: removing a device from the middle of a touching row does not split the row
+- [ ] Wire Passthrough: should Jade name the mimicked block; a 2-thick wall needs two
+
+### World & progression
+
+- [ ] Ponder-style guide (maintainer, 2026-10-21): PonderLib scenes shipped as a datapack (maintainer, 2026-10-23)
+- [ ] Guide book: pictures (GUI screenshots), the wide-band receive antenna, the handheld APRS module (check: maybe done)
+- [ ] Screenshots on the website wiki
+- [ ] Prepper bunker structure (maintainer, 2026-10-23)
+- [ ] Structures that spawn tape players with found tapes; the tape player's screen art
+- [ ] Satellites: structure locating from a pass (on hold, 2026-11-13)
+- [ ] Flooding of some sort: water rising onto stations, shorts, in storms?
+
+### Integrations
+
+- [ ] Map mods (JourneyMap, Xaero's; [doc/ModIntegrationPlans.md](doc/ModIntegrationPlans.md)): APRS map terrain
+  beyond render distance, satellite passes marking areas explored, waypoints for APRS stations, distress positions
+  and fire alarm boxes
+- [ ] Manpack versions for [Traveler's Backpack](https://www.curseforge.com/minecraft/mc-mods/travelers-backpack) and
+  [Sophisticated Backpacks](https://modrinth.com/mod/sophisticated-backpacks)
+- [ ] Seasons mods (Serene Seasons etc.): seasonal propagation, solar output, weather
+- [ ] Crystals from pressing sand with Create's mechanical press (maintainer, 2026-10-22)
+- [ ] Sable: an antenna wire with only one end on a new ship is left behind and drops (no Sable hook)
+- [ ] Sable lightning: rods aboard do nothing, a deck does not shelter an antenna, no fire, a turned ship's bolt can miss
+  (left for the alpha testers, maintainer, 2026-10-28)
 - [ ] Look for other mods that would be easy to integrate with (maintainer, 2026-10-23)
-- [ ] Introduce random structures, auto-beacon radios, APRS Discord bridge, and external radio API hooks
-- [x] Squelch (2026-11-09): CB SQUELCH knobs, and a squelch on the 20m, 40m and HF receiver spare knobs, against the S-meter.
-- [x] Station plans (2026-11-09, `doc/Plan-Station.md`): `/contest` (2026-11-09), iambic keyer (2026-11-12), linear
-  amplifier and light coax loss (2026-11-13). Hardline not built (the loss is light enough not to need it). More bands
-  on hold (too much choice on small servers).
-- [x] Review all recipes together (maintainer, 2026-10-20; finished 2026-11-09 with the CB radios, grounding, batteries, switches): align crafting costs (e.g., netherite-heavy radios) with the original spec or update the design doc to reflect lighter recipes; decide the simplex repeat controller recipe
 
-## Radio Moderation Computer (maintainer, 2026-11-04; done 2026-11-04)
+### AWM companion mod
 
-An admin-only block (not craftable) for moderating voice on a server. Design agreed 2026-11-04:
+- [ ] Ball lightning: a rare event in swamps for players who have not slept (AWM's own list is `E:\AnotherWeatherMod\todo.md`)
 
-- [x] Features: who is talking now; listen live to everything one player sends or hears; browse and play back past
-  transmissions filtered by radio, player, frequency and time; flag recordings to keep them past retention; export
-  (Ogg Opus files written to a server folder, not pushed through the game connection); search player tapes; link map
-  of who hears whom (from the hearers of each transmission, counted per day); radio positions on a map (reuse the H19
-  map painter); a separate Proximity tab with the same tools for plain Simple Voice Chat.
-- [x] Storage: each transmission recorded once, at its source, never once per listener; the hearers (who, strength,
-  which radio) kept as metadata, and "what X heard" played back by putting the source through the receiver effects at
-  the logged strength. Player voice stored as the Opus packets that arrive (no encoding), or re-encoded narrowband
-  (8-12 kbps) by a background thread if `moderation_archive_quality` asks. Audio appended by one writer thread to
-  hourly files; a small index (who, when, radio, frequency, position, hearers) searched in memory or an embedded
-  database. Retention deletes whole hourly files; flagging copies the recording to a kept folder first. Estimate to
-  measure: ~11-14 MB an hour of speech as received, ~3.5-5 MB narrowband.
-- [x] Data as data, not audio: CW as key timings plus decoded text (replayable, searchable); RTTY, APRS, packet and
-  fax as their saved packet records (fax: its label and what item was sent).
-- [x] Player tapes sent over the air: a pointer to the tape's recording, no copy. If the tape is erased, recorded over
-  or destroyed within retention, its audio file moves into the archive instead of being deleted, and goes when
-  retention ends.
-- [x] Notes only, no audio: commercial radio modules (what played, where, when, frequency), server tapes (which tape,
-  where, when) and repeater retransmissions (a "repeated" note linked to the source transmission, which is already
-  recorded once).
-- [x] Locking: locked to whoever places it (their UUID on the block); the owner can add other admins from its UI; an op
-  command clears the lock so it is never stranded.
-- [x] UI: user friendly first, Windows 98 themed (grey bevels, title bar, tabs Live / Archive / Map / Links / Tapes /
-  Proximity, list views with column headers, search box, filter dropdowns, play / pause / scrub, Flag, Export).
-  H19 sounds: keys on typing, the boot sequence on start, the bell when a watched player keys up.
-- [x] Server config: `moderation_record_radio` (false), `moderation_record_proximity` (false),
-  `moderation_retention_days` (7), `moderation_metadata_only` (false), `moderation_storage_cap_gb` (5, oldest
-  dropped first), `moderation_archive_quality` (original | narrowband), `moderation_notice` (on).
-- [x] Privacy: off by default, proximity separately; a join notice that voice is recorded and a small REC on radio
-  screens while archiving; short default retention; only owner and added admins open it; every playback and export
-  logged with who and when. Consent laws (two-party US states, GDPR) apply to servers that turn it on.
-- [x] Order: 1) logging, index, link map, radio map (no audio); 2) Live tab (mostly UI over RadioModeration and
-  TransmitterLog); 3) audio archive with the storage rules above; 4) Proximity tab and tape search.
-  - Server side done 2026-11-04 (`common/moderation`, `ModerationLog` is the query API): logging with hearers, index,
-    link counts, radio positions, the audio archive (flag, export to Ogg Opus, retention, cap, audit log), tape
-    pointers with copy-on-change, proximity recording and tape search data; `/radio moderation ...` for testing. Left:
-    the block, lock, networking and UI; narrowband re-encoding (no bitrate setting in Simple Voice Chat's server API).
-  - Block, lock and screen done 2026-11-04 (`moderation_computer`, `ComputerRequests`, `ModerationPlayback`,
-    `client/screens/moderation`): Live (follow what a player sends or hears), Archive (filters, detail, play clean or
-    as heard, flag, export), Map, Links, Tapes, Proximity, Access with the audit log; REC on radio screens and the
-    handheld LCD; `/radio moderation unlock <pos>`. Needs a playtest (doc/NeedsTesting.md) and a real model (bounty).
-    Left: scrubbing within a playback (play/stop only), narrowband.
+### Maybe / someday
 
-- [ ] Moderation Computer leftovers: scrubbing within a playback (play/stop only today) and narrowband re-encoding
-  (Simple Voice Chat's server API has no bitrate setting)
+- [ ] A redstone strand in cable bundles (skipped for now, maintainer, 2026-11-15)
+- [ ] Grounding: a little efficiency for verticals on a good ground
+- [ ] BASIC interpreter with redstone I/O on the radio computer (skipped, doc/Plan-Computer3.md)
+- [ ] Beacon-only (Sputnik) satellites (doc/SatellitePlan.md "Later"; check: session notes of 2026-11-13 say not wanted)
+- [ ] 6m, only as an all-band radio setting with sporadic-E (doc/Plan-Station.md: more bands not planned)
+- [ ] The smaller "left undone" notes in doc/Plan-1.12.md's step handoffs (3D item models for handhelds, marine
+  tri-watch, a fax/FaxModem merge, ADS-B terrain...), if any become wanted
+
+## Decided against
+
+- [-] Terrain losses in the antenna analyzer: it only sweeps SWR; `/bandcalculate` covers paths (maintainer, 2026-11-08)
+- [-] FRS radios: too new for the mod's era (maintainer, 2026-11-08)
+- [-] Combining or splitting licenses (maintainer, 2026-11-15)
+- [-] Satellite launching or building, a 70cm band; Doppler stays an off-by-default option (maintainer, 2026-11-13)
+- [-] Advancements "Up the Tower" and "Off the Grid" (maintainer, 2026-11-06)
+- [-] Hardline coax: the loss is light enough not to need it (2026-11-13)
+- [-] The fire alarm controller's own CRT screen (maintainer, 2026-11-13)
+- [-] The wire block-state reduction (maintainer: memory is not the complaint, doc/Plan-1.12.md)
