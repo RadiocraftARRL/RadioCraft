@@ -112,8 +112,15 @@ public final class CrtMonitorPictures {
 					frames.add(frame);
 			}
 		CrtMonitorBlockEntity.Mode mode = CrtMonitorBlockEntity.Mode.values()[Math.max(0, Math.min(CrtMonitorBlockEntity.Mode.values().length - 1, packet.mode()))];
-		Picture old = PICTURES.put(packet.master().immutable(), new Picture(packet.on(), mode, packet.width(), packet.height(), frames));
-		if(old != null)
+		Picture fresh = new Picture(packet.on(), mode, packet.width(), packet.height(), frames);
+		Picture old = PICTURES.put(packet.master().immutable(), fresh);
+		if(old != null && old.texture != null && old.width == fresh.width && old.height == fresh.height) {
+			// The same screen again (a pass adds a line every couple of seconds): repaint its texture in place instead of
+			// a new texture and a new name each time, whose render types would be kept for good (2026-11-15).
+			fresh.texture = old.texture;
+			fresh.id = old.id;
+		}
+		else if(old != null)
 			old.release();
 		for(Iterator<Picture> it = PICTURES.values().iterator(); PICTURES.size() > MAX && it.hasNext(); ) {
 			Picture oldest = it.next();

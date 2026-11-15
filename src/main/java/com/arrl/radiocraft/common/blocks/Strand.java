@@ -151,7 +151,31 @@ public record Strand(BlockPos pos, @Nullable WireBlock kind) {
 		// Kept to its walls (2026-11-11) on each axis that has one; else as below.
 		WireLook.Lateral shift = WireBlock.wallShift(level, pos, List.of(state), wire.width() / 2.0D);
 		WireLook.Lateral line = betweenBundles(level, pos, state, wire);
+		WireLook.Lateral end = endOfBundleRun(level, pos, state, wire);
+		if(end != null)
+			return end;
 		return shift.isZero() ? line : new WireLook.Lateral(shift.x() != 0.0D ? shift.x() : line.x(), shift.z() != 0.0D ? shift.z() : line.z());
+	}
+
+	/**
+	 * Where a lone wire that is only the last block of a bundle's strand, straight above or below it (a strand come up a
+	 * wall out of a bundle, ending on the floor and turning into a device), sits: on the strand's line, so the run comes
+	 * straight up into it instead of jinking over to the wire's own corner (2026-11-15, the maintainer's house). Null
+	 * if it is not that.
+	 */
+	@org.jetbrains.annotations.Nullable
+	private static WireLook.Lateral endOfBundleRun(BlockGetter level, BlockPos pos, BlockState state, WireBlock wire) {
+		net.minecraft.core.Direction only = null;
+		for(net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
+			if(!state.getValue(WireBlock.PROPERTY_BY_DIRECTION.get(dir)))
+				continue;
+			if(only != null)
+				return null;
+			only = dir;
+		}
+		if(only == null || only.getAxis() != net.minecraft.core.Direction.Axis.Y || !(level.getBlockState(pos.relative(only)).getBlock() instanceof WireBundleBlock))
+			return null;
+		return offsetOf(level, pos.relative(only), wire);
 	}
 
 	/** The line of the bundle strands a lone wire only joins (see {@link #loneOffset}), else the middle. */

@@ -238,9 +238,24 @@ public final class CableRoutes {
 		}
 		if(out == null)
 			return parts;
-		// Up from the middle to the raised stub's top.
-		out.add(new WireLook.Placed(WireLook.Part.RISER, null).withHeight(0, (int)Math.round((riser + own.width()) * 16.0D)));
+		// Up from the middle to the raised stub's top, unless the strand already goes up its wall from the middle: the
+		// raised stub meets that run instead of standing a second riser beside it (2026-11-15, the maintainer's house).
+		if(!climbsFromMiddle(parts, offsets[i], own.width(), WireBlock.isCeiling(strands.get(i))))
+			out.add(new WireLook.Placed(WireLook.Part.RISER, null).withHeight(0, (int)Math.round((riser + own.width()) * 16.0D)));
 		return List.copyOf(out);
+	}
+
+	/** True if {@code parts} have a run up a wall the strand's middle ({@code at}) lies against. */
+	private static boolean climbsFromMiddle(List<WireLook.Placed> parts, WireLook.Lateral at, double width, boolean ceiling) {
+		if(ceiling)
+			return false;
+		for(WireLook.Placed p : parts) {
+			Direction d = p.dir();
+			if((p.part() == WireLook.Part.EDGE || p.part() == WireLook.Part.EDGE_FULL) && d != null && d.getAxis().isHorizontal() && !p.lifted()
+					&& at.along(d) * d.getAxisDirection().getStep() >= 8.0D - width)
+				return true;
+		}
+		return false;
 	}
 
 	// -------------------- ROUND TO THE BACK --------------------
@@ -416,6 +431,23 @@ public final class CableRoutes {
 		for(int j = 0; j < all.length; j++)
 			all[j] = j == i ? base : plainLayout(level, pos, strands, offsets, j);
 		return bridges(pos, strands, all, i);
+	}
+
+	/**
+	 * Every strand at {@code pos} as {@link #layout} draws it, each strand's plain layout worked out once and shared by
+	 * the others' {@link #bridges} (2026-11-15: one strand at a time worked every other out again, S x S times a block).
+	 */
+	public static Drawn[] layoutAll(BlockGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, boolean bridges) {
+		Drawn[] plain = new Drawn[strands.size()];
+		for(int j = 0; j < plain.length; j++)
+			plain[j] = plainLayout(level, pos, strands, offsets, j);
+		if(!bridges || strands.size() < 2)
+			return plain;
+		Drawn[] out = plain.clone();
+		for(int i = 0; i < plain.length; i++)
+			if(plain[i].parts().stream().anyMatch(p -> p.part() == WireLook.Part.SPAN && !p.lifted()))
+				out[i] = bridges(pos, strands, plain, i);
+		return out;
 	}
 
 	// -------------------- BRIDGES --------------------

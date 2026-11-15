@@ -24,6 +24,64 @@ public final class WireGeometry {
 	/** A straight piece of a strand's centre line, world coordinates, and how wide the cable is (blocks). */
 	public record Segment(WireBlock kind, Vec3 from, Vec3 to, double width) {}
 
+	/** The cable with this much either side, pixels: enough to click, tight enough to read as the cable. */
+	private static final double OUTLINE_PADDING = 1.0D;
+
+	private static final java.util.Map<List<Long>, net.minecraft.world.phys.shapes.VoxelShape> OUTLINES = new java.util.concurrent.ConcurrentHashMap<>();
+
+	/**
+	 * The outline of the cable at {@code pos} (a lone wire or a bundle) built from the pieces its model draws
+	 * ({@link CableRoutes#layout}, bridges, steps, stairs and all), so what the crosshair picks (sneak and right click
+	 * takes out the strand nearest it, {@code WireBundleBlock#strandAt}) is what is on screen (2026-11-15, the maintainer:
+	 * keep it in step with every change to how cable renders). Each piece's box padded a pixel, cut to the block. Null
+	 * if no cable is there.
+	 */
+	@org.jetbrains.annotations.Nullable
+	public static net.minecraft.world.phys.shapes.VoxelShape outline(BlockGetter level, BlockPos pos) {
+		List<BlockState> strands = Strand.statesAt(level, pos);
+		if(strands.isEmpty())
+			return null;
+		WireLook.Lateral[] offsets = Strand.laterals(level, pos, strands);
+		List<Long> key = new ArrayList<>();
+		CableRoutes.Drawn[] drawnAll = CableRoutes.layoutAll(level, pos, strands, offsets, true);
+		for(int i = 0; i < strands.size(); i++) {
+			BlockState state = strands.get(i);
+			WireBlock wire = (WireBlock)state.getBlock();
+			for(Segment seg : segments(pos, wire, WireBlock.isCeiling(state), drawnAll[i])) {
+				double pad = (seg.width() * 16.0D / 2.0D + OUTLINE_PADDING) / 16.0D;
+				double[] lo = { Math.min(seg.from().x, seg.to().x) - pos.getX() - pad, Math.min(seg.from().y, seg.to().y) - pos.getY() - pad, Math.min(seg.from().z, seg.to().z) - pos.getZ() - pad };
+				double[] hi = { Math.max(seg.from().x, seg.to().x) - pos.getX() + pad, Math.max(seg.from().y, seg.to().y) - pos.getY() + pad, Math.max(seg.from().z, seg.to().z) - pos.getZ() + pad };
+				long packed = 0L;
+				boolean empty = false;
+				for(int a = 0; a < 3; a++) { // Each side in 1/64ths of a block, cut to the block: 7 bits each.
+					long l = Math.round(Math.clamp(lo[a], 0.0D, 1.0D) * 64.0D), h = Math.round(Math.clamp(hi[a], 0.0D, 1.0D) * 64.0D);
+					empty |= h <= l;
+					packed = packed << 14 | l << 7 | h;
+				}
+				if(!empty)
+					key.add(packed);
+			}
+		}
+		if(key.isEmpty())
+			return null;
+		key.sort(null);
+		if(OUTLINES.size() > 4096)
+			OUTLINES.clear(); // Bounded: a cache, not a record.
+		return OUTLINES.computeIfAbsent(List.copyOf(key), k -> {
+			net.minecraft.world.phys.shapes.VoxelShape out = net.minecraft.world.phys.shapes.Shapes.empty();
+			for(long packed : k) {
+				double[] l = new double[3], h = new double[3];
+				for(int a = 2; a >= 0; a--) {
+					h[a] = (packed & 127L) / 64.0D;
+					l[a] = (packed >> 7 & 127L) / 64.0D;
+					packed >>= 14;
+				}
+				out = net.minecraft.world.phys.shapes.Shapes.or(out, net.minecraft.world.phys.shapes.Shapes.box(l[0], l[1], l[2], h[0], h[1], h[2]));
+			}
+			return out.optimize();
+		});
+	}
+
 	/** Every strand's centre line at {@code pos}. */
 	public static List<Segment> at(BlockGetter level, BlockPos pos) {
 		return at(level, pos, true);
@@ -37,10 +95,11 @@ public final class WireGeometry {
 		List<Segment> out = new ArrayList<>();
 		List<BlockState> strands = Strand.statesAt(level, pos);
 		WireLook.Lateral[] offsets = Strand.laterals(level, pos, strands);
+		CableRoutes.Drawn[] drawnAll = CableRoutes.layoutAll(level, pos, strands, offsets, bridges);
 		for(int i = 0; i < strands.size(); i++) {
 			BlockState state = strands.get(i);
 			WireBlock wire = (WireBlock)state.getBlock();
-			CableRoutes.Drawn drawn = CableRoutes.layout(level, pos, strands, offsets, i, bridges); // As the model draws it.
+			CableRoutes.Drawn drawn = drawnAll[i]; // As the model draws it.
 			boolean ceiling = WireBlock.isCeiling(state);
 			double w = wire.width() / 16.0D;
 			int first = out.size();
@@ -56,8 +115,8 @@ public final class WireGeometry {
 						middle = seg.from();
 					Direction arrive = look.arrive();
 					if(arrive != null && arrive.getAxis().isHorizontal() && !placed.lifted())
-						for(Vec3 e : new Vec3[] { seg.from(), seg.to() })
-							if(onFace(e, pos, arrive))
+						for(Vec3 e : new Vec3[] { seg.from(), seg.to(), acrossFace(seg, pos, arrive) })
+							if(e != null && onFace(e, pos, arrive))
 								arriveEnd = e; // Where the cable meets the edge it comes up on (a stub, or a squared one's last piece).
 			}
 			footOfRun(out, first, wire, state, pos, ceiling, arriveEnd != null ? arriveEnd : middle, w);
@@ -79,6 +138,27 @@ public final class WireGeometry {
 			case EAST -> Math.abs(p.x - pos.getX() - 1.0D) < 1.0E-4D;
 			default -> false;
 		};
+	}
+
+	/**
+	 * Where {@code seg} passes through this block's {@code dir} face, if it reaches on beyond it (a stub into a beam's
+	 * block, up whose face the run comes: 2026-11-15, the lattice leg); else null.
+	 */
+	@org.jetbrains.annotations.Nullable
+	private static Vec3 acrossFace(Segment seg, BlockPos pos, Direction dir) {
+		double plane = switch(dir) {
+			case NORTH -> pos.getZ();
+			case SOUTH -> pos.getZ() + 1.0D;
+			case WEST -> pos.getX();
+			case EAST -> pos.getX() + 1.0D;
+			default -> Double.NaN;
+		};
+		if(Double.isNaN(plane))
+			return null;
+		double a = dir.getAxis() == Direction.Axis.Z ? seg.from().z : seg.from().x, b = dir.getAxis() == Direction.Axis.Z ? seg.to().z : seg.to().x;
+		if((a - plane) * (b - plane) >= 0.0D)
+			return null;
+		return seg.from().lerp(seg.to(), (plane - a) / (b - a));
 	}
 
 	private static void footOfRun(List<Segment> out, int first, WireBlock wire, BlockState state, BlockPos pos, boolean ceiling, Vec3 from, double w) {

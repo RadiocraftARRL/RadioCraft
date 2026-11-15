@@ -243,7 +243,7 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 		if(!(level instanceof ServerLevel server))
 			return;
 		long now = level.getGameTime();
-		if(display.groupStale || (now + pos.asLong()) % 10L == 0L)
+		if(display.groupStale || (now + pos.asLong()) % 100L == 0L) // Placing, breaking, turning or loading marks it stale; this is the safety net.
 			display.formGroup(server, state);
 		if(display.isMaster() && (now + pos.asLong()) % 20L == 0L)
 			display.feed(server, now);
@@ -257,6 +257,7 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 		Direction facing = state.getValue(CrtMonitorBlock.FACING), right = facing.getCounterClockWise();
 		Set<Long> cells = new HashSet<>();
 		ArrayDeque<int[]> queue = new ArrayDeque<>();
+		List<BlockPos> members = new ArrayList<>();
 		cells.add(CrtMonitorGroups.cell(0, 0));
 		queue.add(new int[] { 0, 0 });
 		while(!queue.isEmpty() && cells.size() < CrtMonitorGroups.MAX_CELLS) {
@@ -272,6 +273,7 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 				if(there.getBlock() instanceof CrtMonitorBlock && there.getValue(CrtMonitorBlock.FACING) == facing) {
 					cells.add(CrtMonitorGroups.cell(a, b));
 					queue.add(new int[] { a, b });
+					members.add(at);
 				}
 			}
 		}
@@ -288,6 +290,10 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 				linkRadio(null); // Part of a bigger screen: no waterfall.
 			setChanged();
 			sync();
+			// The rest of the wall works its screen out again too (only the blocks beside a change are told of it).
+			for(BlockPos at : members)
+				if(level.getBlockEntity(at) instanceof CrtMonitorBlockEntity other)
+					other.groupStale = true;
 		}
 	}
 

@@ -161,9 +161,7 @@ public final class WireModel {
 		}
 
 		/** What strand {@code i} of {@code strands} at {@code pos} draws, {@code nudge} blocks off on every axis ({@link #STRAND_LAYER}). */
-		static Key keyFor(BlockAndTintGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, int i, double nudge) {
-			BlockState state = strands.get(i);
-			com.arrl.radiocraft.common.blocks.CableRoutes.Drawn drawn = com.arrl.radiocraft.common.blocks.CableRoutes.layout(level, pos, strands, offsets, i);
+		static Key keyFor(BlockState state, com.arrl.radiocraft.common.blocks.CableRoutes.Drawn drawn, double nudge) {
 			return new Key(drawn.parts(), WireBlock.isCeiling(state), drawn.offset(), drawn.faces(), nudge);
 		}
 
@@ -183,6 +181,8 @@ public final class WireModel {
 
 		/** The quads for {@code key}: the parts, turned to their edges, flipped for a ceiling and moved for a bundle. */
 		List<BakedQuad> quadsFor(Key key, @Nullable BlockState state, RandomSource rand, @Nullable RenderType renderType) {
+			if(quadCache.size() > 4096)
+				quadCache.clear(); // Bounded: each look of each cable is a key (2026-11-15).
 			return quadCache.computeIfAbsent(key, k -> {
 				Map<WireLook.Part, Map<Integer, BakedModel>> set = k.ceiling() ? flipped : parts;
 				boolean plain = k.offset().isZero() && k.faces().equals(WireLook.Faces.all(0.0D));
@@ -269,11 +269,12 @@ public final class WireModel {
 			List<BlockState> strands = bundle.strands();
 			WireLook.Lateral[] offsets = Strand.laterals(level, pos, strands);
 			List<StrandDraw> draws = new ArrayList<>(strands.size());
+			com.arrl.radiocraft.common.blocks.CableRoutes.Drawn[] drawn = com.arrl.radiocraft.common.blocks.CableRoutes.layoutAll(level, pos, strands, offsets, true);
 			for(int i = 0; i < strands.size(); i++) {
 				BlockState strand = strands.get(i);
 				Baked model = modelOf(strand);
 				if(model != null)
-					draws.add(new StrandDraw(model, Baked.keyFor(level, pos, strands, offsets, i, i * STRAND_LAYER), strand));
+					draws.add(new StrandDraw(model, Baked.keyFor(strand, drawn[i], i * STRAND_LAYER), strand));
 			}
 			return modelData.derive().with(STRANDS, List.copyOf(draws)).build();
 		}

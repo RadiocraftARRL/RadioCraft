@@ -480,6 +480,9 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+		VoxelShape drawn = WireGeometry.outline(level, pos); // As the model draws it (bridges, steps): what sneak + right click picks from.
+		if(drawn != null)
+			return drawn;
 		List<BlockState> strands = Strand.statesAt(level, pos);
 		WireLook.Lateral[] offsets = Strand.laterals(level, pos, strands);
 		List<VoxelShape> parts = new ArrayList<>(strands.size());
@@ -487,6 +490,8 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 			parts.add(((WireBlock)strands.get(i).getBlock()).shapeFor(level, pos, strands.get(i), offsets[i]));
 		if(parts.isEmpty())
 			return Shapes.box(0.375D, 0.0D, 0.375D, 0.625D, 0.1875D, 0.625D);
+		if(SHAPE_CACHE.size() > 4096)
+			SHAPE_CACHE.clear(); // Bounded (2026-11-15).
 		return SHAPE_CACHE.computeIfAbsent(new ShapeKey(List.copyOf(parts)), key -> {
 			VoxelShape out = Shapes.empty();
 			for(VoxelShape part : key.parts())

@@ -26,10 +26,10 @@ public class QRPRadio40mBlock extends RadioBlock {
 	public static final HashMap<Direction, VoxelShape> SHAPES = new HashMap<>();
 
 	static {
-		SHAPES.put(Direction.NORTH, Block.box(0.0D, 0.0D, 5.0D, 16.0D, 7.0D, 16.0D));
-		SHAPES.put(Direction.SOUTH, Block.box(0.0D, 0.0D, 0.0D, 16.0D, 7.0D, 11.0D));
-		SHAPES.put(Direction.EAST, Block.box(0.0D, 0.0D, 0.0D, 11.0D, 7.0D, 16.0D));
-		SHAPES.put(Direction.WEST, Block.box(5.0D, 0.0D, 0.0D, 16.0D, 7.0D, 16.0D));
+		SHAPES.put(Direction.NORTH, Block.box(2.0D, 0.0D, 3.0D, 14.0D, 11.5D, 15.0D));
+		SHAPES.put(Direction.SOUTH, Block.box(2.0D, 0.0D, 1.0D, 14.0D, 11.5D, 13.0D));
+		SHAPES.put(Direction.EAST, Block.box(1.0D, 0.0D, 2.0D, 13.0D, 11.5D, 14.0D));
+		SHAPES.put(Direction.WEST, Block.box(3.0D, 0.0D, 2.0D, 15.0D, 11.5D, 14.0D));
 	}
 
 	public QRPRadio40mBlock(Properties properties) {

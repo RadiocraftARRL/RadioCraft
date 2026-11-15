@@ -77,13 +77,12 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 
 			for(IAntenna antenna : antennas) {
 				if(antenna != this) {
+					AntennaPos destination = antenna.getAntennaPos();
+					// Out of this world or out of reach: skipped before the frame is copied for it (50 frames a second, every antenna).
+					if(destination == null || destination.level() != pos.get().level() || BandUtils.outOfReach(band, pos.get().world(), destination.world())) continue;
+
 					AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio.clone(), band, frequencyHertz, 1.0F, this, sourcePlayer, ctcssTone);
 					packet.setDestination(antenna);
-
-					// Calculate the strength this packet should be sent at.
-					AntennaPos destination = antenna.getAntennaPos();
-
-					if(destination == null || destination.level() != pos.get().level() || BandUtils.outOfReach(band, pos.get().world(), destination.world())) continue;
 
 //					if(ssbSendCache.containsKey(antenna.getBlockPos())) // Recalculate if value wasn't already present.
 //						packet.setStrength(ssbSendCache.get(destination));

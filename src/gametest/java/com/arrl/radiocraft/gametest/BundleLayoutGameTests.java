@@ -38,6 +38,9 @@ public class BundleLayoutGameTests {
 
 	private static void assertClean(GameTestHelper helper, BlockPos from, BlockPos to) {
 		List<String> problems = WireGeometry.check(helper.getLevel(), helper.absolutePos(from), helper.absolutePos(to));
+		if(!problems.isEmpty()) // What the named blocks hold, for whoever reads the log.
+			for(String line : CableCheckCommand.describeNamed(helper.getLevel(), problems, BlockPos.ZERO))
+				com.arrl.radiocraft.Radiocraft.LOGGER.info(line);
 		helper.assertTrue(problems.isEmpty(), problems.size() + " problems: " + String.join("; ", problems.subList(0, Math.min(4, problems.size()))));
 	}
 

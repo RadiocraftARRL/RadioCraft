@@ -1395,6 +1395,11 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+		if(level.getBlockState(pos) == state) { // In the world: the outline of what the model draws (WireGeometry#outline).
+			VoxelShape drawn = WireGeometry.outline(level, pos);
+			if(drawn != null)
+				return drawn;
+		}
 		return shapeFor(level, pos, state, Strand.loneOffset(level, pos, state));
 	}
 
@@ -1402,6 +1407,8 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	public VoxelShape shapeFor(BlockGetter level, BlockPos pos, BlockState state, WireLook.Lateral offset) {
 		List<WireLook.Placed> parts = WireLook.parts(look(level, pos, state), lookConnections(level, pos, state));
 		WireLook.Faces faces = faces(level, pos, offset);
+		if(SHAPE_CACHE.size() > 4096)
+			SHAPE_CACHE.clear(); // Bounded (2026-11-15).
 		return SHAPE_CACHE.computeIfAbsent(new ShapeKey(parts, isCeiling(state), offset, faces, width()), key -> buildShape(key));
 	}
 
