@@ -90,8 +90,20 @@ After step 2 the saving is small; only worth it if measurement says so.
   waterfalls): only redraw on change where possible.
 
 ### 6. AnotherWeatherMod
-agy's AWM review (`build/agy-notes/awm-performance.md`, 2026-11-15) once checked; AWM is released separately, so its
-fixes go out as an AWM version that 1.14 depends on (optional dependency, as planned).
+agy's AWM review (`build/agy-notes/awm-performance.md`, 2026-11-15), checked claim by claim: three of its findings
+were false and several quotes invented. Done 2026-11-15 (AWM d4ba4c6): slanted rain reads the heightmap once a
+column; the storm wobble's terms are worked out once; wind push only syncs entities it moved; puddle tints found
+with the spots. Still to do, measure first with spark:
+- `StormGenerator.topUp` (every 40 ticks) re-rolls every square, maker and front over the whole forecast horizon,
+  and only drops the ones already known at the end: the likeliest real server hotspot.
+- `spacing.crowded` runs before the near-a-viewer filter in `scatter`, and fronts roll every cell first.
+- StormRain checks the biome of every column every frame (cache per block moved or per tick).
+- Fog: eight full-screen blended shells round the camera (`FogShells`): fewer, or one shader pass.
+- The tornado siren's 512 states (DIRECTION in the blockstate; a renderer instead) and `setBlock` twice a second
+  while it turns (chunk mesh rebuilds).
+- Small ones: `StormField.sample` skipping pending storms before the first birth, per-player samples every
+  5 ticks, CloudRenderer resampling every tile on one frame.
+AWM is released separately, so its fixes go out as an AWM version that 1.14 depends on (optional, as planned).
 
 ## Out of scope / separate
 - The security review of RadioCraft (`build/agy-notes/security.md`): fixes go into whichever release is next, not
