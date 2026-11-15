@@ -32,15 +32,16 @@ public final class WireGeometry {
 		for(int i = 0; i < strands.size(); i++) {
 			BlockState state = strands.get(i);
 			WireBlock wire = (WireBlock)state.getBlock();
-			WireLook.Lateral offset = strands.size() == 1 && level.getBlockState(pos).getBlock() instanceof WireBlock ? Strand.loneOffset(level, pos, state) : offsets[i];
-			List<WireLook.Placed> parts = WireLook.parts(wire.look(level, pos, state), WireBlock.lookConnections(state));
-			WireLook.Faces faces = wire.faces(level, pos, offset);
+			CableRoutes.Drawn drawn = CableRoutes.layout(level, pos, strands, offsets, i); // As the model draws it.
+			List<WireLook.Placed> parts = drawn.parts();
+			WireLook.Faces faces = drawn.faces();
+			WireLook.Lateral offset = drawn.offset();
 			boolean ceiling = WireBlock.isCeiling(state);
 			double w = wire.width() / 16.0D, h = w / 2.0D;
 			for(WireLook.Placed placed : parts)
 				for(Vec3[] line : local(placed.part(), w, h)) {
 					WireLook.Affine affine = WireLook.affine(placed, offset, faces, ceiling);
-					out.add(new Segment(wire, world(pos, line[0], placed.dir(), ceiling, affine), world(pos, line[1], placed.dir(), ceiling, affine), w));
+					out.add(new Segment(wire, world(pos, line[0], placed, ceiling, affine), world(pos, line[1], placed, ceiling, affine), w));
 				}
 		}
 		return out;
@@ -50,12 +51,12 @@ public final class WireGeometry {
 	private static List<Vec3[]> local(WireLook.Part part, double w, double h) {
 		double lo = 0.5D - h;
 		return switch(part) {
-			case MIDDLE -> line(new Vec3(0.5D, h, 0.5D), new Vec3(0.5D, h, 0.5D));
-			case HORIZONTAL -> line(new Vec3(0.5D, h, lo), new Vec3(0.5D, h, 0.0D));
+			case MIDDLE, JOINT -> line(new Vec3(0.5D, h, 0.5D), new Vec3(0.5D, h, 0.5D));
+			case HORIZONTAL, SPAN -> line(new Vec3(0.5D, h, lo), new Vec3(0.5D, h, 0.0D));
 			case CORNER -> line(new Vec3(0.5D, h, 0.0D), new Vec3(0.5D, h, 0.0D));
-			case VERTICAL -> line(new Vec3(0.5D, w, 0.5D), new Vec3(0.5D, 1.0D, 0.5D));
-			case EDGE -> line(new Vec3(0.5D, h, 0.0D), new Vec3(0.5D, 1.0D, 0.0D)); // Starts on the floor stub: from its centre.
-			case EDGE_FULL -> line(new Vec3(0.5D, 0.0D, 0.0D), new Vec3(0.5D, 1.0D, 0.0D));
+			case VERTICAL, RISER -> line(new Vec3(0.5D, w, 0.5D), new Vec3(0.5D, 1.0D, 0.5D)); // A riser is squashed by its height map.
+			case EDGE, DROP -> line(new Vec3(0.5D, h, 0.0D), new Vec3(0.5D, 1.0D, 0.0D)); // Starts on the floor stub: from its centre.
+			case EDGE_FULL, POST -> line(new Vec3(0.5D, 0.0D, 0.0D), new Vec3(0.5D, 1.0D, 0.0D));
 			case CLIMB_OVERHANG -> line(new Vec3(0.5D, 1.0D + h, h), new Vec3(0.5D, 1.0D + h, -7.0D / 16.0D));
 			case UP_OVERHANG -> line(new Vec3(0.5D, 1.0D + h, -h), new Vec3(0.5D, 1.0D + h, lo));
 		};
@@ -68,7 +69,8 @@ public final class WireGeometry {
 	}
 
 	/** Turned to its edge, flipped for a ceiling, moved by the strand's affine, then into the world at {@code pos}. */
-	private static Vec3 world(BlockPos pos, Vec3 p, Direction dir, boolean ceiling, WireLook.Affine affine) {
+	private static Vec3 world(BlockPos pos, Vec3 p, WireLook.Placed placed, boolean ceiling, WireLook.Affine affine) {
+		Direction dir = placed.dir();
 		double x = p.x, z = p.z;
 		switch(dir == null ? Direction.NORTH : dir) {
 			case EAST -> { x = 1.0D - p.z; z = p.x; }
@@ -76,7 +78,7 @@ public final class WireGeometry {
 			case WEST -> { x = p.z; z = 1.0D - p.x; }
 			default -> {}
 		}
-		double y = ceiling ? 1.0D - p.y : p.y;
+		double y = ceiling ? 1.0D - placed.height(p.y) : placed.height(p.y); // Raised or squashed first, the right way up.
 		return new Vec3(pos.getX() + affine.x(x, y, z), pos.getY() + y, pos.getZ() + affine.z(x, y, z));
 	}
 
@@ -93,7 +95,7 @@ public final class WireGeometry {
 			WireLook.Look look = wire.look(level, pos, state);
 			out.add(String.format(Locale.ROOT, "%s offset %s links %s look hug=%s arrive=%s end=%s reach=%d/%d", name(wire), offsets[i],
 					WireBlock.connected(state), look.hug(), look.arrive(), look.end(), look.hugReach(), look.arriveReach()));
-			out.add("  parts " + WireLook.parts(look, WireBlock.lookConnections(state)) + " faces " + wire.faces(level, pos, offsets[i]));
+			out.add("  parts " + Strand.drawn(level, pos, strands, offsets, i) + " faces " + wire.faces(level, pos, offsets[i]));
 		}
 		for(Segment s : at(level, pos))
 			out.add(String.format(Locale.ROOT, "  %s (%.2f %.2f %.2f) to (%.2f %.2f %.2f)", name(s.kind()),
@@ -132,6 +134,8 @@ public final class WireGeometry {
 					WireBlock kind = (WireBlock)state.getBlock();
 					if(!state.getValue(WireBlock.PROPERTY_BY_DIRECTION.get(dir)) || kind.sameKindState(level, next) == null)
 						continue;
+					if(kind.conductsAll() || ((WireBlock)kind.sameKindState(level, next).getBlock()).conductsAll())
+						continue; // A passthrough draws no cable of its own (2026-11-14): nothing to meet.
 					Vec3 mine = endOnFace(here, kind, pos, dir), theirs = endOnFace(there, ((WireBlock)kind.sameKindState(level, next).getBlock()), next, dir.getOpposite());
 					if(mine == null || theirs == null)
 						continue;

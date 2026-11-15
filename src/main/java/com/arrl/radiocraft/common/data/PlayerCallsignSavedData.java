@@ -19,7 +19,8 @@ public class PlayerCallsignSavedData extends SavedData implements IPlayerCallsig
     private static final String DATA_NAME = Radiocraft.MOD_ID + "_player_callsign_data";
 
     // Key: Player UUID, Value: PlayerCallsignData (Player UUID, Callsign, License Class)
-    private static final HashMap<String, PlayerCallsignData> callsigns = new HashMap<>();
+    // Per world (2026-11-12): a static map carried one world's callsigns into the next world opened in the same session.
+    private final HashMap<String, PlayerCallsignData> callsigns = new HashMap<>();
 
     public static PlayerCallsignSavedData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
@@ -31,8 +32,7 @@ public class PlayerCallsignSavedData extends SavedData implements IPlayerCallsig
         Radiocraft.LOGGER.info("Loading player callsign data");
         CompoundTag callData = nbt.getCompound("player_callsign_data");
         PlayerCallsignSavedData data = new PlayerCallsignSavedData();
-        PlayerCallsignSavedData.callsigns.clear();
-
+        
         for (String uuid : callData.getAllKeys()) {
             try {
                 CompoundTag playerData = callData.getCompound(uuid);
@@ -42,13 +42,13 @@ public class PlayerCallsignSavedData extends SavedData implements IPlayerCallsig
                     playerName = playerData.getString("name");
                 }
                 LicenseClass licenseClass = LicenseClass.valueOf(playerData.getString("class"));
-                PlayerCallsignSavedData.callsigns.put(uuid, new PlayerCallsignData(uuid, playerName, callsign, licenseClass));
+                data.callsigns.put(uuid, new PlayerCallsignData(uuid, playerName, callsign, licenseClass));
                 Radiocraft.LOGGER.info("Loaded callsign data for UUID: {}, Callsign: {}", uuid, callsign);
             } catch (IllegalArgumentException e) {
                 Radiocraft.LOGGER.error("Invalid callsign data for UUID: {}", uuid, e);
             }
         }
-        Radiocraft.LOGGER.info("Loaded {} player callsign entries", PlayerCallsignSavedData.callsigns.size());
+        Radiocraft.LOGGER.info("Loaded {} player callsign entries", data.callsigns.size());
         return data;
     }
 

@@ -153,23 +153,68 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 		if(level instanceof ServerLevel serverLevel && canTransmitCW() && !isBlown()) {
 			List<AntennaNetworkObject> antennas = ((RadioNetworkObject)IBENetworks.getObject(this.level, worldPosition)).getAntennas();
 			if(antennas.size() == 1) {
-				com.arrl.radiocraft.common.moderation.ModerationHooks.cw(antennas.get(0).getAntenna(), this, serverLevel, buffers, getTunedFrequency(), band, null);
-				antennas.get(0).transmitCWPacket(serverLevel, buffers, band, getTunedFrequency());
+				com.arrl.radiocraft.common.moderation.ModerationHooks.cw(antennas.get(0).getAntenna(), this, serverLevel, buffers, getSimplexTransmitHz(), band, null);
+				antennas.get(0).transmitCWPacket(serverLevel, buffers, band, getSimplexTransmitHz());
 				recordTransmit(); // Keying is RF on the air too, for the transmit side of redstone interference.
 			}
 			else if(antennas.size() > 1)
 				overdraw();
 			else if(bareConnector != null) { // No antenna: a few blocks out of the bare connector.
-				com.arrl.radiocraft.common.moderation.ModerationHooks.cw(bareConnector, this, serverLevel, buffers, getTunedFrequency(), band, null);
-				bareConnector.transmitCWPacket(serverLevel, buffers, band, getTunedFrequency());
+				com.arrl.radiocraft.common.moderation.ModerationHooks.cw(bareConnector, this, serverLevel, buffers, getSimplexTransmitHz(), band, null);
+				bareConnector.transmitCWPacket(serverLevel, buffers, band, getSimplexTransmitHz());
 			}
 		}
 	}
 
 	@Override
 	protected void additionalTick() {
-		if(level.isClientSide)
+		if(level.isClientSide) {
+			sidetoneOn = keyedThisTick;
+			if(keyedThisTick)
+				quietUntil = Math.max(quietUntil, level.getGameTime() + QUIET_TICKS);
+			keyedThisTick = false;
 			getCWSendBuffer().tick();
+		}
+	}
+
+	// -------------------- SIDETONE (client, 2026-11-12) --------------------
+
+	/** How loud the radio's own sidetone is, as a received tone's volume. */
+	public static final float SIDETONE = 0.3F;
+	/** The static stays off this long after the key last went up, ticks: the receiver mutes while sending. */
+	private static final int QUIET_TICKS = 12;
+
+	private boolean keyedThisTick = false;
+	private volatile boolean sidetoneOn = false;
+	private volatile float sidetoneLevel = SIDETONE;
+	private volatile long quietUntil = Long.MIN_VALUE;
+
+	/** Client: the key is down this tick (the screen's key, typed Morse or a keyer), with the radio's own sidetone. */
+	public void keyCW() {
+		keyCW(SIDETONE);
+	}
+
+	/** Client: the key is down this tick, with a sidetone {@code level} loud (a keyer has its own knob). */
+	public void keyCW(float level) {
+		getCWSendBuffer().setShouldAccumulate();
+		keyedThisTick = true;
+		sidetoneLevel = level;
+	}
+
+	/** Client: the sidetone's volume now, 0 with the key up. */
+	public float sidetone() {
+		return sidetoneOn ? sidetoneLevel : 0.0F;
+	}
+
+	/** Client: true while this radio is sending CW (and a moment after): its static is muted. */
+	public boolean keyingQuiet() {
+		return level != null && level.getGameTime() < quietUntil;
+	}
+
+	/** Client: someone else is keying this radio; mute the static for {@code ticks} (they hear the sidetone as Morse). */
+	public void quietFor(int ticks) {
+		if(level != null)
+			quietUntil = Math.max(quietUntil, level.getGameTime() + ticks);
 	}
 
 	@Override
@@ -193,6 +238,84 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 	/** Morse waiting to be echoed by a parrot. */
 	protected record QueuedCW(List<CWBuffer> buffers, long dueTick) {}
 
+	// -------------------- RIT, NOISE BLANKER, RF GAIN (2026-11-11) --------------------
+
+	/** RIT steps either side of the dial, and how far each step tunes the receiver. */
+	public static final int MAX_RIT_STEPS = 20, RIT_STEP_HZ = 50;
+	/** The RF gain knob's top (full gain). */
+	public static final int MAX_RF_GAIN = 10;
+
+	/**
+	 * The premium rigs' extra receive controls. Every HF radio has them, at neutral (RIT off, NB off, RF gain full), and
+	 * only the premium panels show the knobs: RIT tunes the receiver alone up to 1 kHz either side, as the CB's
+	 * clarifier does; the noise blanker takes most of the sparks and aurora crackle out; RF gain turns the front end
+	 * down, signals and static alike, as on the CB.
+	 */
+	protected int ritSteps = 0;
+	protected boolean ritOn = false;
+	protected boolean noiseBlanker = false;
+	protected int rfGain = MAX_RF_GAIN;
+
+	public int getRitSteps() {
+		return ritSteps;
+	}
+
+	public boolean isRitOn() {
+		return ritOn;
+	}
+
+	public int getRitHz() {
+		return ritOn ? ritSteps * RIT_STEP_HZ : 0;
+	}
+
+	public boolean isNoiseBlanker() {
+		return noiseBlanker;
+	}
+
+	public int getRfGain() {
+		return rfGain;
+	}
+
+	/** From the panel: RIT {@code steps} (clamped) and whether it is switched in. Client and server alike; the server syncs. */
+	public void setRit(int steps, boolean on) {
+		ritSteps = Math.max(-MAX_RIT_STEPS, Math.min(MAX_RIT_STEPS, steps));
+		ritOn = on;
+		changedOnServer();
+	}
+
+	public void setNoiseBlanker(boolean on) {
+		noiseBlanker = on;
+		changedOnServer();
+	}
+
+	public void setRfGain(int value) {
+		rfGain = Math.max(0, Math.min(MAX_RF_GAIN, value));
+		changedOnServer();
+	}
+
+	private void changedOnServer() {
+		if(level != null && !level.isClientSide) {
+			setChanged();
+			updateBlock();
+		}
+	}
+
+	/** The receiver, moved by the RIT when it is in. The transmitter stays on the dial ({@link #getSimplexTransmitHz}). */
+	@Override
+	public float getTunedFrequency() {
+		return super.getTunedFrequency() + getRitHz();
+	}
+
+	@Override
+	public double getReceiverGain() {
+		return 0.05D + 0.95D * rfGain / (double)MAX_RF_GAIN;
+	}
+
+	@Override
+	public double getImpulseNoiseFactor() {
+		return noiseBlanker ? 0.3D : 1.0D;
+	}
+
 	// -------------------- BE & SYNC IMPLEMENTATION --------------------
 
 	@Override
@@ -200,6 +323,10 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 		super.setupSaveTag(nbt);
 		nbt.putBoolean("cwEnabled", cwEnabled);
 		nbt.putBoolean("amEnabled", amEnabled);
+		nbt.putInt("ritSteps", ritSteps);
+		nbt.putBoolean("ritOn", ritOn);
+		nbt.putBoolean("noiseBlanker", noiseBlanker);
+		nbt.putInt("rfGain", rfGain);
 	}
 
 	@Override
@@ -207,6 +334,10 @@ public abstract class HFRadioBlockEntity extends RadioBlockEntity implements ICW
 		super.readSaveTag(nbt);
 		cwEnabled = nbt.getBoolean("cwEnabled");
 		amEnabled = nbt.getBoolean("amEnabled");
+		ritSteps = nbt.getInt("ritSteps");
+		ritOn = nbt.getBoolean("ritOn");
+		noiseBlanker = nbt.getBoolean("noiseBlanker");
+		rfGain = nbt.contains("rfGain") ? nbt.getInt("rfGain") : MAX_RF_GAIN;
 	}
 
 	@Override

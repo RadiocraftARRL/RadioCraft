@@ -33,15 +33,21 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
         SET_MIC_GAIN, // stepCount: percent
         TAKE_HAND_MIC, // Right click on a screen's PTT: the screen shuts and the hand mic comes off its hook (2026-11-08).
         SET_AM, // The all-band radio's AM (2026-11-08).
-        SET_SQUELCH, // stepCount: percent of the S-meter's scale (2026-11-09).
+        SET_SQUELCH, // stepCount: thousandths of the S-meter's scale (2026-11-11; was percent).
                 SET_AGC, // stepCount: RadioBlockEntity.AGC_OFF, AGC_SLOW or AGC_FAST (2026-11-09).
         QUICK_STORE, // QUICK held: remember this frequency (2026-11-09).
         QUICK_TOGGLE, // QUICK pressed: to the stored frequency, or back.
-        MEM_STORE, // stepCount: the memory channel (0-49) to store the VFO in (all-band radio).
+        MEM_STORE, // stepCount: the memory channel (0-49) to store the VFO in (a MemoryRadio: the all-band radio, the VHF base station).
         VFO_MEM, // VFO/MEM pressed: between the VFO and the memories.
         MEM_SELECT, // stepCount: the memory channel to recall.
         MEM_TO_VFO, // VFO/MEM held on a memory: copy it to the VFO, and back to VFO.
-        DISMISS_DISTRESS // A commercial VHF mobile: clear the beacon alert off its display (2026-11-09).
+        DISMISS_DISTRESS, // A commercial VHF mobile: clear the beacon alert off its display (2026-11-09).
+        SET_RIT, // stepCount: RIT steps of HFRadioBlockEntity.RIT_STEP_HZ; value: RIT switched in (premium HF rigs, 2026-11-11).
+        SET_NB, // value: the noise blanker on.
+        SET_RF_GAIN, // stepCount: 0 to HFRadioBlockEntity.MAX_RF_GAIN.
+        AIRBAND_FLIP, // The airband radio's flip-flop: USE and STANDBY change places (2026-11-13).
+        FM_TONE, // The FM broadcast receiver's BASS (value false) or TREBLE (value true) knob, stepCount -10 to 10 (2026-11-13).
+        SET_TUNE_STEP // A VHF radio's STEP: stepCount the step in Hz, 0 for the server's (2026-11-14).
     }
 
     public static final CustomPacketPayload.Type<SBlockRadioControlPacket> TYPE = new CustomPacketPayload.Type<>(Radiocraft.id("s_block_radio_control"));
@@ -61,6 +67,23 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {
         return TYPE;
+    }
+
+    /**
+     * The memory keys ({@code MEM_STORE}, {@code VFO_MEM}, {@code MEM_SELECT}, {@code MEM_TO_VFO}) on a radio with
+     * memories ({@link com.arrl.radiocraft.common.blockentities.radio.MemoryRadio}); nothing on one without. Server side,
+     * after the packet's checks (and from the GameTests).
+     */
+    public static void applyMemory(RadioBlockEntity radio, Action action, int stepCount) {
+        if(!(radio instanceof com.arrl.radiocraft.common.blockentities.radio.MemoryRadio memories))
+            return;
+        switch(action) {
+            case MEM_STORE -> memories.storeMemory(stepCount);
+            case VFO_MEM -> memories.toggleMemoryMode();
+            case MEM_SELECT -> memories.selectMemory(stepCount);
+            case MEM_TO_VFO -> memories.memoryToVfo();
+            default -> {}
+        }
     }
 
     public void handle(IPayloadContext context) {
@@ -106,24 +129,21 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
                         hf.setAMEnabled(value);
                 }
                 case SET_AGC -> radio.setAgc(stepCount);
+                case SET_RIT -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.HFRadioBlockEntity hf)
+                        hf.setRit(stepCount, value);
+                }
+                case SET_NB -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.HFRadioBlockEntity hf)
+                        hf.setNoiseBlanker(value);
+                }
+                case SET_RF_GAIN -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.HFRadioBlockEntity hf)
+                        hf.setRfGain(stepCount);
+                }
                 case QUICK_STORE -> radio.storeQuick();
                 case QUICK_TOGGLE -> radio.toggleQuick();
-                case MEM_STORE -> {
-                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
-                        allBand.storeMemory(stepCount);
-                }
-                case VFO_MEM -> {
-                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
-                        allBand.toggleMemoryMode();
-                }
-                case MEM_SELECT -> {
-                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
-                        allBand.selectMemory(stepCount);
-                }
-                case MEM_TO_VFO -> {
-                    if(radio instanceof HFRadioAllBandBlockEntity allBand)
-                        allBand.memoryToVfo();
-                }
+                case MEM_STORE, VFO_MEM, MEM_SELECT, MEM_TO_VFO -> applyMemory(radio, action, stepCount);
                 case DISMISS_DISTRESS -> {
                     if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity commercial)
                         commercial.dismissDistress();
@@ -140,11 +160,23 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
                     if(radio instanceof VHFRadioBlockEntity vhf)
                         vhf.setOffsetHz(stepCount);
                 }
+                case FM_TONE -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity receiver)
+                        receiver.setTone(value, stepCount);
+                }
+                case SET_TUNE_STEP -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.VHFRadioBlockEntity vhf && vhf.hasTuneStep())
+                        vhf.setTuneStepHz(stepCount);
+                }
+                case AIRBAND_FLIP -> {
+                    if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.AirbandRadioBlockEntity airband)
+                        airband.flip();
+                }
                 case SET_SPEAKER_GAIN -> radio.setSpeakerGain(stepCount / 100.0F);
                 case SET_MIC_GAIN -> radio.setMicGain(stepCount / 100.0F);
                 case SET_SQUELCH -> {
                     if(radio.hasSquelchKnob())
-                        radio.setSquelch(stepCount / 100.0F);
+                        radio.setSquelch(stepCount / 1000.0F);
                 }
                 case TAKE_HAND_MIC -> {
                     if(radio.canLendHandMic() && context.player() instanceof net.minecraft.server.level.ServerPlayer player) {
@@ -167,6 +199,10 @@ public record SBlockRadioControlPacket(long pos, int actionId, int stepCount, bo
 
     public static void updateServer(BlockPos pos, Action action, boolean value) {
         PacketDistributor.sendToServer(new SBlockRadioControlPacket(pos.asLong(), action.ordinal(), 0, value));
+    }
+
+    public static void updateServer(BlockPos pos, Action action, int stepCount, boolean value) {
+        PacketDistributor.sendToServer(new SBlockRadioControlPacket(pos.asLong(), action.ordinal(), stepCount, value));
     }
 
     public static void updateServer(BlockPos pos, Action action, int stepCount) {

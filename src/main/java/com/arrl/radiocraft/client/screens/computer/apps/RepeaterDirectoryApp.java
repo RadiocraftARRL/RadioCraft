@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerApps;
@@ -55,6 +56,20 @@ public final class RepeaterDirectoryApp extends DosApp {
 	public RepeaterDirectoryApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(i -> edit());
+		java.util.function.BooleanSupplier ready = () -> loaded; // The keys do nothing until the list is in.
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.rptdir.export", "F7", GLFW.GLFW_KEY_F7).when(ready),
+						item("menu.print", "F6", GLFW.GLFW_KEY_F6).when(ready),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.rptdir.add", "F4", GLFW.GLFW_KEY_F4).when(ready),
+						item("menu.rptdir.edit", "Enter", this::edit).when(ready),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(ready),
+						item("menu.rptdir.mark", "Space", GLFW.GLFW_KEY_SPACE).when(ready))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.rptdir.sort", "F3", GLFW.GLFW_KEY_F3).when(ready),
+						item("menu.rptdir.collect", "F5", GLFW.GLFW_KEY_F5).when(ready))))));
 	}
 
 	@Override

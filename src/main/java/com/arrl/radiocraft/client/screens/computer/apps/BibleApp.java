@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.BibleText;
@@ -58,6 +59,23 @@ public final class BibleApp extends DosApp {
 	public BibleApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		results.onActivate(this::openHit);
+		java.util.function.BooleanSupplier reading = () -> text() != null && !showingResults;
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.back", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> showingResults),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> !showingResults))),
+				new DosMenuBar.Menu(Dos.tr("menu.go"), List.of(
+						item("menu.bible.goto", "F3", GLFW.GLFW_KEY_F3).when(() -> text() != null),
+						item("menu.bible.book", "F4", GLFW.GLFW_KEY_F4).when(() -> text() != null),
+						item("menu.bible.prev_chapter", "Left", GLFW.GLFW_KEY_LEFT).when(reading),
+						item("menu.bible.next_chapter", "Right", GLFW.GLFW_KEY_RIGHT).when(reading),
+						item("menu.page_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP).when(reading),
+						item("menu.page_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN).when(reading),
+						item("menu.bible.top", "Home", GLFW.GLFW_KEY_HOME).when(reading),
+						item("menu.bible.end", "End", GLFW.GLFW_KEY_END).when(reading))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.bible.find", "F5", GLFW.GLFW_KEY_F5).when(() -> text() != null),
+						item("menu.bible.results", "F6", GLFW.GLFW_KEY_F6).when(() -> text() != null))))));
 	}
 
 	@Nullable

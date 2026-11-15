@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "radiocraft.refmap.json",
   "mixins": [
+    "MixinCartographyTableMenu",
     "MixinPTTKeyHandler",
     "MixinRedStoneWireBlock",
     "MixinServerLevel"

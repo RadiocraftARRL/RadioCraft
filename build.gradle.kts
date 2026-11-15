@@ -139,6 +139,17 @@ neoForge {
             )
         }
 
+        // A dev client with the GameTests loaded, in its own folder: make a creative superflat world and
+        // /test runall CableMatrixGameTests 1 false 0 16 builds every cable case to look at (doc/Testing.md).
+        create("clientTests") {
+            environment("RADIOCRAFT_DEV_ENV", "true")
+            client()
+            gameDirectory = file("runs/testworld")
+            systemProperty("neoforge.enableGameTest", "true")
+            systemProperty("neoforge.enabledGameTestNamespaces", "radiocraft")
+            systemProperty("radiocraft.testWorld", "true")
+        }
+
         create("server") {
             environment("RADIOCRAFT_DEV_ENV", "true")
             server()
@@ -236,6 +247,9 @@ dependencies {
     // (tasks.shadowJar below): the Minecraft client ships its own jorbis module, and a jar-in-jar copy made the client
     // fail module resolution with "reads more than one module named jorbis" (issue #101).
     shade("org.jcraft:jorbis:0.0.17")
+    // JLayer decodes MP3 internet radio streams for FM broadcast stations (2026-11-14). LGPL 2.1, from Maven Central;
+    // shaded and relocated like JOrbis so it cannot clash with another mod's copy.
+    shade("javazoom:jlayer:1.0.1")
 
     // jSerialComm (Apache 2.0 / LGPL 3, Maven Central: https://repo1.maven.org/maven2/com/fazecast/jSerialComm/), for
     // the Real-World Interface's PTT (RTS/DTR) and COS (CTS/DSR) lines (1.12 step 11). Jar-in-jar, NOT shaded: its
@@ -334,6 +348,7 @@ tasks.shadowJar {
     archiveClassifier = "shaded"
     destinationDirectory = layout.buildDirectory.dir("tmp/shadowJar")
     relocate("com.jcraft", "com.arrl.radiocraft.shaded.com.jcraft")
+    relocate("javazoom", "com.arrl.radiocraft.shaded.javazoom")
     exclude("META-INF/maven/**")
 }
 
@@ -390,6 +405,9 @@ val verifyModJar = tasks.register("verifyModJar") {
             if (names.any { it.startsWith("com/jcraft/") }) problems += "unrelocated com/jcraft classes in the jar"
             if (names.none { it.startsWith("com/arrl/radiocraft/shaded/com/jcraft/") }) problems += "relocated JOrbis missing"
             if (listed.any { it.contains("jorbis") }) problems += "JOrbis is jar-in-jar; it must be shaded (issue #101)"
+            if (names.any { it.startsWith("javazoom/") }) problems += "unrelocated javazoom (JLayer) classes in the jar"
+            if (names.none { it.startsWith("com/arrl/radiocraft/shaded/javazoom/") }) problems += "relocated JLayer missing"
+            if (listed.any { it.contains("jlayer") }) problems += "JLayer is jar-in-jar; it must be shaded"
             // jSerialComm is the other way round: nested whole (JNI binds its class names, so it cannot be relocated).
             if (listed.none { it.contains("jSerialComm") }) problems += "jSerialComm is not jar-in-jar (the Real-World Interface's serial port)"
             if (names.any { it.startsWith("com/fazecast/") || it.contains("/com/fazecast/") }) problems += "jSerialComm classes are unpacked or relocated into the jar; it must stay a nested jar"

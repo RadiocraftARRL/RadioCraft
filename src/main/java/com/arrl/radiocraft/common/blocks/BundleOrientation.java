@@ -116,7 +116,7 @@ public final class BundleOrientation {
 			WireBlock wire = (WireBlock)strand.getBlock();
 			if(!strand.getValue(WireBlock.PROPERTY_BY_DIRECTION.get(dir)) || wire.sameKindState(level, next) == null)
 				continue;
-			Direction hug = strand.getValue(WireBlock.HUG).direction();
+			Direction hug = WireBlock.runEdge(strand);
 			if(hug == null)
 				return 3;
 			return hug.getAxis() == Direction.Axis.Z ? 1 : 2;

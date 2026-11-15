@@ -23,6 +23,10 @@ public class RadiocraftAntennaTypes {
 
 	// VHF Antennas
 	public static JPoleAntennaType J_POLE;
+	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType AIRBAND; // The aircraft antenna (2026-11-13).
+	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType AIRBAND_GROUND_PLANE; // Its ground station mast.
+	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.EggbeaterAntennaType EGGBEATER;
+	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.SatelliteTrackerAntennaType SATELLITE_TRACKER;
 	public static com.arrl.radiocraft.common.radio.antenna.types.DummyLoadAntennaType DUMMY_LOAD; // Every band.
 	public static SlimJimAntennaType SLIM_JIM;
 	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.CommercialVHFAntennaType RINGO;
@@ -49,6 +53,8 @@ public class RadiocraftAntennaTypes {
 		IMPROVISED = AntennaTypes.registerFallbackType(new ImprovisedAntennaType()); // Last: anything the others do not recognise.
 
 		J_POLE = AntennaTypes.registerType(new JPoleAntennaType());
+		EGGBEATER = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.vhf.EggbeaterAntennaType());
+		SATELLITE_TRACKER = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.vhf.SatelliteTrackerAntennaType());
 		DUMMY_LOAD = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.DummyLoadAntennaType());
 		SLIM_JIM = AntennaTypes.registerType(new SlimJimAntennaType());
 		RINGO = AntennaTypes.registerType(com.arrl.radiocraft.common.radio.antenna.types.vhf.CommercialVHFAntennaType.ringo());
@@ -58,6 +64,8 @@ public class RadiocraftAntennaTypes {
 		IONOSONDE = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.IonosondeAntennaType());
 		FIVE_BTV = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.FiveBtvAntennaType());
 		CB_GROUND_PLANE = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.CbGroundPlaneAntennaType());
+		AIRBAND = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType());
+		AIRBAND_GROUND_PLANE = AntennaTypes.registerType(com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType.groundPlane());
 	}
 
 }

@@ -113,9 +113,10 @@ public class PassthroughBlock extends WireBlock implements EntityBlock {
 	public void onPlace(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull BlockState oldState, boolean isMoving) {
 		if(level.isClientSide || oldState.is(this))
 			return;
+		com.arrl.radiocraft.common.be_networks.DataWire.changed(level, pos); // Data wire runs through it too: walk again (2026-11-13).
 		if(checkMultipleSides(level, pos, state)) {
-			WireUtils.mergeNetworks(level, pos, no -> no instanceof PowerNetworkObject, PowerBENetwork::new, WireUtils.powerWires());
-			WireUtils.mergeNetworks(level, pos, no -> no instanceof ICoaxNetworkObject, BENetwork::new, WireUtils.coaxWires());
+			WireUtils.mergeThrough(level, pos, no -> no instanceof com.arrl.radiocraft.api.benetworks.PowerMember, PowerBENetwork::new, WireUtils.powerWires()); // Each kind and colour on its own (2026-11-11).
+			WireUtils.mergeThrough(level, pos, no -> no instanceof ICoaxNetworkObject, BENetwork::new, WireUtils.coaxWires());
 		}
 	}
 
@@ -126,10 +127,11 @@ public class PassthroughBlock extends WireBlock implements EntityBlock {
 				super.onRemove(state, level, pos, newState, isMoving);
 			return;
 		}
+		com.arrl.radiocraft.common.be_networks.DataWire.changed(level, pos); // A data run through it is cut.
 		Map<BlockPos, Direction> links = getLinks(level, pos, state);
 		if(links.size() >= 2) {
 			Strand self = new Strand(pos, this);
-			WireUtils.splitNetworks(level, self, java.util.Set.of(self), links, no -> no instanceof PowerNetworkObject, WireUtils.powerWires());
+			WireUtils.splitNetworks(level, self, java.util.Set.of(self), links, no -> no instanceof com.arrl.radiocraft.api.benetworks.PowerMember, WireUtils.powerWires());
 			WireUtils.splitNetworks(level, self, java.util.Set.of(self), links, no -> no instanceof ICoaxNetworkObject, WireUtils.coaxWires());
 		}
 		// Skip WireBlock#onRemove (it would split one kind again); Block#onRemove drops the block entity.

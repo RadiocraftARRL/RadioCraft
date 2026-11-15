@@ -36,3 +36,8 @@ __pycache__/
 # Claude Code local data (worktrees, settings): never commit
 .claude/
 logs/
+
+# Piper TTS venv and voice model for tools/weather_voice.py (large; never commit)
+tools/.venv/
+*.onnx
+*.onnx.json

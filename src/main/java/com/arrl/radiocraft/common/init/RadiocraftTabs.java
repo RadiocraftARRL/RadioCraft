@@ -54,6 +54,11 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.PARROT_CONTROLLER.get());
         output.accept(RadiocraftItems.YAGI_ANTENNA.get());
         output.accept(RadiocraftItems.J_POLE_ANTENNA.get());
+        output.accept(RadiocraftItems.AIRBAND_ANTENNA.get());
+        output.accept(RadiocraftItems.AIRBAND_GROUND_PLANE.get());
+        output.accept(RadiocraftItems.EGGBEATER_ANTENNA.get());
+        output.accept(RadiocraftItems.SATELLITE_TRACKER.get()); // The satellite tracking antenna (2026-11-12).
+        output.accept(RadiocraftItems.IAMBIC_KEYER.get()); // The iambic keyer (2026-11-12).
         output.accept(RadiocraftItems.SLIM_JIM_ANTENNA.get());
         output.accept(RadiocraftItems.RINGO_ANTENNA.get());
         output.accept(RadiocraftItems.FOLDED_DIPOLE_ANTENNA.get());
@@ -61,6 +66,7 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.ALL_BAND_RADIO.get());
         output.accept(RadiocraftItems.MICROPHONE.get());
         output.accept(RadiocraftItems.AUTO_TUNER.get());
+        output.accept(RadiocraftItems.LINEAR_AMPLIFIER.get()); // 2026-11-13.
         output.accept(RadiocraftItems.DUMMY_LOAD.get());
         output.accept(RadiocraftItems.FIVE_BTV_ANTENNA.get());
         output.accept(RadiocraftItems.CB_GROUND_PLANE_ANTENNA.get());
@@ -182,8 +188,32 @@ public class RadiocraftTabs {
         output.accept(com.arrl.radiocraft.common.items.CbPortableItem.charged(RadiocraftItems.CB_PORTABLE.get())); // Charged, ready to use.
         output.accept(RadiocraftItems.CB_MOBILE_PC68.get());
         output.accept(RadiocraftItems.CB_MOBILE_5875.get());
+        output.accept(RadiocraftItems.AIRBAND_RADIO.get());
+        output.accept(RadiocraftItems.FM_BROADCAST_TRANSMITTER.get());
+        output.accept(RadiocraftItems.FM_BROADCAST_RECEIVER.get());
         output.accept(RadiocraftItems.APRS_MODULE.get());
         output.accept(RadiocraftItems.MARS_MOD.get());
+        output.accept(RadiocraftItems.BLANK_VHF_LICENSE.get());
+        output.accept(RadiocraftItems.BLANK_LOW_BAND_LICENSE.get());
+        output.accept(RadiocraftItems.COMMERCIAL_LICENSE_UPGRADE.get());
+        output.accept(RadiocraftItems.AMATEUR_SATELLITE_CONTRACT.get()); // Satellites (2026-11-11).
+        output.accept(RadiocraftItems.COMMERCIAL_SATELLITE_CONTRACT.get());
+        output.accept(RadiocraftItems.AMATEUR_GEOSTATIONARY_CONTRACT.get()); // 2026-11-12.
+        output.accept(RadiocraftItems.COMMERCIAL_GEOSTATIONARY_CONTRACT.get());
+        output.accept(RadiocraftItems.SATELLITE_LICENSE.get());
+        output.accept(RadiocraftItems.FIRE_ALARM_BOX.get()); // Fire alarms and SCADA (2026-11-10).
+        output.accept(RadiocraftItems.PULL_STATION.get());
+        output.accept(RadiocraftItems.YELLOW_PULL_STATION.get());
+        output.accept(RadiocraftItems.WHITE_PULL_STATION.get());
+        output.accept(RadiocraftItems.OUTDOOR_PULL_BOX.get());
+        output.accept(RadiocraftItems.YELLOW_OUTDOOR_PULL_BOX.get());
+        output.accept(RadiocraftItems.WHITE_OUTDOOR_PULL_BOX.get());
+        output.accept(RadiocraftItems.PANIC_BUTTON.get());
+        output.accept(RadiocraftItems.FIRE_BELL.get());
+        output.accept(RadiocraftItems.FIRE_ALARM_CONTROLLER.get());
+        output.accept(RadiocraftItems.FIRE_ALARM_KEY.get());
+        output.accept(RadiocraftItems.SCADA_RTU.get());
+        output.accept(RadiocraftItems.SCADA_MASTER.get());
         output.accept(RadiocraftItems.BAND_PLAN.get());
         output.accept(RadiocraftItems.CAMERA.get());
         output.accept(RadiocraftItems.PHOTO_PAPER.get());
@@ -191,7 +221,9 @@ public class RadiocraftTabs {
         // The radio computer (1.12): monitor on the computer, scanner beside it, and a floppy for each program.
         output.accept(RadiocraftItems.COMPUTER_MONITOR.get());
         output.accept(RadiocraftItems.RADIO_COMPUTER.get());
+        output.accept(RadiocraftItems.COMPUTER_REDSTONE.get()); // 2026-11-13.
         output.accept(RadiocraftItems.SCANNER.get());
+        output.accept(RadiocraftItems.EXTERNAL_CRT_MONITOR.get()); // 2026-11-12: a WXSAT computer's weather satellite mosaic, or a premium radio's waterfall.
         output.accept(RadiocraftItems.FLOPPY_DISK.get());
         RadiocraftItems.FLOPPIES.values().forEach(floppy -> output.accept(floppy.get()));
         output.accept(RadiocraftItems.ALL_APPS_FLOPPY.get()); // Creative only: no recipe.

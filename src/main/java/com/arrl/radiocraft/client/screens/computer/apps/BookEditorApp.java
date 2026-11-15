@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosTextArea;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.BookDocument;
@@ -48,6 +49,22 @@ public final class BookEditorApp extends DosApp {
 
 	public BookEditorApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does. F10 is this program's own.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.bookedit.new", "F4", GLFW.GLFW_KEY_F4),
+						item("menu.open", "F3", GLFW.GLFW_KEY_F3),
+						item("menu.save", "^S", () -> save(null)),
+						item("menu.editor.print", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.editor.scan", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.bookedit.info", "F12", GLFW.GLFW_KEY_F12),
+						item("menu.bookedit.add_page", "F9", GLFW.GLFW_KEY_F9),
+						item("menu.bookedit.delete_page", "F10", GLFW.GLFW_KEY_F10))),
+				new DosMenuBar.Menu(Dos.tr("menu.go"), List.of(
+						item("menu.bookedit.previous_page", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.bookedit.next_page", "F8", GLFW.GLFW_KEY_F8)))))
+				.withoutF10());
 	}
 
 	@Override

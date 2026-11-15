@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "D": {
+      "item": "radiocraft:satellite_dish"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "O": {
+      "item": "radiocraft:coax_wire"
+    },
+    "W": {
+      "item": "radiocraft:wire"
+    }
+  },
+  "pattern": [
+    " D ",
+    "OCW",
+    "III"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:satellite_tracker"
+  }
+}

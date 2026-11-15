@@ -390,7 +390,7 @@ public final class RadioModeration {
 				com.arrl.radiocraft.common.radio.distress.DistressAlert alert = com.arrl.radiocraft.common.radio.distress.DistressPackets.alert(packet);
 				yield alert == null ? null : "[DISTRESS " + mhz + "] " + alert.type() + " " + alert.state() + " " + alert.owner() + " " + alert.nature().label() + " " + alert.coordinates();
 			}
-			case FILE_HEADER, ACK, FAX_ANSWER, FAX_PACKET, FAX_ACK, HOMING -> null;
+			case FILE_HEADER, ACK, FAX_ANSWER, FAX_PACKET, FAX_ACK, HOMING, TELEMETRY, APT -> null; // A satellite's telemetry (2026-11-12): every 10 s, too much for chat; weather picture lines many a second.
 		};
 		if(text == null)
 			return;

@@ -33,6 +33,9 @@ public class VHFBaseStationScreen extends VHFRadioScreen<VHFBaseStationMenu> {
 		addRenderableWidget(new PanelButton(leftPos + 133, topPos + 42, 15, 8, this::cycleOffset));
 		addRenderableWidget(new PanelButton(leftPos + 155, topPos + 42, 15, 8, () -> stepTone(-1)));
 		addRenderableWidget(new PanelButton(leftPos + 179, topPos + 42, 15, 8, () -> stepTone(1)));
+		// The knob at the bottom left: the dial's STEP (2026-11-14), a click to the next (5 to 25 kHz, round again).
+		addRenderableWidget(new PanelButton(leftPos + 12, topPos + 64, 22, 27, this::cycleStep))
+				.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("screen.radiocraft.vhf_step.tooltip")));
 		speakerGainDial = addRenderableWidget(new Dial(leftPos + 231, topPos + 5, 15, 17, 44, 84, widgetsTexture, 256, 256, this::onGainUp, this::onGainDown)); // Gain dial
 		micGainDial = addRenderableWidget(new Dial(leftPos + 231, topPos + 31, 15, 17, 44, 84, widgetsTexture, 256, 256, this::onMicGainUp, this::onMicGainDown)); // Mic gain dial
 		addRenderableWidget(new ToggleButton(false, leftPos + 210, topPos + 3, 22, 22, 0, 110, widgetsTexture, 256, 256, (btn) -> {})); // SPK
@@ -59,6 +62,13 @@ public class VHFBaseStationScreen extends VHFRadioScreen<VHFBaseStationMenu> {
 		radio().setOffsetHz(offset);
 	}
 
+	/** The next tuning STEP; the frequency stays put until the dial is turned. */
+	private void cycleStep() {
+		int step = com.arrl.radiocraft.common.radio.TuningStep.next(radio().getFrequencyStep());
+		SBlockRadioControlPacket.updateServer(menu.blockEntity.getBlockPos(), SBlockRadioControlPacket.Action.SET_TUNE_STEP, step);
+		radio().setTuneStepHz(step); // Optimistic; the server re-syncs.
+	}
+
 	@Override
 	protected void renderBg(@NotNull GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY) {
 
@@ -73,8 +83,9 @@ public class VHFBaseStationScreen extends VHFRadioScreen<VHFBaseStationMenu> {
 	protected void renderAdditionalTooltips(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
 		renderDisplay(pGuiGraphics, 43, 10, 66, 23, 0.9F, 0xFFFFFF); // Display window on the texture
 		if(menu.getDisplayPhase() == RadioNetworkObject.PHASE_ON) { // Second display: repeater offset and tone.
-			drawScaled(pGuiGraphics, "OFS " + Ctcss.formatOffset(radio().getOffsetHz()), leftPos + 162, topPos + 14, 0.7F, 0x202020);
-			drawScaled(pGuiGraphics, "TONE " + Ctcss.format(radio().getCtcssTone()), leftPos + 162, topPos + 22, 0.7F, 0x202020);
+			drawScaled(pGuiGraphics, "OFS " + Ctcss.formatOffset(radio().getOffsetHz()), leftPos + 162, topPos + 12, 0.6F, 0x202020);
+			drawScaled(pGuiGraphics, "TONE " + Ctcss.format(radio().getCtcssTone()), leftPos + 162, topPos + 18.5F, 0.6F, 0x202020);
+			drawScaled(pGuiGraphics, "STEP " + com.arrl.radiocraft.common.radio.TuningStep.label(radio().getFrequencyStep()), leftPos + 162, topPos + 25, 0.6F, 0x202020);
 		}
 	}
 

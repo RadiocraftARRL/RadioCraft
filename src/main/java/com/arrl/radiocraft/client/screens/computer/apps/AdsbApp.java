@@ -4,6 +4,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.radio.adsb.AdsbMath;
@@ -43,12 +44,25 @@ public final class AdsbApp extends DosApp {
 	private int buffer = 0;
 	private boolean dirty = true;
 	private final AdsbScope.Palette palette;
+	private final DosMenuBar menu;
 
 	public AdsbApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		PhotoPalette map = MapPalettes.vanilla();
 		palette = new AdsbScope.Palette(id(map, 0x000000), id(map, 0x041C0A), id(map, 0x145A20), id(map, 0x1E7A2C), id(map, 0x8CFF96),
 				id(map, 0xFF4030), id(map, 0x60E070), id(map, 0xFFFF60));
+		menu = new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.adsb.power", "F5", GLFW.GLFW_KEY_F5))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.adsb.range_up", "+", GLFW.GLFW_KEY_EQUAL),
+						item("menu.adsb.range_down", "-", GLFW.GLFW_KEY_MINUS),
+						item("menu.adsb.previous", "Up", GLFW.GLFW_KEY_UP),
+						item("menu.adsb.next", "Down", GLFW.GLFW_KEY_DOWN),
+						item("menu.adsb.tags", "T", GLFW.GLFW_KEY_T)))));
+		setMenuBar(menu);
 	}
 
 	private static byte id(PhotoPalette palette, int rgb) {
@@ -111,7 +125,7 @@ public final class AdsbApp extends DosApp {
 			g.put(36, 4, Dos.fit(Dos.tr("adsb.reach", rangeText(data.getInt("reach")), rangeText(data.getInt("reachLow"))), 41), DosColours.BODY_FG, bg);
 		renderTable(g, bg);
 		renderDetails(g, bg);
-		if(powered && antenna && !hasDialog()) {
+		if(powered && antenna && !hasDialog() && !menu.isOpen()) { // The picture is drawn over the text: not over an open menu.
 			if(dirty) {
 				buffer ^= 1; // A new array, so the texture repaints.
 				AdsbScope.paint(scope[buffer], SIZE, contacts, range(), selected, tags, palette);

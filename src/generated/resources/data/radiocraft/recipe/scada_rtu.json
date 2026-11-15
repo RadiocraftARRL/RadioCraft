@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "radiocraft:commercial_mobile"
+    },
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "D": {
+      "item": "radiocraft:data_wire"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:lightning_rod"
+    }
+  },
+  "pattern": [
+    "IRI",
+    "CBC",
+    "IDI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:scada_rtu"
+  }
+}

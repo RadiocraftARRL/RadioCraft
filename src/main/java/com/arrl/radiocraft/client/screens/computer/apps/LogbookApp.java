@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -49,6 +50,17 @@ public final class LogbookApp extends DosApp {
 	public LogbookApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(this::edit);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.logbook.new_log", "F4", GLFW.GLFW_KEY_F4).when(() -> loaded),
+						item("menu.logbook.open_log", "F3", GLFW.GLFW_KEY_F3).when(() -> loaded),
+						item("menu.logbook.export", "F7", GLFW.GLFW_KEY_F7).when(() -> loaded),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.logbook.add", "Ins", GLFW.GLFW_KEY_INSERT).when(() -> loaded),
+						item("menu.logbook.from_radio", "F6", GLFW.GLFW_KEY_F6).when(() -> loaded),
+						item("menu.logbook.edit", "Enter", () -> edit(list.selected())).when(() -> loaded && list.selected() >= 0),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(() -> loaded && list.selected() >= 0))))));
 	}
 
 	@Override

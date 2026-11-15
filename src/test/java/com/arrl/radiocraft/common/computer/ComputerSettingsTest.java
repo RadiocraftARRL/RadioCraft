@@ -4,6 +4,7 @@ import net.minecraft.nbt.CompoundTag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -29,6 +30,21 @@ class ComputerSettingsTest {
 		assertEquals("classic", read.scheme());
 		assertEquals(ComputerSettings.Clock.GAME, read.clock());
 		assertTrue(read.hour24());
+	}
+
+	/** SETUP's background services switch (2026-11-12): on for a new computer and an old save, kept off once turned off. */
+	@Test
+	void backgroundServicesAreOnUnlessTurnedOff() {
+		assertTrue(ComputerSettings.DEFAULT.backgroundServices());
+		CompoundTag old = new CompoundTag();
+		old.putString("view", "list");
+		assertTrue(ComputerSettings.fromTag(old).backgroundServices(), "a save from before the switch has them on");
+		ComputerSettings off = ComputerSettings.DEFAULT.withName("Shack PC").withBackgroundServices(false);
+		ComputerSettings read = ComputerSettings.fromTag(off.toTag());
+		assertFalse(read.backgroundServices(), "turned off, it stays off");
+		assertEquals(off, read);
+		assertFalse(read.withScheme("amber").withSaverMinutes(10).backgroundServices(), "other settings keep it");
+		assertTrue(read.withBackgroundServices(true).backgroundServices());
 	}
 
 	@Test

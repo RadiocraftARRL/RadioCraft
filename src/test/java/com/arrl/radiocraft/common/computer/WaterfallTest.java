@@ -62,4 +62,26 @@ class WaterfallTest {
 		assertEquals(-1, Waterfall.nextSignal(levels, 13, 1, 2), "nothing above");
 		assertEquals(-1, Waterfall.nextSignal(levels, 4, -1, 10), "nothing that strong");
 	}
+
+	/** The External CRT Monitor's spans (2026-11-12): a few kHz on HF, wider on VHF, centred, slid inside the band. */
+	@Test
+	void monitorSpansAreNarrowAndCentred() {
+		double[] narrow = Waterfall.monitorSpan(false, 14_200_000.0D, LO, HI);
+		assertArrayEquals(new double[] { 14_197_000.0D, 14_203_000.0D }, narrow, 0.001D, "6 kHz round the dial on HF");
+		double[] wide = Waterfall.monitorSpan(true, 14_200_000.0D, LO, HI);
+		assertEquals(24_000.0D, wide[1] - wide[0], 0.001D);
+		assertTrue(wide[1] - wide[0] < (HI - LO) / 10.0D, "WIDE is far narrower than rig control's whole band");
+		assertTrue(wide[1] - wide[0] > 3.0D * (narrow[1] - narrow[0]), "WIDE is several times NARROW");
+		assertEquals(6_000.0D, Waterfall.monitorWidth(false, 27_185_000.0D), 0.001D, "CB takes the HF spans");
+		assertEquals(50_000.0D, Waterfall.monitorWidth(false, 146_520_000.0D), 0.001D, "VHF is wider");
+		assertEquals(200_000.0D, Waterfall.monitorWidth(true, 146_520_000.0D), 0.001D);
+	}
+
+	@Test
+	void monitorSpansStayInTheBand() {
+		assertArrayEquals(new double[] { LO, LO + 24_000.0D }, Waterfall.monitorSpan(true, LO + 1_000.0D, LO, HI), 0.001D, "slid up off the bottom edge");
+		assertArrayEquals(new double[] { HI - 6_000.0D, HI }, Waterfall.monitorSpan(false, HI, LO, HI), 0.001D, "slid down off the top edge");
+		assertArrayEquals(new double[] { 100.0D, 10_100.0D }, Waterfall.monitorSpan(true, 5_000.0D, 100.0D, 10_100.0D), 0.001D, "a band narrower than the span: all of it");
+		assertArrayEquals(new double[] { 7_097_000.0D, 7_103_000.0D }, Waterfall.monitorSpan(false, 7_100_000.0D, 0.0D, 0.0D), 0.001D, "no band: centred");
+	}
 }

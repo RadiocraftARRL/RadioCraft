@@ -50,7 +50,7 @@ public final class SpeakerFilter {
 				case STANDARD -> DESK;
 				case PREMIUM -> PREMIUM;
 				case WALL -> WALL;
-				case LOUDSPEAKER -> HORN;
+				case LOUDSPEAKER, SIREN -> HORN;
 			};
 		}
 	}

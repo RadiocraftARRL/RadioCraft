@@ -38,4 +38,27 @@ public interface ComputerAppHandler {
 	default boolean ticks() {
 		return false;
 	}
+
+	/**
+	 * A background service ({@link ComputerApps#isBackgroundService}) stopped because the computer's SETUP turned
+	 * background services off and its program is no longer open (2026-11-12): stop what it was doing for nobody.
+	 * Server thread.
+	 */
+	default void serviceStopped(RadioComputerBlockEntity computer) {}
+
+	/**
+	 * True while a background service has work it must not drop when SETUP's switch is off and its program is closed
+	 * (2026-11-12, maintainer: a personal SOS runs until it is ended). It then keeps running, and keeps the computer on.
+	 */
+	default boolean holdsService(RadioComputerBlockEntity computer) {
+		return false;
+	}
+
+	/**
+	 * True if this ticking program has a reason to keep {@code computer} on with nobody at it (2026-11-13). True by
+	 * default; a built-in program that ticks for some computers only (a LAN RELAY server) says no for the rest.
+	 */
+	default boolean keepsOn(RadioComputerBlockEntity computer) {
+		return true;
+	}
 }

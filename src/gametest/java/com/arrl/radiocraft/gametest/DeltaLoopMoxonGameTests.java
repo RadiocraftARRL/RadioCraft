@@ -130,6 +130,36 @@ public class DeltaLoopMoxonGameTests {
                 .thenSucceed();
     }
 
+    /**
+     * The reflector strung last, after the balun already settled on a bent dipole (2026-11-13): the balun looks again
+     * and finds the Moxon, though the reflector's wire touches no balun; taking the reflector down undoes it.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 400)
+    public static void moxonReflectorStrungLastIsSeen(GameTestHelper helper) {
+        BlockPos balun = buildMoxon(helper, false);
+        BlockPos front1 = balun.west(3), front2 = balun.east(4);
+        net.minecraft.world.entity.Entity[] back = new net.minecraft.world.entity.Entity[1];
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(antenna(helper, balun) != null, "Antenna not recognized yet"))
+                .thenExecute(() -> {
+                    helper.assertTrue(antenna(helper, balun).type != RadiocraftAntennaTypes.MOXON, "A Moxon before its reflector");
+                    helper.setBlock(front1.south(2), RadiocraftBlocks.ANTENNA_POLE.get());
+                    GameTestUtil.wire(helper, front1.south(2), front1.south(3));
+                    back[0] = GameTestUtil.wire(helper, front1.south(3), front2.south(3));
+                    GameTestUtil.wire(helper, front2.south(3), front2.south(2));
+                })
+                .thenWaitUntil(() -> helper.assertTrue(antenna(helper, balun) != null && antenna(helper, balun).type == RadiocraftAntennaTypes.MOXON,
+                        "The reflector strung last is not seen: " + (antenna(helper, balun) == null ? null : antenna(helper, balun).type.getId())))
+                .thenExecute(() -> {
+                    helper.assertFalse(back[0].isRemoved(), "The reflector's wire is gone already: " + back[0].getRemovalReason());
+                    back[0].hurt(helper.getLevel().damageSources().generic(), 1.0F); // Punched down, as a player would.
+                    helper.assertTrue(back[0].isRemoved(), "The reflector's wire did not come down");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(antenna(helper, balun) == null || antenna(helper, balun).type != RadiocraftAntennaTypes.MOXON,
+                        "Still a Moxon with its reflector taken down"))
+                .thenSucceed();
+    }
+
     @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200)
     public static void moxonWithoutItsReflectorIsNotAMoxon(GameTestHelper helper) {
         BlockPos balun = buildMoxon(helper, false);

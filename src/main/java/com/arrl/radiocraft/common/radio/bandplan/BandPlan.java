@@ -68,6 +68,8 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 		category("federal", 0x77774A, "Military / federal");
 		category("murs", 0x4CB8E0, "MURS (licence free)");
 		category("marine", 0x2A55A0, "Marine VHF");
+		category("broadcast", 0xE0569A, "Broadcast");
+		category("aviation", 0x5FB3B3, "Aviation (airband)");
 		category("other", 0x9A9A9A, "Other");
 	}
 
@@ -139,6 +141,12 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 			"43.000-44.000|Business (licence required)|business", "44.000-46.600|Public safety (highway, fire)|public_safety",
 			"46.600-47.000|Military / federal|federal", "47.000-49.600|Business and industrial (licence required)|business",
 			"49.600-50.000|Military / federal|federal",
+			// FM broadcast (2026-11-13)
+			"88.000-108.000|FM broadcast stations|broadcast",
+			// Airband (2026-11-13): AM, 25 kHz channels
+			"118.000-121.400|Air traffic control|aviation", "121.400-121.600|Aircraft emergency|public_safety",
+			"121.600-123.000|Ground and air traffic control|aviation", "123.000-123.100|Search and rescue|public_safety",
+			"123.100-137.000|Air traffic control and company|aviation",
 			// 2m
 			"144.000-144.100|CW / weak signal|weak_signal", "144.100-144.300|SSB weak signal|weak_signal",
 			"144.300-144.600|Data (APRS, packet)|data", "144.600-144.900|Repeater inputs|repeater_in",
@@ -165,7 +173,7 @@ public record BandPlan(List<Segment> segments, List<Marker> markers) {
 			"14.300|Emergency / maritime net", "28.680|SSTV", "29.600|10m FM simplex calling",
 			"144.200|SSB calling", "144.390|APRS", "146.520|National simplex calling",
 			"151.820|MURS 1", "151.880|MURS 2", "151.940|MURS 3", "154.570|MURS 4", "154.600|MURS 5",
-			"27.065|CB ch 9 (emergency)", "27.185|CB ch 19 (highway)", "156.450|Marine ch 9 (hailing)", "156.800|Marine ch 16 (distress, calling)", "162.550|NOAA weather radio");
+			"27.065|CB ch 9 (emergency)", "27.185|CB ch 19 (highway)", "156.450|Marine ch 9 (hailing)", "121.500|Air emergency (guard)", "122.750|Air-to-air", "123.450|Air-to-air (chatter)", "156.800|Marine ch 16 (distress, calling)", "162.550|NOAA weather radio");
 
 	/** The plan from {@link #DEFAULT_SEGMENTS} and {@link #DEFAULT_MARKERS}. */
 	public static BandPlan defaults() {

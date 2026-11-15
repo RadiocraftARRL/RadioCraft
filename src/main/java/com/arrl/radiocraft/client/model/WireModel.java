@@ -155,18 +155,16 @@ public final class WireModel {
 		public @NotNull ModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull ModelData modelData) {
 			if(!(state.getBlock() instanceof WireBlock wire))
 				return modelData;
-			return modelData.derive().with(PARTS, keyFor(level, pos, state, wire, com.arrl.radiocraft.common.blocks.Strand.loneOffset(level, pos, state))).build();
+			com.arrl.radiocraft.common.blocks.CableRoutes.Drawn drawn = com.arrl.radiocraft.common.blocks.CableRoutes.layout(level, pos, List.of(state),
+					new WireLook.Lateral[] {WireLook.Lateral.ZERO}, 0);
+			return modelData.derive().with(PARTS, new Key(drawn.parts(), WireBlock.isCeiling(state), drawn.offset(), drawn.faces(), 0.0D)).build();
 		}
 
-		/** What a wire of kind {@code wire} in {@code state} at {@code pos} draws, {@code offset} sixteenths off the middle. */
-		static Key keyFor(BlockAndTintGetter level, BlockPos pos, BlockState state, WireBlock wire, WireLook.Lateral offset) {
-			return keyFor(level, pos, state, wire, offset, 0.0D);
-		}
-
-		/** As above, drawn {@code nudge} blocks off on every axis ({@link #STRAND_LAYER}). */
-		static Key keyFor(BlockAndTintGetter level, BlockPos pos, BlockState state, WireBlock wire, WireLook.Lateral offset, double nudge) {
-			List<WireLook.Placed> placed = WireLook.parts(wire.look(level, pos, state), WireBlock.lookConnections(state));
-			return new Key(placed, WireBlock.isCeiling(state), offset, wire.faces(level, pos, offset), nudge);
+		/** What strand {@code i} of {@code strands} at {@code pos} draws, {@code nudge} blocks off on every axis ({@link #STRAND_LAYER}). */
+		static Key keyFor(BlockAndTintGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, int i, double nudge) {
+			BlockState state = strands.get(i);
+			com.arrl.radiocraft.common.blocks.CableRoutes.Drawn drawn = com.arrl.radiocraft.common.blocks.CableRoutes.layout(level, pos, strands, offsets, i);
+			return new Key(drawn.parts(), WireBlock.isCeiling(state), drawn.offset(), drawn.faces(), nudge);
 		}
 
 		@Override
@@ -193,22 +191,25 @@ public final class WireModel {
 					BakedModel model = set.get(p.part()).get(p.part().rotates ? WireLook.rotation(p.dir()) : 0);
 					if(model == null)
 						continue;
-					WireLook.Affine affine = plain && !p.reaches() ? WireLook.Affine.NONE : WireLook.affine(p, k.offset(), k.faces(), k.ceiling());
+					WireLook.Affine affine = plain && !p.reaches() && !p.free() ? WireLook.Affine.NONE : WireLook.affine(p, k.offset(), k.faces(), k.ceiling());
 					for(BakedQuad quad : model.getQuads(state, null, rand, ModelData.EMPTY, renderType))
-						quads.add(affine.equals(WireLook.Affine.NONE) && k.nudge() == 0.0D ? quad : moved(quad, affine, k.nudge()));
+						quads.add(affine.equals(WireLook.Affine.NONE) && k.nudge() == 0.0D && !p.lifted() ? quad : moved(quad, affine, p, k.ceiling(), k.nudge()));
 				}
 				return List.copyOf(quads);
 			});
 		}
 
-		/** {@code quad} with {@code affine} applied to its corners (x and z, y untouched; a slant is slight enough that the faces keep their directions). */
-		private static BakedQuad moved(BakedQuad quad, WireLook.Affine affine, double nudge) {
+		/**
+		 * {@code quad} with {@code affine} applied to its corners (x and z; a slant is slight enough that the faces keep their
+		 * directions), and its height raised or squashed as {@code placed} says ({@link WireLook.Placed#worldHeight}).
+		 */
+		private static BakedQuad moved(BakedQuad quad, WireLook.Affine affine, WireLook.Placed placed, boolean ceiling, double nudge) {
 			int[] vertices = quad.getVertices().clone();
 			for(int i = 0; i < 4; i++) {
 				int at = i * IQuadTransformer.STRIDE + IQuadTransformer.POSITION;
 				float x = Float.intBitsToFloat(vertices[at]), y = Float.intBitsToFloat(vertices[at + 1]), z = Float.intBitsToFloat(vertices[at + 2]);
 				vertices[at] = Float.floatToRawIntBits((float)(affine.x(x, y, z) + nudge));
-				vertices[at + 1] = Float.floatToRawIntBits((float)(y + nudge));
+				vertices[at + 1] = Float.floatToRawIntBits((float)(placed.worldHeight(y, ceiling) + nudge));
 				vertices[at + 2] = Float.floatToRawIntBits((float)(affine.z(x, y, z) + nudge));
 			}
 			return new BakedQuad(vertices, quad.getTintIndex(), quad.getDirection(), quad.getSprite(), quad.isShade(), quad.hasAmbientOcclusion());
@@ -272,7 +273,7 @@ public final class WireModel {
 				BlockState strand = strands.get(i);
 				Baked model = modelOf(strand);
 				if(model != null)
-					draws.add(new StrandDraw(model, Baked.keyFor(level, pos, strand, (WireBlock)strand.getBlock(), offsets[i], i * STRAND_LAYER), strand));
+					draws.add(new StrandDraw(model, Baked.keyFor(level, pos, strands, offsets, i, i * STRAND_LAYER), strand));
 			}
 			return modelData.derive().with(STRANDS, List.copyOf(draws)).build();
 		}

@@ -604,15 +604,27 @@ public final class RigControlHandler implements ComputerAppHandler {
 
 	/** The span the scope watches: the band (its tuning range while the dial is outside it), zoomed round the dial. */
 	static double[] span(State state, RadioBlockEntity rig) {
+		double[] range = bandRange(rig);
+		if(range == null)
+			return new double[] { rig.getFrequency() - 1000.0D, rig.getFrequency() + 1000.0D };
+		return Waterfall.span(state.zoom, rig.getFrequency(), range[0], range[1]);
+	}
+
+	/**
+	 * The range a waterfall on {@code rig} stays inside, {lo, hi} Hz: its band, or its tuning range while the dial is
+	 * outside the band; null if it has no band. Also the External CRT Monitor's (2026-11-12).
+	 */
+	@Nullable
+	public static double[] bandRange(RadioBlockEntity rig) {
 		Band band = rig.getBand();
 		if(band == null)
-			return new double[] { rig.getFrequency() - 1000.0D, rig.getFrequency() + 1000.0D };
+			return null;
 		double lo = band.minFrequency(), hi = band.maxFrequency();
 		if(rig.tunesOutOfBand() && !band.contains(rig.getFrequency())) {
 			lo = BandEdges.tuneMin(band);
 			hi = BandEdges.tuneMax(band);
 		}
-		return Waterfall.span(state.zoom, rig.getFrequency(), lo, hi);
+		return new double[] { lo, hi };
 	}
 
 	/** One waterfall row and the rig's state. A second look within {@link #SHARED_ROW_TICKS} gets the same row. */

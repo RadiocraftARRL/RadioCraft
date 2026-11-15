@@ -166,7 +166,7 @@ public final class ComputerSession {
 		for(Iterator<ComputerSession> it = SESSIONS.values().iterator(); it.hasNext(); ) {
 			ComputerSession session = it.next();
 			boolean music = ComputerMusic.isPlayingAt(session.pos) && session.level == level; // Its music page stays while it plays.
-			boolean unsaved = session.stack.stream().anyMatch(DosApp::holdsUnsavedWork); // And an editor with unsaved work.
+			boolean unsaved = session.stack.stream().anyMatch(app -> app.holdsUnsavedWork() || app.keepsRunning()); // And an editor with unsaved work, or a service.
 			if(!session.open && (now - session.closedAt > KEEP_MS && !music && !unsaved || session.level != level)) {
 				session.release();
 				if(active == session)
@@ -285,6 +285,8 @@ public final class ComputerSession {
 				CompoundTag ended = data.getCompound("data");
 				session.message(Dos.tr("rig.remote.ended." + ended.getString("reason"), ended.getString("host")), true);
 			}
+			if(ComputerApps.DISTRESS.id().equals(app) && "new_alert".equals(data.getString("kind"))) // A new alert: DISTRESS comes up (2026-11-11).
+				session.show(ComputerApps.DISTRESS);
 			if(ComputerApps.SETUP.id().equals(app) && "settings".equals(data.getString("kind")))
 				session.learn(data.getCompound("data")); // Someone changed SETUP: every screen at the computer follows.
 			for(DosApp running : new ArrayList<>(session.stack))
@@ -308,6 +310,8 @@ public final class ComputerSession {
 			floppyLabel = answer.getString("floppyLabel");
 		if(answer.contains("serial", Tag.TAG_STRING))
 			serial = answer.getString("serial");
+		if(answer.getInt("distressUnread") > 0 && apps.contains(ComputerApps.DISTRESS.id()))
+			show(ComputerApps.DISTRESS); // An alert came in while no one was looking: the screen opens on it (2026-11-11).
 		if(answer.contains("settings", Tag.TAG_COMPOUND))
 			settings = com.arrl.radiocraft.common.computer.ComputerSettings.fromTag(answer.getCompound("settings"));
 		if(answer.contains("owner", Tag.TAG_BYTE))
@@ -420,11 +424,16 @@ public final class ComputerSession {
 	 * it is in front already.
 	 */
 	public void showMusic() {
+		show(ComputerApps.MUSIC);
+	}
+
+	/** Brings {@code app} to the front: the one already running, or a new one. Nothing if it is in front already. */
+	public void show(ComputerApp app) {
 		DosApp front = stack.peek();
-		if(front != null && front.app() == ComputerApps.MUSIC)
+		if(front != null && front.app() == app)
 			return;
 		for(DosApp running : stack)
-			if(running.app() == ComputerApps.MUSIC) {
+			if(running.app() == app) {
 				stack.remove(running);
 				stack.push(running);
 				if(front != null)
@@ -432,7 +441,7 @@ public final class ComputerSession {
 				running.resumed();
 				return;
 			}
-		launch(ComputerApps.MUSIC);
+		launch(app);
 	}
 
 	/** Ends {@code app} (never the shell); the one behind it comes to the front. */

@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.DfSearches;
@@ -54,6 +55,7 @@ public final class DfApp extends DosApp {
 	private final byte[][] scene = { new byte[SCENE_W * SCENE_H], new byte[SCENE_W * SCENE_H] };
 	private int sceneBuffer = 0;
 	private boolean sceneDrawn = false;
+	private final DosMenuBar menu;
 
 	// Map colours, worked out once.
 	private final byte own, typed, linked, fix, edge, grid, mast, peak, hill, black;
@@ -76,6 +78,35 @@ public final class DfApp extends DosApp {
 			page = MAP;
 			refreshMap();
 		});
+		menu = new DosMenuBar(List.of( // 2026-11-12: each item does what its key (or a click on the page's tab) does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.df.save", "F3", GLFW.GLFW_KEY_F3),
+						item("menu.df.delete", "Del", GLFW.GLFW_KEY_DELETE).when(() -> page == SEARCHES),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.df.power", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.df.frequency", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.df.tune_down", "Left", GLFW.GLFW_KEY_LEFT),
+						item("menu.df.tune_up", "Right", GLFW.GLFW_KEY_RIGHT),
+						item("menu.df.band_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP).when(() -> page != SEARCHES),
+						item("menu.df.band_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN).when(() -> page != SEARCHES))),
+				new DosMenuBar.Menu(Dos.tr("menu.df.bearings"), List.of(
+						item("menu.df.add", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.df.remove", "F8", GLFW.GLFW_KEY_F8))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.df.next_page", "Tab", GLFW.GLFW_KEY_TAB),
+						item("menu.df.map", "", () -> showPage(MAP)),
+						item("menu.df.scene", "", () -> showPage(SCENE)),
+						item("menu.df.searches", "", () -> showPage(SEARCHES)),
+						item("menu.df.live_map", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == MAP && mapSearch >= 0)))));
+		setMenuBar(menu);
+	}
+
+	/** Shows page {@code which}, as a click on its tab does. */
+	private void showPage(int which) {
+		page = which;
+		if(page == SEARCHES)
+			refreshSearches();
 	}
 
 	private static byte id(PhotoPalette palette, int rgb) {
@@ -348,7 +379,7 @@ public final class DfApp extends DosApp {
 					f.getBoolean("found"), f.getDouble("x"), f.getDouble("z"), f.getDouble("radius"), fix, edge);
 			plottedFor = key;
 		}
-		if(!hasDialog())
+		if(!hasDialog() && !menu.isOpen()) // Pictures are drawn over the text: none under an open menu.
 			g.image(32 * TextGrid.CELL_W + 4, 3 * TextGrid.CELL_H + 4, 184, 184, "df:map:" + session.pos().asLong(), plotted, 128, 128);
 		int bpp = data.getInt("bpp");
 		g.put(66, 4, Dos.tr("df.scale"), DosColours.YELLOW, bg);
@@ -378,7 +409,7 @@ public final class DfApp extends DosApp {
 					f.getDouble("x"), f.getDouble("z"), f.getDouble("radius"), new DfScene.Palette(black, grid, mast, peak, hill, mast));
 			sceneDrawn = true;
 		}
-		if(!hasDialog())
+		if(!hasDialog() && !menu.isOpen())
 			g.image(32 * TextGrid.CELL_W, 3 * TextGrid.CELL_H + 6, 46 * TextGrid.CELL_W, 46 * TextGrid.CELL_W * SCENE_H / SCENE_W, "df:3d:" + session.pos().asLong(),
 					scene[sceneBuffer], SCENE_W, SCENE_H);
 		CompoundTag f = data.getCompound("fix");
@@ -462,9 +493,7 @@ public final class DfApp extends DosApp {
 			String[] tabs = { Dos.tr("df.tab_map"), Dos.tr("df.tab_3d"), Dos.tr("df.tab_searches") };
 			for(int i = 0; i < tabs.length; i++) {
 				if(col >= c && col < c + tabs[i].length() + 2) {
-					page = i;
-					if(page == SEARCHES)
-						refreshSearches();
+					showPage(i);
 					return true;
 				}
 				c += tabs[i].length() + 3;

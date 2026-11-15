@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerApps;
@@ -51,6 +52,47 @@ public final class NetControlApp extends DosApp {
 	public NetControlApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(this::edit);
+		java.util.function.BooleanSupplier picked = () -> loaded && list.selected() >= 0;
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.netlog.new_net", "F4", GLFW.GLFW_KEY_F4).when(() -> loaded),
+						item("menu.open", "F3", GLFW.GLFW_KEY_F3).when(() -> loaded),
+						item("menu.save", "^S", () -> {
+							if(loaded)
+								save();
+						}).when(() -> loaded),
+						item("menu.netlog.save_report", "F6", GLFW.GLFW_KEY_F6).when(() -> loaded),
+						item("menu.netlog.print_report", "F5", GLFW.GLFW_KEY_F5).when(() -> loaded),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.netlog.net"), List.of(
+						item("menu.netlog.setup", "F7", GLFW.GLFW_KEY_F7).when(() -> loaded),
+						item("menu.netlog.roll_call", "N", GLFW.GLFW_KEY_N).when(() -> loaded),
+						item("menu.netlog.close", "F8", GLFW.GLFW_KEY_F8).when(() -> loaded),
+						item("menu.netlog.reminder", "F9", GLFW.GLFW_KEY_F9).when(() -> loaded))),
+				new DosMenuBar.Menu(Dos.tr("menu.netlog.station"), List.of(
+						item("menu.previous", "Up", GLFW.GLFW_KEY_UP).when(() -> loaded),
+						item("menu.next", "Down", GLFW.GLFW_KEY_DOWN).when(() -> loaded),
+						item("menu.netlog.check_in", "Ins", GLFW.GLFW_KEY_INSERT).when(() -> loaded),
+						item("menu.netlog.edit", "Enter", GLFW.GLFW_KEY_ENTER).when(picked),
+						item("menu.netlog.remove", "Del", GLFW.GLFW_KEY_DELETE).when(picked),
+						item("menu.netlog.out", "O", GLFW.GLFW_KEY_O).when(picked),
+						item("menu.netlog.traffic", "T", GLFW.GLFW_KEY_T).when(picked),
+						item("menu.netlog.short", "S", GLFW.GLFW_KEY_S).when(picked),
+						item("menu.netlog.recheck", "R", GLFW.GLFW_KEY_R).when(picked),
+						item("menu.netlog.move_up", "^Up", () -> move(-1)).when(picked),
+						item("menu.netlog.move_down", "^Down", () -> move(1)).when(picked))))));
+	}
+
+	/** Ctrl+Up/Down: the picked station a place up ({@code -1}) or down the list. */
+	private void move(int by) {
+		int at = list.selected();
+		if(!loaded || at < 0)
+			return;
+		int to = net.move(at, by);
+		if(rollCall == at)
+			rollCall = to;
+		changed();
+		list.select(to);
 	}
 
 	@Override
@@ -345,11 +387,7 @@ public final class NetControlApp extends DosApp {
 			case GLFW.GLFW_KEY_UP, GLFW.GLFW_KEY_DOWN -> {
 				if(!ctrl)
 					return list.keyPressed(key);
-				int to = net.move(at, key == GLFW.GLFW_KEY_UP ? -1 : 1);
-				if(rollCall == at)
-					rollCall = to;
-				changed();
-				list.select(to);
+				move(key == GLFW.GLFW_KEY_UP ? -1 : 1);
 			}
 			case GLFW.GLFW_KEY_F3 -> showDialog(new DosFilePicker(session, Dos.tr("netlog.open_title"), EXTENSION, name -> load(name, false)));
 			case GLFW.GLFW_KEY_F4 -> setup(true);

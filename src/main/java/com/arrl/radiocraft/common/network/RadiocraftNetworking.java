@@ -37,13 +37,19 @@ public class RadiocraftNetworking {
         registrar.playToServer(SWornPttPacket.TYPE, SWornPttPacket.STREAM_CODEC, SWornPttPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SCameraShutterPacket::handle);
         registrar.playToServer(SCWBufferPacket.TYPE, SCWBufferPacket.STREAM_CODEC, SCWBufferPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SKeyerPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SKeyerPacket.STREAM_CODEC,
+                com.arrl.radiocraft.common.network.serverbound.SKeyerPacket::handle); // The iambic keyer's panel (2026-11-12).
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SClaimCallsignPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SClaimCallsignPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SClaimCallsignPacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CCallsignPromptPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CCallsignPromptPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CCallsignPromptPacket::handle);
         registrar.playToClient(CCWBufferPacket.TYPE, CCWBufferPacket.STREAM_CODEC, CCWBufferPacket::handle);
         registrar.playToClient(CAuroraPacket.TYPE, CAuroraPacket.STREAM_CODEC, CAuroraPacket::handle);
+        registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CSatellitesPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CSatellitesPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CSatellitesPacket::handle); // Satellites in the sky (2026-11-11).
+        registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CSatelliteBurnoutPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CSatelliteBurnoutPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CSatelliteBurnoutPacket::handle); // A satellite burning up (2026-11-12).
         registrar.playToClient(CInterferencePacket.TYPE, CInterferencePacket.STREAM_CODEC, CInterferencePacket::handle);
         registrar.playToServer(SRepeaterSettingsPacket.TYPE, SRepeaterSettingsPacket.STREAM_CODEC, SRepeaterSettingsPacket::handle);
         registrar.playToServer(SStationPacket.TYPE, SStationPacket.STREAM_CODEC, SStationPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SFmStationPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SFmStationPacket.STREAM_CODEC,
+                com.arrl.radiocraft.common.network.serverbound.SFmStationPacket::handle); // An FM station's panel (2026-11-14).
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CModerationPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CModerationPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CModerationPacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CComputerPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CComputerPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CComputerPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SManpackPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SManpackPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SManpackPacket::handle);
@@ -52,6 +58,9 @@ public class RadiocraftNetworking {
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CManpackCWPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CManpackCWPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CManpackCWPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SHandheldDfFrequencyPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SHandheldDfFrequencyPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SHandheldDfFrequencyPacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CHandheldDfPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CHandheldDfPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CHandheldDfPacket::handle);
+        registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CMeshScreenPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CMeshScreenPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CMeshScreenPacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SFireStationNamePacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SFireStationNamePacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SFireStationNamePacket::handle);
+        registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SMeshSetupPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SMeshSetupPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SMeshSetupPacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CAdsbPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CAdsbPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CAdsbPacket::handle);
         registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CCallerIdPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CCallerIdPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CCallerIdPacket::handle);
         // The Real-World Interface (1.12 step 11).
@@ -65,6 +74,8 @@ public class RadiocraftNetworking {
         // QSL cards (computer batch 3C): writing on a card, taking one out of an album.
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SQslCardPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SQslCardPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SQslCardPacket::handle);
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SQslAlbumPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SQslAlbumPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SQslAlbumPacket::handle);
+        registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CCrtMonitorPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CCrtMonitorPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CCrtMonitorPacket::handle); // External CRT Monitor pictures (2026-11-12).
+        registrar.playToClient(com.arrl.radiocraft.common.network.clientbound.CCrtWaterfallPacket.TYPE, com.arrl.radiocraft.common.network.clientbound.CCrtWaterfallPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.clientbound.CCrtWaterfallPacket::handle); // External CRT Monitor waterfall rows (2026-11-12).
         registrar.playToServer(com.arrl.radiocraft.common.network.serverbound.SPhotoChunkPacket.TYPE, com.arrl.radiocraft.common.network.serverbound.SPhotoChunkPacket.STREAM_CODEC, com.arrl.radiocraft.common.network.serverbound.SPhotoChunkPacket::handle);
     }
 }

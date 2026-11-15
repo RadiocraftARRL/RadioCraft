@@ -16,10 +16,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ComputerAppsTest {
 
 	@Test
-	void sevenBuiltInProgramsWithNoFloppy() {
+	void tenBuiltInProgramsWithNoFloppy() { // RELAY, REDSTONE and EMAIL, the LAN programs, joined on 2026-11-13.
 		List<ComputerApp> builtIn = ComputerApps.builtIn();
 		assertEquals(List.of(ComputerApps.EDITOR, ComputerApps.SYSINFO, ComputerApps.BAND_PLAN, ComputerApps.INSTALL,
-				ComputerApps.SETUP, ComputerApps.ABOUT, ComputerApps.LICENSE), builtIn);
+				ComputerApps.SETUP, ComputerApps.ABOUT, ComputerApps.LICENSE, ComputerApps.RELAY, ComputerApps.REDSTONE, ComputerApps.EMAIL), builtIn);
 		for(ComputerApp app : builtIn) {
 			assertFalse(app.hasFloppy());
 			assertNull(app.floppyItemId());
@@ -34,7 +34,7 @@ class ComputerAppsTest {
 			if(app.hasFloppy())
 				assertTrue(items.add(app.floppyItemId()), "two programs on " + app.floppyItemId());
 		}
-		assertEquals(ComputerApps.all().size() - 7, ComputerApps.onFloppies().size());
+		assertEquals(ComputerApps.all().size() - 10, ComputerApps.onFloppies().size());
 		assertEquals("floppy_logbook", ComputerApps.LOGBOOK.floppyItemId());
 		assertEquals(ComputerApp.Kind.SECRET, ComputerApps.SNAKE.kind());
 		assertEquals("CPS.EXE", ComputerApps.PROGRAMMER.fileName());
@@ -45,7 +45,7 @@ class ComputerAppsTest {
 	void availableIsBuiltInPlusInstalledInShellOrder() {
 		List<ComputerApp> apps = ComputerApps.available(List.of("sstv", "logbook", "edit", "nonsense"));
 		assertEquals(List.of(ComputerApps.EDITOR, ComputerApps.SYSINFO, ComputerApps.BAND_PLAN, ComputerApps.INSTALL,
-				ComputerApps.SETUP, ComputerApps.ABOUT, ComputerApps.LICENSE, ComputerApps.LOGBOOK, ComputerApps.SSTV), apps);
+				ComputerApps.SETUP, ComputerApps.ABOUT, ComputerApps.LICENSE, ComputerApps.RELAY, ComputerApps.REDSTONE, ComputerApps.EMAIL, ComputerApps.LOGBOOK, ComputerApps.SSTV), apps);
 		assertNull(ComputerApps.get("nonsense"));
 		assertNull(ComputerApps.get(null));
 	}
@@ -57,5 +57,15 @@ class ComputerAppsTest {
 		assertThrows(IllegalArgumentException.class, () -> new ComputerApp("ok", "lower", ComputerApp.Kind.CRAFTED));
 		assertThrows(IllegalArgumentException.class, () -> ComputerApps.add("edit", "EDIT2", ComputerApp.Kind.CRAFTED));
 		assertThrows(IllegalArgumentException.class, () -> ComputerApps.add("edit_two", "EDIT", ComputerApp.Kind.CRAFTED));
+	}
+
+	/** The background services SETUP can switch off (2026-11-12): DISTRESS and WXSAT, nothing else. */
+	@Test
+	void theBackgroundServicesAreDistressAndWxsat() {
+		assertTrue(ComputerApps.isBackgroundService(ComputerApps.DISTRESS));
+		assertTrue(ComputerApps.isBackgroundService(ComputerApps.WXSAT));
+		assertFalse(ComputerApps.isBackgroundService(ComputerApps.RIG_CONTROL));
+		assertFalse(ComputerApps.isBackgroundService(ComputerApps.SETUP));
+		assertFalse(ComputerApps.isBackgroundService(null));
 	}
 }

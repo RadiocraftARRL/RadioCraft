@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "radiocraft:all_band_circuit_board"
+    },
+    "C": {
+      "item": "radiocraft:coax_wire"
+    },
+    "F": {
+      "item": "radiocraft:ferrite_core"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "pattern": [
+    "GGG",
+    "BFB",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:linear_amplifier"
+  }
+}

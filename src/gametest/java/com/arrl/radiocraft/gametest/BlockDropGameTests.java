@@ -41,7 +41,11 @@ public class BlockDropGameTests {
             if(state.requiresCorrectToolForDrops() && !pickaxe.isCorrectToolForDrops(state))
                 problems.add(name + " cannot be mined with a pickaxe");
             List<ItemStack> drops = Block.getDrops(state, helper.getLevel(), pos, null, null, pickaxe);
-            if(block == RadiocraftBlocks.COMMERCIAL_RADIO_MODULE.get()) { // Sealed: it gives up one rare part instead.
+            if(block == RadiocraftBlocks.FM_BROADCAST_TRANSMITTER_TOP.get()) { // The cabinet's top: the bottom drops the transmitter.
+                if(!drops.isEmpty())
+                    problems.add(name + " drops " + drops + ", the bottom drops the transmitter");
+            }
+            else if(block == RadiocraftBlocks.COMMERCIAL_RADIO_MODULE.get()) { // Sealed: it gives up one rare part instead.
                 if(drops.size() != 1 || drops.get(0).is(block.asItem()))
                     problems.add(name + " drops " + drops + ", not one rare part");
             }

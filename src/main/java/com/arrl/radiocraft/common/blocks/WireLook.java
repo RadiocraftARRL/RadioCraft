@@ -61,8 +61,44 @@ public final class WireLook {
 	 * the beam's top), so our stub stops where it is instead of running on past it.
 	 */
 	public record Look(@Nullable Direction hug, @Nullable Direction arrive, End end, boolean back, int hugReach, int arriveReach, int backReach,
-					   @Nullable Direction feed, int feedSide, int reachBottom, int reachTop, int stubs) {
+					   @Nullable Direction feed, int feedSide, int reachBottom, int reachTop, int stubs, int drops, int dropEnds) {
 		public static final Look NONE = new Look(null, null, End.NONE, false);
+
+		/** Drops down to the floor (no connector height). */
+		public Look(@Nullable Direction hug, @Nullable Direction arrive, End end, boolean back, int hugReach, int arriveReach, int backReach,
+					@Nullable Direction feed, int feedSide, int reachBottom, int reachTop, int stubs, int drops) {
+			this(hug, arrive, end, back, hugReach, arriveReach, backReach, feed, feedSide, reachBottom, reachTop, stubs, drops, 0);
+		}
+
+		/**
+		 * How high above the floor, pixels, a drop towards horizontal side {@code dir} ends: at the device's connectors,
+		 * the middle of its back (2026-11-14, the maintainer: a drop from the ceiling ran down a radio's back to the desk).
+		 * 0: to the floor. Packed {@code dropEnds} four bits a side.
+		 */
+		public int dropEnd(Direction dir) {
+			return dir.getAxis().isHorizontal() ? dropEnds >> (4 * dir.get2DDataValue()) & 0xF : 0;
+		}
+
+		/** {@code dropEnds} with side {@code dir}'s drop ending {@code px} up (0-15). */
+		public static int withDropEnd(int dropEnds, Direction dir, int px) {
+			int shift = 4 * dir.get2DDataValue();
+			return (dropEnds & ~(0xF << shift)) | ((Math.max(0, Math.min(15, px)) & 0xF) << shift);
+		}
+
+		/**
+		 * No drops: {@code drops} is a bit a horizontal side ({@link Direction#get2DDataValue}) where a ceiling wire's
+		 * stub ends at a device standing on the floor and drops down its face to it (2026-11-13: cable under a block
+		 * beside a radio on a desk ran along the ceiling and never reached the radio).
+		 */
+		public Look(@Nullable Direction hug, @Nullable Direction arrive, End end, boolean back, int hugReach, int arriveReach, int backReach,
+					@Nullable Direction feed, int feedSide, int reachBottom, int reachTop, int stubs) {
+			this(hug, arrive, end, back, hugReach, arriveReach, backReach, feed, feedSide, reachBottom, reachTop, stubs, 0, 0);
+		}
+
+		/** True if the stub towards horizontal side {@code dir} drops down to a floor device. */
+		public boolean dropsTo(Direction dir) {
+			return dir.getAxis().isHorizontal() && (drops >> dir.get2DDataValue() & 1) != 0;
+		}
 
 		/** No stubs set back. */
 		public Look(@Nullable Direction hug, @Nullable Direction arrive, End end, boolean back, int hugReach, int arriveReach, int backReach,
@@ -98,7 +134,30 @@ public final class WireLook {
 	/** A piece of cable: the part model suffix ("edge" -> "wire_edge") and whether it is turned per edge. */
 	public enum Part {
 		MIDDLE("middle", false), HORIZONTAL("horizontal", true), CORNER("corner", true), VERTICAL("vertical", false),
-		EDGE("edge", true), EDGE_FULL("edge_full", true), CLIMB_OVERHANG("climb_overhang", true), UP_OVERHANG("up_overhang", true);
+		EDGE("edge", true), EDGE_FULL("edge_full", true), CLIMB_OVERHANG("climb_overhang", true), UP_OVERHANG("up_overhang", true),
+		/** The run up the middle's model, cut short: where a strand rises to hop over another ({@link Placed#lo}). */
+		RISER("vertical", false),
+		/**
+		 * A hung wire's drop down a floor device's face ({@link Look#dropsTo}): the run up an edge's model, straight down
+		 * where the stub meets the device (an edge run slants to meet the block below, which a drop has nothing to do
+		 * with: it ran diagonally down a battery meter's face, 2026-11-14).
+		 */
+		DROP("edge", true),
+		/**
+		 * A stub's model stretched to any straight floor run, anywhere: a cable wrapping round a radio to its back
+		 * (2026-11-14). {@link Placed#foot}/{@link Placed#head}: where the piece starts and ends along its axis (z for
+		 * north, x for west), {@link Placed#side} across it, {@link Placed#length} the model's own length; all in 1/256
+		 * of a block, in the wire's block, and may lie beyond it.
+		 */
+		SPAN("horizontal", true),
+		/** The middle cube moved anywhere: a bend between {@link #SPAN}s, at ({@code foot}, {@code head}) in 1/256 of a block. */
+		JOINT("middle", false),
+		/**
+		 * A run up a wall at an exact place along it (2026-11-14, right angles only): {@code dir} the wall, {@code side}
+		 * where along it (1/256 of a block), {@code head} how far out past the face (pixels, as a beam's reach); its height
+		 * by its height map.
+		 */
+		POST("edge_full", true);
 
 		public final String suffix;
 		public final boolean rotates;
@@ -114,13 +173,47 @@ public final class WireLook {
 	 * and {@code head}: pixels the piece is moved out past the {@code dir} face to meet cable against a tower beam
 	 * ({@link Look#hugReach}), at the foot and the head of a run up the edge (the same for any other piece).
 	 */
-	public record Placed(Part part, @Nullable Direction dir, int foot, int head, int side) {
+	public record Placed(Part part, @Nullable Direction dir, int foot, int head, int side, int lo, int hi, int length) {
 		public Placed(Part part, @Nullable Direction dir) {
 			this(part, dir, 0, 0, 0);
 		}
 
 		public Placed(Part part, @Nullable Direction dir, int foot, int head) {
 			this(part, dir, foot, head, 0);
+		}
+
+		public Placed(Part part, @Nullable Direction dir, int foot, int head, int side) {
+			this(part, dir, foot, head, side, 0, 256, 0);
+		}
+
+		/**
+		 * The piece raised or squashed (2026-11-14): its height in the block, the right way up (the floor for a wire on
+		 * the floor, the ceiling for one hung from it), maps from 0..1 to {@code lo..hi}, in 1/256 of a block. A strand
+		 * hopping over another is raised two pixels (32..288), the riser up to it squashed, a drop to a radio's
+		 * connectors cut short ({@link CableRoutes}).
+		 */
+		public Placed withHeight(int lo, int hi) {
+			return new Placed(part, dir, foot, head, side, lo, hi, length);
+		}
+
+		/** Whether the piece is raised or squashed. */
+		public boolean lifted() {
+			return lo != 0 || hi != 256;
+		}
+
+		/** A height in the block, the right way up (block units), where this piece puts it. */
+		public double height(double upright) {
+			return (lo + upright * (hi - lo)) / 256.0D;
+		}
+
+		/** A height in the world's block (block units) where this piece puts it, a ceiling wire's measured from the top. */
+		public double worldHeight(double y, boolean ceiling) {
+			return ceiling ? 1.0D - height(1.0D - y) : height(y);
+		}
+
+		/** Placed anywhere ({@link Part#SPAN}, {@link Part#JOINT}): drawn by position alone, no outline. */
+		public boolean free() {
+			return part == Part.SPAN || part == Part.JOINT || part == Part.POST;
 		}
 
 		/** Whether the piece is moved out past its face (to a beam, or across to a horn's feed, {@code side} off). */
@@ -130,7 +223,7 @@ public final class WireLook {
 
 		/** The piece where it would be against a solid wall: for the hitbox, which must stay inside the block. */
 		public Placed plain() {
-			return reaches() ? new Placed(part, dir) : this;
+			return reaches() || lifted() ? new Placed(part, dir) : this;
 		}
 	}
 
@@ -174,6 +267,12 @@ public final class WireLook {
 			else if(link && arrive == dir && hug == null)
 				out.add(new Placed(Part.CORNER, dir, look.arriveReach(), look.arriveReach()));
 		}
+		// A ceiling wire's stub to a floor device drops down the device's face to it (as far in as the stub reaches).
+		for(Direction dir : Direction.Plane.HORIZONTAL)
+			if(look.dropsTo(dir) && connected.contains(dir) && dir != hug) {
+				int reach = Math.max(0, look.stubReach(dir));
+				out.add(new Placed(Part.DROP, dir, reach, reach)); // Cut short to the connectors by CableRoutes.
+			}
 		if(hug != null) {
 			// A run up the edge, from its reach at the bottom of the block to its reach at the top (world y), so it
 			// meets the run in the blocks above and below wherever it carries on; the stubs and overhangs at its ends
@@ -327,6 +426,8 @@ public final class WireLook {
 	 * upside down, so a run "up" an edge goes down the block in world y).
 	 */
 	public static Affine affine(Placed placed, Lateral own, Faces faces, boolean ceiling) {
+		if(placed.free())
+			return freeAffine(placed);
 		Affine base = baseAffine(placed, own, faces, ceiling);
 		return placed.reaches() ? reach(base, placed, own, ceiling) : base;
 	}
@@ -353,10 +454,12 @@ public final class WireLook {
 		// toward or away from this face (along both axes), and the stub's inner end with it.
 		boolean towards = dir.getAxisDirection() == Direction.AxisDirection.POSITIVE;
 		double inner = STUB_INNER + (towards ? own.along(dir) : -own.along(dir)) / 16.0D;
+		if(inner > -1.0E-6D && placed.part() == Part.HORIZONTAL)
+			return base; // The middle is at this face (a cable kept to the wall there, 2026-11-11): no stub to stretch.
 		// The move as a map of u, the distance out past the face (negative inside): u' = a * u + b + c * y.
 		double a = 1.0D, b, c = 0.0D;
 		switch(placed.part()) {
-			case EDGE, EDGE_FULL -> { // foot at world y 0, head at world y 1, either way up.
+			case EDGE, EDGE_FULL, DROP -> { // foot at world y 0, head at world y 1, either way up.
 				b = foot;
 				c = head - foot;
 			}
@@ -396,7 +499,7 @@ public final class WireLook {
 		Direction dir = placed.dir();
 		Direction top = ceiling ? Direction.DOWN : Direction.UP, bottom = top.getOpposite(); // World ends of a run "up".
 		switch(placed.part()) {
-			case MIDDLE -> {
+			case MIDDLE, RISER -> {
 				return own.isZero() ? Affine.NONE : Affine.of(1.0D, own.x() / 16.0D, 1.0D, own.z() / 16.0D);
 			}
 			case VERTICAL -> { // From the middle (our offset) to the block above (its meeting point), along y.
@@ -417,6 +520,10 @@ public final class WireLook {
 				// The foot meets the cable it carries on from on this side (a neighbour it links to here), else our own place.
 				return alongWall(dir, faces.at(dir).across(dir) / 16.0D, faces.at(top).across(dir) / 16.0D, ceiling);
 			}
+			case DROP -> { // Straight down where the stub meets the device.
+				double at = faces.at(dir).across(dir) / 16.0D;
+				return alongWall(dir, at, at, ceiling);
+			}
 			case EDGE_FULL -> { // Through from the block below to the block above.
 				return alongWall(dir, faces.at(bottom).across(dir) / 16.0D, faces.at(top).across(dir) / 16.0D, ceiling);
 			}
@@ -428,13 +535,35 @@ public final class WireLook {
 		return Affine.NONE;
 	}
 
+	/** Where a {@link Part#SPAN} or {@link Part#JOINT} goes: by its own numbers alone (1/256 of a block). */
+	private static Affine freeAffine(Placed placed) {
+		double foot = placed.foot() / 256.0D, head = placed.head() / 256.0D, side = placed.side() / 256.0D;
+		if(placed.part() == Part.JOINT) // The middle cube's centre (0.5, 0.5) to (foot, head).
+			return Affine.of(1.0D, foot - 0.5D, 1.0D, head - 0.5D);
+		if(placed.part() == Part.POST) { // Along its wall to side; out past the face by head pixels.
+			double out = placed.head() / 16.0D;
+			return switch(placed.dir()) {
+				case SOUTH -> Affine.of(1.0D, side - 0.5D, 1.0D, out);
+				case WEST -> Affine.of(1.0D, -out, 1.0D, side - 0.5D);
+				case EAST -> Affine.of(1.0D, out, 1.0D, side - 0.5D);
+				default -> Affine.of(1.0D, side - 0.5D, 1.0D, -out);
+			};
+		}
+		// The stub's model runs from the face (0) to its inner end (length): stretched to foot..head, its centre line moved
+		// across from the middle (0.5) to side.
+		double stretch = (head - foot) / (placed.length() / 256.0D);
+		return placed.dir() == Direction.WEST ? Affine.of(stretch, foot, 1.0D, side - 0.5D) : Affine.of(1.0D, side - 0.5D, stretch, foot);
+	}
+
 	/**
 	 * A stub towards {@code dir}: stretched along its axis so its face end stays on the face while its inner end meets
 	 * the middle moved by {@code own} sixteenths, and sheared sideways from {@code inner} (block units) at the middle to
 	 * {@code face} at the block face.
 	 */
 	private static Affine stub(Direction dir, double inner, double face, double own) {
-		double stretchIn = (7.0D + own) / 7.0D, stretchOut = (7.0D - own) / 7.0D; // The stub is 7 px from face to middle.
+		// The stub is 7 px from face to middle. A cable against the wall the stub points at has its middle at that face
+		// (2026-11-11): the stub shrinks to nothing rather than turning inside out.
+		double stretchIn = Math.max(0.0D, (7.0D + own) / 7.0D), stretchOut = Math.max(0.0D, (7.0D - own) / 7.0D);
 		// Sideways position as a function of the position along the stub, a line through (face end, face) and (inner end, inner).
 		return switch(dir) {
 			case NORTH -> new Affine(1.0D, face, 0.0D, (inner - face) / (7.0D / 16.0D), stretchIn, 0.0D, 0.0D, 0.0D); // z 0 at the face, 7/16 at the middle.
@@ -456,6 +585,30 @@ public final class WireLook {
 	private static Affine slantY(double x0, double x1, boolean ceiling, double z0, double z1, boolean ceilingZ) {
 		double ax = ceiling ? x1 : x0, bx = ceiling ? x0 : x1, az = ceilingZ ? z1 : z0, bz = ceilingZ ? z0 : z1;
 		return new Affine(1.0D, ax, bx - ax, 0.0D, 1.0D, az, 0.0D, bz - az);
+	}
+
+	/**
+	 * Where a cable lies across its block to keep to the walls beside it (2026-11-11, maintainer: cable should always
+	 * hug a block face, never float), in sixteenths off the middle as a {@link Lateral}: against a wall on one side of
+	 * an axis it is moved over until it touches that wall ({@code 8 - halfWidth}); with walls on both sides it keeps to
+	 * {@code hug} if that is on the axis; with none, it follows {@code followX}/{@code followZ} (-1, 0 or 1: the side
+	 * the cable it joins keeps to, used where it has nothing under it, so a run over a gap stays on the wall line past
+	 * a missing block or round an outside corner). Walls on both axes put it in the corner. {@code halfWidth} is half
+	 * the cable's width, or a bundle's, pixels.
+	 */
+	public static Lateral lie(boolean north, boolean south, boolean west, boolean east, @Nullable Direction hug, double halfWidth, int followX, int followZ) {
+		double k = 8.0D - halfWidth;
+		int hugX = hug == Direction.WEST ? -1 : hug == Direction.EAST ? 1 : 0, hugZ = hug == Direction.NORTH ? -1 : hug == Direction.SOUTH ? 1 : 0;
+		return new Lateral(k * side(west, east, hugX, followX), k * side(north, south, hugZ, followZ));
+	}
+
+	/** -1, 0 or 1: towards the one wall on an axis, else the hugged side on it, else what the joined cable does. */
+	private static int side(boolean negative, boolean positive, int hug, int follow) {
+		if(negative != positive)
+			return negative ? -1 : 1;
+		if(negative && hug != 0)
+			return hug;
+		return Integer.signum(follow);
 	}
 
 	/** Room a bundle's strands may take up side by side, pixels: a pixel of margin either side of the block. */

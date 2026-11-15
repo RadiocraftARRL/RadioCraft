@@ -23,6 +23,8 @@ public class BENetworkTypes {
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.AutoTunerNetworkObject.TYPE,
                 com.arrl.radiocraft.common.be_networks.network_objects.AutoTunerNetworkObject::new);
         BENetworkRegistry.registerObject(DuplexerNetworkObject.TYPE, DuplexerNetworkObject::new);
+        BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.LinearAmplifierNetworkObject.TYPE,
+                com.arrl.radiocraft.common.be_networks.network_objects.LinearAmplifierNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.AntennaSwitchNetworkObject.TYPE,
                 com.arrl.radiocraft.common.be_networks.network_objects.AntennaSwitchNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.AntennaSplitterNetworkObject.TYPE,
@@ -37,6 +39,8 @@ public class BENetworkTypes {
                 com.arrl.radiocraft.common.be_networks.network_objects.GroundRodNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.LightningArrestorNetworkObject.TYPE,
                 com.arrl.radiocraft.common.be_networks.network_objects.LightningArrestorNetworkObject::new);
+        BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.SatelliteTrackerNetworkObject.TYPE,
+                com.arrl.radiocraft.common.be_networks.network_objects.SatelliteTrackerNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.BandFollowingAntennaNetworkObject.TYPE,
                 com.arrl.radiocraft.common.be_networks.network_objects.BandFollowingAntennaNetworkObject::new);
         BENetworkRegistry.registerObject(com.arrl.radiocraft.common.be_networks.network_objects.DummyLoadNetworkObject.TYPE,

@@ -21,12 +21,13 @@ import org.jetbrains.annotations.NotNull;
  * the mobile at {@code pos} whose screen they have open. {@code action} {@link #CHANNEL}: the channel knob to
  * {@code value} (a 0-based position); {@link #VOLUME} (handhelds): the power/volume knob to {@code value} (0 = off,
  * see {@link CommercialHandheldItem#setVolumeKnob}); {@link #ZONE} (the upgraded handheld's A-D keys): zone
- * {@code value} (0 = A). Turning knobs is all a user can do to a commercial radio's channels; programming
+ * {@code value} (0 = A); {@link #DISMISS} (handhelds, 2026-11-11): takes the beacon distress alert off its screen.
+ * Turning knobs is all a user can do to a commercial radio's channels; programming
  * goes through {@link com.arrl.radiocraft.common.radio.commercial.CommercialProgramming}.
  */
 public record SCommercialRadioPacket(int slot, long pos, int action, int value) implements CustomPacketPayload {
 
-	public static final int CHANNEL = 0, VOLUME = 1, ZONE = 2;
+	public static final int CHANNEL = 0, VOLUME = 1, ZONE = 2, DISMISS = 3;
 
 	public static final Type<SCommercialRadioPacket> TYPE = new Type<>(Radiocraft.id("s_commercial_radio"));
 
@@ -61,6 +62,7 @@ public record SCommercialRadioPacket(int slot, long pos, int action, int value) 
 				}
 				case VOLUME -> CommercialHandheldItem.setVolumeKnob(stack, value);
 				case ZONE -> CommercialHandheldItem.selectZone(stack, value);
+				case DISMISS -> CommercialHandheldItem.dismissDistress(stack);
 				default -> {}
 			}
 		}
@@ -84,6 +86,11 @@ public record SCommercialRadioPacket(int slot, long pos, int action, int value) 
 	/** The handheld in {@code slot} on zone {@code zone} (0 = A: its A to D keys). */
 	public static void zone(int slot, int zone) {
 		PacketDistributor.sendToServer(new SCommercialRadioPacket(slot, 0L, ZONE, zone));
+	}
+
+	/** The handheld in {@code slot}: its DISMISS, the beacon distress alert off its screen (2026-11-11). */
+	public static void dismiss(int slot) {
+		PacketDistributor.sendToServer(new SCommercialRadioPacket(slot, 0L, DISMISS, 0));
 	}
 
 	/** The mobile at {@code pos} (its screen open) on knob position {@code position}. */

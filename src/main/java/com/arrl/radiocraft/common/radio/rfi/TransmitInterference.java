@@ -111,13 +111,18 @@ public class TransmitInterference {
 	 * only does distance maths for redstone components, so an empty field costs a block read per position.
 	 */
 	public static Targets pick(Level level, PickupZone zone, boolean qrp, boolean vertical, double swr) {
+		return pick(level, zone, qrp, vertical, swr, 1);
+	}
+
+	/** {@link #pick}, with the antenna's reach times {@code reachScale}: 2 through a linear amplifier (2026-11-13). */
+	public static Targets pick(Level level, PickupZone zone, boolean qrp, boolean vertical, double swr, int reachScale) {
 		if(!RadiocraftServerConfig.REDSTONE_INTERFERENCE_ENABLED.get() || !RadiocraftServerConfig.REDSTONE_INTERFERENCE_TRANSMIT_ENABLED.get())
 			return Targets.EMPTY;
 		boolean badSwr = isBadSwr(swr);
 		if(RadiocraftServerConfig.REDSTONE_INTERFERENCE_ONLY_BAD_SWR.get() && !badSwr)
 			return Targets.EMPTY;
 
-		int antennaReach = antennaReach(qrp);
+		int antennaReach = antennaReach(qrp) * Math.max(1, reachScale);
 		int radioReach = badSwr ? BAD_SWR_RADIO_REACH : 0;
 		int feedReach = badSwr ? BAD_SWR_FEEDLINE_REACH : 0;
 		List<BlockPos> radio = List.of(zone.radioPos());

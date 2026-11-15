@@ -12,12 +12,12 @@ import org.jetbrains.annotations.Nullable;
  * white index mark that runs round the cylinder) are this pair's own. Coordinates are panel pixels from {@code left},
  * {@code top}.
  */
-final class MarinePanels {
+public final class MarinePanels {
 
 	private MarinePanels() {}
 
 	/** A knob's pointer at {@code value} (0 to 1) between its {@code min_deg} and {@code max_deg}. */
-	static void knob(GuiGraphics g, int left, int top, HfPanel.Control c, double value) {
+	public static void knob(GuiGraphics g, int left, int top, HfPanel.Control c, double value) {
 		double min = c.num("min_deg", -135), max = c.num("max_deg", 135);
 		double deg = min + Math.max(0.0D, Math.min(1.0D, value)) * (max - min);
 		ray(g, left, top, c.num("cx", 0), c.num("cy", 0), deg, c.num("pointer_from", 0), c.num("pointer_r", 6), (int)c.num("pointer_width", 1),
@@ -28,7 +28,7 @@ final class MarinePanels {
 	 * The handheld's top knob seen from the front: its index mark slides across the cylinder as it turns, and is round
 	 * the back (not drawn) past a quarter turn either way.
 	 */
-	static void sideKnob(GuiGraphics g, int left, int top, HfPanel.Control c, double value) {
+	public static void sideKnob(GuiGraphics g, int left, int top, HfPanel.Control c, double value) {
 		double min = c.num("min_deg", -135), max = c.num("max_deg", 135);
 		double deg = min + Math.max(0.0D, Math.min(1.0D, value)) * (max - min);
 		if(Math.abs(deg) >= 85.0D)
@@ -38,7 +38,7 @@ final class MarinePanels {
 	}
 
 	/** A switch's handle in position {@code position} (one of its {@code positions}). */
-	static void switchHandle(GuiGraphics g, int left, int top, HfPanel.Control c, String position) {
+	public static void switchHandle(GuiGraphics g, int left, int top, HfPanel.Control c, String position) {
 		int i = c.strings("positions").indexOf(position);
 		var handles = c.rects("handles");
 		if(i < 0 || i >= handles.size())
@@ -48,15 +48,41 @@ final class MarinePanels {
 		fill(g, left, top, h[0], h[1], h[2] - 1, h[3] - 1, c.colour("handle_colour", 0xFFC8C8C8));
 	}
 
+	/** A knob with detents ("knob3") turned to {@code position}, one of its {@code positions}, at its {@code angles_deg}. */
+	public static void knob3(GuiGraphics g, int left, int top, HfPanel.Control c, String position) {
+		int i = c.strings("positions").indexOf(position);
+		double[] angles = c.nums("angles_deg");
+		if(i < 0 || i >= angles.length)
+			return;
+		ray(g, left, top, c.num("cx", 0), c.num("cy", 0), angles[i], c.num("pointer_from", 0), c.num("pointer_r", 6), (int)c.num("pointer_width", 1),
+				c.colour("pointer_colour", 0xFFE0E0E0));
+	}
+
+	/** A meter's needle at {@code value} (0 to 1) from its {@code pivot}, clipped to its face (the fire alarm box, SCADA, 2026-11-11). */
+	public static void meter(GuiGraphics g, int left, int top, HfPanel.Control c, double value) {
+		double[] pivot = c.nums("pivot");
+		if(pivot.length != 2)
+			return;
+		double zero = c.num("zero_deg", -50), full = c.num("full_deg", 50);
+		double deg = zero + Math.max(0.0D, Math.min(1.0D, value)) * (full - zero);
+		double sin = Math.sin(Math.toRadians(deg)), cos = Math.cos(Math.toRadians(deg));
+		int colour = c.colour("needle_colour", 0xFF202020);
+		for(double t = 0.0D; t <= c.num("radius", 20); t += 0.35D) {
+			int x = (int)Math.floor(pivot[0] + t * sin), y = (int)Math.floor(pivot[1] - t * cos);
+			if(x >= c.x() && y >= c.y() && x < c.x() + c.w() && y < c.y() + c.h())
+				fill(g, left, top, x, y, 1, 1, colour);
+		}
+	}
+
 	/** A lamp lit in {@code colour}, with a lighter centre. */
-	static void lamp(GuiGraphics g, int left, int top, HfPanel.Control c, int colour) {
+	public static void lamp(GuiGraphics g, int left, int top, HfPanel.Control c, int colour) {
 		fill(g, left, top, c.x(), c.y(), c.w(), c.h(), colour);
 		if(c.w() >= 3 && c.h() >= 3)
 			fill(g, left, top, c.x() + 1, c.y() + 1, c.w() - 2, c.h() - 2, lighter(colour));
 	}
 
 	/** A key: its lit strip when {@code lit}, and darkened while {@code pressed}. */
-	static void button(GuiGraphics g, int left, int top, HfPanel.Control c, boolean lit, boolean pressed) {
+	public static void button(GuiGraphics g, int left, int top, HfPanel.Control c, boolean lit, boolean pressed) {
 		int[] strip = c.lit();
 		if(lit && strip != null)
 			fill(g, left, top, strip[0], strip[1], strip[2], strip[3], strip[4]);
@@ -65,7 +91,7 @@ final class MarinePanels {
 	}
 
 	/** A red glow round the mic jack while it is held for push-to-talk. */
-	static void jackGlow(GuiGraphics g, int left, int top, HfPanel.Control c) {
+	public static void jackGlow(GuiGraphics g, int left, int top, HfPanel.Control c) {
 		int colour = c.colour("glow", 0xFFFF3020);
 		double cx = c.x() + c.w() / 2.0D, cy = c.y() + c.h() / 2.0D, r = c.w() / 2.0D;
 		for(int y = c.y() - 2; y < c.y() + c.h() + 2; y++)
@@ -80,7 +106,7 @@ final class MarinePanels {
 	 * The DISTRESS button's hinged cover (2026-11-09): shut, a red see-through lid over the button and its rim
 	 * ({@code cover}); lifted, its edge in the strip above the button ({@code cover_open}).
 	 */
-	static void cover(GuiGraphics g, int left, int top, HfPanel.Control c, boolean open) {
+	public static void cover(GuiGraphics g, int left, int top, HfPanel.Control c, boolean open) {
 		int fill = c.colour("cover_colour", 0xFFC82828), edge = c.colour("cover_edge", 0xFF701010), shine = c.colour("cover_shine", 0xFFF07070);
 		var rects = c.rects(open ? "cover_open" : "cover");
 		if(rects.isEmpty())
@@ -101,12 +127,12 @@ final class MarinePanels {
 	}
 
 	/** The side push-to-talk bar tinted red while held. */
-	static void sidePttGlow(GuiGraphics g, int left, int top, HfPanel.Control c) {
+	public static void sidePttGlow(GuiGraphics g, int left, int top, HfPanel.Control c) {
 		fill(g, left, top, c.x(), c.y(), c.w(), c.h(), 0x88000000 | (c.colour("glow", 0xFFFF3020) & 0xFFFFFF));
 	}
 
 	/** {@code text} at {@code scale}, left at {@code x} (or right-aligned to it when {@code right}), top at {@code y}. */
-	static void text(GuiGraphics g, Font font, String text, float x, float y, float scale, int colour, boolean right) {
+	public static void text(GuiGraphics g, Font font, String text, float x, float y, float scale, int colour, boolean right) {
 		g.pose().pushPose();
 		g.pose().translate(right ? x - font.width(text) * scale : x, y, 0.0F);
 		g.pose().scale(scale, scale, 1.0F);
@@ -115,7 +141,7 @@ final class MarinePanels {
 	}
 
 	/** {@code text} as large as fits in the control's box (at most {@code maxScale}), centred in it. */
-	static void centred(GuiGraphics g, Font font, int left, int top, HfPanel.Control c, String text, float maxScale, int colour) {
+	public static void centred(GuiGraphics g, Font font, int left, int top, HfPanel.Control c, String text, float maxScale, int colour) {
 		if(text.isEmpty())
 			return;
 		float scale = Math.min(maxScale, Math.min(c.w() * 0.84F / font.width(text), c.h() * 0.8F / (font.lineHeight - 1)));
@@ -126,7 +152,7 @@ final class MarinePanels {
 
 	/** The control called {@code name} that can be worked under the screen point, or null. */
 	@Nullable
-	static HfPanel.Control at(HfPanel panel, int left, int top, double mouseX, double mouseY) {
+	public static HfPanel.Control at(HfPanel panel, int left, int top, double mouseX, double mouseY) {
 		return panel.at(mouseX - left, mouseY - top);
 	}
 

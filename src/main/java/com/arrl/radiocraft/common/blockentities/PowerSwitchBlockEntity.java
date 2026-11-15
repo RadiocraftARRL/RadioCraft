@@ -90,6 +90,6 @@ public class PowerSwitchBlockEntity extends BlockEntity implements INetworkObjec
 		for(BENetworkObject member : members)
 			member.clearNetworks(true);
 		for(BENetworkObject member : members)
-			WireUtils.tryConnect(level, member.getPos(), object -> object instanceof PowerNetworkObject, PowerBENetwork::new, WireUtils.powerWires());
+			WireUtils.tryConnect(level, member.getPos(), object -> object instanceof com.arrl.radiocraft.api.benetworks.PowerMember, PowerBENetwork::new, WireUtils.powerWires());
 	}
 }

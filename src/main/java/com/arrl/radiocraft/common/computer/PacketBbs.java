@@ -113,6 +113,19 @@ public final class PacketBbs {
 	/** A card to send: {@code to} as it called (with its SSID), the message it is attached to. */
 	public record Download(String to, Message message) {}
 	private boolean modified = false;
+	/** Most messages it keeps: {@link #MAX_MESSAGES}, fewer on a satellite's mailbox (2026-11-12). */
+	private int limit = MAX_MESSAGES;
+
+	/** Keeps at most {@code max} messages from now on (those over it already stay until killed); returns itself. */
+	public PacketBbs limited(int max) {
+		limit = Math.max(1, Math.min(MAX_MESSAGES, max));
+		return this;
+	}
+
+	/** Most messages it keeps. */
+	public int limit() {
+		return limit;
+	}
 
 	// -------------------- THE MAILBOX --------------------
 
@@ -153,7 +166,7 @@ public final class PacketBbs {
 	/** Saves a message; null if the mailbox is full. */
 	@Nullable
 	public Message post(String from, String to, String subject, String body, boolean bulletin, long time) {
-		if(messages.size() >= MAX_MESSAGES)
+		if(messages.size() >= limit)
 			return null;
 		String cleanTo = clean(to, 12).toUpperCase(Locale.ROOT);
 		String cleanSubject = clean(subject, SUBJECT_MAX);
@@ -297,7 +310,7 @@ public final class PacketBbs {
 					out.add(cmd.equals("SP") ? "SP NEEDS A CALLSIGN: SP W1ABC" : "SB NEEDS A TOPIC: SB ALL");
 					return;
 				}
-				if(messages.size() >= MAX_MESSAGES) {
+				if(messages.size() >= limit) {
 					out.add("MAILBOX FULL - TRY LATER");
 					return;
 				}

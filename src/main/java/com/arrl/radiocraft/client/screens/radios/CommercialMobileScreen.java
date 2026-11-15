@@ -293,17 +293,19 @@ public class CommercialMobileScreen extends AbstractContainerScreen<CommercialMo
 
 	/**
 	 * The LCD, three lines: the channel name (or who is talking, or what * or # asked for), the channel and the mode
-	 * (TX while transmitting), and the frequency. A distress alert takes the whole display (VHF), in up to four lines.
+	 * (TX while transmitting), and the frequency. A distress alert takes the whole display (VHF): "DISTRESS SOS RX x, y, z"
+	 * running across the top line (2026-11-11), whose beacon it is under it.
 	 */
 	private void renderDisplay(GuiGraphics g, HfPanel.Control c, boolean tx) {
 		int ink = c.colour("ink", 0xFF1F2A14);
 		float x = leftPos + c.x(), y = topPos + c.y(), w = c.w();
 		List<String> distress = vhf() ? distressLines() : null;
 		if(distress != null && !distress.isEmpty()) {
-			List<String> lines = wrapLines(distress, w - 8);
-			int step = lines.size() > 3 ? 9 : 12;
-			for(int i = 0; i < lines.size(); i++)
-				fitted(g, lines.get(i), x + 4, y + 4 + i * step, w - 8, ink);
+			String running = com.arrl.radiocraft.client.render.Marquee.window(font, distress.getFirst(), (int)(w - 8), net.minecraft.Util.getMillis());
+			MarinePanels.text(g, font, running, x + 4, y + 4, 1.0F, ink, false);
+			List<String> lines = wrapLines(distress.subList(1, distress.size()), w - 8);
+			for(int i = 0; i < lines.size() && i < 2; i++) // The LCD's other two lines.
+				fitted(g, lines.get(i), x + 4, y + 16 + i * 12, w - 8, ink);
 			return;
 		}
 		CommercialChannel channel = radio().getChannel();
@@ -325,7 +327,7 @@ public class CommercialMobileScreen extends AbstractContainerScreen<CommercialMo
 
 	/**
 	 * At most four lines (the LCD's height): while there is a spare line, a line wider than {@code width} breaks at its
-	 * last space that fits ("DISTRESS DETECTED 161.975" over two); what is still too wide is shrunk when drawn.
+	 * last space that fits (a long owner and state over two); what is still too wide is shrunk when drawn.
 	 */
 	private List<String> wrapLines(List<String> in, float width) {
 		List<String> out = new ArrayList<>(in);

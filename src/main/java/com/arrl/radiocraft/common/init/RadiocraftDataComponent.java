@@ -157,6 +157,17 @@ public class RadiocraftDataComponent {
                     .networkSynchronized(com.arrl.radiocraft.common.radio.distress.BeaconState.STREAM_CODEC)
     );
 
+    /**
+     * The beacon alert a commercial VHF handheld heard on its built-in 161.975 MHz receiver, and whether its holder
+     * dismissed it (2026-11-11).
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.distress.HandheldDistress>> HANDHELD_DISTRESS = DATA_COMPONENTS.registerComponentType(
+            "handheld_distress",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.distress.HandheldDistress.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.distress.HandheldDistress.STREAM_CODEC)
+    );
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.marine.MarineRadioState>> MARINE_RADIO = DATA_COMPONENTS.registerComponentType(
             "marine_radio",
             builder -> builder
@@ -168,6 +179,22 @@ public class RadiocraftDataComponent {
      * A filled map that is a photo (see {@link PhotoInfo} and {@link com.arrl.radiocraft.common.photo.PhotoPrints}):
      * who took it and on which photo paper. The picture itself is the map's.
      */
+    /** A commercial frequency license (2026-11-10): see {@link com.arrl.radiocraft.common.items.CommercialLicenseItem}. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.commercial.CommercialLicense>> COMMERCIAL_LICENSE = DATA_COMPONENTS.registerComponentType(
+            "commercial_license",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.commercial.CommercialLicense.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.commercial.CommercialLicense.STREAM_CODEC)
+    );
+
+    /** A satellite license (2026-11-11): see {@link com.arrl.radiocraft.common.items.SatelliteLicenseItem}. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<com.arrl.radiocraft.common.radio.satellite.SatelliteLicense>> SATELLITE_LICENSE = DATA_COMPONENTS.registerComponentType(
+            "satellite_license",
+            builder -> builder
+                    .persistent(com.arrl.radiocraft.common.radio.satellite.SatelliteLicense.CODEC)
+                    .networkSynchronized(com.arrl.radiocraft.common.radio.satellite.SatelliteLicense.STREAM_CODEC)
+    );
+
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<PhotoInfo>> PHOTO = DATA_COMPONENTS.registerComponentType(
             "photo",
             builder -> builder

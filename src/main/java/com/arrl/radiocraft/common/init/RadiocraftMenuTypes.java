@@ -31,6 +31,8 @@ public class RadiocraftMenuTypes {
 	public static final Supplier<MenuType<MarineRadioMenu>> MARINE_RADIO = MENU_TYPES.register("marine_radio", () -> IMenuTypeExtension.create(MarineRadioMenu::new));
 	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.CbRadioMenu>> CB_RADIO = MENU_TYPES.register("cb_radio", () -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.CbRadioMenu::new));
 
+	/** The airband radio and the FM broadcast pair (2026-11-13): one menu, the screen drawn in code. */
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.SimpleRadioMenu>> SIMPLE_RADIO = MENU_TYPES.register("simple_radio", () -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.SimpleRadioMenu::new));
 	public static final Supplier<MenuType<VHFReceiverMenu>> VHF_RECEIVER = MENU_TYPES.register("vhf_receiver", () -> IMenuTypeExtension.create(VHFReceiverMenu::new));
 	public static final Supplier<MenuType<DeskChargerMenu>> DESK_CHARGER = MENU_TYPES.register("desk_charger", () -> IMenuTypeExtension.create(DeskChargerMenu::new));
 	public static final Supplier<MenuType<TeletypeMenu>> TELETYPE = MENU_TYPES.register("teletype", () -> IMenuTypeExtension.create(TeletypeMenu::new));
@@ -38,6 +40,14 @@ public class RadiocraftMenuTypes {
 	public static final Supplier<MenuType<AprsTerminalMenu>> APRS_TERMINAL = MENU_TYPES.register("aprs_h19", () -> IMenuTypeExtension.create(AprsTerminalMenu::new));
 	public static final Supplier<MenuType<RadioFaxMenu>> RADIO_FAX = MENU_TYPES.register("radio_fax", () -> IMenuTypeExtension.create(RadioFaxMenu::new));
 	public static final Supplier<MenuType<DuplexerMenu>> DUPLEXER = MENU_TYPES.register("duplexer", () -> IMenuTypeExtension.create(DuplexerMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.FireAlarmBoxMenu>> FIRE_ALARM_BOX = MENU_TYPES.register("fire_alarm_box",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.FireAlarmBoxMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.FireAlarmControllerMenu>> FIRE_ALARM_CONTROLLER = MENU_TYPES.register("fire_alarm_controller",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.FireAlarmControllerMenu::new));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.MeshSetupMenu>> MESH_SETUP = MENU_TYPES.register("mesh_setup",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.MeshSetupMenu::fromNetwork));
+	public static final Supplier<MenuType<com.arrl.radiocraft.common.menus.ScadaMasterMenu>> SCADA_MASTER = MENU_TYPES.register("scada_master",
+			() -> IMenuTypeExtension.create(com.arrl.radiocraft.common.menus.ScadaMasterMenu::new));
 	public static final Supplier<MenuType<AntennaTunerMenu>> ANTENNA_TUNER = MENU_TYPES.register("antenna_tuner", () -> IMenuTypeExtension.create(AntennaTunerMenu::new));
 	public static final Supplier<MenuType<DirectionFinderMenu>> DIRECTION_FINDER = MENU_TYPES.register("direction_finder", () -> IMenuTypeExtension.create(DirectionFinderMenu::new));
 	public static final Supplier<MenuType<MicrowaveRadioMenu>> MICROWAVE_RADIO = MENU_TYPES.register("microwave_radio", () -> IMenuTypeExtension.create(MicrowaveRadioMenu::new));

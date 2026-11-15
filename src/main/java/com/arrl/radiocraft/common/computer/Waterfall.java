@@ -51,6 +51,45 @@ public final class Waterfall {
 	public static final int ZOOMS = 4;
 
 	/**
+	 * The External CRT Monitor's waterfall spans (2026-11-12), Hz: a glance at the signals round the dial, not a band
+	 * scope (rig control's widest view is the whole band, hundreds of kHz on HF and MHz on VHF).
+	 * <ul>
+	 * <li>HF and CB, below {@link #MONITOR_VHF_HZ}: NARROW 6 kHz, one SSB voice (2.4 kHz) either side of the dial with
+	 * room to see a neighbour, or a handful of CW signals at about 80 Hz a column; WIDE 24 kHz, a stretch of a crowded
+	 * band, still a fifteenth of 20m.</li>
+	 * <li>VHF and up: NARROW 50 kHz, an FM signal (up to 15 kHz wide here) and the channels either side; WIDE 200 kHz,
+	 * eight 25 kHz channels, a twentieth of 2m.</li>
+	 * </ul>
+	 */
+	public static final double MONITOR_HF_NARROW_HZ = 6_000.0D, MONITOR_HF_WIDE_HZ = 24_000.0D,
+			MONITOR_VHF_NARROW_HZ = 50_000.0D, MONITOR_VHF_WIDE_HZ = 200_000.0D;
+	/** Dial frequencies from here up take the VHF spans. */
+	public static final double MONITOR_VHF_HZ = 30_000_000.0D;
+
+	/** How wide the monitor's waterfall is round {@code dialHz}: {@link #MONITOR_HF_NARROW_HZ} and the rest. */
+	public static double monitorWidth(boolean wide, double dialHz) {
+		if(dialHz >= MONITOR_VHF_HZ)
+			return wide ? MONITOR_VHF_WIDE_HZ : MONITOR_VHF_NARROW_HZ;
+		return wide ? MONITOR_HF_WIDE_HZ : MONITOR_HF_NARROW_HZ;
+	}
+
+	/**
+	 * The span the monitor's waterfall shows, {lo, hi}: {@link #monitorWidth} centred on {@code dialHz}, slid to stay
+	 * inside {@code lowHz}..{@code highHz} (the band, or the radio's tuning range) near its edges, and the whole of a
+	 * band narrower than that. With no band ({@code highHz <= lowHz}), centred on the dial.
+	 */
+	public static double[] monitorSpan(boolean wide, double dialHz, double lowHz, double highHz) {
+		double width = monitorWidth(wide, dialHz);
+		double lo = dialHz - width / 2.0D;
+		if(highHz > lowHz) {
+			if(highHz - lowHz <= width)
+				return new double[] { lowHz, highHz };
+			lo = Math.max(lowHz, Math.min(highHz - width, lo));
+		}
+		return new double[] { lo, lo + width };
+	}
+
+	/**
 	 * The nearest bin from {@code from} in direction {@code step} (+1 up, -1 down) whose level is at least
 	 * {@code minLevel}, skipping the run of active bins {@code from} is in (so it jumps to the next signal, not the
 	 * next bin of this one) and landing on that signal's strongest bin; -1 if there is none.

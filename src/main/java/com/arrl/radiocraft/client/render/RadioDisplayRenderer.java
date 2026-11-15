@@ -20,7 +20,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -38,6 +37,8 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 	public static final double VIEW_DISTANCE = 8.0D;
 	private static final int COLOUR = 0xFFFFB347;
 	private static final int DIM = 0xFF8A5E22;
+	/** How much of a scrolling distress line the display holds at once (2026-11-11): its size is set to fit this. */
+	private static final String MARQUEE_FIT = "DISTRESS SOS";
 
 	private final Font font;
 
@@ -62,7 +63,7 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 		if(camera.distanceToSqr(radio.getBlockPos().getCenter()) > VIEW_DISTANCE * VIEW_DISTANCE)
 			return;
 
-		String frequency = String.format(Locale.ROOT, "%.3f", radio.getFrequency() / 1_000_000.0D);
+		String frequency = com.arrl.radiocraft.common.radio.TuningStep.mhz(radio.getFrequency());
 		// Another radio on the antenna's coax (it hears nothing then), or the automatic tuner gave up.
 		String status = radio.isCoaxShared() ? "COAX SHARED" : radio.isTuneFailed() ? "TUNE FAIL"
 				: radio.isTransmitInhibited() ? "OUT OF BAND" : mode(radio) + " " + meter(radio); // Out of band without a MARS mod: no transmit.
@@ -72,12 +73,17 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 		}
 		java.util.List<String> distress = radio instanceof com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity commercial
 				? commercial.distressLines() : null;
-		if(distress != null) { // A beacon alert heard on 161.975 (2026-11-09): until dismissed; the small line takes turns at where and who.
+		// A beacon alert heard on 161.975 (2026-11-09): until dismissed. Since 2026-11-11 "DISTRESS SOS RX x, y, z" runs
+		// across the big line (at a fixed size, so it does not grow and shrink as it scrolls) and the small one says whose.
+		boolean marquee = distress != null && !distress.isEmpty();
+		if(marquee) {
 			frequency = distress.get(0);
-			status = distress.get((radio.getLevel().getGameTime() / 40L) % 2L == 0L ? 1 : Math.min(2, distress.size() - 1));
+			status = distress.get(Math.min(1, distress.size() - 1));
 		}
 		float width = (display.x2() - display.x1()) / 16.0F, height = (display.y2() - display.y1()) / 16.0F;
-		float big = Math.min(width * 0.9F / font.width(frequency), height * 0.55F / font.lineHeight);
+		float big = Math.min(width * 0.9F / font.width(marquee ? MARQUEE_FIT : frequency), height * 0.55F / font.lineHeight);
+		if(marquee)
+			frequency = Marquee.window(font, frequency, (int)(width * 0.9F / big), net.minecraft.Util.getMillis());
 		float small = Math.min(big * 0.6F, width * 0.9F / font.width(status));
 
 		poseStack.pushPose();
@@ -90,7 +96,7 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 		poseStack.translate(display.x2() / 16.0D, display.y2() / 16.0D, display.front() / 16.0D - 0.002D);
 		poseStack.mulPose(Axis.YP.rotationDegrees(180.0F)); // Text reads along -x and faces north, out of the screen.
 		float top = (height - big * font.lineHeight - small * font.lineHeight) / 3.0F;
-		draw(poseStack, buffer, frequency, (width - font.width(frequency) * big) / 2.0F, top, big, COLOUR);
+		draw(poseStack, buffer, frequency, marquee ? width * 0.05F : (width - font.width(frequency) * big) / 2.0F, top, big, COLOUR);
 		draw(poseStack, buffer, status, (width - font.width(status) * small) / 2.0F, top * 2.0F + big * font.lineHeight, small, DIM);
 		poseStack.popPose();
 	}
@@ -132,8 +138,36 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 		Player player = radio.getLevel().getPlayerByUUID(holder);
 		if(player == null)
 			return;
-		Vec3 from = radio.getBlockPos().getCenter().subtract(0.0D, 0.15D, 0.0D);
-		CordRenderer.render(radio.getLevel(), radio.getBlockPos(), from, player.getRopeHoldPosition(partialTick), poseStack, buffer);
+		CordRenderer.render(radio.getLevel(), radio.getBlockPos(), micJack(radio), player.getRopeHoldPosition(partialTick), poseStack, buffer);
+	}
+
+	/**
+	 * Where each model's hand mic plugs in, in model pixels as drawn facing north (east is the viewer's left): the
+	 * premium HF rigs' MIC sockets (2026-11-11). Other radios send the cord from just below the block's centre.
+	 */
+	private static final java.util.Map<String, Vec3> MIC_JACKS = java.util.Map.of(
+			"hf_radio_10m_pure", new Vec3(13.6D, 1.1D, 2.9D),
+			"hf_radio_20m_pure", new Vec3(7.6D, 1.6D, 1.7D),
+			"hf_radio_40m_pure", new Vec3(14.75D, 2.5D, 1.45D),
+			"hf_radio_80m_pure", new Vec3(14.1D, 1.6D, 1.9D));
+
+	/** The world point the mic cord leaves {@code radio} from: its MIC socket, turned and raised as its model is. */
+	private static Vec3 micJack(RadioBlockEntity radio) {
+		net.minecraft.world.level.block.state.BlockState state = radio.getBlockState();
+		String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath();
+		Vec3 jack = MIC_JACKS.get(path);
+		if(jack == null || !state.hasProperty(com.arrl.radiocraft.common.blocks.radios.RadioBlock.HORIZONTAL_FACING))
+			return radio.getBlockPos().getCenter().subtract(0.0D, 0.15D, 0.0D);
+		// Turn the jack as the blockstate turns the model: clockwise from above by the model's y rotation.
+		double angle = Math.toRadians((state.getValue(com.arrl.radiocraft.common.blocks.radios.RadioBlock.HORIZONTAL_FACING).toYRot() + 180.0F) % 360.0F);
+		double dx = jack.x / 16.0D - 0.5D, dz = jack.z / 16.0D - 0.5D;
+		double x = dx * Math.cos(angle) - dz * Math.sin(angle), z = dx * Math.sin(angle) + dz * Math.cos(angle);
+		double y = jack.y / 16.0D;
+		RadioDisplays.Display display = RadioDisplays.get(path);
+		if(display != null && state.hasProperty(com.arrl.radiocraft.common.blocks.radios.RadioBlock.CEILING)
+				&& state.getValue(com.arrl.radiocraft.common.blocks.radios.RadioBlock.CEILING))
+			y += display.rise() / 16.0D;
+		return Vec3.atLowerCornerOf(radio.getBlockPos()).add(0.5D + x, y, 0.5D + z);
 	}
 
 	/** Big enough to keep drawing the mic cord while its far end is off to the side. */
@@ -166,7 +200,7 @@ public class RadioDisplayRenderer<T extends RadioBlockEntity> implements BlockEn
 
 	/** S0 to S9, or S9+ at the top: the signal heard or the noise floor, whichever is stronger. */
 	private static String meter(RadioBlockEntity radio) {
-		double reading = Math.max(radio.getSyncedSignal(), blackoutFlicker(radio, radio.getNoiseFloor()));
+		double reading = Math.max(radio.getSyncedSignal(), blackoutFlicker(radio, radio.getNoiseFloor() * radio.getStaticVolume())); // No antenna, no band noise on the meter.
 		if(reading >= 0.95D)
 			return "S9+";
 		return "S" + Math.min(9, (int)Math.round(reading * 9.0D));

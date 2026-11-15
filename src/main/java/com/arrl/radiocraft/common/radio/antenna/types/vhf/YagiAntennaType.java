@@ -8,11 +8,9 @@ import com.arrl.radiocraft.common.radio.antenna.StaticAntenna;
 import com.arrl.radiocraft.common.radio.antenna.types.DirectionalAntennaType;
 import com.arrl.radiocraft.common.radio.antenna.data.YagiAntennaData;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Vec3i;
-import net.minecraft.util.Mth;
+import com.arrl.radiocraft.common.blocks.antennas.YagiAntennaBlock;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class YagiAntennaType extends DirectionalAntennaType<YagiAntennaData> {
 
@@ -22,20 +20,15 @@ public class YagiAntennaType extends DirectionalAntennaType<YagiAntennaData> {
 
     @Override
     public StaticAntenna<YagiAntennaData> match(Level level, BlockPos pos) {
-        return level.getBlockState(pos).is(RadiocraftBlocks.YAGI_ANTENNA.get()) ? new StaticAntenna<>(this, pos, level) : null;
+        BlockState state = level.getBlockState(pos);
+        if(!state.is(RadiocraftBlocks.YAGI_ANTENNA.get()))
+            return null;
+        return new StaticAntenna<>(this, pos, level, new YagiAntennaData(YagiAntennaBlock.bearing(state))); // Aimed as placed (2026-11-12).
     }
 
     @Override
     public double getDirectionalEfficiency(YagiAntennaData data, BlockPos from, BlockPos to) {
-        BlockPos offset = to.subtract(from);
-        Vec2 dir = new Vec2(offset.getX(), offset.getZ()).normalized();
-        Vec3i normal = data.getFacing().getNormal();
-        double f = -((new Vec2(normal.getX(), normal.getZ()).dot(dir) - 1.0D) / 2.0D); // 0 when same direction, 1 when opposite.
-
-        if(f < 0.25D)
-            return Mth.lerp(f / 0.25D, 1.0D, 0.1D); // 100% performance on facing side, scaled linearly to 45 degree threshold.
-        else
-            return f * 0.1D; // 10% performance when on sides or rear.
+        return com.arrl.radiocraft.common.radio.antenna.YagiAim.efficiency(data.getBearing(), to.getX() - from.getX(), to.getZ() - from.getZ());
     }
 
     @Override
@@ -46,12 +39,12 @@ public class YagiAntennaType extends DirectionalAntennaType<YagiAntennaData> {
     @Override
     public double getSWR(YagiAntennaData data, float frequencyHertz) {
         Band band = Band.getBand(frequencyHertz); // A fresh Band from the config each call: compare by band, not identity.
-        return band != null && band.isVhf() ? 1.0D : 10.0D;
+        return com.arrl.radiocraft.common.radio.Band.twoMetreAntennaSwr(band);
     }
 
     @Override
     public YagiAntennaData getDefaultData() {
-        return new YagiAntennaData(Direction.NORTH);
+        return new YagiAntennaData(0.0D);
     }
 
 }

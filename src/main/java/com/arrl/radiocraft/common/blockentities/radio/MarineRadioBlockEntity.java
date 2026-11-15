@@ -50,7 +50,7 @@ import org.jetbrains.annotations.Nullable;
  * caller's MMSI, the radio's position (live on a Sable ship) and the nature of distress picked with NATURE, switches the
  * radio to 16 for the voice MAYDAY, and repeats the call every 3.5 to 4.5 minutes until someone acknowledges it or the
  * button is held again to cancel. A dedicated DSC receiver listens on 70 whatever channel the radio is on (only DSC:
- * distress beacon alerts on 161.975 MHz are heard by a commercial VHF radio tuned there, {@link CommercialMobileBlockEntity},
+ * distress beacon alerts on 161.975 MHz are heard by a commercial VHF radio's beacon receiver, {@link CommercialMobileBlockEntity},
  * as real AIS beacons are not decoded by a DSC radio). What it hears goes in its
  * {@link DistressLog}; a new call sounds the alarm and is shown on the display, where ACK acknowledges it. The bursts
  * are data packets through the radio's antenna, so they go as far as its voice would.

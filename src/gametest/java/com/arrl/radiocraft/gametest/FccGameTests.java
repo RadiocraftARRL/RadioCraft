@@ -176,4 +176,17 @@ public class FccGameTests {
 				.map(recipe -> recipe.value().assemble(input, helper.getLevel().registryAccess()))
 				.orElse(ItemStack.EMPTY);
 	}
+
+	/** A commercial radio beside a scanner that sits between it and the computer counts as the computer's (2026-11-11). */
+	@GameTest(template = GameTestUtil.EMPTY)
+	public static void radioBesideTheScannerIsLinked(GameTestHelper helper) {
+		net.minecraft.core.BlockPos computerAt = new net.minecraft.core.BlockPos(2, 1, 2);
+		helper.setBlock(computerAt, com.arrl.radiocraft.common.init.RadiocraftBlocks.RADIO_COMPUTER.get());
+		helper.setBlock(computerAt.east(), com.arrl.radiocraft.common.init.RadiocraftBlocks.SCANNER.get());
+		helper.setBlock(computerAt.east(2), com.arrl.radiocraft.common.init.RadiocraftBlocks.COMMERCIAL_MOBILE.get());
+		java.util.List<com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity> found = com.arrl.radiocraft.common.computer.ComputerContext.linked(
+				helper.getLevel(), helper.absolutePos(computerAt), com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity.class);
+		helper.assertTrue(found.size() == 1, "The radio past the scanner is not linked: " + found);
+		helper.succeed();
+	}
 }

@@ -7,6 +7,7 @@ import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerFileFormats;
@@ -51,6 +52,25 @@ public abstract class PictureApp extends DosApp {
 	protected PictureApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		gallery.onActivate(index -> showLive = false);
+		List<DosMenuBar.Item> picture = new ArrayList<>(List.of( // 2026-11-12: each item does what its key does.
+				item("menu.pic.send", "F3", GLFW.GLFW_KEY_F3),
+				item("menu.print", "F5", GLFW.GLFW_KEY_F5),
+				item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE)));
+		picture.addAll(moreItems());
+		setMenuBar(new DosMenuBar(List.of(
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.pic.picture"), picture),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.pic.live", "L", () -> onChar('L')))))));
+	}
+
+	/**
+	 * The program's own items for the Picture menu, with {@link #item}. Called from the constructor, before the
+	 * program's own fields are set: build them only from keys and method references.
+	 */
+	protected List<DosMenuBar.Item> moreItems() {
+		return List.of();
 	}
 
 	/** The program's title (row 0). */

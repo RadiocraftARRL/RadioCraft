@@ -173,6 +173,7 @@ public class VHFHandheldScreen extends Screen {
         TX_TONE,
         RX_TONE,
         OFFSET,
+        STEP,
         DTMF,
         MEMORY_STORE,
         NAME_ENTRY,
@@ -637,6 +638,11 @@ public class VHFHandheldScreen extends Screen {
                 lcd.digitsCentered(tone > 0.0F ? String.format("%.1f", tone) : "OFF", 9);
                 lcd.textRight(tone > 0.0F ? "HZ" : "", HandheldLcd.WIDTH - 1, 23);
             }
+            case STEP -> {
+                lcd.header("STEP", "^~");
+                lcd.digitsCentered(com.arrl.radiocraft.common.radio.TuningStep.label(tuneStep()), 9);
+                lcd.textRight("KHZ", HandheldLcd.WIDTH - 1, 23);
+            }
             case OFFSET -> {
                 lcd.header("OFFSET", "^~");
                 int offset = cap.getOffsetHz();
@@ -1040,8 +1046,9 @@ public class VHFHandheldScreen extends Screen {
     private void onPressEnter(@Nullable Button button) {
         if(!cap.isPowered()) return;
         switch(menuState) {
-            case DEFAULT -> menuState = MenuState.OFFSET; // ENTER opens the offset page; ENTER there (or on a tone page) goes back.
-            case OFFSET, TX_TONE, RX_TONE -> menuState = MenuState.DEFAULT;
+            case DEFAULT -> menuState = MenuState.OFFSET; // ENTER opens the offset page, ENTER again the STEP page; ENTER there (or on a tone page) goes back.
+            case OFFSET -> menuState = MenuState.STEP;
+            case STEP, TX_TONE, RX_TONE -> menuState = MenuState.DEFAULT;
             case DTMF -> {
                 if(dtmfEntry.isEmpty())
                     menuState = MenuState.DEFAULT;
@@ -1094,6 +1101,10 @@ public class VHFHandheldScreen extends Screen {
             case TX_TONE -> cap.setCtcssTone(Ctcss.step(cap.getCtcssTone(), direction));
             case RX_TONE -> cap.setRxTone(Ctcss.step(cap.getRxTone(), direction));
             case OFFSET -> cap.setOffsetHz(Ctcss.nextOffset(cap.getOffsetHz()));
+            case STEP -> { // The dial's step, 5 to 25 kHz (2026-11-14); the frequency stays put until it is tuned.
+                int now = tuneStep();
+                cap.setTuneStepHz(direction > 0 ? com.arrl.radiocraft.common.radio.TuningStep.next(now) : com.arrl.radiocraft.common.radio.TuningStep.previous(now));
+            }
             default -> {
                 HandheldMemory memory = memory();
                 if(!memory.memoryMode())
@@ -1106,18 +1117,25 @@ public class VHFHandheldScreen extends Screen {
         return true;
     }
 
+    /** The dial's STEP in use: the one chosen, or the server's (synced on join). */
+    private int tuneStep() {
+        return com.arrl.radiocraft.common.radio.TuningStep.effective(cap.getTuneStepHz(), RadiocraftServerConfig.VHF_FREQUENCY_STEP.get());
+    }
+
+    /** The frequency {@code clicks} steps on, on the STEP's grid (from the bottom of 2m), inside what the dial reaches. */
+    private float tuned(int clicks) {
+        Band band = Band.getBand(2);
+        return com.arrl.radiocraft.common.radio.TuningStep.tune(band.minFrequency(), com.arrl.radiocraft.common.radio.BandEdges.tuneMin(band),
+                com.arrl.radiocraft.common.radio.BandEdges.tuneMax(band), cap.getFrequencyHertz(), tuneStep(), clicks);
+    }
+
     /**
      * Callback for frequency up buttons.
      */
     protected void onFrequencyButtonUp(Button button) {
         if(!cap.isPowered()) return;
         if(changeSetting(1)) return;
-        cap.setFrequencyHertz(
-                Math.min( //ServerConfig is synced on game join, so no further checking is necessary
-                        cap.getFrequencyHertz() + RadiocraftServerConfig.VHF_FREQUENCY_STEP.get(),
-                        com.arrl.radiocraft.common.radio.BandEdges.tuneMax(Band.getBand(2))
-                )
-        );
+        cap.setFrequencyHertz(tuned(1));
         updateServer();
     }
 
@@ -1127,12 +1145,7 @@ public class VHFHandheldScreen extends Screen {
     protected void onFrequencyButtonDown(Button button) {
         if(!cap.isPowered()) return;
         if(changeSetting(-1)) return;
-        cap.setFrequencyHertz(
-                Math.max(  //ServerConfig is synced on game join, so no further checking is necessary
-                        cap.getFrequencyHertz() - RadiocraftServerConfig.VHF_FREQUENCY_STEP.get(),
-                        com.arrl.radiocraft.common.radio.BandEdges.tuneMin(Band.getBand(2))
-                )
-        );
+        cap.setFrequencyHertz(tuned(-1));
         updateServer();
     }
 

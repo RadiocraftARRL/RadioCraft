@@ -207,4 +207,14 @@ class PacketBbsTest {
 		List<String> none = bbs.handle("W1BTR-1", "K2XYZ", "D 999", 23L);
 		assertTrue(none.stream().anyMatch(l -> l.contains("NO MSG")), none.toString());
 	}
+
+	@Test
+	void aLimitedMailboxRefusesPastItsLimit() { // A satellite's mailbox (2026-11-12).
+		PacketBbs bbs = new PacketBbs().limited(2);
+		assertEquals(2, bbs.limit());
+		assertNotNull(bbs.post("W1AAA", "W1BBB", "ONE", "1", false, 0L));
+		assertNotNull(bbs.post("W1AAA", "W1BBB", "TWO", "2", false, 0L));
+		assertNull(bbs.post("W1AAA", "W1BBB", "THREE", "3", false, 0L));
+		assertTrue(bbs.handle("RO-1", "W1CCC", "SP W1BBB", 0L).contains("MAILBOX FULL - TRY LATER"));
+	}
 }

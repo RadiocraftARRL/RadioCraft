@@ -48,7 +48,8 @@ import java.util.Locale;
  * and said so. Keys the source marks as not readable are left behind: those channels arrive clear. Unit IDs are never
  * copied (each radio keeps its own).</li>
  * <li>2m ham radios (VHF handhelds, VHF base stations) clone to ham radios: the dial (frequency, tones, offset) and,
- * from a handheld to a handheld, the ten memory channels. Base stations have no memories, so only the dial goes.</li>
+ * the memory channels: a handheld's ten, and a base station's first ten (2026-11-14: base stations have 50 memories;
+ * writing to one replaces its first ten and leaves the rest).</li>
  * <li>Marine radios are not cloned: their channels are the fixed marine table.</li>
  * </ul>
  */
@@ -153,11 +154,15 @@ public class RadioClonerItem extends Item {
 			return writeCommercial(image, commercial, name);
 		if(!image.isHam())
 			return incompatible(image, name);
+		if(base.isMemoryMode())
+			base.toggleMemoryMode(); // The dial is the VFO's: off the memories first.
+		if(image.hasMemories())
+			base.loadHandheldMemory(image.memory());
 		base.setFrequency(image.dial().frequency());
 		base.updateFrequency(0); // Onto the radio's tuning steps and range, saved and synced.
 		base.setCtcssTone(image.dial().ctcssTone());
 		base.setOffsetHz(image.dial().offsetHz());
-		return new Outcome(true, message("written_ham", name, mhz(image.dial().frequency()), 0));
+		return new Outcome(true, message("written_ham", name, mhz(image.dial().frequency()), image.hasMemories() ? image.memory().channels().size() : 0));
 	}
 
 	/** A commercial radio's channels and contacts, unreadable keys left behind, no unit ID. */
@@ -175,7 +180,7 @@ public class RadioClonerItem extends Item {
 
 	private static CloneImage readBase(VHFBaseStationBlockEntity base) {
 		HandheldMemory.Channel dial = new HandheldMemory.Channel(0, base.getFrequency(), base.getCtcssTone(), base.getCtcssTone(), base.getOffsetHz());
-		return CloneImage.ham(base.getBlockState().getBlock().getDescriptionId(), dial, HandheldMemory.EMPTY, false);
+		return CloneImage.ham(base.getBlockState().getBlock().getDescriptionId(), dial, base.toHandheldMemory(), true); // Its first ten memories.
 	}
 
 	private static Outcome readOutcome(CloneImage made, Component name) {
@@ -214,7 +219,7 @@ public class RadioClonerItem extends Item {
 		HandheldMemory.Channel dial = image.dial();
 		radio.update(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value(), HandheldRadioState.getDefault(),
 				old -> new HandheldRadioState(old.power(), old.ptt(), dial.frequency(), old.gain(), old.micGain(), old.receiveIndicatorStrength(),
-						dial.ctcssTone(), dial.offsetHz(), dial.rxTone()));
+						dial.ctcssTone(), dial.offsetHz(), dial.rxTone(), old.tuneStep())); // Its STEP stays its own.
 		if(image.hasMemories())
 			radio.set(RadiocraftDataComponent.HANDHELD_MEMORY.value(), image.memory().leaveMemory().sanitized());
 	}

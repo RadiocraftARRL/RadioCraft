@@ -65,6 +65,10 @@
     "radiocraft:scanner",
     "radiocraft:adsb_receiver",
     "radiocraft:weather_alert_generator",
-    "radiocraft:wire_junction"
+    "radiocraft:microphone",
+    "radiocraft:weather_alert_receiver",
+    "radiocraft:weather_station",
+    "radiocraft:wire_junction",
+    "#radiocraft:siren_speakers"
   ]
 }

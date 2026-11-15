@@ -26,6 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
@@ -38,8 +39,9 @@ import java.util.UUID;
 /**
  * Distress alerting (2026-11-09): a marine radio's DSC distress call goes out on channel 70 as a data packet and every
  * marine radio in range hears it whatever channel it is on; an acknowledgement from one of them stops the caller's
- * repeats; a cancel marks the call cancelled. A distress beacon's alert on 161.975 MHz is heard by a commercial VHF
- * mobile tuned there, not by a marine radio nor a commercial radio on another channel (2026-11-09). The DISTRESS
+ * repeats; a cancel marks the call cancelled. A distress beacon's alert on 161.975 MHz is heard by every commercial VHF
+ * radio whatever channel it is on (its built-in beacon receiver, 2026-11-11; before, only one tuned there), mobile or
+ * handheld, not by a marine radio nor a low band mobile (2026-11-09). The DISTRESS
  * program hears through every cabled radio at once, acknowledges through a marine radio, and sends a marine SOS (DSC)
  * or a personal SOS (161.975 through a commercial radio). The radios talk over their bare connectors (no antenna, a
  * few blocks), as in {@link MarineRadioGameTests}.
@@ -169,6 +171,8 @@ public class DistressGameTests {
 	// -------------------- BEACONS ON 161.975 (2026-11-09) --------------------
 
 	private static final BlockPos C = new BlockPos(8, 2, 4), D = new BlockPos(10, 2, 4), K = new BlockPos(7, 2, 4);
+	/** A low band mobile, two blocks south of the beacon (2026-11-11). */
+	private static final BlockPos L = new BlockPos(4, 2, 6);
 
 	private static CommercialMobileBlockEntity commercial(GameTestHelper helper, BlockPos pos) {
 		return GameTestUtil.blockEntity(helper, pos, CommercialMobileBlockEntity.class);
@@ -188,15 +192,18 @@ public class DistressGameTests {
 	}
 
 	/**
-	 * A beacon's alert is heard by the commercial VHF mobile on 161.975 (logged, shown with the alarm until dismissed),
-	 * not by a marine radio (only DSC), nor by a commercial radio on another channel. Dismissed, a repeat of the same
-	 * alert does not bring it back; the packet path's DISMISS_DISTRESS key is last in the enum.
+	 * A beacon's alert is heard by every commercial VHF mobile, whatever its channel (2026-11-11): C on 161.975 and D on
+	 * an ordinary channel (155.0125) both log it and scroll "DISTRESS SOS RX x, y, z" until dismissed, D showing nothing
+	 * before (its beacon receiver is dormant); not by a marine radio (only DSC), nor by a low band mobile, which does not
+	 * cover 161.975. Dismissed, a repeat of the same alert does not bring it back; the packet path's DISMISS_DISTRESS key
+	 * is last in the enum.
 	 */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = BATCH)
-	public static void beaconIsHeardOnlyByACommercialRadioOn161975(GameTestHelper helper) {
+	public static void beaconIsHeardByCommercialVhfRadiosOnAnyChannel(GameTestHelper helper) {
 		helper.setBlock(B, RadiocraftBlocks.MARINE_RADIO.get());
 		helper.setBlock(C, RadiocraftBlocks.COMMERCIAL_MOBILE.get());
 		helper.setBlock(D, RadiocraftBlocks.COMMERCIAL_MOBILE.get());
+		helper.setBlock(L, RadiocraftBlocks.LOW_BAND_MOBILE.get());
 		helper.startSequence()
 				.thenIdle(2)
 				.thenExecute(() -> {
@@ -205,21 +212,34 @@ public class DistressGameTests {
 					powerOn(helper, B);
 					powerOn(helper, C);
 					powerOn(helper, D);
+					powerOn(helper, L);
 				})
-				.thenWaitUntil(() -> helper.assertTrue(bare(helper, B, C, D), "No bare connectors yet"))
+				.thenWaitUntil(() -> helper.assertTrue(bare(helper, B, C, D, L), "No bare connectors yet"))
 				.thenExecute(() -> {
-					CommercialMobileBlockEntity c = commercial(helper, C), d = commercial(helper, D);
+					CommercialMobileBlockEntity c = commercial(helper, C), d = commercial(helper, D), low = commercial(helper, L);
 					helper.assertTrue(c.isOnBeaconFrequency(), "C is on 161.975");
-					helper.assertTrue(c.distressLines() == null, "C shows nothing yet");
+					helper.assertFalse(d.isOnBeaconFrequency(), "D is on 155.0125");
+					helper.assertTrue(d.hearsBeacons(), "A VHF mobile listens for beacons");
+					helper.assertFalse(low.hearsBeacons(), "A low band mobile cannot hear 161.975");
+					helper.assertTrue(c.distressLines() == null && d.distressLines() == null, "C and D show nothing yet");
 					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(A.above()), null, beacon(helper, 99L, DistressAlert.State.ACTIVE));
 					DistressLog.Entry heard = c.getDistressLog().get(99L);
 					helper.assertTrue(heard != null, "The commercial radio on 161.975 did not hear the beacon");
 					helper.assertTrue(!heard.alert().isDsc() && heard.alert().owner().equals("Castaway"), "Logged as Castaway's beacon: " + heard.alert().encode());
+					DistressAlert alert = heard.alert();
+					String sos = String.format(java.util.Locale.ROOT, "DISTRESS SOS RX %d, %d, %d", alert.x(), alert.y(), alert.z());
 					List<String> lines = c.distressLines();
-					helper.assertTrue(lines != null && lines.getFirst().equals("DISTRESS DETECTED 161.975"), "C's display: " + lines);
-					helper.assertTrue(lines.get(1).equals(heard.alert().coordinates()), "C shows where the beacon is: " + lines);
+					helper.assertTrue(lines != null && lines.getFirst().equals(sos), "C's display: " + lines);
+					helper.assertTrue(lines.getFirst().startsWith(CommercialMobileBlockEntity.DISTRESS_HEADER), "C's display starts with the header: " + lines);
+					helper.assertTrue(lines.get(1).equals("Castaway BEACON"), "C says whose beacon it is: " + lines);
+					DistressLog.Entry offChannel = d.getDistressLog().get(99L);
+					helper.assertTrue(offChannel != null, "D, on 155.0125, did not hear the beacon on its beacon receiver");
+					List<String> dLines = d.distressLines();
+					helper.assertTrue(dLines != null && dLines.getFirst().equals(sos), "D's display: " + dLines);
+					helper.assertTrue(d.getChannel() != null && d.getChannel().name().equals("OPS 1"), "Hearing the beacon moved D's knob");
 					helper.assertTrue(marine(helper, B).getDistressLog().entries().isEmpty(), "A marine radio decoded a beacon alert");
-					helper.assertTrue(d.getDistressLog().entries().isEmpty() && d.distressLines() == null, "A commercial radio on 155.0125 heard the beacon");
+					helper.assertTrue(low.getDistressLog().entries().isEmpty() && low.distressLines() == null, "A low band mobile heard the beacon");
+					helper.assertTrue(d.dismissDistress() && d.distressLines() == null, "D's alert would not dismiss");
 
 					helper.assertTrue(c.dismissDistress(), "nothing to dismiss");
 					helper.assertTrue(c.distressLines() == null, "Dismissed, it is still shown");
@@ -227,8 +247,8 @@ public class DistressGameTests {
 					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(A.above()), null, beacon(helper, 99L, DistressAlert.State.ACTIVE));
 					helper.assertTrue(c.distressLines() == null, "A repeat brought a dismissed alert back");
 					helper.assertTrue(c.getDistressLog().get(99L) != null, "The repeat is still logged");
-					SBlockRadioControlPacket.Action[] actions = SBlockRadioControlPacket.Action.values();
-					helper.assertTrue(actions[actions.length - 1] == SBlockRadioControlPacket.Action.DISMISS_DISTRESS, "DISMISS_DISTRESS is not the last key");
+					// Actions go by number: new ones go after it, but its own number (1.12's last) never moves (2026-11-11).
+					helper.assertTrue(SBlockRadioControlPacket.Action.DISMISS_DISTRESS.ordinal() == 21, "DISMISS_DISTRESS moved from action 21");
 				})
 				.thenSucceed();
 	}
@@ -271,8 +291,8 @@ public class DistressGameTests {
 
 	/**
 	 * The program hears through both cabled radios with no picker: a DSC call from A (via the marine radio B) and a
-	 * beacon (via the commercial radio C on 161.975) in one list, the status saying what it hears; F5's ack goes out
-	 * through the marine radio and reaches A.
+	 * beacon (via the commercial radio C, on an ordinary channel since 2026-11-11: its beacon receiver hears it) in one
+	 * list, the status saying what it hears; F5's ack goes out through the marine radio and reaches A.
 	 */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = BATCH)
 	public static void programMergesEveryRadioAndAcksThroughTheMarineRadio(GameTestHelper helper) {
@@ -284,7 +304,7 @@ public class DistressGameTests {
 				.thenIdle(2)
 				.thenExecute(() -> {
 					setUp(helper);
-					program(helper, C, "AIS 1|161.975");
+					program(helper, C, "OPS 1|155.0125"); // Not 161.975: the beacon receiver listens anyway (2026-11-11).
 					powerOn(helper, C);
 				})
 				.thenWaitUntil(() -> helper.assertTrue(bare(helper, A, B, C), "No bare connectors yet"))
@@ -294,8 +314,16 @@ public class DistressGameTests {
 					// From beyond C, so the computer and its monitor are not in the way.
 					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(D.above()), null, beacon(helper, 77L, DistressAlert.State.ACTIVE));
 					CompoundTag status = app(computer, player, "status", new CompoundTag()).getCompound("data");
+					// C is on an ordinary channel: its beacon receiver counts all the same (2026-11-11).
 					helper.assertTrue(status.getInt("marinesOn") == 1 && status.getInt("beaconRadios") == 1, "hears through both: " + status);
-					helper.assertTrue(status.getList("alerts", Tag.TAG_COMPOUND).size() == 2, "both alerts in one list: " + status);
+					ListTag alerts = status.getList("alerts", Tag.TAG_COMPOUND);
+					helper.assertTrue(alerts.size() == 2, "both alerts in one list: " + status);
+					boolean listed = false;
+					for(int i = 0; i < alerts.size(); i++) {
+						DistressAlert a = DistressAlert.decode(alerts.getCompound(i).getString("a"));
+						listed |= a != null && a.id() == 77L && !a.isDsc();
+					}
+					helper.assertTrue(listed, "the beacon heard off-channel is not listed: " + status);
 					CompoundTag ack = new CompoundTag();
 					ack.putLong("id", call);
 					CompoundTag reply = app(computer, player, "ack", ack);
@@ -389,6 +417,123 @@ public class DistressGameTests {
 					PersonalSos stopped = DistressHandler.state(computer).personal();
 					helper.assertTrue(stopped.state() == PersonalSos.State.STOPPED && stopped.reason().equals("no_power"), "the SOS went on without power: " + stopped);
 				})
+				.thenSucceed();
+	}
+
+	/**
+	 * With SETUP's background services off, a personal SOS keeps going after DISTRESS is closed until it is ended
+	 * (2026-11-12, maintainer): the service runs and the computer stays on; once it is cancelled, the service stops.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 400, batch = BATCH)
+	public static void personalSosOutlivesServicesOff(GameTestHelper helper) {
+		helper.setBlock(C, RadiocraftBlocks.COMMERCIAL_MOBILE.get());
+		RadioComputerBlockEntity computer = computer(helper);
+		FakePlayer player = player(helper);
+		helper.startSequence()
+				.thenIdle(2)
+				.thenExecute(() -> {
+					program(helper, C, "OPS 1|155.0125");
+					powerOn(helper, C);
+				})
+				.thenWaitUntil(() -> helper.assertTrue(DistressHandler.state(computer).primed(), "the service has not looked at the radios yet"))
+				.thenExecute(() -> {
+					helper.assertFalse(app(computer, player, "send", kind("personal", null)).contains("error"), "send");
+					computer.files().setSettings(computer.files().settings().withBackgroundServices(false));
+					computer.settingsChanged();
+				})
+				.thenIdle(RadioComputerBlockEntity.PROGRAM_OPEN_TICKS + 40) // DISTRESS counts as closed by now.
+				.thenExecute(() -> {
+					helper.assertTrue(DistressHandler.state(computer).personal().active(), "the SOS stopped: " + DistressHandler.state(computer).personal());
+					helper.assertTrue(computer.serviceRunning(ComputerApps.DISTRESS), "DISTRESS does not run for its SOS");
+					helper.assertTrue(computer.isPowered(), "the computer went dark under a running SOS");
+					helper.assertFalse(app(computer, player, "cancel", kind("personal", null)).contains("error"), "cancel");
+				})
+				.thenIdle(RadioComputerBlockEntity.PROGRAM_OPEN_TICKS + 2)
+				.thenWaitUntil(() -> helper.assertFalse(computer.serviceRunning(ComputerApps.DISTRESS), "DISTRESS still runs with no SOS"))
+				.thenSucceed();
+	}
+
+	/**
+	 * DISTRESS runs as a service once installed (2026-11-11): with no one at the computer, a new beacon alert heard by
+	 * the cabled commercial radio is counted unread (the alarm sounds at the computer); opening the program clears it,
+	 * and the same alert heard again is not announced twice. Alerts already logged when it starts are not announced.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = BATCH)
+	public static void programWatchesForAlertsWithNoOneAtIt(GameTestHelper helper) {
+		helper.setBlock(C, RadiocraftBlocks.COMMERCIAL_MOBILE.get());
+		RadioComputerBlockEntity computer = computer(helper);
+		FakePlayer player = player(helper);
+		helper.startSequence()
+				.thenIdle(2)
+				.thenExecute(() -> {
+					program(helper, C, "OPS 1|155.0125"); // Off 161.975: the service still hears through its beacon receiver (2026-11-11).
+					powerOn(helper, C);
+				})
+				// The radio's bare connector too (2026-11-13): primed could come first, and an alert sent before the radio's
+				// first powered tick was lost (about one run in ten; doc/FlakyTestsReview.md).
+				.thenWaitUntil(() -> helper.assertTrue(bare(helper, C) && DistressHandler.state(computer).primed(), "the service has not looked at the radios yet"))
+				.thenExecute(() -> {
+					helper.assertTrue(DistressHandler.state(computer).unread() == 0, "unread before any alert");
+					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(D.above()), null, beacon(helper, 55L, DistressAlert.State.ACTIVE));
+				})
+				.thenWaitUntil(() -> helper.assertTrue(DistressHandler.state(computer).unread() == 1, "the new alert was not announced"))
+				.thenExecute(() -> {
+					app(computer, player, "status", new CompoundTag());
+					helper.assertTrue(DistressHandler.state(computer).unread() == 0, "opening DISTRESS did not clear the alert");
+					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(D.above()), null, beacon(helper, 55L, DistressAlert.State.ACTIVE));
+				})
+				.thenIdle(30)
+				.thenExecute(() -> helper.assertTrue(DistressHandler.state(computer).unread() == 0, "a repeat of the same alert was announced again"))
+				.thenSucceed();
+	}
+
+	// -------------------- COMMERCIAL HANDHELDS (2026-11-11) --------------------
+
+	/**
+	 * A commercial VHF handheld's beacon receiver: switched on and on an ordinary channel, in a player's inventory a few
+	 * blocks from the beacon, it stores the alert and its screen lines read "DISTRESS SOS RX x, y, z" (the item keeps
+	 * it, so it is still there when the screen opens again); one switched off hears nothing. DISMISS (the screen's
+	 * packet) takes it off, a repeat does not bring it back, and a new alert does.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = BATCH + "_handheld") // Alone: a handheld hears much further than the other tests' bare connectors.
+	public static void commercialHandheldHearsABeaconOnAnyChannel(GameTestHelper helper) {
+		net.minecraft.world.entity.player.Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+		player.setPos(net.minecraft.world.phys.Vec3.atBottomCenterOf(helper.absolutePos(A.east(4))));
+		net.minecraft.world.item.ItemStack on = new net.minecraft.world.item.ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get());
+		net.minecraft.world.item.ItemStack off = new net.minecraft.world.item.ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get());
+		for(net.minecraft.world.item.ItemStack radio : List.of(on, off))
+			helper.assertTrue(CommercialProgramming.writeChannel(CommercialProgramming.of(radio), 0, CommercialChannel.parse("OPS 1|155.0125")).ok(), "programming the handheld failed");
+		player.getInventory().setItem(0, on);
+		player.getInventory().setItem(1, off);
+		player.getInventory().selected = 8;
+		com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket volume = new com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket(0, 0L,
+				com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket.VOLUME, 5);
+		volume.apply(player); // Slot 0 on; slot 1 stays off.
+		com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio radios = new com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio(player);
+		helper.startSequence()
+				.thenExecute(radios::tick)
+				.thenExecute(() -> {
+					radios.tick();
+					net.minecraft.world.item.ItemStack held = player.getInventory().getItem(0), spare = player.getInventory().getItem(1);
+					helper.assertTrue(com.arrl.radiocraft.common.items.CommercialHandheldItem.hearsBeacons(held), "A commercial VHF handheld listens for beacons");
+					helper.assertTrue(com.arrl.radiocraft.common.items.CommercialHandheldItem.distressLines(held) == null, "The handheld shows an alert before any");
+					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(A.above()), null, beacon(helper, 41L, DistressAlert.State.ACTIVE));
+					List<String> lines = com.arrl.radiocraft.common.items.CommercialHandheldItem.distressLines(held);
+					DistressAlert alert = beacon(helper, 41L, DistressAlert.State.ACTIVE);
+					String sos = String.format(java.util.Locale.ROOT, "DISTRESS SOS RX %d, %d, %d", alert.x(), alert.y(), alert.z());
+					helper.assertTrue(lines != null && lines.getFirst().equals(sos), "The handheld on 155.0125 did not show the beacon: " + lines);
+					helper.assertTrue(lines.get(1).equals("Castaway BEACON"), "Whose beacon: " + lines);
+					helper.assertTrue(com.arrl.radiocraft.common.items.CommercialHandheldItem.distressLines(spare) == null, "A handheld switched off heard the beacon");
+
+					new com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket(0, 0L, com.arrl.radiocraft.common.network.serverbound.SCommercialRadioPacket.DISMISS, 0).apply(player);
+					helper.assertTrue(com.arrl.radiocraft.common.items.CommercialHandheldItem.distressLines(held) == null, "DISMISS left the alert on the screen");
+					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(A.above()), null, beacon(helper, 41L, DistressAlert.State.ACTIVE));
+					helper.assertTrue(com.arrl.radiocraft.common.items.CommercialHandheldItem.distressLines(held) == null, "A repeat brought a dismissed alert back");
+					DistressBeacons.alert(helper.getLevel(), helper.absolutePos(A.above()), null, beacon(helper, 42L, DistressAlert.State.ACTIVE));
+					List<String> next = com.arrl.radiocraft.common.items.CommercialHandheldItem.distressLines(held);
+					helper.assertTrue(next != null && next.getFirst().equals(sos), "A new beacon was not shown: " + next);
+				})
+				.thenExecute(() -> radios.setPlayer(null))
 				.thenSucceed();
 	}
 }

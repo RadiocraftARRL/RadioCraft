@@ -7,6 +7,7 @@ import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerApps;
@@ -44,6 +45,33 @@ public final class InstallApp extends DosApp {
 			if(index >= 0 && index < entries.size() && entries.get(index).action() != null)
 				entries.get(index).action().run();
 		});
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key (or its line in the list) does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.install.install", "", () -> {
+							ComputerApp onDisk = installable();
+							if(copying == null && onDisk != null)
+								install(onDisk);
+						}).when(() -> copying == null && installable() != null),
+						item("menu.install.eject", "", () -> {
+							if(copying == null)
+								eject();
+						}).when(() -> copying == null && !session.floppy().isEmpty()),
+						item("menu.install.remove", "Del", GLFW.GLFW_KEY_DELETE).when(() -> copying == null && selectedRemovable() != null),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))))));
+	}
+
+	/** The program on the disk in the drive, if it is not installed yet. */
+	@Nullable
+	private ComputerApp installable() {
+		ComputerApp onDisk = ComputerApps.get(session.floppy());
+		return onDisk != null && !session.isInstalled(onDisk) ? onDisk : null;
+	}
+
+	/** The installed program picked in the list, or null. */
+	@Nullable
+	private ComputerApp selectedRemovable() {
+		int index = list.selected();
+		return index >= 0 && index < entries.size() ? entries.get(index).removable() : null;
 	}
 
 	@Override

@@ -237,4 +237,56 @@ class WireLookTest {
         assertEquals(0.0D, east.z(1.0D, 0.0D, 0.5D), 1e-9);
         assertEquals(0.5D, east.z(9.0D / 16.0D, 0.0D, 0.5D), 1e-9);
     }
+
+    // -------------------- Keeping to the walls (2026-11-11) --------------------
+
+    /** Coax (2 px) against a north wall lies with its edge on the wall: 7 px north of the middle, across an east-west run. */
+    @Test
+    void straightRunAlongANorthWallTouchesIt() {
+        WireLook.Lateral lie = WireLook.lie(true, false, false, false, NORTH, 1.0D, 0, 0);
+        assertEquals(new WireLook.Lateral(0.0D, -7.0D), lie);
+        WireLook.Affine middle = WireLook.affine(p(Part.MIDDLE, null), lie, WireLook.Faces.all(lie), false);
+        assertClose(0.0D, middle.z(7.0D / 16.0D)); // The middle cube 7..9 is now 0..2: on the wall.
+        assertClose(2.0D / 16.0D, middle.z(9.0D / 16.0D));
+        WireLook.Affine east = WireLook.affine(p(Part.HORIZONTAL, EAST), lie, WireLook.Faces.all(lie), false);
+        assertClose(1.0D / 16.0D, east.z(1.0D, 0.0D, 8.0D / 16.0D)); // The run on east keeps to the wall at the face too.
+        WireLook.Affine north = WireLook.affine(p(Part.HORIZONTAL, NORTH), lie, WireLook.Faces.all(lie), false);
+        assertClose(0.0D, north.z(0.0D, 0.0D, 7.0D / 16.0D)); // A stub into the wall shrinks to nothing, not inside out.
+        assertEquals(new WireLook.Lateral(7.5D, 0.0D), WireLook.lie(false, false, false, true, null, 0.5D, 0, 0)); // Power wire, 1 px.
+    }
+
+    /** In an inside corner the cable sits in the corner, and a run up the north wall there goes up the corner. */
+    @Test
+    void insideCornerMovesBothWays() {
+        WireLook.Lateral lie = WireLook.lie(true, false, true, false, NORTH, 1.0D, 0, 0);
+        assertEquals(new WireLook.Lateral(-7.0D, -7.0D), lie);
+        WireLook.Affine edge = WireLook.affine(p(Part.EDGE, NORTH), lie, WireLook.Faces.all(lie), false);
+        assertClose(1.0D / 16.0D, edge.x(8.0D / 16.0D, 0.0D, 0.0D)); // Up the corner, foot...
+        assertClose(1.0D / 16.0D, edge.x(8.0D / 16.0D, 1.0D, 0.0D)); // ...to top.
+    }
+
+    /** With nothing to touch, a run round the outside corner of a pillar follows the cable on each side round it. */
+    @Test
+    void outsideCornerFollowsTheJoinedCable() {
+        // Pillar to the south-west: the cable to the west keeps to its north face (z +), the cable south to its east face (x -).
+        assertEquals(new WireLook.Lateral(-7.0D, 7.0D), WireLook.lie(false, false, false, false, null, 1.0D, -1, 1));
+        assertEquals(WireLook.Lateral.ZERO, WireLook.lie(false, false, false, false, null, 1.0D, 0, 0)); // Nothing at all: the middle.
+    }
+
+    /** A bundle moves as a whole until its outer strand touches the wall. */
+    @Test
+    void bundleAgainstAWallMovesAsOne() {
+        double[] at = WireLook.layout(new double[] { 2.0D, 2.0D, 2.0D }); // -3, 0, 3: 8 px across.
+        WireLook.Lateral shift = WireLook.lie(false, true, false, false, SOUTH, 4.0D, 0, 0);
+        assertEquals(new WireLook.Lateral(0.0D, 4.0D), shift);
+        assertClose(8.0D, at[2] + shift.z() + 1.0D); // The outer strand's edge at 8 px past the middle: the south face.
+    }
+
+    /** Walls both sides (a corridor): the hugged side; a wall each way of a dead end picks by the hug on that axis only. */
+    @Test
+    void corridorKeepsToTheHuggedSide() {
+        assertEquals(new WireLook.Lateral(0.0D, 7.0D), WireLook.lie(true, true, false, false, SOUTH, 1.0D, 0, 0));
+        assertEquals(new WireLook.Lateral(0.0D, -7.0D), WireLook.lie(true, true, false, false, NORTH, 1.0D, 0, 0));
+        assertEquals(new WireLook.Lateral(7.0D, 0.0D), WireLook.lie(true, true, false, true, EAST, 1.0D, 0, 0));
+    }
 }

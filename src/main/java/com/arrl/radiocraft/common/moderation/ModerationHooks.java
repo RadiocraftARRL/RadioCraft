@@ -163,6 +163,8 @@ public final class ModerationHooks {
 		// Every voice frame on the air passes here once, at its source: Real-World Interfaces in Everywhere mode hear it
 		// wherever they are (one empty-list read while none is on). After the log, so they are logged as its hearers.
 		com.arrl.radiocraft.common.realworld.Everywhere.onAir(antenna, radio, level, source, pcm, hz, band, ctcss);
+		// Satellites hear here too (2026-11-11): what goes up on an uplink with its tone comes down on its downlink.
+		com.arrl.radiocraft.common.radio.satellite.SatelliteRadio.onVoice(antenna, level, source, pcm, hz, ctcss);
 	}
 
 	/** A data packet going out from {@code antenna}, sent by {@code radio}, from {@code talker} if a player sent it. Server thread. */
@@ -170,6 +172,7 @@ public final class ModerationHooks {
 		ModerationLog log = ModerationHooks.radio;
 		if(log != null && antenna != null && level != null)
 			log.dataPacket(antenna, radio, level, packet, hz, band, talker);
+		com.arrl.radiocraft.common.radio.satellite.SatelliteRadio.onData(antenna, level, packet, hz); // Satellites relay distress bursts (2026-11-11).
 	}
 
 	/** CW key buffers going out from {@code antenna}, sent by {@code radio}, keyed by {@code talker} if known. Server thread. */
@@ -177,6 +180,7 @@ public final class ModerationHooks {
 		ModerationLog log = ModerationHooks.radio;
 		if(log != null && antenna != null && level != null)
 			log.cwBuffers(antenna, radio, level, buffers, hz, band, talker);
+		com.arrl.radiocraft.common.radio.satellite.MoonBounce.onCW(antenna, level, buffers, hz); // Off to the Moon, through a tracker on it (2026-11-12).
 	}
 
 	/** A commercial radio module's program on the air from {@code antenna} this tick. Note only, kept if someone heard it. Server thread. */

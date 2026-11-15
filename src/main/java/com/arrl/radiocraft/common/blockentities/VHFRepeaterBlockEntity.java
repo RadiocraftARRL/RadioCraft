@@ -878,4 +878,10 @@ public class VHFRepeaterBlockEntity extends VHFRadioBlockEntity {
 	public BENetworkObject createNetworkObject() {
 		return new RepeaterNetworkObject(level, worldPosition, CommonConfig.VHF_REPEATER_TRANSMIT_TICK.get(), CommonConfig.VHF_REPEATER_RECEIVE_TICK.get());
 	}
+
+	/** No STEP setting: a repeater keeps the channel step (2026-11-14). */
+	@Override
+	public boolean hasTuneStep() {
+		return false;
+	}
 }

@@ -184,8 +184,33 @@ public class DockedHandheld implements IAntenna, HandheldTnc.Host {
 
 	@Override
 	public void receiveDataPacket(AntennaDataPacket packet) {
-		if(state != null && tnc.receive(packet, level))
+		if(state == null)
+			return;
+		com.arrl.radiocraft.common.radio.distress.DistressAlert alert = com.arrl.radiocraft.common.radio.distress.DistressPackets.alert(packet.getPayload());
+		if(alert != null) {
+			receiveBeacon(packet, alert);
+			return;
+		}
+		if(tnc.receive(packet, level))
 			com.arrl.radiocraft.common.moderation.ModerationHooks.heard(packet, this, level, pos, null, packet.getStrength());
+	}
+
+	/**
+	 * A commercial VHF handheld in the charger keeps its built-in beacon receiver on 161.975 MHz (2026-11-11), as in the
+	 * hand ({@link PlayerRadio}): a new alert goes on the item for its screen, with the alarm at the charger.
+	 */
+	private void receiveBeacon(AntennaDataPacket packet, com.arrl.radiocraft.common.radio.distress.DistressAlert alert) {
+		if(alert.isDsc() || !com.arrl.radiocraft.common.radio.distress.DistressPackets.isBeacon(packet.getFrequency())
+				|| !com.arrl.radiocraft.common.items.CommercialHandheldItem.hearsBeacons(stack))
+			return;
+		if(!com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.decodes(packet.getStrength(), RadiocraftServerConfig.VHF_NOISE_FLOOR.get()))
+			return;
+		com.arrl.radiocraft.common.radio.distress.HandheldDistress.Change change = com.arrl.radiocraft.common.items.CommercialHandheldItem.hearBeacon(stack, alert);
+		if(change == com.arrl.radiocraft.common.radio.distress.HandheldDistress.Change.NONE)
+			return;
+		if(change == com.arrl.radiocraft.common.radio.distress.HandheldDistress.Change.NEW)
+			level.playSound(null, pos, com.arrl.radiocraft.common.init.RadiocraftSoundEvents.DSC_ALARM.get(), net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.2F);
+		onChanged.run(); // The item changed: the charger sends it to clients.
 	}
 
 	@Override

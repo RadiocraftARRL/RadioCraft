@@ -121,4 +121,41 @@ public class CeilingGameTests {
                 })
                 .thenSucceed();
     }
+
+    /**
+     * The maintainer's K2 on a brick desk (2026-11-13): coax and power wire laid beside it under a block hang from that
+     * block, over the gap beside the desk. Each drops down the radio's face to it: its centre line reaches the radio's
+     * block, low down, not only at the ceiling.
+     */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = BATCH)
+    public static void ceilingCableDropsToADeskRadio(GameTestHelper helper) {
+        BlockPos desk = new BlockPos(3, 2, 3), radio = desk.above(), coax = radio.east(), power = radio.west();
+        helper.setBlock(desk, Blocks.BRICKS);
+        helper.setBlock(radio, RadiocraftBlocks.HF_RADIO_80M.get());
+        helper.setBlock(coax.above(), Blocks.STONE);
+        helper.setBlock(power.above(), Blocks.STONE);
+        helper.setBlock(coax.east(), RadiocraftBlocks.DUMMY_LOAD.get());
+        hangWire(helper, coax);
+        helper.setBlock(power, RadiocraftBlocks.WIRE.get().getBlockState(helper.getLevel(), helper.absolutePos(power), true));
+        helper.startSequence()
+                .thenIdle(2)
+                .thenExecute(() -> {
+                    helper.assertTrue(WireBlock.floorDevice(helper.getLevel(), helper.absolutePos(radio)), "The desk radio is not taken for a floor device");
+                    BlockPos absRadio = helper.absolutePos(radio);
+                    for(BlockPos at : new BlockPos[] {coax, power}) {
+                        helper.assertTrue(WireBlock.isCeiling(helper.getBlockState(at)), "The cable at " + at.toShortString() + " is not hanging");
+                        double lowest = Double.MAX_VALUE;
+                        for(com.arrl.radiocraft.common.blocks.WireGeometry.Segment segment : com.arrl.radiocraft.common.blocks.WireGeometry.at(helper.getLevel(), helper.absolutePos(at)))
+                            for(net.minecraft.world.phys.Vec3 end : new net.minecraft.world.phys.Vec3[] {segment.from(), segment.to()})
+                                if(Math.abs(end.x - (at == coax ? absRadio.getX() + 1.0D : absRadio.getX())) < 0.45D) // At the radio's side of the cable's block.
+                                    lowest = Math.min(lowest, end.y);
+                        double half = helper.getBlockState(radio).getShape(helper.getLevel(), absRadio).max(net.minecraft.core.Direction.Axis.Y) / 2.0D;
+                        helper.assertTrue(lowest <= absRadio.getY() + half + 1.0D / 16.0D, "The cable at " + at.toShortString() + " does not drop to the radio: lowest " + (lowest - absRadio.getY())
+                                + " " + com.arrl.radiocraft.common.blocks.WireGeometry.describe(helper.getLevel(), helper.absolutePos(at)));
+                        // It plugs in partway up the radio's back (halfway, at its connectors), not at its foot (2026-11-14).
+                        helper.assertTrue(lowest >= absRadio.getY() + 1.5D / 16.0D, "The cable at " + at.toShortString() + " runs down to the radio's foot: lowest " + (lowest - absRadio.getY()));
+                    }
+                })
+                .thenSucceed();
+    }
 }

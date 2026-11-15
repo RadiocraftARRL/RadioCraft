@@ -1,0 +1,20 @@
+{
+  "values": [
+    {
+      "id": "anotherweathermod:omni_siren",
+      "required": false
+    },
+    {
+      "id": "anotherweathermod:horn_siren",
+      "required": false
+    },
+    {
+      "id": "anotherweathermod:omni_siren_pole",
+      "required": false
+    },
+    {
+      "id": "anotherweathermod:horn_siren_pole",
+      "required": false
+    }
+  ]
+}

@@ -44,6 +44,9 @@ public class BatteryMeterNetworkObject extends PowerNetworkObject implements IPa
 			if(!(network instanceof PowerBENetwork))
 				continue;
 			for(BENetworkObject object : network.getNetworkObjects()) {
+				// A sealed reserve battery has no voltage until its seal is broken (2026-11-13): the meter does not see it.
+				if(object instanceof StableChemicalBatteryNetworkObject stable && !stable.isActive())
+					continue;
 				if(object instanceof BatteryNetworkObject battery && seen.add(battery)) {
 					energy += battery.getStorage().getEnergyStored();
 					capacity += battery.getStorage().getMaxEnergyStored();

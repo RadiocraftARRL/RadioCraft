@@ -58,6 +58,20 @@ public final class RadioStation {
 		return false;
 	}
 
+	/**
+	 * True if a satellite tracking antenna on the coax of one of {@code radios} is locked on the satellite named
+	 * {@code satellite} (2026-11-12): the station is "actively connected" to it.
+	 */
+	public static boolean trackerLockedOn(Level level, List<RadioBlockEntity> radios, String satellite) {
+		for(RadioBlockEntity radio : radios)
+			if(IBENetworks.getObject(level, radio.getBlockPos()) instanceof RadioNetworkObject network)
+				for(com.arrl.radiocraft.common.be_networks.network_objects.AntennaNetworkObject antenna : network.getAntennas())
+					if(antenna instanceof com.arrl.radiocraft.common.be_networks.network_objects.SatelliteTrackerNetworkObject
+							&& com.arrl.radiocraft.common.radio.satellite.SatelliteTracking.lockedOn(antenna.getPos().asLong(), satellite))
+						return true;
+		return false;
+	}
+
 	/** True if a radio of {@code radios} is on with a real antenna (not a dummy load) on its coax. */
 	public static boolean hasAntenna(Level level, List<RadioBlockEntity> radios) {
 		for(RadioBlockEntity radio : radios)

@@ -8,6 +8,9 @@ import com.arrl.radiocraft.common.radio.commercial.CommercialChannel;
 import com.arrl.radiocraft.common.radio.commercial.CommercialProgram;
 import com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel;
 import com.arrl.radiocraft.common.radio.crystal.CrystalQuality;
+import com.arrl.radiocraft.common.radio.distress.DistressAlert;
+import com.arrl.radiocraft.common.radio.distress.DistressPackets;
+import com.arrl.radiocraft.common.radio.distress.HandheldDistress;
 import com.arrl.radiocraft.common.radio.voice.DigitalVoice;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -186,6 +189,58 @@ public class CommercialHandheldItem extends VHFHandheldItem {
 		if(model == null || !model.hasZones())
 			return;
 		setProgram(stack, program(stack).zone(zone, model.zones()));
+	}
+
+	// -------------------- DISTRESS BEACONS (2026-11-11) --------------------
+
+	/**
+	 * True if {@code stack} is a commercial handheld whose bands hold 161.975 MHz: its built-in beacon receiver listens
+	 * there whatever channel it is on, dormant (no audio, nothing on the screen) until an alert comes in, as the VHF
+	 * mobile's does.
+	 */
+	public static boolean hearsBeacons(ItemStack stack) {
+		CommercialRadioModel model = modelOf(stack);
+		return model != null && model.covers(DistressPackets.BEACON_HZ);
+	}
+
+	/** The beacon alert on the handheld's screen until it is dismissed, null for none. */
+	@Nullable
+	public static DistressAlert shownDistress(ItemStack stack) {
+		HandheldDistress distress = stack.get(RadiocraftDataComponent.HANDHELD_DISTRESS.value());
+		return distress == null ? null : distress.shown();
+	}
+
+	/**
+	 * The screen's lines while a beacon alert is shown, null when none: {@link DistressAlert#sosRx} (which the screen
+	 * scrolls) and whose it is ({@link DistressAlert#who}), as on the mobile.
+	 */
+	@Nullable
+	public static List<String> distressLines(ItemStack stack) {
+		DistressAlert alert = shownDistress(stack);
+		return alert == null ? null : List.of(alert.sosRx(), alert.who());
+	}
+
+	/**
+	 * A beacon alert the handheld's receiver decoded: stored on the item (a new active one shown until dismissed; a
+	 * repeat keeps its position and state current). {@link HandheldDistress.Change#NEW} means the holder's alarm should
+	 * sound. Server thread.
+	 */
+	public static HandheldDistress.Change hearBeacon(ItemStack stack, DistressAlert alert) {
+		HandheldDistress was = stack.get(RadiocraftDataComponent.HANDHELD_DISTRESS.value());
+		HandheldDistress.Change change = HandheldDistress.change(was, alert);
+		HandheldDistress now = HandheldDistress.hear(was, alert);
+		if(change != HandheldDistress.Change.NONE && now != null)
+			stack.set(RadiocraftDataComponent.HANDHELD_DISTRESS.value(), now);
+		return change;
+	}
+
+	/** Takes the beacon alert off the screen; repeats of it do not bring it back. False if none was shown. */
+	public static boolean dismissDistress(ItemStack stack) {
+		HandheldDistress distress = stack.get(RadiocraftDataComponent.HANDHELD_DISTRESS.value());
+		if(distress == null || distress.shown() == null)
+			return false;
+		stack.set(RadiocraftDataComponent.HANDHELD_DISTRESS.value(), distress.dismiss());
+		return true;
 	}
 
 	/** Sneak and use opens the radio's top panel (knob, volume, LEDs); use without sneaking talks, as on the ham handheld. */

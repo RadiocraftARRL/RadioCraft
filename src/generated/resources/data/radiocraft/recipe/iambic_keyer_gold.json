@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "radiocraft:iambic_keyer"
+    },
+    {
+      "item": "minecraft:gold_ingot"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:block_state": {
+        "finish": "gold"
+      }
+    },
+    "count": 1,
+    "id": "radiocraft:iambic_keyer"
+  }
+}

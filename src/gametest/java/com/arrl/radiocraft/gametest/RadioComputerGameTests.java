@@ -317,6 +317,10 @@ public class RadioComputerGameTests {
 		helper.assertTrue(info != null && info.colour() && info.source().equals("scanner"), "photo info " + info);
 		helper.assertTrue(scanner.tray().getCount() == 1, "used " + (2 - scanner.tray().getCount()) + " sheets");
 		helper.assertTrue(error(call(computer, player, "print.image", with("name", "PIC.IMG"))).equals("output_full"), "printed onto a waiting print");
+		scanner.getInventory().setStackInSlot(ScannerBlockEntity.OUTPUT, ItemStack.EMPTY);
+		scanner.getInventory().setStackInSlot(ScannerBlockEntity.TRAY, new ItemStack(Items.PAPER, 1)); // Plain paper: a sheet of words (2026-11-12).
+		helper.assertFalse(call(computer, player, "print.image", with("name", "PIC.IMG")).contains("error"), "plain paper took no print");
+		helper.assertTrue(scanner.output().is(Items.PAPER) && scanner.output().get(net.minecraft.core.component.DataComponents.LORE) != null, "plain print " + scanner.output());
 		helper.succeed();
 	}
 

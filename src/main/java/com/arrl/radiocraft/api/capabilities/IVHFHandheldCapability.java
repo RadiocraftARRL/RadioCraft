@@ -128,4 +128,20 @@ public interface IVHFHandheldCapability {
      * @param offsetHz the offset in Hz (0 for simplex, +/-600 kHz on 2m)
      */
     void setOffsetHz(int offsetHz);
+
+    /**
+     * The dial's STEP (2026-11-14): one of 5, 6.25, 10, 12.5, 15, 20 or 25 kHz, or 0 for the server's channel step.
+     * Default for other mods' handhelds: 0.
+     * @return the step in Hz, 0 for the server's
+     */
+    default int getTuneStepHz() {
+        return 0;
+    }
+
+    /**
+     * Sets the dial's STEP; the frequency stays where it is. Ignored by default.
+     * @param stepHz the step in Hz, 0 for the server's
+     */
+    default void setTuneStepHz(int stepHz) {
+    }
 }

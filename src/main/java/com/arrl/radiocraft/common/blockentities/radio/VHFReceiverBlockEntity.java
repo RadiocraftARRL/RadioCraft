@@ -49,7 +49,7 @@ import java.util.Arrays;
  * </ul>
  * Saves from before the scanner (a dial and six memories) load: see {@link #readOldMemories}.
  */
-public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
+public class VHFReceiverBlockEntity extends VHFRadioBlockEntity implements CellRadio {
 
     /** Channels, one for each numeral and slide switch. */
     public static final int CHANNELS = 8;
@@ -559,4 +559,10 @@ public class VHFReceiverBlockEntity extends VHFRadioBlockEntity {
         super.loadAdditional(nbt, registries);
         cell = nbt.contains("cell") ? ItemStack.parseOptional(registries, nbt.getCompound("cell")) : ItemStack.EMPTY;
     }
+
+	/** No STEP setting: the scanner has its own 2.5 kHz steps (2026-11-14). */
+	@Override
+	public boolean hasTuneStep() {
+		return false;
+	}
 }

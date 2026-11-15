@@ -116,6 +116,12 @@ public final class FiveBtvAntennaBlock extends AntennaCenterBlock {
         return segment == 4 || segment == 5 ? RADIALS : MAST;
     }
 
+    /** Players bump into the mast (2026-11-13); the radials up top are thin wire, so they do not hold anyone up. */
+    @Override
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return MAST;
+    }
+
     @Override
     public @Nullable BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return state.getValue(SEGMENT) == 0 ? new BandFollowingAntennaBlockEntity(pos, state) : null;

@@ -59,7 +59,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("tooltip.radiocraft.dead_alkaline_battery", "A spent alkaline cell. Smelt it to get its steel can back as an iron nugget.");
 			provider.add("tooltip.radiocraft.small_alkaline_battery", "Full when made, but it cannot be recharged: no charger takes it, and the rechargeable radios want a Small NiCd Battery. A battery weather radio runs on it for weeks.");
 			provider.addItem(RadiocraftItems.ALL_APPS_FLOPPY, "All Applications Floppy");
-			provider.add("tooltip.radiocraft.all_apps_floppy", "Creative only. Put it in a radio computer's drive: every program that comes on a floppy (but the secret ones) is installed at once, and the disk comes back out.");
+			provider.add("tooltip.radiocraft.printed_by", "Printed by %s");
+			provider.add("tooltip.radiocraft.all_apps_floppy","Creative only. Put it in a radio computer's drive: every program that comes on a floppy (but the secret ones) is installed at once, and the disk comes back out.");
 			provider.addItem(RadiocraftItems.APRS_MODULE, "APRS Module");
 			provider.addItem(RadiocraftItems.MARS_MOD, "MARS Mod");
 			provider.addItem(RadiocraftItems.RADIO_CLONER, "Radio Cloner");
@@ -95,10 +96,10 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("item.radiocraft.tape_reel.recorded", "Recorded, %s:%s");
 			provider.add("screen.radiocraft.commercial_radio_module.no_band", "That frequency is in no band");
 			provider.add("block.radiocraft.commercial_radio_module.sealed", "The cabinet is sealed. Whatever it sends, it sends on its own.");
-			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_10M_VARIANTS, "10m Radio");
-			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_20M_VARIANTS, "20m Radio");
-			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_40M_VARIANTS, "40m Radio");
-			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_80M_VARIANTS, "80m Radio");
+			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_10M_VARIANTS, "10m Radio", "RTX-100 (Premium 10m Radio)");
+			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_20M_VARIANTS, "20m Radio", "The Swan (Premium 20m Radio)");
+			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_40M_VARIANTS, "40m Radio", "TS-520R (Premium 40m Radio)");
+			addCrystalRadio(provider, RadiocraftItems.HF_RADIO_80M_VARIANTS, "80m Radio", "RC-K2 (Premium 80m Radio)");
 			provider.addBlock(RadiocraftBlocks.HF_RECEIVER, "HF Receiver");
 			provider.addBlock(RadiocraftBlocks.ALL_BAND_RADIO, "All Band Radio");
 			provider.addBlock(RadiocraftBlocks.QRP_RADIO_20M, "QRP Radio (20m)");
@@ -167,6 +168,11 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addBlock(RadiocraftBlocks.MICROPHONE, "Microphone");
 			provider.addBlock(RadiocraftBlocks.YAGI_ANTENNA, "Yagi Antenna");
 			provider.addBlock(RadiocraftBlocks.J_POLE_ANTENNA, "J-Pole Antenna");
+			provider.addBlock(RadiocraftBlocks.EGGBEATER_ANTENNA, "EB-VHF Eggbeater Antenna");
+			provider.addBlock(RadiocraftBlocks.SATELLITE_TRACKER, "Satellite Tracking Antenna");
+			provider.addBlock(RadiocraftBlocks.IAMBIC_KEYER, "Iambic Keyer");
+			provider.addBlock(RadiocraftBlocks.LINEAR_AMPLIFIER, "Linear Amplifier");
+			provider.addBlock(RadiocraftBlocks.COMPUTER_REDSTONE, "Computer Redstone Block");
 			provider.addBlock(RadiocraftBlocks.RINGO_ANTENNA, "VHF Ringo Antenna");
 			provider.addBlock(RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA, "VHF Folded Dipole Antenna");
 			provider.addBlock(RadiocraftBlocks.DUMMY_LOAD, "Dummy Load");
@@ -537,6 +543,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
             provider.add("key.radiocraft.worn_ptt", "Talk on worn radio");
             provider.add("death.attack.radiocraft.electrocution", "%1$s was electrocuted");
             provider.add("key.radiocraft.cw_key", "CW key (in a radio screen)");
+            provider.add("key.radiocraft.keyer_dit", "Keyer dit paddle");
+            provider.add("key.radiocraft.keyer_dah", "Keyer dah paddle");
             provider.add(Radiocraft.translationKey("message", "moderate.on_air"), "On air: %s, %s MHz");
             provider.add(Radiocraft.translationKey("commands", "moderate.all"), "Listening to all radio traffic; /radio moderate off to stop");
             provider.add(Radiocraft.translationKey("commands", "moderate.one"), "Listening to %s's radio traffic; /radio moderate off to stop");
@@ -587,6 +595,65 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
             provider.add(Radiocraft.translationKey("tooltip", "antenna_pole"), "Holds the end of an antenna wire. Use antenna wire on this and another holder to string a wire between them.");
             provider.add(Radiocraft.translationKey("tooltip", "antenna_connector"), "Joins antenna wires and coax: a wire holder you can also run coax into.");
             provider.add(Radiocraft.translationKey("tooltip", "j_pole_antenna"), "VHF antenna for 2m base stations and repeaters. Connect it with coax.");
+            provider.add(Radiocraft.translationKey("tooltip", "eggbeater_antenna"), "VHF satellite antenna: strong all pass long, best overhead, where a J-pole or whip fades and loses the uplink. A little shorter reach along the ground. Connect it with coax.");
+            provider.add(Radiocraft.translationKey("tooltip", "satellite_tracker"), "VHF dish on a powered mount that follows a satellite across the sky: full strength all pass long, even under an aurora or in a storm, and the only way to hear a stealth satellite. Coax to the radio, power wire to the mount; it draws power while it tracks. It follows the satellite its radio is tuned to, else the highest one up.");
+            provider.add(Radiocraft.translationKey("message", "satellite_tracker.no_power"), "Tracker: no power for its motors");
+            provider.add(Radiocraft.translationKey("message", "satellite_tracker.stowed"), "Tracker: no satellite up, stowed");
+            provider.add(Radiocraft.translationKey("message", "satellite_tracker.slewing"), "Tracker: turning to %s (az %s, el %s)");
+            provider.add(Radiocraft.translationKey("message", "satellite_tracker.locked"), "Tracker: locked on %s (az %s, el %s)");
+            provider.add(Radiocraft.translationKey("tooltip", "iambic_keyer"), "Place it beside an HF radio (or the all-band radio) in CW and use it: hold A for dits and D for dahs (rebindable), or click its paddles. Iambic A and B, bug and straight key; 6 to 24 WPM. Craft it with a dye, glass, a metal or a gem to change its finger pieces.");
+            provider.add(Radiocraft.translationKey("tooltip", "iambic_keyer.finish"), "Finger pieces: %s");
+            provider.add(Radiocraft.translationKey("screen", "keyer.title"), "Iambic Keyer");
+            provider.add(Radiocraft.translationKey("screen", "keyer.mode.iambic_a"), "IAMBIC A");
+            provider.add(Radiocraft.translationKey("screen", "keyer.mode.iambic_b"), "IAMBIC B");
+            provider.add(Radiocraft.translationKey("screen", "keyer.mode.bug"), "BUG");
+            provider.add(Radiocraft.translationKey("screen", "keyer.mode.straight"), "STRAIGHT");
+            provider.add(Radiocraft.translationKey("screen", "keyer.wpm"), "%s WPM");
+            provider.add(Radiocraft.translationKey("screen", "keyer.tone.0"), "TONE OFF");
+            provider.add(Radiocraft.translationKey("screen", "keyer.tone.1"), "TONE LOW");
+            provider.add(Radiocraft.translationKey("screen", "keyer.tone.2"), "TONE MED");
+            provider.add(Radiocraft.translationKey("screen", "keyer.tone.3"), "TONE HIGH");
+            provider.add(Radiocraft.translationKey("screen", "keyer.dit"), "DIT (%s)");
+            provider.add(Radiocraft.translationKey("screen", "keyer.dah"), "DAH (%s)");
+            provider.add(Radiocraft.translationKey("screen", "keyer.key"), "KEY");
+            provider.add(Radiocraft.translationKey("screen", "keyer.no_radio"), "No HF radio beside the keyer");
+            provider.add(Radiocraft.translationKey("screen", "keyer.radio_off"), "The radio is off");
+            provider.add(Radiocraft.translationKey("screen", "keyer.not_cw"), "Put the radio in CW");
+            provider.add(Radiocraft.translationKey("screen", "keyer.ready"), "Keying the radio");
+            provider.add("finish.radiocraft.amber", "Amber");
+            provider.add("finish.radiocraft.clear", "Clear");
+            provider.add("finish.radiocraft.white", "White");
+            provider.add("finish.radiocraft.orange", "Orange");
+            provider.add("finish.radiocraft.magenta", "Magenta");
+            provider.add("finish.radiocraft.light_blue", "Light Blue");
+            provider.add("finish.radiocraft.yellow", "Yellow");
+            provider.add("finish.radiocraft.lime", "Lime");
+            provider.add("finish.radiocraft.pink", "Pink");
+            provider.add("finish.radiocraft.gray", "Gray");
+            provider.add("finish.radiocraft.light_gray", "Light Gray");
+            provider.add("finish.radiocraft.cyan", "Cyan");
+            provider.add("finish.radiocraft.purple", "Purple");
+            provider.add("finish.radiocraft.blue", "Blue");
+            provider.add("finish.radiocraft.brown", "Brown");
+            provider.add("finish.radiocraft.green", "Green");
+            provider.add("finish.radiocraft.red", "Red");
+            provider.add("finish.radiocraft.black", "Black");
+            provider.add("finish.radiocraft.iron", "Iron");
+            provider.add("finish.radiocraft.gold", "Gold");
+            provider.add("finish.radiocraft.copper", "Copper");
+            provider.add("finish.radiocraft.diamond", "Diamond");
+            provider.add("finish.radiocraft.emerald", "Emerald");
+            provider.add("finish.radiocraft.lapis", "Lapis");
+            provider.add("finish.radiocraft.amethyst", "Amethyst");
+            provider.add("finish.radiocraft.quartz", "Quartz");
+            provider.add("finish.radiocraft.netherite", "Netherite");
+            provider.add(Radiocraft.translationKey("tooltip", "computer_redstone"), "Place it touching a radio computer, or on its data wire (up to 10 a computer). The REDSTONE program names it and its levels (4 = Door Open) and sets it: on, off or a pulse, from this computer or, if allowed, from others on the LAN. While off it reads the redstone coming in.");
+            provider.add(Radiocraft.translationKey("message", "computer_redstone.status"), "%s: out %s, in %s");
+            provider.add(Radiocraft.translationKey("tooltip", "linear_amplifier"), "On the coax between an HF radio and its antenna, and on a power wire. Use it to switch OPERATE / STANDBY. In OPERATE your signal is louder (not further), it draws a lot of power while you transmit, doubles your RF in nearby redstone and blows easily into a bad SWR. A gold ingot mends it. Illegal on CB.");
+            provider.add(Radiocraft.translationKey("message", "amplifier.operate"), "Amplifier: OPERATE");
+            provider.add(Radiocraft.translationKey("message", "amplifier.standby"), "Amplifier: STANDBY (signal passes straight through)");
+            provider.add(Radiocraft.translationKey("message", "amplifier.blown"), "The amplifier is blown: use a gold ingot on it to mend it");
+            provider.add(Radiocraft.translationKey("message", "amplifier.mended"), "Amplifier mended");
             provider.add(Radiocraft.translationKey("tooltip", "ringo_antenna"), "Commercial 2m vertical: 10% more gain than a J-pole, and DC grounded, so lightning seldom does damage.");
             provider.add(Radiocraft.translationKey("tooltip", "folded_dipole_antenna"), "Commercial two-bay 2m folded dipole for towers: 25% more gain than a J-pole, and DC grounded, so lightning seldom does damage.");
             provider.add(Radiocraft.translationKey("tooltip", "five_btv_antenna"), "Trap vertical, seven blocks tall: matched on every HF band and VHF. On HF it sends its power low, so it reaches less by line of sight and further by skip. Coax goes to the base.");
@@ -648,6 +715,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			addCommercialRadios(provider);
 			addMarineRadios(provider);
 			addCbRadios(provider);
+			addAirbandAndBroadcast(provider);
 			addCamera(provider);
 			addRadioComputer(provider);
 			addOfficeApps(provider);
@@ -671,6 +739,13 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			com.arrl.radiocraft.datagen.lang.QslLang.add(provider); // and QSL cards.
 			addAdsb(provider);
 			com.arrl.radiocraft.datagen.lang.WeatherAlertLang.add(provider); // Weather alert generator and receiver (1.12).
+			com.arrl.radiocraft.datagen.lang.LicenseLang.add(provider); // Commercial frequency licenses (2026-11-10).
+			com.arrl.radiocraft.datagen.lang.MeshLang.add(provider); // Fire alarms and SCADA on the radio mesh (2026-11-10).
+			com.arrl.radiocraft.datagen.lang.SatelliteLang.add(provider); // Satellites (2026-11-11).
+			com.arrl.radiocraft.datagen.lang.LanLang.add(provider); // LAN RELAY and LAN REDSTONE (2026-11-13).
+			com.arrl.radiocraft.datagen.lang.WxSatLang.add(provider); // Weather satellite imaging: WXSAT and the External CRT Monitor (2026-11-12).
+			com.arrl.radiocraft.datagen.lang.FmStationLang.add(provider); // The FM broadcast station's panel (2026-11-14).
+			com.arrl.radiocraft.datagen.lang.MenuBarLang.add(provider); // Every computer program's pull-down menus (2026-11-12).
 			com.arrl.radiocraft.datagen.lang.VHFReceiverLang.add(provider); // VHF receiver: memories, scan, mute and its cell (2026-11-09).
 			com.arrl.radiocraft.datagen.lang.DistressLang.add(provider); // Distress alerting: DSC, the beacon, DISTRESS (2026-11-09).
 			addFccGear(provider);
@@ -794,6 +869,29 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("screen", "marine_handheld.title"), "Marine Handheld");
 	}
 
+	/** The airband radio and antenna, and the FM broadcast transmitter and receiver (2026-11-13). */
+	private static void addAirbandAndBroadcast(LanguageProvider provider) {
+		provider.addBlock(RadiocraftBlocks.AIRBAND_RADIO, "Airband Radio");
+		provider.addBlock(RadiocraftBlocks.AIRBAND_ANTENNA, "Aircraft VHF Antenna");
+		provider.addBlock(RadiocraftBlocks.AIRBAND_GROUND_PLANE, "Airband Ground Plane Antenna");
+		provider.add(Radiocraft.translationKey("tooltip", "airband_ground_plane"), "A ground station's antenna for the airband, two blocks tall: a mast, four drooping radials and a white whip. Matched like the aircraft antenna (under 2:1 across the airband) and reaching a little further than a J-pole. Coax goes to the lower half.");
+		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_TRANSMITTER, "FM Broadcast Transmitter");
+		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_TRANSMITTER_TOP, "FM Broadcast Transmitter");
+		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_RECEIVER, "FM Broadcast Receiver");
+		provider.add(Radiocraft.translationKey("tooltip", "airband_radio"), "Aviation COM: AM voice on the airband (118-137 MHz), 25 kHz channels. The knobs tune STANDBY; the flip-flop swaps it with the frequency in USE. 121.5 is the emergency (guard) frequency. Needs an antenna and power: the aircraft antenna matches best.");
+		provider.add(Radiocraft.translationKey("tooltip", "airband_antenna"), "A small swept whip cut for the airband: about 1.1:1 in the middle, under 2:1 across it, worse on 2m and commercial VHF. Place it on top of a block, or under one to hang it. Coax goes to its block.");
+		provider.add(Radiocraft.translationKey("tooltip", "fm_broadcast_transmitter"), "A broadcast station, two blocks tall: hold ON AIR on its screen, or use a desk microphone beside it, and you go out on its FM broadcast channel (88.1-107.9 MHz) three times as strong as a radio. Draws a lot of power on the air. Needs a VHF antenna.");
+		provider.add(Radiocraft.translationKey("tooltip", "fm_broadcast_receiver"), "A walnut table radio for the FM broadcast band (88.1-107.9 MHz). Receive only. Look at it and scroll to tune. Hears on its own wire antenna, or better on an antenna coaxed to it.");
+		provider.add("tooltip.radiocraft.fm_broadcast_receiver.cell", "Draws very little: runs from a power wire, or shift + right-click a Small Alkaline or NiCd Battery into it (a battery lasts about two game days).");
+		provider.add("screen.radiocraft.fm_receiver.dial", "The dial: click to tune there, scroll to step");
+		provider.add("screen.radiocraft.fm_receiver.tuning", "TUNING: scroll, or click a side (shift + scroll: 2 MHz)");
+		provider.add("screen.radiocraft.fm_receiver.volume", "VOLUME: scroll, or click a side");
+		provider.add("screen.radiocraft.fm_receiver.bass", "BASS: scroll, or click a side");
+		provider.add("screen.radiocraft.fm_receiver.treble", "TREBLE: scroll, or click a side");
+		provider.add("screen.radiocraft.fm_receiver.power", "POWER");
+		provider.add("screen.radiocraft.fm_receiver.mute", "MUTE");
+	}
+
 	/** The CB radios (2026-11-08). */
 	private static void addCbRadios(LanguageProvider provider) {
 		provider.addItem(RadiocraftItems.CB_PORTABLE, "TRC-217 CB Portable");
@@ -857,6 +955,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.add(Radiocraft.translationKey("item", "printout"), "Printout");
 		provider.add(Radiocraft.translationKey("message", "computer.drive_full"), "There is already a disk in drive A: (sneak and right click the computer to eject it)");
 		provider.add(Radiocraft.translationKey("message", "computer.floppy_blank"), "Blank disk in drive A:");
+		provider.add(Radiocraft.translationKey("message", "computer.all_apps_installed"), "Every program installed (%s new); the disk stays with you");
 		provider.add(Radiocraft.translationKey("message", "computer.floppy_inserted"), "%s disk in drive A: run INSTALL to install it");
 		provider.add(Radiocraft.translationKey("message", "computer.no_monitor"), "This computer has no monitor: put a computer monitor on top of it");
 		provider.add(Radiocraft.translationKey("message", "computer.no_computer"), "This monitor has nothing to show: put it on top of a radio computer");
@@ -903,7 +1002,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		app.accept("repeaters", new String[] { "Repeater Directory", "Repeaters your radios have heard and ones you add, sent on to the frequency manager." });
 		app.accept("license", new String[] { "License Study", "Flash cards and practice exams from the amateur radio question pools." });
 		for(com.arrl.radiocraft.common.computer.ComputerApp program : com.arrl.radiocraft.common.computer.ComputerApps.onFloppies())
-			provider.add(java.util.Objects.requireNonNull(RadiocraftItems.floppy(program)), FLOPPY_NAMES.get(program.id()) + " Floppy Disk");
+			provider.add(java.util.Objects.requireNonNull(RadiocraftItems.floppy(program)), java.util.Objects.requireNonNull(FLOPPY_NAMES.get(program.id()), "FLOPPY_NAMES has no " + program.id()) + " Floppy Disk");
 
 		java.util.function.BiConsumer<String, String> s = (key, text) -> provider.add("screen.radiocraft.computer." + key, text);
 		s.accept("error", "Error");
@@ -924,6 +1023,10 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		s.accept("files.none", "No files.");
 		s.accept("drive.empty", "No disk");
 		s.accept("drive.blank", "Blank disk");
+		s.accept("shell.search_title", "Search");
+		s.accept("shell.search_none", "Nothing found");
+		s.accept("shell.search_file", "(file)");
+		s.accept("shell.search_keys", "Enter=Open  Esc=Close");
 		// Errors from the server (ComputerServer, ComputerStorage.Problem, ScannerBlockEntity.Result).
 		s.accept("err.bad_name", "Not a file name: up to 8 letters or digits, a dot, and up to 3 more (LOGBOOK.TXT)");
 		s.accept("err.too_big", "File too big (256K at most)");
@@ -1224,6 +1327,34 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		// CPS, the commercial radio programmer.
 		s.accept("cps.title", "CPS - Commercial Radio Programming");
 		s.accept("cps.keys", "F5=Read F6=Write F9=By hand F4=Unit ID F7=Contacts F3=Open ^S=Save F8=Factory");
+		// The CPS menus and its progress bar (2026-11-11).
+		s.accept("cps.menu.file", "File");
+		s.accept("cps.menu.program", "Program");
+		s.accept("cps.menu.edit", "Edit");
+		s.accept("cps.menu.open", "Open...");
+		s.accept("cps.menu.save", "Save");
+		s.accept("cps.menu.save_as", "Save as...");
+		s.accept("cps.menu.exit", "Exit");
+		s.accept("cps.menu.read", "Read radio");
+		s.accept("cps.menu.write", "Write radio");
+		s.accept("cps.menu.hand", "Program radios by hand");
+		s.accept("cps.menu.factory", "Factory reset radio");
+		s.accept("cps.menu.edit_channel", "Edit channel");
+		s.accept("cps.menu.clear", "Clear channel");
+		s.accept("cps.menu.copy", "Copy channel");
+		s.accept("cps.menu.paste", "Paste channel");
+		s.accept("cps.menu.import", "Import from Frequency Manager...");
+		s.accept("cps.import_title", "Import a Channel");
+		s.accept("cps.import_pick", "Into channel %s (it replaces what is there). FM and digital only:");
+		s.accept("cps.import_none", "%s has no FM or digital frequencies to import");
+		s.accept("cps.import_full", "Every channel is full: pick one to replace first");
+		s.accept("cps.imported", "Imported %s into channel %s");
+		s.accept("cps.menu.unit", "Unit ID...");
+		s.accept("cps.menu.contacts", "Contacts...");
+		s.accept("cps.reading", "Reading radio...");
+		s.accept("cps.writing", "Writing radio...");
+		s.accept("cps.read_done_title", "Read Complete");
+		s.accept("cps.write_done_title", "Write Successful");
 		s.accept("cps.no_radio", "No radio read. F5 reads one: wired, or held in your hand. F9 programs a fleet by hand.");
 		s.accept("cps.radio", "Radio: %s, %s");
 		s.accept("cps.model", "%s  %s MHz  Digital: %s  Encryption: %s");
@@ -1737,7 +1868,9 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			Map.entry("repeaters", "Repeater Directory"), Map.entry("saver", "Screensaver"),
 			Map.entry("scheduler", "Scheduler"), Map.entry("rigctl", "Rig Control"), Map.entry("ft8", "FT8"),
 			Map.entry("netlog", "Net Control"), Map.entry("awards", "Awards Tracker"), Map.entry("qsl", "QSL Designer"),
-			Map.entry("distress", "Distress"));
+			Map.entry("distress", "Distress"), Map.entry("fcc", "FCC Monitor"), Map.entry("fire_alarm", "Fire Alarm"),
+			Map.entry("scada", "SCADA"), Map.entry("sattrack", "Satellite Tracking"),
+			Map.entry("wxsat", "Weather Satellite"));
 
 	/** FCC field gear (1.12 step 10): the hat, jacket, seal banner pattern and banner names, the badge, its tooltips, messages and command. */
 	private static void addFccGear(LanguageProvider provider) {
@@ -2025,8 +2158,13 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 
 	/** Names a radio's crystal versions: "Premium 40m Radio", "40m Radio", "Cheap 40m Radio". */
 	private static void addCrystalRadio(LanguageProvider provider, CrystalVariants<Item, ? extends Item> radio, String name) {
+		addCrystalRadio(provider, radio, name, null);
+	}
+
+	/** As above, with the Premium radio called {@code premium} when it is a rig of its own (the HF rigs, 2026-11-11). */
+	private static void addCrystalRadio(LanguageProvider provider, CrystalVariants<Item, ? extends Item> radio, String name, @org.jetbrains.annotations.Nullable String premium) {
 		for(CrystalQuality quality : CrystalQuality.values())
-			provider.addItem(radio.get(quality), quality.radioPrefix() + name);
+			provider.addItem(radio.get(quality), quality == CrystalQuality.PURE && premium != null ? premium : quality.radioPrefix() + name);
 	}
 
 	public RadiocraftLanguageProvider(PackOutput output, String locale) {

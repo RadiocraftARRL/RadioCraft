@@ -124,6 +124,29 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 	}
 
 	/** What the radio itself plays through: its own speaker, or a desk or premium speaker touching it. */
+	/** A table radio's BASS and TREBLE (2026-11-13), -1 to 1, 0 flat; set on the game thread, read on the voice thread. */
+	private volatile double toneBass = 0.0D, toneTreble = 0.0D;
+	/** Their filter, made the first time they are off flat; under this receiver's lock. */
+	private com.arrl.radiocraft.common.radio.voice.ToneControl tone;
+
+	/** Sets BASS and TREBLE for the radio's own speaker (the FM broadcast receiver's knobs). */
+	public void setTone(double bass, double treble) {
+		toneBass = bass;
+		toneTreble = treble;
+	}
+
+	/** {@code pcm} through the tone knobs, holding the lock. */
+	private short[] toned(short[] pcm) {
+		double bass = toneBass, treble = toneTreble;
+		if(tone == null) {
+			if(Math.abs(bass) < 1e-3 && Math.abs(treble) < 1e-3)
+				return pcm;
+			tone = new com.arrl.radiocraft.common.radio.voice.ToneControl(48000);
+		}
+		tone.set(bass, treble);
+		return tone.process(pcm);
+	}
+
 	public void setSpeaker(SpeakerKind kind) {
 		speaker = kind;
 	}
@@ -273,7 +296,7 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 			boolean routed = !remote.isEmpty(); // A computer plays it (RIGCTL REMOTE audio): the radio and its speakers are quiet.
 			follow(receiveChannel, this.frame, x, y, z);
 			if(!routed)
-				receiveChannel.send(encoder().encode(mixed.pcm()));
+				receiveChannel.send(encoder().encode(toned(mixed.pcm())));
 			else
 				encoder().encode(mixed.pcm()); // Keeps the encoder's state running, so nothing clicks when it comes back.
 			VoiceMix.Signal loudest = mixed.loudest();
@@ -411,6 +434,9 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		private final OpusEncoder encoder;
 		@org.jetbrains.annotations.Nullable
 		private final LinkAudio.Line line;
+		/** A siren's echo off the land round it; null for every other speaker. */
+		@org.jetbrains.annotations.Nullable
+		private final com.arrl.radiocraft.common.radio.voice.SirenEcho echo;
 
 		SpeakerOutput(ServerLevel level, WiredSpeaker speaker) {
 			this(level, speaker, null);
@@ -418,6 +444,8 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 
 		SpeakerOutput(ServerLevel level, WiredSpeaker speaker, @org.jetbrains.annotations.Nullable LinkAudio.Line line) {
 			this.line = line;
+			echo = speaker.kind() == com.arrl.radiocraft.common.radio.voice.SpeakerKind.SIREN
+					? new com.arrl.radiocraft.common.radio.voice.SirenEcho(48000) : null;
 			pos = speaker.pos();
 			channel = RadiocraftVoicePlugin.API.createLocationalAudioChannel(UUID.randomUUID(), level,
 					RadiocraftVoicePlugin.API.createPosition(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D));
@@ -458,7 +486,7 @@ public class BEVoiceReceiver implements IVoiceReceiver {
 		/** Sends a frame as it is (the squelch tail, already at its level). */
 		void send(short[] pcm) {
 			if(channel != null)
-				channel.send(encoder.encode(pcm));
+				channel.send(encoder.encode(echo == null ? pcm : echo.process(pcm)));
 		}
 
 		void close() {

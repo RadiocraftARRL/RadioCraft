@@ -39,6 +39,12 @@ public final class ComputerApps {
 	 * (it was a floppy program, {@code floppy_license}, in the unreleased 1.12 builds before; that item is gone).
 	 */
 	public static final ComputerApp LICENSE = add("license", "STUDY", ComputerApp.Kind.BUILT_IN);
+	/** The LAN (2026-11-13): LAN RELAY chat rooms, kept by a computer set as a relay server. Built in. */
+	public static final ComputerApp RELAY = add("relay", "RELAY", ComputerApp.Kind.BUILT_IN);
+	/** LAN REDSTONE: Computer Redstone blocks, set from this computer or from others on the LAN. Built in. */
+	public static final ComputerApp REDSTONE = add("redstone", "REDSTONE", ComputerApp.Kind.BUILT_IN);
+	/** LAN EMAIL: mail to user@COMPUTER on the LAN, waiting in the outbox for a computer that is away. Built in. */
+	public static final ComputerApp EMAIL = add("email", "EMAIL", ComputerApp.Kind.BUILT_IN);
 
 	// Office programs (step 6).
 	public static final ComputerApp BOOK_EDITOR = add("bookedit", "BOOKEDIT", ComputerApp.Kind.CRAFTED);
@@ -114,7 +120,40 @@ public final class ComputerApps {
 	 */
 	public static final ComputerApp DISTRESS = add("distress", "DISTRESS", ComputerApp.Kind.CRAFTED);
 
+	// Commercial licensing (2026-11-10).
+	/** Spectrum monitoring with a direction finder: who is licensed on the frequency it hears, and UNLICENSED when no one. */
+	public static final ComputerApp FCC = add("fcc", "FCC", ComputerApp.Kind.CRAFTED);
+	/** Fire alarms and SCADA on the radio mesh (2026-11-10): a fire alarm controller's console, and a SCADA master's HMI. */
+	public static final ComputerApp FIRE_ALARM = add("fire_alarm", "FIRE", ComputerApp.Kind.CRAFTED);
+	public static final ComputerApp SCADA = add("scada", "SCADA", ComputerApp.Kind.CRAFTED);
+
+	// Satellites (2026-11-11).
+	/**
+	 * Satellite tracking: every satellite, its next passes over the computer and its decay date; its owner (and the
+	 * players they allow) change its settings while it passes. The floppy comes with a satellite contract.
+	 */
+	public static final ComputerApp SATTRACK = add("sattrack", "SATTRACK", ComputerApp.Kind.CRAFTED);
+	/**
+	 * Weather satellite pictures (2026-11-12): a commercial satellite in imaging mode sends its scan lines down as NOAA's
+	 * APT does; a radio linked to the computer on its downlink copies them, and WXSAT shows the strip coming in, stitches
+	 * passes into a regional mosaic, loops them, saves and prints. A background service: it hears passes with nobody at
+	 * the screen, and feeds the External CRT Monitor.
+	 */
+	public static final ComputerApp WXSAT = add("wxsat", "WXSAT", ComputerApp.Kind.CRAFTED);
+
+	/**
+	 * The background services (2026-11-12): programs that, installed, keep listening with nobody at the computer and
+	 * keep it on (drawing power) to do so. SETUP's "Background services" switch turns that off for one computer: then
+	 * each works only while its program is open on the screen ({@code RadioComputerBlockEntity#serviceRunning}).
+	 */
+	private static final java.util.Set<String> BACKGROUND_SERVICES = java.util.Set.of(DISTRESS.id(), WXSAT.id(), RELAY.id(), EMAIL.id());
+
 	private ComputerApps() {}
+
+	/** True for a background service (DISTRESS, WXSAT); see {@link #BACKGROUND_SERVICES}. */
+	public static boolean isBackgroundService(ComputerApp app) {
+		return app != null && BACKGROUND_SERVICES.contains(app.id());
+	}
 
 	/**
 	 * Adds a program. Its id and command must be new. Call it before the item registry is built (see the class

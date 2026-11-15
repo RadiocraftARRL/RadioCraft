@@ -135,7 +135,7 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 //						packet.setStrength(cwSendCache.get(destination));
 //					else {
 					// Same mismatch loss as voice: a badly matched antenna radiates less of the key-down power too.
-					packet.setStrength(type.getTransmitEfficiency(packet, data, destination.position(), true) * matchEfficiency);
+					packet.setStrength(Math.min(1.0D, type.getTransmitEfficiency(packet, data, destination.position(), true) * matchEfficiency)); // An amplifier can push it past full scale.
 //						cwSendCache.put(destination, packet.getStrength());
 //					}
 
@@ -174,7 +174,7 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 					continue;
 				AntennaDataPacket packet = new AntennaDataPacket(level, payload, band, frequencyHertz, 1.0D, this);
 				packet.setDestination(antenna);
-				packet.setStrength(type.getTransmitEfficiency(packet, data, destination.position(), false) * matchEfficiency); // Same bandwidth as voice.
+				packet.setStrength(Math.min(1.0D, type.getTransmitEfficiency(packet, data, destination.position(), false) * matchEfficiency)); // Same bandwidth as voice.
 				antenna.receiveDataPacket(packet);
 			}
 		}
@@ -201,7 +201,7 @@ public class StaticAntenna<T extends AntennaData> implements IAntenna, INBTSeria
 	 */
 	public double getMatchEfficiency(float frequencyHertz) {
 		AntennaNetworkObject obj = getNetworkObj();
-		return obj != null ? obj.getMatchEfficiency(frequencyHertz) : SWRHelper.getEfficiencyMultiplier(getSWR(frequencyHertz));
+		return obj != null ? obj.getTransmitFactor(frequencyHertz) : SWRHelper.getEfficiencyMultiplier(getSWR(frequencyHertz)); // With coax loss and any amplifier (2026-11-13).
 	}
 
 	@Override

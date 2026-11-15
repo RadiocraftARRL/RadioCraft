@@ -95,8 +95,9 @@ public final class AwardsHandler implements ComputerAppHandler {
 				String call = Callsigns.playerCallsign(context.server(), context.player().getUUID());
 				if(call == null || call.isBlank())
 					call = context.player().getGameProfile().getName();
-				byte[] picture = certificate(progress, call, Logbook.utcDate(System.currentTimeMillis()));
-				ScannerBlockEntity.Result result = scanner.printImage(picture, Awards.title(progress.id()), context.player().getGameProfile().getName(), true);
+				String today = Logbook.utcDate(System.currentTimeMillis());
+				ScannerBlockEntity.Result result = scanner.printImage(certificate(progress, call, today), Awards.title(progress.id()),
+						context.player().getGameProfile().getName(), certificateText(progress, call, today));
 				if(result != ScannerBlockEntity.Result.OK) {
 					reply.error(result.key());
 					return;
@@ -119,9 +120,15 @@ public final class AwardsHandler implements ComputerAppHandler {
 
 	/** The certificate picture for {@code progress}'s level reached. */
 	public static byte[] certificate(Awards.Progress progress, String call, String yyyymmdd) {
+		List<String> t = certificateText(progress, call, yyyymmdd);
+		return AwardCertificate.render(Awards.title(progress.id()), t.get(0), call, t.get(2), t.get(3));
+	}
+
+	/** The certificate's words, as a plain paper print carries them: level, call, date and detail. */
+	public static List<String> certificateText(Awards.Progress progress, String call, String yyyymmdd) {
 		String date = yyyymmdd.length() == 8 ? yyyymmdd.substring(0, 4) + "-" + yyyymmdd.substring(4, 6) + "-" + yyyymmdd.substring(6) : yyyymmdd;
 		String detail = progress.id().equals("distance") ? "LONGEST " + progress.count() + " BLOCKS" : progress.count() + " SO FAR";
-		return AwardCertificate.render(Awards.title(progress.id()), Awards.levelText(progress), call, date, detail);
+		return List.of(Awards.levelText(progress), call, date, detail);
 	}
 
 	private static CompoundTag progressTag(Awards.Progress p) {

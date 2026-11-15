@@ -4,6 +4,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerApps;
@@ -13,6 +14,8 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.List;
 
 /**
  * SYSINFO, the built-in system information program (in the manner of Microsoft Diagnostics): the computer, its disk and
@@ -27,6 +30,10 @@ public final class SysInfoApp extends DosApp {
 
 	public SysInfoApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.refresh", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))))));
 	}
 
 	@Override

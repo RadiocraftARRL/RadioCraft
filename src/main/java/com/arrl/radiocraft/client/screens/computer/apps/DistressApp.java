@@ -5,6 +5,7 @@ import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -30,7 +31,8 @@ import java.util.Set;
 
 /**
  * DISTRESS (2026-11-09): the distress alerts heard by every radio cabled to the computer that can hear them (marine
- * radios' DSC receivers: DSC calls on channel 70; commercial VHF mobiles on 161.975 MHz: distress beacons), merged into
+ * radios' DSC receivers: DSC calls on channel 70; commercial VHF mobiles' beacon receivers, on 161.975 MHz whatever
+ * channel they are on since 2026-11-11: distress beacons), merged into
  * one list; the top right says what it can hear. On the left a map round the station and the alerts (the station's
  * box; DSC calls as red diamonds, beacons as orange rings, flashing while active, grey once over); on the right a list
  * (who: MMSI or the beacon's owner, nature, age, bearing and distance from the station, state), and the one picked in
@@ -62,9 +64,31 @@ public final class DistressApp extends DosApp {
 	private AprsMapPainter.Fit fit;
 	private final byte[][] frames = { new byte[SIZE * SIZE], new byte[SIZE * SIZE] };
 	private boolean dirty = true;
+	private final DosMenuBar menu;
+
+	/**
+	 * A service (2026-11-11): kept running with the screen shut, so the computer keeps watching for alerts; not with
+	 * SETUP's background services off (2026-11-12), when it watches only while open.
+	 */
+	@Override
+	public boolean keepsRunning() {
+		return session.settings().backgroundServices();
+	}
 
 	public DistressApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		menu = new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.distress.print_map", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.distress.ack", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.distress.send_sos", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.distress.cancel_sos", "F8", GLFW.GLFW_KEY_F8))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.distress.previous", "Up", GLFW.GLFW_KEY_UP),
+						item("menu.distress.next", "Down", GLFW.GLFW_KEY_DOWN)))));
+		setMenuBar(menu);
 	}
 
 	@Override
@@ -161,7 +185,7 @@ public final class DistressApp extends DosApp {
 		renderHearing(g, data, bg);
 		renderList(g, bg, now);
 		renderDetails(g, bg);
-		if(terrain != null && fit != null && !hasDialog()) {
+		if(terrain != null && fit != null && !hasDialog() && !menu.isOpen()) { // Pictures are drawn over the text: none under an open menu.
 			if(dirty) {
 				paint(frames[0], true);
 				paint(frames[1], false);
@@ -173,17 +197,19 @@ public final class DistressApp extends DosApp {
 	}
 
 	/**
-	 * What the program can hear (2026-11-09), two lines: "DSC: 1 marine radio" and "BEACONS: 1 radio on 161.975", or
-	 * what is missing, in yellow.
+	 * What the program can hear (2026-11-09), two lines: "DSC: 1 marine radio" and "BEACONS: 1 radio listening on
+	 * 161.975", or what is missing, in yellow. Every commercial VHF mobile that is on listens for beacons (2026-11-11),
+	 * so there is no "tune one to 161.975" any more.
 	 */
 	private static void renderHearing(TextGrid g, CompoundTag data, int bg) {
 		int marines = data.getInt("marines"), marinesOn = data.getInt("marinesOn");
 		String dsc = marinesOn > 0 ? Dos.tr("distress.hear.dsc", marinesOn) : marines > 0 ? Dos.tr("distress.hear.dsc_off") : Dos.tr("distress.hear.dsc_none");
 		int commercials = data.getInt("commercials"), commercialsOn = data.getInt("commercialsOn"), beacon = data.getInt("beaconRadios");
-		String beacons = beacon > 0 ? Dos.tr("distress.hear.beacons", beacon) : commercialsOn > 0 ? Dos.tr("distress.hear.beacons_tune")
+		int listening = Math.max(beacon, commercialsOn);
+		String beacons = listening > 0 ? Dos.tr("distress.hear.beacons", listening)
 				: commercials > 0 ? Dos.tr("distress.hear.beacons_off") : Dos.tr("distress.hear.beacons_none");
 		g.put(36, 3, Dos.fit(dsc, 41), marinesOn > 0 ? DosColours.LIGHT_GREEN : DosColours.YELLOW, bg);
-		g.put(36, 4, Dos.fit(beacons, 41), beacon > 0 ? DosColours.LIGHT_GREEN : DosColours.YELLOW, bg);
+		g.put(36, 4, Dos.fit(beacons, 41), listening > 0 ? DosColours.LIGHT_GREEN : DosColours.YELLOW, bg);
 	}
 
 	/**

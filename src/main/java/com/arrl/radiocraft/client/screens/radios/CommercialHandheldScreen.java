@@ -10,12 +10,14 @@ import com.arrl.radiocraft.common.radio.commercial.CommercialProgram;
 import com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -33,6 +35,11 @@ import java.util.Locale;
  * down and up through three zones before), <b>*</b> shows the radio's unit ID and <b>#</b> the channel's frequency for
  * a few seconds (they were on A and D). The number keys beep and do nothing more. There is nothing to program here: a radio shop does that (CPS or the Radio Cloner). Hold right click
  * with the radio in hand to talk, as always.
+ * <p>
+ * Distress beacons (2026-11-11): the radio's built-in receiver on 161.975 MHz hears them whatever channel it is on
+ * ({@link CommercialHandheldItem#hearBeacon}). While an alert is on the item, "DISTRESS SOS RX x, y, z" runs across the
+ * LCD (on the basic radio, which has none, across a plate beside it) with whose beacon it is under it, and a DISMISS
+ * button beside the radio takes it off ({@link SCommercialRadioPacket#DISMISS}).
  * <p>
  * The texture regions are those of tools/commercial_handheld_models.py.
  */
@@ -65,6 +72,7 @@ public class CommercialHandheldScreen extends Screen {
 	private int pressedKey = -1, pressedTicks = 0;
 	private String info = null;
 	private int infoTicks = 0;
+	private Button dismiss; // Shown while a beacon alert is on the radio (2026-11-11).
 
 	public CommercialHandheldScreen(int index) {
 		super(Component.translatable(Radiocraft.translationKey("screen", "commercial_handheld.title")));
@@ -97,6 +105,23 @@ public class CommercialHandheldScreen extends Screen {
 		super.init();
 		left = (width - WIDTH) / 2;
 		top = (height - height()) / 2;
+		dismiss = addRenderableWidget(Button.builder(Component.translatable(Radiocraft.translationKey("screen", "commercial.dismiss")), button -> dismissDistress())
+				.bounds(left + BODY_X + BODY_W + 8, top + BODY_TOP + 66 + 30, 64, 20).build());
+		dismiss.visible = distressLines() != null;
+	}
+
+	/** The beacon alert's lines while one is on the radio, else null. */
+	@org.jetbrains.annotations.Nullable
+	private List<String> distressLines() {
+		return CommercialHandheldItem.distressLines(stack());
+	}
+
+	/** DISMISS: the alert off the screen, at once here and on the server. */
+	private void dismissDistress() {
+		if(!CommercialHandheldItem.dismissDistress(stack()))
+			return;
+		SCommercialRadioPacket.dismiss(index);
+		click(1.0F);
 	}
 
 	// ---- The knobs on top of the drawn radio -----------------------------------------------------------------------
@@ -274,6 +299,8 @@ public class CommercialHandheldScreen extends Screen {
 			pressedKey = -1;
 		if(infoTicks > 0 && --infoTicks == 0)
 			info = null;
+		if(dismiss != null)
+			dismiss.visible = distressLines() != null;
 		if(!CommercialHandheldItem.is(stack()))
 			onClose(); // The radio left that slot.
 	}
@@ -339,6 +366,9 @@ public class CommercialHandheldScreen extends Screen {
 			lamp(graphics, bx + 8, by + 60, tx ? TX_ON : LED_OFF, "TX");
 			lamp(graphics, bx + 16, by + 60, rx ? RX_ON : LED_OFF, "RX");
 			lamp(graphics, bx + 24, by + 60, on ? POWER_ON : LED_OFF, "ON");
+			List<String> distress = distressLines();
+			if(distress != null && on) // No LCD on the basic radio: the alert runs across a plate beside it.
+				renderDistressPlate(graphics, distress, bx + BODY_W + 8, by + 66);
 		}
 
 		// Each knob's mark (where it points), then the readout of the one being turned.
@@ -406,6 +436,14 @@ public class CommercialHandheldScreen extends Screen {
 			graphics.fill(x, y, x + 64, y + 24, 0xB0283020); // Off: the glass goes dark.
 			return;
 		}
+		List<String> distress = distressLines();
+		if(distress != null) { // A beacon alert takes the LCD until dismissed: "DISTRESS SOS RX x, y, z" running across, whose under it.
+			String running = com.arrl.radiocraft.client.render.Marquee.window(font, distress.getFirst(), 62, net.minecraft.Util.getMillis());
+			graphics.drawString(font, running, x + 1, y + 3, LCD_INK, false);
+			if(distress.size() > 1)
+				smallLine(graphics, font.plainSubstrByWidth(distress.get(1), 80), x + 2, y + 15, LCD_INK);
+			return;
+		}
 		CommercialChannel channel = program.active();
 		String name = channel == null ? "-- NO CH --" : channel.name().isEmpty() ? String.format(Locale.ROOT, "%.4f", channel.rxHz() / 1e6) : channel.name();
 		String caller = tx ? null : com.arrl.radiocraft.client.CallerIds.callerText(program, channel); // Who is talking: alias or unit ID.
@@ -423,5 +461,24 @@ public class CommercialHandheldScreen extends Screen {
 		graphics.drawString(font, where, 0, 0, LCD_INK, false);
 		graphics.drawString(font, mode, (int)(60 / 0.75F) - font.width(mode), 0, LCD_INK, false);
 		graphics.pose().popPose();
+	}
+
+	/** One line at three quarters size, as the LCD's lower line. */
+	private void smallLine(GuiGraphics graphics, String text, int x, int y, int colour) {
+		graphics.pose().pushPose();
+		graphics.pose().translate(x, y, 0.0F);
+		graphics.pose().scale(0.75F, 0.75F, 1.0F);
+		graphics.drawString(font, text, 0, 0, colour, false);
+		graphics.pose().popPose();
+	}
+
+	/** The basic radio's distress plate (64 x 24 at x, y), lit like the upgraded radio's LCD, the alert running across it. */
+	private void renderDistressPlate(GuiGraphics graphics, List<String> distress, int x, int y) {
+		graphics.fill(x - 1, y - 1, x + 65, y + 25, 0xFF101012);
+		graphics.fill(x, y, x + 64, y + 24, 0xFF9DB07A);
+		String running = com.arrl.radiocraft.client.render.Marquee.window(font, distress.getFirst(), 62, net.minecraft.Util.getMillis());
+		graphics.drawString(font, running, x + 1, y + 3, LCD_INK, false);
+		if(distress.size() > 1)
+			smallLine(graphics, font.plainSubstrByWidth(distress.get(1), 80), x + 2, y + 15, LCD_INK);
 	}
 }

@@ -14,6 +14,9 @@ public final class RadioApps {
 
 	public static void register() {
 		ComputerAppHandlers.register(ComputerApps.APRS, new AprsHandler());
+		ComputerAppHandlers.register(ComputerApps.RELAY, new RelayHandler()); // The LAN (2026-11-13).
+		ComputerAppHandlers.register(ComputerApps.EMAIL, new EmailHandler());
+		ComputerAppHandlers.register(ComputerApps.REDSTONE, new RedstoneHandler());
 		ComputerAppHandlers.register(ComputerApps.WEFAX, new WefaxHandler());
 		ComputerAppHandlers.register(ComputerApps.RADIO_FAX, new FaxHandler());
 		ComputerAppHandlers.register(ComputerApps.SSTV, new SstvHandler());
@@ -33,5 +36,10 @@ public final class RadioApps {
 		ComputerAppHandlers.register(ComputerApps.AWARDS, new AwardsHandler());
 		ComputerAppHandlers.register(ComputerApps.QSL, new QslHandler());
 		ComputerAppHandlers.register(ComputerApps.DISTRESS, new DistressHandler()); // Distress alerting (2026-11-09).
+		ComputerAppHandlers.register(ComputerApps.FCC, new FccHandler()); // Commercial licensing (2026-11-10).
+		ComputerAppHandlers.register(ComputerApps.FIRE_ALARM, new FireAlarmHandler()); // The radio mesh (2026-11-10).
+		ComputerAppHandlers.register(ComputerApps.SCADA, new ScadaHandler());
+		ComputerAppHandlers.register(ComputerApps.SATTRACK, new SatTrackHandler()); // Satellites (2026-11-11).
+		ComputerAppHandlers.register(ComputerApps.WXSAT, new WxSatHandler()); // Weather satellite pictures (2026-11-12).
 	}
 }

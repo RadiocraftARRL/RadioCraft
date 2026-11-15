@@ -19,4 +19,10 @@ public class RadiocraftRecipeSerializers {
 	/** A ham radio plus a MARS mod: the radio, transmitting out of band (see {@link com.arrl.radiocraft.common.radio.BandEdges}). */
 	public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<com.arrl.radiocraft.common.crafting.MarsModInstallRecipe>> MARS_MOD_INSTALL = RECIPE_SERIALIZERS.register(
 			"mars_mod_install", () -> new SimpleCraftingRecipeSerializer<>(com.arrl.radiocraft.common.crafting.MarsModInstallRecipe::new));
+	/** A commercial license and an upgrade (2026-11-10). */
+	public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<com.arrl.radiocraft.common.crafting.LicenseUpgradeRecipe>> LICENSE_UPGRADE = RECIPE_SERIALIZERS.register(
+			"license_upgrade", () -> new SimpleCraftingRecipeSerializer<>(com.arrl.radiocraft.common.crafting.LicenseUpgradeRecipe::new));
+	/** A commercial license and an empty map: a copy, the original given back (2026-11-10). */
+	public static final DeferredHolder<RecipeSerializer<?>, SimpleCraftingRecipeSerializer<com.arrl.radiocraft.common.crafting.LicenseCopyRecipe>> LICENSE_COPY = RECIPE_SERIALIZERS.register(
+			"license_copy", () -> new SimpleCraftingRecipeSerializer<>(com.arrl.radiocraft.common.crafting.LicenseCopyRecipe::new));
 }

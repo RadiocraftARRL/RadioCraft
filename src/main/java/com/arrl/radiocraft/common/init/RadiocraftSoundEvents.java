@@ -45,4 +45,13 @@ public class RadiocraftSoundEvents {
 	/** One short beep: the DISTRESS button's countdown, and a DSC burst or beacon alert going out. */
 	public static Supplier<SoundEvent> DSC_BEEP = SOUND_EVENTS.register("dsc_beep", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("dsc_beep"), 12.0F));
 
+	/** A fire alarm box's or SCADA device's data burst: a short quiet chirp, not an APRS burst (2026-11-10, {@code tools/mesh_sounds.py}). */
+	public static Supplier<SoundEvent> MESH_CHIRP = SOUND_EVENTS.register("mesh_chirp", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("mesh_chirp"), 12.0F));
+	/** A fire alarm controller's trouble buzzer: one short buzz, sounded every second until acknowledged. */
+	/** A fire bell's ring: half a second of the striker on the gong, played again while it is powered (2026-11-11). */
+	public static Supplier<SoundEvent> FIRE_BELL = SOUND_EVENTS.register("fire_bell", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("fire_bell"), 32.0F));
+	public static Supplier<SoundEvent> FIRE_ALARM_BUZZER = SOUND_EVENTS.register("fire_alarm_buzzer", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("fire_alarm_buzzer"), 24.0F));
+	/** A fire alarm controller's printer printing a slip. */
+	public static Supplier<SoundEvent> FIRE_ALARM_PRINTER = SOUND_EVENTS.register("fire_alarm_printer", () -> SoundEvent.createFixedRangeEvent(Radiocraft.id("fire_alarm_printer"), 12.0F));
+
 }

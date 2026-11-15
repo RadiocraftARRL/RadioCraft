@@ -75,6 +75,18 @@ public final class SetupLang {
 		s.accept("setup.page.name_clock", "Name and Clock");
 		s.accept("setup.read_only", "Only the owner or an operator can change these settings.");
 		s.accept("setup.saved", "Setup saved: it stays with this computer");
+		// Background services (2026-11-12).
+		s.accept("setup.page.services", "Services");
+		s.accept("setup.services.intro", "Programs that work with nobody at the computer:");
+		s.accept("setup.services", "Background services");
+		s.accept("setup.services.on", "On");
+		s.accept("setup.services.off", "Off");
+		s.accept("setup.services.installed", "Installed here: %s");
+		s.accept("setup.services.none", "none");
+		s.accept("setup.services.about_on", "On: DISTRESS and WXSAT listen all the time, with the screen shut, and a LAN RELAY server keeps its room open; they keep the computer on (drawing power) to do it. An External CRT Monitor on the computer stays lit.");
+		s.accept("setup.services.about_off", "Off: the computer goes dark when nobody is at it. DISTRESS and WXSAT listen only while their program is open on the screen, a LAN RELAY server closes its room, and an External CRT Monitor on the computer lights only while someone is at it.");
+		s.accept("setup.services.off_title", "Background services");
+		s.accept("setup.services.off_warning", "While background services are off, this computer cannot receive distress alerts, weather satellite passes and the like unless you are in that program. A personal SOS keeps going until you end it. Turn them off?");
 		s.accept("setup.launcher.intro", "How the computer shows its programs:");
 		s.accept("setup.launcher.list", "RC-DOS Shell (list)");
 		s.accept("setup.launcher.list.about", "Programs on the left, files on the right.");

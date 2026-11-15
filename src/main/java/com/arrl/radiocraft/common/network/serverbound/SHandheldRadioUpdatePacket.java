@@ -25,8 +25,10 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
     float ctcssTone;
     int offsetHz;
     float rxTone;
+    int tuneStep; // The dial's STEP, Hz (0 for the server's), 2026-11-14.
 
-    public SHandheldRadioUpdatePacket(int index, boolean powered, boolean ptt, float gain, float micGain, float frequencyHertz, float ctcssTone, int offsetHz, float rxTone) {
+    public SHandheldRadioUpdatePacket(int index, boolean powered, boolean ptt, float gain, float micGain, float frequencyHertz, float ctcssTone, int offsetHz, float rxTone, int tuneStep) {
+        this.tuneStep = tuneStep;
         this.index = index;
         this.powered = powered;
         this.ptt = ptt;
@@ -50,6 +52,7 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
         this.ctcssTone = buf.readFloat();
         this.offsetHz = buf.readInt();
         this.rxTone = buf.readFloat();
+        this.tuneStep = buf.readInt();
     }
 
     private void write(ByteBuf buf) {
@@ -61,6 +64,7 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
         buf.writeFloat(ctcssTone);
         buf.writeInt(offsetHz);
         buf.writeFloat(rxTone);
+        buf.writeInt(tuneStep);
     }
 
     public float getFrequencyHertz() {
@@ -128,11 +132,12 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
             cap.setCtcssTone(this.ctcssTone);
             cap.setOffsetHz(this.offsetHz);
             cap.setRxTone(this.rxTone);
+            cap.setTuneStepHz(com.arrl.radiocraft.common.radio.TuningStep.sanitize(this.tuneStep));
 
         });
     }
 
     public static void updateServer(int inventoryIndex, IVHFHandheldCapability cap) {
-        PacketDistributor.sendToServer(new SHandheldRadioUpdatePacket(inventoryIndex, cap.isPowered(), cap.isPTTDown(), cap.getGain(), cap.getMicGain(), cap.getFrequencyHertz(), cap.getCtcssTone(), cap.getOffsetHz(), cap.getRxTone()));
+        PacketDistributor.sendToServer(new SHandheldRadioUpdatePacket(inventoryIndex, cap.isPowered(), cap.isPTTDown(), cap.getGain(), cap.getMicGain(), cap.getFrequencyHertz(), cap.getCtcssTone(), cap.getOffsetHz(), cap.getRxTone(), cap.getTuneStepHz()));
     }
 }

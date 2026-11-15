@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.radio.data.AprsIcon;
@@ -49,6 +50,31 @@ public final class AprsApp extends DosApp {
 		super(session, app);
 		stations.onActivate(index -> compose(callOf(index), ""));
 		messages.onActivate(index -> reply());
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.aprs.clear", "F8", GLFW.GLFW_KEY_F8),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.aprs.stations", "", () -> showPage(STATIONS)),
+						item("menu.aprs.messages", "", () -> showPage(MESSAGES)),
+						item("menu.aprs.map", "", () -> showPage(MAP)),
+						item("menu.aprs.next_page", "Tab", GLFW.GLFW_KEY_TAB))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.aprs.beacon", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.aprs.compose", "N", () -> onChar('N')),
+						item("menu.aprs.reply", "R", () -> onChar('R')),
+						item("menu.aprs.settings", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.aprs.callsign", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.aprs.pick_radio", "F9", GLFW.GLFW_KEY_F9))))));
+	}
+
+	/** Shows page {@code to} (the View menu), as clicking its tab does. */
+	private void showPage(int to) {
+		page = to;
+		if(page == MAP)
+			refreshMap();
+		if(page == MESSAGES)
+			refresh();
 	}
 
 	@Override

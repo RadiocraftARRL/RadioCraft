@@ -6,6 +6,7 @@ import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -74,6 +75,25 @@ public final class LicenseStudyApp extends DosApp {
 	public LicenseStudyApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		poolList.onActivate(i -> startStudy());
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does on the page it works on. F10 grades.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.back", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page != Page.MENU),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == Page.MENU))),
+				new DosMenuBar.Menu(Dos.tr("menu.study.pool"), List.of(
+						item("menu.study.study", "S", GLFW.GLFW_KEY_S).when(() -> page == Page.MENU),
+						item("menu.study.exam", "E", GLFW.GLFW_KEY_E).when(() -> page == Page.MENU),
+						item("menu.study.progress", "P", GLFW.GLFW_KEY_P).when(() -> page == Page.MENU || page == Page.STUDY),
+						item("menu.study.reset", "R", GLFW.GLFW_KEY_R).when(() -> page == Page.PROGRESS))),
+				new DosMenuBar.Menu(Dos.tr("menu.study.question"), List.of(
+						item("menu.study.dont_know", "I", GLFW.GLFW_KEY_I).when(() -> page == Page.STUDY && chosen == -2),
+						item("menu.study.next_card", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> page == Page.STUDY && chosen != -2 && correct >= 0),
+						item("menu.previous", "PgUp", GLFW.GLFW_KEY_PAGE_UP).when(() -> page == Page.EXAM && !exam.isEmpty()),
+						item("menu.next", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN).when(() -> page == Page.EXAM && !exam.isEmpty()),
+						item("menu.study.first", "Home", GLFW.GLFW_KEY_HOME).when(() -> page == Page.EXAM && !exam.isEmpty()),
+						item("menu.study.last", "End", GLFW.GLFW_KEY_END).when(() -> page == Page.EXAM && !exam.isEmpty()),
+						item("menu.study.grade", "F10", GLFW.GLFW_KEY_F10).when(() -> page == Page.EXAM && !exam.isEmpty() && examCorrect == null),
+						item("menu.study.next_wrong", "W", GLFW.GLFW_KEY_W).when(() -> page == Page.EXAM && !exam.isEmpty() && examCorrect != null)))))
+				.withoutF10());
 	}
 
 	@Override

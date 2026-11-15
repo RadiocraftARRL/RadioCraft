@@ -1,0 +1,176 @@
+package com.arrl.radiocraft.datagen.lang;
+
+import com.arrl.radiocraft.common.init.RadiocraftItems;
+import net.neoforged.neoforge.common.data.LanguageProvider;
+
+import java.util.function.BiConsumer;
+
+/** Satellites (2026-11-11; modes, telemetry, Doppler and eclipses 2026-11-12): the contracts and license, their messages, the admin command and SATTRACK. */
+public final class SatelliteLang {
+
+	private SatelliteLang() {}
+
+	public static void add(LanguageProvider provider) {
+		provider.addItem(RadiocraftItems.AMATEUR_SATELLITE_CONTRACT, "Amateur Satellite Contract");
+		provider.addItem(RadiocraftItems.COMMERCIAL_SATELLITE_CONTRACT, "Commercial Satellite Contract");
+		provider.addItem(RadiocraftItems.AMATEUR_GEOSTATIONARY_CONTRACT, "Amateur Geostationary Satellite Contract");
+		provider.addItem(RadiocraftItems.COMMERCIAL_GEOSTATIONARY_CONTRACT, "Commercial Geostationary Satellite Contract");
+		provider.addItem(RadiocraftItems.SATELLITE_LICENSE, "Satellite License");
+		provider.add("item.radiocraft.satellite_license.named", "Satellite License: %s");
+
+		BiConsumer<String, String> t = (key, text) -> provider.add("tooltip.radiocraft." + key, text);
+		t.accept("amateur_satellite_contract", "Right-click to put an amateur satellite on orbit in your name: an FM repeater on 2m that can also be an APRS digipeater, a mailbox or an SSTV sender, with a telemetry beacon. Comes with its satellite license and the SATTRACK floppy.");
+		t.accept("commercial_satellite_contract", "Right-click to put a commercial satellite on orbit in your name: an FM repeater on a commercial VHF pair that can also image the weather, with a telemetry beacon. Comes with its satellite license and the SATTRACK floppy.");
+		t.accept("amateur_geostationary_contract", "Right-click to park an amateur satellite in geostationary orbit in your name: it stays put in the sky, its coverage centred on where you use this. Everything an amateur satellite does, with half the delay, but its orbit decays twice as fast.");
+		t.accept("commercial_geostationary_contract", "Right-click to park a commercial satellite in geostationary orbit in your name: it stays put in the sky, its coverage and its weather pictures centred on where you use this. Everything a commercial satellite does, with half the delay, but its orbit decays twice as fast.");
+		t.accept("satellite_license.blank", "Issued with a satellite.");
+		t.accept("satellite_license.amateur", "Amateur satellite");
+		t.accept("satellite_license.commercial", "Commercial satellite");
+		t.accept("satellite_license.uplink", "Uplink: %s MHz");
+		t.accept("satellite_license.downlink", "Downlink: %s MHz");
+		t.accept("satellite_license.telemetry", "Telemetry: %s MHz");
+		t.accept("satellite_license.tone", "Tone at launch: %s Hz");
+		t.accept("satellite_license.holder", "Licensee: %s");
+		t.accept("satellite_license.launched", "Launched %s");
+
+		BiConsumer<String, String> m = (key, text) -> provider.add("message.radiocraft.satellite." + key, text);
+		m.accept("launched", "%s is on orbit: uplink %s MHz, downlink %s MHz, telemetry %s MHz, tone %s Hz. Its licenses and the SATTRACK floppy are in your inventory; SATTRACK shows when it passes over.");
+		m.accept("no_pair", "No free frequencies are left for a new satellite.");
+		m.accept("geostationary", "%s is parked in geostationary orbit, pointing at %s, %s: it is always up within 5,000 blocks of there and never anywhere else.");
+
+		BiConsumer<String, String> c = (key, text) -> provider.add("commands.radiocraft.satellite." + key, text);
+		c.accept("none", "No satellites on orbit");
+		c.accept("line", "%s: up %s, down %s, telemetry %s MHz, tone %s, %s, owner %s, %s days left, %s, %s");
+		c.accept("added", "Launched a satellite for %s");
+		c.accept("removed", "%s is off orbit");
+		c.accept("decayed", "%s's orbit decayed: it burned up over %s players");
+		c.accept("unknown", "No satellite called %s");
+		c.accept("overhead", "%s rises now and passes over you, setting in %s minutes");
+		c.accept("eclipse", "%s is in the Earth's shadow on a flat battery for %s minutes");
+
+		BiConsumer<String, String> s = (key, text) -> provider.add("screen.radiocraft.computer." + key, text);
+		s.accept("app.sattrack", "Satellite Tracking");
+		s.accept("app.sattrack.description", "Every satellite, its next passes over the computer and its decay date; control yours while it passes.");
+		s.accept("err.sat_unknown", "There is no satellite %s any more");
+		s.accept("err.sat_not_yours", "Only %s's owner and the players it allows can change it");
+		s.accept("err.sat_not_passing", "%s is below the horizon: wait until it passes over");
+		s.accept("err.sat_allow_failed", "Could not add %s (already on the list, or the list is full)");
+		s.accept("err.sat_not_allowed", "%s is not on the list");
+		s.accept("err.sat_no_modes", "%s is a commercial satellite: it only repeats or images");
+		s.accept("err.sat_no_imaging", "%s is an amateur satellite: only commercial satellites image the weather");
+		s.accept("err.sat_aprs_bad", "%s MHz is not on 2m (144 to 148 MHz)");
+		s.accept("err.sat_decommissioned", "%s is decommissioned: it takes no more commands");
+		s.accept("err.sat_owner_only", "Only %s's owner can decommission it");
+		s.accept("err.sat_stealth_commercial", "%s is an amateur satellite: stealth mode is for commercial ones");
+		s.accept("err.sat_no_tracker", "No satellite tracking antenna on this station's radios");
+		s.accept("sat.moon_state", "EME");
+		s.accept("sat.moon_down", "below");
+		s.accept("sat.moon_down_long", "Below the horizon: back at dusk");
+		s.accept("sat.moon_title", "THE MOON  passive reflector (EME)");
+		s.accept("sat.moon_help1", "Moonbounce: CW on 2m through a tracking");
+		s.accept("sat.moon_help2", "antenna locked on the Moon. It comes back");
+		s.accept("sat.moon_help3", "2.5 s later, very weak and fading, to every");
+		s.accept("sat.moon_help4", "station on the Moon - your own echo too.");
+		s.accept("sat.track_key", "T=Track with this station's antenna");
+		s.accept("sat.track_turning", "Antenna turning to it (T=automatic)");
+		s.accept("sat.track_locked", "Antenna LOCKED ON (T=automatic)");
+		s.accept("sat.stealth", "STEALTH");
+		s.accept("sat.stealth_short", "STL");
+		s.accept("sat.stealth_hidden", "Stealth mode: details for its owner only");
+		s.accept("sat.stealth_on", "Stealth: heard only through a tracker locked on it");
+		s.accept("sat.stealth_key_on", "S=Stealth on (needs a tracker on it)");
+		s.accept("sat.stealth_key_off", "S=Stealth off");
+		s.accept("err.sat_stealth_no_tracker", "Stealth needs a satellite tracking antenna on this station locked on %s");
+		s.accept("sat.title", "SATTRACK - Satellite Tracking");
+		s.accept("sat.keys", "F7=On/Off F3=ID F4=Tone F5/F6=Allow/Remove F8=Mode F9=APRS F10=Picture");
+		s.accept("sat.reading", "Reading the orbits...");
+		s.accept("sat.list", "Satellites");
+		s.accept("sat.detail", "Satellite");
+		s.accept("sat.view_image", "Image");
+		s.accept("sat.view_location", "Location");
+		s.accept("sat.art.moon", "The Moon");
+		s.accept("sat.art.cube", "polished cube, four whips");
+		s.accept("sat.art.drum", "square drum, solar cells");
+		s.accept("sat.art.spinner", "spinner, stepped cone");
+		s.accept("sat.art.small_cube", "small cube, six rods");
+		s.accept("sat.art.winged", "box with two solar wings");
+		s.accept("sat.art.cubesat", "cubesat");
+		s.accept("sat.loc_rises", "Out of view: in view again in %s");
+		s.accept("sat.loc_track", "This time round it passes %s blocks off");
+		s.accept("sat.loc_miss", "This time round it passes too far off to hear");
+		s.accept("sat.loc_geo", "Geostationary: it stays where it is");
+		s.accept("sat.loc_moon", "Up while above the horizon");
+		s.accept("sat.loc_key", "Lighter: in view from here.  Dark: out of view");
+		s.accept("sat.none", "No satellites on orbit");
+		s.accept("sat.none_hint1", "Master cartographers sell satellite contracts,");
+		s.accept("sat.none_hint2", "64 emeralds and a diamond. Right-click one to");
+		s.accept("sat.none_hint3", "put a satellite on orbit.");
+		s.accept("sat.not_overworld", "Satellites only pass over the Overworld");
+		s.accept("sat.in", "in %s");
+		s.accept("sat.amateur", "Amateur");
+		s.accept("sat.commercial", "Commercial");
+		s.accept("sat.on", "ON");
+		s.accept("sat.off", "OFF");
+		s.accept("sat.freqs3", "Up %s  Down %s  Tlm %s MHz");
+		s.accept("sat.tone_id", "Tone %s Hz   ID %s");
+		s.accept("sat.owner_allowed", "Owner %s  Allowed: %s");
+		s.accept("sat.mode_repeater", "Mode: REPEATER (F8: APRS, MAILBOX, SSTV)");
+		s.accept("sat.mode_commercial", "Mode: REPEATER (F8: weather IMAGING)");
+		s.accept("sat.mode_imaging", "Mode: IMAGING, weather pictures on its downlink");
+		s.accept("sat.mode_aprs", "Mode: APRS digipeater on %s MHz");
+		s.accept("sat.aprs_warn", "NOT RECOMMENDED (terrestrial APRS)");
+		s.accept("sat.mode_mailbox", "Mode: MAILBOX, %s messages stored");
+		s.accept("sat.mode_sstv", "Mode: SSTV, sending %s");
+		s.accept("sat.mode_sstv_none", "Mode: SSTV, no picture yet (F10)");
+		s.accept("sat.doppler", "Doppler %s kHz");
+		s.accept("sat.eclipse", "ECLIPSE: in Earth's shadow, battery flat");
+		s.accept("sat.tlm_head", "Telemetry, heard %s ago:");
+		s.accept("sat.tlm_line", "%sV %sA %sC %s %s %sd");
+		s.accept("sat.tlm_sun", "SUN");
+		s.accept("sat.tlm_shadow", "SHADOW");
+		s.accept("sat.tlm_low", "BATTERY LOW after an eclipse: SAFE mode");
+		s.accept("sat.tlm_saving", "POWER SAVING: eclipsed, battery flat");
+		s.accept("sat.tlm_decay", "OWNER: its orbit decays in %s days");
+		s.accept("sat.tlm_none", "No telemetry heard: tune a radio to %s");
+		s.accept("sat.decay", "Launched %s, decays in %s days");
+		s.accept("sat.decay_warn", "Launched %s: ORBIT DECAYING, %s days left");
+		s.accept("sat.now_up", "Passing now: elevation %s, to the %s");
+		s.accept("sat.now_down", "Below the horizon");
+		s.accept("sat.passes_head", "Rises in   Max el  From  Up for");
+		s.accept("sat.now", "NOW");
+		s.accept("sat.yours_up", "Yours, and passing: F3-F7 change it");
+		s.accept("sat.yours_up_imaging", "Yours, and passing: F3-F8 change it");
+		s.accept("sat.yours_up_modes", "Yours, and passing: F3-F10 change it");
+		s.accept("sat.yours_wait", "Yours: change it while it passes over");
+		s.accept("sat.anyone", "Anyone may use it: its uplink with its tone");
+		s.accept("sat.id_title", "ID text");
+		s.accept("sat.id_prompt", "What it sends in Morse after an over:");
+		s.accept("sat.tone_title", "Tone");
+		s.accept("sat.tone_prompt", "CTCSS tone in Hz it needs on its uplink (0 for none):");
+		s.accept("sat.tone_bad", "Not a tone");
+		s.accept("sat.allow_title", "Allow a player");
+		s.accept("sat.disallow_title", "Take a player off");
+		s.accept("sat.player_prompt", "Player name:");
+		s.accept("sat.aprs_title", "APRS frequency");
+		s.accept("sat.aprs_prompt", "MHz on 2m it digipeats on (blank: its downlink):");
+		s.accept("sat.aprs_bad", "Not a frequency");
+		s.accept("sat.image_title", "SSTV picture");
+		s.accept("sat.image_prompt", "An .IMG on this computer to send in SSTV mode:");
+		// Geostationary satellites and decommissioning (2026-11-12).
+		s.accept("sat.geo", "GEO");
+		s.accept("sat.geo_never", "NEVER UP");
+		s.accept("sat.geo_up", "Geostationary: always up here, el %s to the %s");
+		s.accept("sat.geo_down", "Geostationary: never up from here");
+		s.accept("sat.geo_passes", "No passes: it stays put in the sky");
+		s.accept("sat.dead", "DEAD");
+		s.accept("sat.decommissioned", "DECOMMISSIONED: silent, frequencies released");
+		s.accept("sat.decommissioned_decay", "Tumbling until its orbit decays in %s days");
+		s.accept("sat.yours_up_decom", "Yours, passing: F3-F10 change it, DEL ends it");
+		s.accept("sat.yours_up_decom_imaging", "Yours, passing: F3-F8 change it, DEL ends it");
+		s.accept("sat.decom_title", "Decommission");
+		s.accept("sat.decom_ask", "Decommission %s? It stops repeating, beaconing, relaying and imaging for good, and its frequencies go back to the pool. It stays on orbit, dark, until its orbit decays.");
+		s.accept("sat.decom_final_title", "FINAL WARNING");
+		s.accept("sat.decom_final", "This cannot be undone. %s will never transmit again and its frequencies may go to someone else. Decommission %s now?");
+		s.accept("sat.decom_done", "%s is decommissioned");
+	}
+}

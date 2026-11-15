@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "radiocraft:commercial_mobile"
+    },
+    "D": {
+      "item": "radiocraft:data_wire"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "minecraft:tinted_glass"
+    },
+    "R": {
+      "item": "radiocraft:scada_rtu"
+    }
+  },
+  "pattern": [
+    "IMI",
+    "BRB",
+    "IDI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:scada_master"
+  }
+}

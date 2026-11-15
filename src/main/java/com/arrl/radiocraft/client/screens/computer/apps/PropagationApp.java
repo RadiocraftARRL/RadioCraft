@@ -5,6 +5,7 @@ import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -48,6 +49,15 @@ public final class PropagationApp extends DosApp {
 
 	public PropagationApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.prop.save", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.print", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.prop.target"), List.of(
+						item("menu.prop.predict", "Enter", GLFW.GLFW_KEY_ENTER),
+						item("menu.prop.kind", "Tab", GLFW.GLFW_KEY_TAB),
+						item("menu.prop.pick", "F5", GLFW.GLFW_KEY_F5))))));
 	}
 
 	@Override

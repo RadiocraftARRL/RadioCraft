@@ -927,6 +927,174 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('O', RadiocraftItems.COAX_WIRE.get())
                 .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
                 .save(recipeOutput);
+        // Approved 2026-11-13.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.LINEAR_AMPLIFIER.get(), 1)
+                .pattern("GGG")
+                .pattern("BFB")
+                .pattern("ICI")
+                .define('G', Items.GOLD_INGOT) // The tubes.
+                .define('B', RadiocraftItems.ALL_BAND_CIRCUIT_BOARD.get()) // Two: it should cost.
+                .define('F', RadiocraftItems.FERRITE_CORE.get()) // The tank coil.
+                .define('I', Items.IRON_INGOT)
+                .define('C', RadiocraftItems.COAX_WIRE.get())
+                .unlockedBy("has_all_band_circuit_board", has(RadiocraftItems.ALL_BAND_CIRCUIT_BOARD.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.COMPUTER_REDSTONE.get(), 1)
+                .pattern("SLS")
+                .pattern("DCD")
+                .pattern("SSS")
+                .define('S', Items.SMOOTH_STONE)
+                .define('L', Items.REDSTONE_LAMP)
+                .define('D', RadiocraftItems.DATA_WIRE.get())
+                .define('C', Items.COMPARATOR)
+                .unlockedBy("has_data_wire", has(RadiocraftItems.DATA_WIRE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.SCADA_RTU.get(), 1)
+                .pattern("IRI")
+                .pattern("CBC")
+                .pattern("IDI")
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.LIGHTNING_ROD) // Its built-in antenna.
+                .define('C', Items.COMPARATOR) // Reads and sets levels.
+                .define('B', RadiocraftItems.COMMERCIAL_MOBILE.get()) // Its radio: the mesh is on commercial VHF.
+                .define('D', RadiocraftItems.DATA_WIRE.get())
+                .unlockedBy("has_commercial_mobile", has(RadiocraftItems.COMMERCIAL_MOBILE.get()))
+                .save(recipeOutput);
+        // Approved 2026-11-13: pull stations, outdoor pull boxes (yellow and white by dyeing a red one), panic button.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.PULL_STATION.get(), 1)
+                .pattern(" R ")
+                .pattern("ILI")
+                .pattern(" D ")
+                .define('R', Items.RED_DYE)
+                .define('I', Items.IRON_INGOT)
+                .define('L', Items.LEVER) // The handle.
+                .define('D', RadiocraftItems.DATA_WIRE.get())
+                .unlockedBy("has_data_wire", has(RadiocraftItems.DATA_WIRE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.OUTDOOR_PULL_BOX.get(), 1)
+                .pattern("IRI")
+                .pattern("ILI")
+                .pattern("IDI")
+                .define('R', Items.RED_DYE)
+                .define('I', Items.IRON_INGOT) // A heavier, weatherproof box.
+                .define('L', Items.LEVER)
+                .define('D', RadiocraftItems.DATA_WIRE.get())
+                .unlockedBy("has_data_wire", has(RadiocraftItems.DATA_WIRE.get()))
+                .save(recipeOutput);
+        for(Object[] dyed : new Object[][] {
+                { RadiocraftItems.YELLOW_PULL_STATION, RadiocraftItems.PULL_STATION, Items.YELLOW_DYE },
+                { RadiocraftItems.WHITE_PULL_STATION, RadiocraftItems.PULL_STATION, Items.WHITE_DYE },
+                { RadiocraftItems.YELLOW_OUTDOOR_PULL_BOX, RadiocraftItems.OUTDOOR_PULL_BOX, Items.YELLOW_DYE },
+                { RadiocraftItems.WHITE_OUTDOOR_PULL_BOX, RadiocraftItems.OUTDOOR_PULL_BOX, Items.WHITE_DYE } }) {
+            @SuppressWarnings("unchecked") java.util.function.Supplier<? extends net.minecraft.world.item.Item> out = (java.util.function.Supplier<? extends net.minecraft.world.item.Item>) dyed[0];
+            @SuppressWarnings("unchecked") java.util.function.Supplier<? extends net.minecraft.world.item.Item> red = (java.util.function.Supplier<? extends net.minecraft.world.item.Item>) dyed[1];
+            net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, out.get())
+                    .requires(red.get())
+                    .requires((net.minecraft.world.item.Item) dyed[2])
+                    .unlockedBy("has_" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(red.get()).getPath(), has(red.get()))
+                    .save(recipeOutput);
+        }
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FIRE_BELL.get(), 1) // Approved 2026-11-13.
+                .pattern("DPD")
+                .pattern("IXI")
+                .define('D', Items.RED_DYE)
+                .define('P', Items.PISTON) // The striker.
+                .define('I', Items.IRON_INGOT)
+                .define('X', Items.REDSTONE)
+                .unlockedBy("has_redstone", has(Items.REDSTONE))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FIRE_ALARM_KEY.get(), 1) // Approved 2026-11-13.
+                .pattern("RI")
+                .pattern(" N")
+                .define('R', Items.RED_DYE) // The head.
+                .define('I', Items.IRON_INGOT) // The shank.
+                .define('N', Items.IRON_NUGGET) // The bit.
+                .unlockedBy("has_pull_station", has(RadiocraftItems.PULL_STATION.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.PANIC_BUTTON.get(), 1)
+                .pattern(" B ")
+                .pattern("IRI")
+                .pattern(" D ")
+                .define('B', Items.STONE_BUTTON)
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.RED_DYE)
+                .define('D', RadiocraftItems.DATA_WIRE.get())
+                .unlockedBy("has_data_wire", has(RadiocraftItems.DATA_WIRE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.SCADA_MASTER.get(), 1)
+                .pattern("IMI")
+                .pattern("BRB")
+                .pattern("IDI")
+                .define('I', Items.IRON_INGOT)
+                .define('M', Items.TINTED_GLASS) // Its console screen.
+                .define('B', RadiocraftItems.COMMERCIAL_MOBILE.get())
+                .define('R', RadiocraftItems.SCADA_RTU.get()) // An RTU with a brain.
+                .define('D', RadiocraftItems.DATA_WIRE.get())
+                .unlockedBy("has_scada_rtu", has(RadiocraftItems.SCADA_RTU.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FIRE_ALARM_BOX.get(), 1)
+                .pattern("RIR")
+                .pattern("IBI")
+                .pattern("RLR")
+                .define('R', Items.RED_DYE)
+                .define('I', Items.IRON_INGOT)
+                .define('B', RadiocraftItems.COMMERCIAL_MOBILE.get()) // Its radio.
+                .define('L', Items.LIGHTNING_ROD) // Its antenna.
+                .unlockedBy("has_commercial_mobile", has(RadiocraftItems.COMMERCIAL_MOBILE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FIRE_ALARM_CONTROLLER.get(), 1)
+                .pattern("IRI")
+                .pattern("BPB")
+                .pattern("INI")
+                .define('I', Items.IRON_INGOT)
+                .define('R', Items.RED_DYE)
+                .define('B', RadiocraftItems.COMMERCIAL_MOBILE.get())
+                .define('P', Items.PAPER) // Its printer.
+                .define('N', Items.NOTE_BLOCK) // Its buzzer.
+                .unlockedBy("has_commercial_mobile", has(RadiocraftItems.COMMERCIAL_MOBILE.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.IAMBIC_KEYER.get(), 1) // Approved 2026-11-13.
+                .pattern("B B")
+                .pattern("IRI")
+                .pattern("SSS")
+                .define('B', net.minecraft.tags.ItemTags.BUTTONS) // The paddles: any button.
+                .define('I', Items.IRON_INGOT) // The pivot and springs.
+                .define('R', Items.REDSTONE) // The keyer's electronics.
+                .define('S', Items.SMOOTH_STONE_SLAB) // The heavy base.
+                .unlockedBy("has_lever", has(Items.LEVER))
+                .save(recipeOutput);
+        for(com.arrl.radiocraft.common.blocks.IambicKeyerBlock.Finish finish : com.arrl.radiocraft.common.blocks.IambicKeyerBlock.Finish.values()) {
+            // Re-finished: the keyer with a dye, glass, a metal or a gem gives it those finger pieces (it is the same keyer).
+            net.minecraft.world.item.ItemStack result = new net.minecraft.world.item.ItemStack(RadiocraftItems.IAMBIC_KEYER.get());
+            result.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,
+                    net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(com.arrl.radiocraft.common.blocks.IambicKeyerBlock.FINISH, finish));
+            ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, result)
+                    .requires(RadiocraftItems.IAMBIC_KEYER.get())
+                    .requires(finish.material.get())
+                    .unlockedBy("has_iambic_keyer", has(RadiocraftItems.IAMBIC_KEYER.get()))
+                    .save(recipeOutput, Radiocraft.id("iambic_keyer_" + finish.getSerializedName()));
+        }
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.SATELLITE_TRACKER.get(), 1) // Approved 2026-11-13.
+                .pattern(" D ")
+                .pattern("OCW")
+                .pattern("III")
+                .define('D', RadiocraftItems.SATELLITE_DISH.get()) // The dish.
+                .define('O', RadiocraftItems.COAX_WIRE.get())
+                .define('C', Items.COMPARATOR) // The tracking controller.
+                .define('W', RadiocraftItems.WIRE.get()) // The mount's power.
+                .define('I', Items.IRON_INGOT) // The plinth and turntable.
+                .unlockedBy("has_satellite_dish", has(RadiocraftItems.SATELLITE_DISH.get()))
+                .save(recipeOutput);
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.EGGBEATER_ANTENNA.get(), 1) // 2026-11-12.
+                .pattern(" A ")
+                .pattern("AOA")
+                .pattern("RIR")
+                .define('A', RadiocraftItems.ANTENNA_WIRE.get()) // The two loops.
+                .define('O', RadiocraftItems.COAX_WIRE.get())
+                .define('I', Items.IRON_INGOT) // The mast.
+                .define('R', Items.IRON_BARS) // The reflector radials.
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.RINGO_ANTENNA.get(), 1)
                 .pattern(" I ")
                 .pattern(" A ")
@@ -1431,6 +1599,11 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .save(recipeOutput);
         net.minecraft.data.recipes.SpecialRecipeBuilder.special(com.arrl.radiocraft.common.crafting.MarsModInstallRecipe::new)
                 .save(recipeOutput, Radiocraft.id("mars_mod_install"));
+        // Commercial licenses (2026-11-10): an upgrade crafted into a license, and a copy made with an empty map.
+        net.minecraft.data.recipes.SpecialRecipeBuilder.special(com.arrl.radiocraft.common.crafting.LicenseUpgradeRecipe::new)
+                .save(recipeOutput, Radiocraft.id("license_upgrade"));
+        net.minecraft.data.recipes.SpecialRecipeBuilder.special(com.arrl.radiocraft.common.crafting.LicenseCopyRecipe::new)
+                .save(recipeOutput, Radiocraft.id("license_copy"));
 
         // The Radio Cloner (1.12 playtest fixes 2): the cloning cable (wire) on an iron box with its memory
         // (diamond) and logic (comparator).
@@ -1611,6 +1784,17 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('R', Items.REDSTONE)
                 .unlockedBy("has_hf_circuit_board", has(RadiocraftItems.HF_CIRCUIT_BOARD.get()))
                 .save(recipeOutput);
+        // The External CRT Monitor (2026-11-12, maintainer): the monitor's iron case and glass, on wire and a copper chassis.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.EXTERNAL_CRT_MONITOR.get())
+                .pattern("III")
+                .pattern("IGI")
+                .pattern("WCW")
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.GLASS_PANE)
+                .define('W', RadiocraftItems.WIRE.get())
+                .define('C', Items.COPPER_INGOT)
+                .unlockedBy("has_computer_monitor", has(RadiocraftItems.COMPUTER_MONITOR.get()))
+                .save(recipeOutput);
         // Flatbed glass on top, ink for the printer underneath.
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.SCANNER.get())
                 .pattern("GGG")
@@ -1655,6 +1839,10 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.QSL, Items.INK_SAC);
         // DISTRESS: a blank floppy and a firework rocket, the distress flare.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.DISTRESS, Items.FIREWORK_ROCKET);
+        // SATTRACK (2026-11-11, maintainer): a blank floppy and a phantom membrane, for watching what crosses the night sky.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SATTRACK, Items.PHANTOM_MEMBRANE);
+        // WXSAT (2026-11-12, maintainer): a blank floppy and a lightning rod, for the weather.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.WXSAT, Items.LIGHTNING_ROD);
         programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())
                 .requires(ingredient)

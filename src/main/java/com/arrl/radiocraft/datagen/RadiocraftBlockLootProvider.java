@@ -41,7 +41,9 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
     @Override
     protected void generate() {
         for(Block block : blocks()) {
-            if(block.defaultBlockState().hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) // Two blocks tall: only the bottom half drops, like a door.
+            if(block == RadiocraftBlocks.FM_BROADCAST_TRANSMITTER_TOP.get()) // The cabinet's top: the bottom drops the transmitter.
+                add(block, noDrop());
+            else if(block.defaultBlockState().hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) // Two blocks tall: only the bottom half drops, like a door.
                 add(block, createSinglePropConditionTable(block, BlockStateProperties.DOUBLE_BLOCK_HALF, DoubleBlockHalf.LOWER));
             else if(block.defaultBlockState().hasProperty(FiveBtvAntennaBlock.SEGMENT)) // Seven blocks tall: only the base drops.
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
@@ -66,10 +68,17 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                 .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(com.arrl.radiocraft.common.blocks.StackedBlocks.PART, 0)))))));
+            else if(block instanceof com.arrl.radiocraft.common.blocks.mesh.ScadaMasterBlock) // Two blocks wide: only the panel drops.
+                add(block, createSinglePropConditionTable(block, com.arrl.radiocraft.common.blocks.mesh.ScadaMasterBlock.PART,
+                        com.arrl.radiocraft.common.blocks.mesh.ScadaMasterBlock.Part.PANEL));
             else if(block instanceof TowerFootholdBlock) // A broken foothold is scrap: nothing drops.
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                 .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(TowerFootholdBlock.BROKEN, false)))))));
+            else if(block == RadiocraftBlocks.IAMBIC_KEYER.get()) // Keeps its finger pieces' finish (2026-11-12).
+                add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyBlockState.copyState(block)
+                                .copy(com.arrl.radiocraft.common.blocks.IambicKeyerBlock.FINISH))))));
             else if(block == RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get()) // Keeps its charge and whether its seal is broken.
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction

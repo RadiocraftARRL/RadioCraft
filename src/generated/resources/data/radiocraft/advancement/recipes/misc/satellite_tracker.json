@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_satellite_dish": {
+      "conditions": {
+        "items": [
+          {
+            "items": "radiocraft:satellite_dish"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "radiocraft:satellite_tracker"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_satellite_dish"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "radiocraft:satellite_tracker"
+    ]
+  }
+}

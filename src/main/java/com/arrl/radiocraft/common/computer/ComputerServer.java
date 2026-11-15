@@ -217,6 +217,8 @@ public final class ComputerServer {
 		out.put("apps", appIds(computer));
 		out.putString("floppy", driveContents(computer));
 		out.putString("floppyLabel", FloppyDrive.label(computer.getFloppy()));
+		if(computer.isInstalled(ComputerApps.DISTRESS)) // Unseen distress alerts: the screen opens on DISTRESS (2026-11-11).
+			out.putInt("distressUnread", com.arrl.radiocraft.common.computer.apps.DistressHandler.state(computer).unread());
 		out.putString("serial", computer.getComputerId().toString().substring(0, 8).toUpperCase(java.util.Locale.ROOT));
 		return out;
 	}
@@ -283,9 +285,7 @@ public final class ComputerServer {
 			return;
 		}
 		if(com.arrl.radiocraft.common.items.AllAppsFloppyItem.is(player.getInventory().getItem(slot))) { // Creative: every program, and it comes back out.
-			for(ComputerApp app : ComputerApps.onFloppies())
-				if(app.kind() != ComputerApp.Kind.SECRET && !computer.isInstalled(app)) // The secret ones stay to be found (2026-11-09).
-					computer.install(app);
+			installAll(computer);
 			CompoundTag out = new CompoundTag();
 			out.put("apps", appIds(computer));
 			out.putString("floppy", "");
@@ -299,6 +299,17 @@ public final class ComputerServer {
 		out.putString("floppy", driveContents(computer));
 		out.putString("floppyLabel", FloppyDrive.label(computer.getFloppy()));
 		reply.ok(out);
+	}
+
+	/** The All Applications Floppy: every program that comes on a floppy but the secret ones (they stay to be found, 2026-11-09). */
+	public static int installAll(RadioComputerBlockEntity computer) {
+		int count = 0;
+		for(ComputerApp app : ComputerApps.onFloppies())
+			if(app.kind() != ComputerApp.Kind.SECRET && !computer.isInstalled(app)) {
+				computer.install(app);
+				count++;
+			}
+		return count;
 	}
 
 	private static void eject(RadioComputerBlockEntity computer, ServerPlayer player, ComputerReply reply) {
@@ -407,6 +418,7 @@ public final class ComputerServer {
 	/** Keeps {@code kept} on the disk, answers with it and shows it on every screen at the computer. */
 	private static void keep(RadioComputerBlockEntity computer, ComputerSettings kept, ComputerReply reply) {
 		computer.files().setSettings(kept);
+		computer.settingsChanged(); // The background services switch takes effect at once.
 		CompoundTag out = new CompoundTag();
 		out.put("settings", kept.toTag());
 		reply.ok(out);
@@ -630,7 +642,8 @@ public final class ComputerServer {
 			return;
 		}
 		String base = name.contains(".") ? name.substring(0, name.indexOf('.')) : name;
-		printed(scanner.printImage(pixels, base, context.player().getGameProfile().getName()), reply);
+		printed(scanner.printImage(pixels, base, context.player().getGameProfile().getName(),
+				List.of("Picture " + name, "(an empty map or photo paper prints the picture)")), reply); // Plain paper: just its words.
 	}
 
 	private static void printText(ComputerContext context, CompoundTag data, ComputerReply reply) {
@@ -681,6 +694,7 @@ public final class ComputerServer {
 			reply.error("no_handler");
 			return;
 		}
+		context.computer().programUsed(app); // Open on a screen: a background service switched off runs while it is (2026-11-12).
 		handler.handle(context, data.getString("action"), data.getCompound("data"), reply);
 	}
 

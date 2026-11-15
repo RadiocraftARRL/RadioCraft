@@ -144,6 +144,7 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
 
         final boolean canReceive;
         final boolean canTransmit;
+        final boolean on; // Switched on, whatever its channel (a commercial radio's beacon receiver listens even on a blank one, 2026-11-11).
 
         final float frequency; // Where the radio really is: its dial frequency plus any crystal drift.
         final CrystalQuality crystal;
@@ -235,6 +236,7 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
             this.canTransmit = canTransmit && allowed; // PTT held out of band without a MARS mod: the radio refuses (OUT OF BAND).
             // Keyed up, the radio hears nothing (it is not a repeater); a commercial radio on a blank position hears nothing either.
             this.canReceive = canReceive && !this.canTransmit && (!commercial || channel != null);
+            this.on = canReceive; // The argument: the radio's power switch.
             this.crystal = VHFHandheldItem.crystalOf(item);
             this.itemLocation = itemLocation;
             this.gain = gain;
@@ -587,12 +589,45 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         HandheldRadiation.data(this, this.network, level, payload, band, frequencyHertz);
     }
 
-    /** A packet heard: the holder's modules take it if it is on the APRS frequency and copies. Server thread. */
+    /**
+     * A packet heard: a distress alert goes to the commercial handhelds' beacon receivers ({@link #receiveBeacon});
+     * anything else to the holder's modules, which take it if it is on the APRS frequency and copies. Server thread.
+     */
     @Override
     public void receiveDataPacket(AntennaDataPacket packet) {
         Player player = getPlayer();
-        if(player != null && !sendingDtmf && player.level() instanceof net.minecraft.server.level.ServerLevel level && tnc.receive(packet, level))
+        if(player == null || !(player.level() instanceof net.minecraft.server.level.ServerLevel level))
+            return;
+        com.arrl.radiocraft.common.radio.distress.DistressAlert alert = com.arrl.radiocraft.common.radio.distress.DistressPackets.alert(packet.getPayload());
+        if(alert != null) {
+            receiveBeacon(packet, alert, player);
+            return;
+        }
+        if(!sendingDtmf && tnc.receive(packet, level))
             com.arrl.radiocraft.common.moderation.ModerationHooks.heard(packet, this, level, player.blockPosition(), player, packet.getStrength());
+    }
+
+    /**
+     * The built-in beacon receiver of each commercial VHF handheld the player carries (2026-11-11, maintainer: "always
+     * listening but dormant", as the mobile's): a beacon alert on 161.975 MHz is decoded whatever channel the radio is
+     * on, if it is switched on and not keyed up, and the burst is as strong as any packet a handheld decodes (the APRS
+     * module's rule). The alert goes on the item ({@link com.arrl.radiocraft.common.items.CommercialHandheldItem#hearBeacon})
+     * for its screen; a new one sounds the alarm to the holder. The holder's own beacon is not news to them. DSC is for
+     * marine radios. Server thread.
+     */
+    private void receiveBeacon(AntennaDataPacket packet, com.arrl.radiocraft.common.radio.distress.DistressAlert alert, Player player) {
+        if(alert.isDsc() || sendingDtmf || !com.arrl.radiocraft.common.radio.distress.DistressPackets.isBeacon(packet.getFrequency()))
+            return;
+        if(alert.owner().equals(player.getGameProfile().getName()))
+            return;
+        if(!com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.decodes(packet.getStrength(), RadiocraftServerConfig.VHF_NOISE_FLOOR.get()))
+            return;
+        boolean alarm = false;
+        for(SynchronousRadioState state : radios)
+            if(state.commercial && state.on && !state.canTransmit && com.arrl.radiocraft.common.items.CommercialHandheldItem.hearsBeacons(state.item))
+                alarm |= com.arrl.radiocraft.common.items.CommercialHandheldItem.hearBeacon(state.item, alert) == com.arrl.radiocraft.common.radio.distress.HandheldDistress.Change.NEW;
+        if(alarm && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)
+            serverPlayer.playNotifySound(com.arrl.radiocraft.common.init.RadiocraftSoundEvents.DSC_ALARM.get(), net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.2F);
     }
 
     @Override

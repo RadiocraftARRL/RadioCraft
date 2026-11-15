@@ -39,6 +39,14 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.COMMERCIAL_MOBILE.get(), CommercialMobileScreen::new);
 		event.register(RadiocraftMenuTypes.MARINE_RADIO.get(), MarineRadioScreen::new);
 		event.register(RadiocraftMenuTypes.CB_RADIO.get(), com.arrl.radiocraft.client.screens.radios.CbRadioScreen::new);
+		event.register(RadiocraftMenuTypes.SIMPLE_RADIO.get(), (com.arrl.radiocraft.common.menus.SimpleRadioMenu menu, net.minecraft.world.entity.player.Inventory inventory, net.minecraft.network.chat.Component title) ->
+				menu.blockEntity instanceof com.arrl.radiocraft.common.blockentities.radio.AirbandRadioBlockEntity
+						? (net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<com.arrl.radiocraft.common.menus.SimpleRadioMenu>)new com.arrl.radiocraft.client.screens.radios.AirbandRadioScreen(menu, inventory, title)
+						: menu.blockEntity instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastTransmitterBlockEntity
+						? new com.arrl.radiocraft.client.screens.radios.FmStationScreen(menu, inventory, title) // The station panel (2026-11-14).
+						: menu.blockEntity instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity
+						? new com.arrl.radiocraft.client.screens.radios.FmBroadcastReceiverScreen(menu, inventory, title) // The table radio's panel.
+						: new com.arrl.radiocraft.client.screens.radios.SimpleRadioScreen(menu, inventory, title)); // Airband (its faceplate), FM broadcast (2026-11-13).
 		event.register(RadiocraftMenuTypes.VHF_RECEIVER.get(), VHFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.HF_RECEIVER.get(), HFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.DESK_CHARGER.get(), DeskChargerScreen::new);
@@ -49,6 +57,11 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.APRS_TERMINAL.get(), AprsTerminalScreen::new);
 		event.register(RadiocraftMenuTypes.RADIO_FAX.get(), RadioFaxScreen::new);
 		event.register(RadiocraftMenuTypes.DUPLEXER.get(), DuplexerScreen::new);
+		event.register(RadiocraftMenuTypes.FIRE_ALARM_BOX.get(), com.arrl.radiocraft.client.screens.mesh.FireAlarmBoxScreen::new);
+		event.register(RadiocraftMenuTypes.SCADA_MASTER.get(), com.arrl.radiocraft.client.screens.mesh.ScadaMasterScreen::new);
+		event.register(RadiocraftMenuTypes.FIRE_ALARM_CONTROLLER.get(), com.arrl.radiocraft.client.screens.mesh.FireAlarmControllerScreen::new);
+		// A fire alarm box's setup is its programming panel (2026-11-11); the others' the plain setup screen.
+		event.register(RadiocraftMenuTypes.MESH_SETUP.get(), com.arrl.radiocraft.client.screens.mesh.FireBoxProgramScreen::create);
 		event.register(RadiocraftMenuTypes.ANTENNA_TUNER.get(), AntennaTunerScreen::new);
 		event.register(RadiocraftMenuTypes.VHF_REPEATER.get(), VHFRepeaterScreen::new);
 		event.register(RadiocraftMenuTypes.DIRECTION_FINDER.get(), DirectionFinderScreen::new);
@@ -81,16 +94,21 @@ public class ClientSetupEvents {
 		// Use a lambda with an unchecked raw cast to avoid generic signature issues in the registration helper.
 		event.registerBlockEntityRenderer((net.minecraft.world.level.block.entity.BlockEntityType) RadiocraftBlockEntities.DESK_CHARGER.get(), ctx -> new DeskChargerBlockRenderer(ctx));
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.PASSTHROUGH.get(), com.arrl.radiocraft.client.render.PassthroughRenderer::new);
+		event.registerBlockEntityRenderer((net.minecraft.world.level.block.entity.BlockEntityType) RadiocraftBlockEntities.ANTENNA.get(), ctx -> new com.arrl.radiocraft.client.render.YagiAntennaRenderer(ctx)); // Turned yagis, 2026-11-12.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.TELEPHONE.get(), com.arrl.radiocraft.client.render.TelephoneRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MODERATION_COMPUTER.get(), com.arrl.radiocraft.client.render.ModerationComputerRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.COMPUTER_MONITOR.get(), com.arrl.radiocraft.client.render.ComputerMonitorRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.EXTERNAL_CRT_MONITOR.get(), com.arrl.radiocraft.client.render.CrtMonitorRenderer::new); // 2026-11-12.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.ADSB_RECEIVER.get(), com.arrl.radiocraft.client.render.AdsbScopeRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.FIELD_PHONE.get(), com.arrl.radiocraft.client.render.FieldPhoneRenderer::new);
 		// Satellite dish geo renderer
 		event.registerBlockEntityRenderer((net.minecraft.world.level.block.entity.BlockEntityType) RadiocraftBlockEntities.SATELLITE_DISH.get(), ctx -> new com.arrl.radiocraft.client.render.SatelliteDishRenderer(ctx));
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.SATELLITE_TRACKER.get(), com.arrl.radiocraft.client.render.SatelliteTrackerRenderer::new);
 		// The frequency, mode and S-meter on each radio's screen; a radio whose model has no DISPLAY draws nothing.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.AUTO_TUNER.get(), com.arrl.radiocraft.client.render.AutoTunerDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.BATTERY_METER.get(), com.arrl.radiocraft.client.render.BatteryMeterRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.FIRE_ALARM_CONTROLLER.get(), com.arrl.radiocraft.client.render.MeshScreenRenderer::new); // Green screens on the blocks (2026-11-11).
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.SCADA_MASTER.get(), com.arrl.radiocraft.client.render.MeshScreenRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MICROWAVE_HORN.get(), com.arrl.radiocraft.client.render.MicrowaveHornRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.HF_RADIO_10M.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.HF_RADIO_20M.get(), RadioDisplayRenderer::new);
@@ -101,7 +119,9 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_BASE_STATION.get(), RadioDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.COMMERCIAL_MOBILE.get(), RadioDisplayRenderer::new); // Channel display, lamps, mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.MARINE_RADIO.get(), RadioDisplayRenderer::new);
-		event.registerBlockEntityRenderer(RadiocraftBlockEntities.CB_RADIO.get(), com.arrl.radiocraft.client.render.CbRadioRenderer::new); // Channel, clock, meters, lamps, mic cord.
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.CB_RADIO.get(), com.arrl.radiocraft.client.render.CbRadioRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.FM_BROADCAST_RECEIVER.get(), com.arrl.radiocraft.client.render.FmBroadcastReceiverRenderer::new); // The dial pointer at the tuned frequency (2026-11-13).
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.AIRBAND_RADIO.get(), com.arrl.radiocraft.client.render.AirbandRadioRenderer::new); // USE and STBY windows. // Channel, clock, meters, lamps, mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.VHF_RECEIVER.get(), VHFReceiverRenderer::new); // No display: switches, the lit numeral, SET (2026-11-09).
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_20M.get(), RadioDisplayRenderer::new); // No screen; draws the mic cord.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.QRP_RADIO_40M.get(), RadioDisplayRenderer::new);
@@ -130,6 +150,13 @@ public class ClientSetupEvents {
 				com.arrl.radiocraft.compat.curios.CbPortableBackRenderer.register(); // The CB portable on the back slot.
 				com.arrl.radiocraft.compat.curios.FccBadgeRenderer.register(); // The FCC badge on the chest or belt (2026-11-09).
 			});
+		// The iambic keyer's finger pieces (2026-11-12): its finish's index / 100, from the item's block_state.
+		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.IAMBIC_KEYER.get(),
+				com.arrl.radiocraft.Radiocraft.id("finish"), (stack, level, entity, seed) -> {
+					net.minecraft.world.item.component.BlockItemStateProperties props = stack.get(net.minecraft.core.component.DataComponents.BLOCK_STATE);
+					com.arrl.radiocraft.common.blocks.IambicKeyerBlock.Finish finish = props == null ? null : props.get(com.arrl.radiocraft.common.blocks.IambicKeyerBlock.FINISH);
+					return finish == null ? 0.0F : finish.ordinal() / 100.0F;
+				}));
 		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_DIRECTION_FINDER.get(),
 				Radiocraft.id("lit"), (stack, level, entity, seed) -> entity == net.minecraft.client.Minecraft.getInstance().player && com.arrl.radiocraft.client.HandheldDfClient.isLit() ? 1.0F : 0.0F));
 		// The CB portable's whip is pulled out while it is on.

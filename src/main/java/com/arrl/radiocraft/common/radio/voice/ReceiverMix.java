@@ -36,6 +36,21 @@ public final class ReceiverMix {
 		return share >= 1.0D ? 0.0D : 1.0D - share * share;
 	}
 
+	/**
+	 * How much more the AGC makes of a faint hiss (2026-11-13): with no antenna, on a dummy load or through a badly
+	 * matched one, the receiver turns its gain up on what little noise there is, so it hisses louder than the S-meter
+	 * reads (up to {@link #AGC_LIFT} times, never past {@link #AGC_LIFT_CEILING}). A full antenna's noise is left as it
+	 * is. AGC off leaves the faint hiss faint.
+	 */
+	public static final double AGC_LIFT = 2.5D, AGC_LIFT_CEILING = 0.2D;
+
+	/** The share of the band noise heard through the speaker, for a share {@code share} of it coming in, AGC on or off. */
+	public static double agcLifted(double share, boolean agcOn) {
+		if(!agcOn || share <= 0.0D || share >= AGC_LIFT_CEILING)
+			return share;
+		return Math.min(share * AGC_LIFT, AGC_LIFT_CEILING);
+	}
+
 	/** The signal that clears the static off a quiet band: where the S-meter starts to read S3. */
 	static final double QUIET_SIGNAL = 2.5D / 9.0D;
 

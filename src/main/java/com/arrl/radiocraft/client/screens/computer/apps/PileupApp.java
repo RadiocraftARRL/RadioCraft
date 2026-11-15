@@ -4,6 +4,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.games.HighScores;
@@ -11,6 +12,7 @@ import com.arrl.radiocraft.common.computer.games.PileupGame;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -36,6 +38,11 @@ public final class PileupApp extends DosApp {
 	public PileupApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		this.scores = new HighScoreFile(session, "PILEUP.DAT");
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.game"), List.of(
+						item("menu.pileup.start", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> state != State.PLAYING),
+						item("menu.pileup.pause", "P", GLFW.GLFW_KEY_P).when(() -> state == State.PLAYING || state == State.PAUSED),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))))));
 	}
 
 	@Override

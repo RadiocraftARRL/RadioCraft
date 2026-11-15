@@ -51,6 +51,11 @@ public final class AdsbNetworkObjects {
 		/** Power it draws a tick while on. */
 		protected abstract int powerUse();
 
+		/** True if it could run a tick now: power is free, or a tick's worth is at hand. */
+		public boolean canRun() {
+			return !RadiocraftServerConfig.RADIO_POWER_REQUIRED.get() || tryConsumeEnergy(powerUse(), true);
+		}
+
 		@Override
 		public boolean isIndirectConsumer() {
 			return true;

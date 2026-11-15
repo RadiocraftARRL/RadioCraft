@@ -68,7 +68,8 @@ public class WideBandReceiveAntennaType extends NonDirectionalAntennaType<EmptyA
     @Override
     public double getReceiveEfficiency(IAntennaPacket packet, EmptyAntennaData data, BlockPos pos) {
         double f = switch(packet.getBand().name()) {
-            case "2m", com.arrl.radiocraft.common.radio.Band.VHF_COMMERCIAL -> 0.7D;
+            case "2m", com.arrl.radiocraft.common.radio.Band.VHF_COMMERCIAL, com.arrl.radiocraft.common.radio.Band.AIRBAND,
+                 com.arrl.radiocraft.common.radio.Band.FM_BROADCAST -> 0.7D;
             case "10m", com.arrl.radiocraft.common.radio.Band.LOW_BAND, com.arrl.radiocraft.common.radio.Band.CB -> 0.5D;
             case "20m" -> 0.3D;
             case "40m", "80m" -> 0.2D;

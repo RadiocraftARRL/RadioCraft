@@ -48,14 +48,17 @@ public record SCWBufferPacket(BlockPos pos, List<CWBuffer> buffers) implements C
                 return;
             if(!(context.player().level().getBlockEntity(packet.pos()) instanceof HFRadioBlockEntity radio))
                 return;
-            if(!(context.player().containerMenu instanceof RadioMenu<?> menu) || menu.blockEntity != radio)
-                return;
+            boolean atScreen = context.player().containerMenu instanceof RadioMenu<?> menu && menu.blockEntity == radio;
+            if(!atScreen && !com.arrl.radiocraft.common.blocks.IambicKeyerBlock.keyerBeside(context.player().level(), packet.pos()))
+                return; // Keyed from its screen, or from an iambic keyer beside it (2026-11-12).
             if(!radio.canTransmitCW())
                 return;
             // The moderation log names who keyed it.
             var was = com.arrl.radiocraft.common.moderation.ModerationHooks.push(com.arrl.radiocraft.common.moderation.ModerationHooks.Tag.by(context.player().getUUID()));
             try {
                 radio.transmitMorse(packet.buffers());
+                if(context.player() instanceof net.minecraft.server.level.ServerPlayer keyer && keyer.level() instanceof net.minecraft.server.level.ServerLevel level)
+                    com.arrl.radiocraft.common.network.clientbound.CCWBufferPacket.sendSidetone(level, packet.pos(), packet.buffers(), keyer);
             }
             finally {
                 com.arrl.radiocraft.common.moderation.ModerationHooks.pop(was);

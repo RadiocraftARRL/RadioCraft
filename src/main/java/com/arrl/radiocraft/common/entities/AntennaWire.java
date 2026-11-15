@@ -116,6 +116,49 @@ public class AntennaWire extends Entity implements IAntennaWire, IEntityWithComp
         return null;
     }
 
+    /** How far round a wire's ends an antenna is checked again when the wire is strung or taken down. */
+    public static final int NEARBY_ANTENNAS = 24;
+
+    /**
+     * The wire was just strung (or taken down): every antenna on it, and every antenna near either end, checks again.
+     * A parasitic element (a Moxon's reflector) is its own run of wire touching no balun, so stringing it last must
+     * still make the balun near it look again (2026-11-13; it was only seen once something else touched the balun).
+     */
+    public void strung() {
+        updateAntennas();
+        markNearbyAntennas(level(), blockPosition(), getEndPos());
+    }
+
+    /** Has every antenna within {@link #NEARBY_ANTENNAS} blocks of {@code a} or {@code b} check again. */
+    public static void markNearbyAntennas(Level level, BlockPos a, @Nullable BlockPos b) {
+        if(level.isClientSide)
+            return;
+        BlockPos end = b == null ? a : b;
+        BlockPos min = new BlockPos(Math.min(a.getX(), end.getX()), Math.min(a.getY(), end.getY()), Math.min(a.getZ(), end.getZ())).offset(-NEARBY_ANTENNAS, -NEARBY_ANTENNAS, -NEARBY_ANTENNAS);
+        BlockPos max = new BlockPos(Math.max(a.getX(), end.getX()), Math.max(a.getY(), end.getY()), Math.max(a.getZ(), end.getZ())).offset(NEARBY_ANTENNAS, NEARBY_ANTENNAS, NEARBY_ANTENNAS);
+        AABB box = new AABB(min.getX(), min.getY(), min.getZ(), max.getX() + 1, max.getY() + 1, max.getZ() + 1);
+        for(int cx = min.getX() >> 4; cx <= max.getX() >> 4; cx++)
+            for(int cz = min.getZ() >> 4; cz <= max.getZ() >> 4; cz++) {
+                if(!level.hasChunk(cx, cz))
+                    continue;
+                for(net.minecraft.world.level.block.entity.BlockEntity be : level.getChunk(cx, cz).getBlockEntities().values())
+                    if(be instanceof AntennaBlockEntity antenna && box.contains(Vec3.atCenterOf(be.getBlockPos())))
+                        antenna.markAntennaChanged();
+            }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        boolean takenDown = !level().isClientSide && reason.shouldDestroy() && !isRemoved();
+        BlockPos end = getEndPos();
+        super.remove(reason);
+        if(takenDown) { // Broken by hand or fallen: what it was part of is gone.
+            if(!endPart.isRemoved())
+                endPart.discard();
+            markNearbyAntennas(level(), blockPosition(), end);
+        }
+    }
+
     public void updateAntennas() {
         if(checkEnabled) {
             checkEnabled = false;

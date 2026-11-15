@@ -33,3 +33,10 @@ adapted from Create Crafts & Additions, https://github.com/mrh0/createaddition, 
 The tape player decodes the server's .ogg tapes with JOrbis (http://www.jcraft.com/jorbis/, `org.jcraft:jorbis`,
 bundled in the mod jar), under the GNU Lesser General Public License 2 or later. Copyright (C) 2000 ymnk, JCraft, Inc.
 Its source is at https://github.com/ymnk/jorbis; the license text is in the jar.
+
+## JLayer
+
+FM broadcast stations decode MP3 internet radio streams with JLayer 1.0.1 (`javazoom:jlayer`, from Maven Central,
+bundled in the mod jar with its packages relocated under `com.arrl.radiocraft.shaded.javazoom`), under the GNU Lesser
+General Public License 2.1. Copyright (C) 1999-2008 JavaZOOM. Its source is at
+http://www.javazoom.net/javalayer/sources.html (mirrored on Maven Central as `jlayer-1.0.1-sources.jar`).

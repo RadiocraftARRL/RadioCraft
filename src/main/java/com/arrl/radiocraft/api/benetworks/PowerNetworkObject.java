@@ -11,7 +11,7 @@ import net.neoforged.neoforge.energy.IEnergyStorage;
  * Base class representing a {@link BENetworkObject} which consumes power. Each BE should have its own implementation
  * of this.
  */
-public abstract class PowerNetworkObject extends BENetworkObject {
+public abstract class PowerNetworkObject extends BENetworkObject implements PowerMember {
 
     /**
      * The {@link IEnergyStorage} for this {@link PowerNetworkObject}.

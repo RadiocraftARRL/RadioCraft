@@ -66,4 +66,13 @@ class ReceiverMixTest {
         assertTrue(ReceiverMix.noiseDuck(0.5D, 1.0D) > 0.7D, "a blackout stays loud under a middling signal");
         assertTrue(ReceiverMix.noiseDuck(0.24D, 0.1D) < 0.3D, "just under S3 only a little comes back");
     }
+
+    @Test
+    void agcLiftsOnlyAFaintHiss() {
+        assertEquals(0.1D, ReceiverMix.agcLifted(0.04D, true), 1e-9, "a bare radio's hiss, lifted");
+        assertEquals(0.04D, ReceiverMix.agcLifted(0.04D, false), 1e-9, "AGC off: as faint as it comes in");
+        assertEquals(ReceiverMix.AGC_LIFT_CEILING, ReceiverMix.agcLifted(0.15D, true), 1e-9, "never past the ceiling");
+        assertEquals(1.0D, ReceiverMix.agcLifted(1.0D, true), 1e-9, "a full antenna's noise is left alone");
+        assertEquals(0.0D, ReceiverMix.agcLifted(0.0D, true), 1e-9, "nothing stays nothing");
+    }
 }

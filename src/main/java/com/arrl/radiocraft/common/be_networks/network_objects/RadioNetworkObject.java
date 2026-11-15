@@ -189,6 +189,18 @@ public class RadioNetworkObject extends PowerNetworkObject implements ICoaxNetwo
                     energyStorage == null ? 0 : Math.min(transmitUse, energyStorage.getEnergyStored()));
     }
 
+    /**
+     * Sets both draws (and grows the buffer to hold them): for devices whose draw changed after they were saved, like
+     * the SCADA devices that went on power on 2026-11-13.
+     */
+    public void setPowerUse(int transmit, int receive) {
+        transmitUse = Math.max(transmit, receive);
+        receiveUse = Math.min(transmit, receive);
+        if(energyStorage == null || energyStorage.getMaxEnergyStored() < transmitUse)
+            energyStorage = new BasicEnergyStorage(transmitUse, transmitUse, transmitUse,
+                    energyStorage == null ? 0 : Math.min(transmitUse, energyStorage.getEnergyStored()));
+    }
+
     public void setTransmitting(boolean value) {
         this.isTransmitting = value;
     }

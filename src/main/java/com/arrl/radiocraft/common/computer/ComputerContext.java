@@ -62,7 +62,26 @@ public record ComputerContext(RadioComputerBlockEntity computer, ServerPlayer pl
 	}
 
 	public <T> List<T> linked(Class<T> type) {
-		return DataWire.linked(level(), pos(), type);
+		return linked(level(), pos(), type);
+	}
+
+	/**
+	 * The block entities of {@code type} linked to the computer at {@code pos} ({@link DataWire#linked}, nearest first),
+	 * then those beside a scanner it is linked to (2026-11-11): a scanner set between the computer and a radio passes
+	 * the radio through, as a desk is laid out.
+	 */
+	public static <T> List<T> linked(net.minecraft.world.level.Level level, BlockPos pos, Class<T> type) {
+		List<T> out = new java.util.ArrayList<>(DataWire.linked(level, pos, type));
+		for(ScannerBlockEntity scanner : DataWire.linked(level, pos, ScannerBlockEntity.class))
+			for(net.minecraft.core.Direction side : net.minecraft.core.Direction.values()) {
+				BlockPos at = scanner.getBlockPos().relative(side);
+				if(at.equals(pos) || !level.isLoaded(at))
+					continue;
+				net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(at);
+				if(type.isInstance(be) && !out.contains(type.cast(be)))
+					out.add(type.cast(be));
+			}
+		return out;
 	}
 
 	public StationBus bus() {

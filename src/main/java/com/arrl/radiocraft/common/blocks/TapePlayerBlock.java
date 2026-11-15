@@ -72,8 +72,13 @@ public class TapePlayerBlock extends BaseEntityBlock {
 													   @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
 		if(!(stack.getItem() instanceof TapeItem) || !(level.getBlockEntity(pos) instanceof TapePlayerBlockEntity tapePlayer))
 			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
-		if(!tapePlayer.getTape().isEmpty())
-			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION; // Full: open the controls instead.
+		if(!tapePlayer.getTape().isEmpty()) {
+			if(tapePlayer.getMode() != TapePlayerBlockEntity.Mode.QUEUE || tapePlayer.getQueue().size() >= TapePlayerBlockEntity.QUEUE_SIZE)
+				return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION; // Full: open the controls instead.
+			if(!level.isClientSide && tapePlayer.enqueue(stack)) // QUEUE mode: into the queue, behind the one playing.
+				stack.consume(1, player);
+			return ItemInteractionResult.sidedSuccess(level.isClientSide);
+		}
 		if(!level.isClientSide && tapePlayer.insert(stack))
 			stack.consume(1, player);
 		return ItemInteractionResult.sidedSuccess(level.isClientSide);
@@ -97,12 +102,21 @@ public class TapePlayerBlock extends BaseEntityBlock {
 
 	@Override
 	protected void onRemove(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean movedByPiston) {
-		if(!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof TapePlayerBlockEntity tapePlayer) {
-			ItemStack tape = tapePlayer.eject();
-			if(!tape.isEmpty())
+		if(!state.is(newState.getBlock()) && level.getBlockEntity(pos) instanceof TapePlayerBlockEntity tapePlayer)
+			for(ItemStack tape : tapePlayer.emptyAll()) // The one in it, the queue and the out tray.
 				Containers.dropItemStack(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, tape);
-		}
 		super.onRemove(state, level, pos, newState, movedByPiston);
+	}
+
+	/** A comparator reads how full the queue of tapes is (2026-11-14). */
+	@Override
+	protected boolean hasAnalogOutputSignal(@NotNull BlockState state) {
+		return true;
+	}
+
+	@Override
+	protected int getAnalogOutputSignal(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos) {
+		return level.getBlockEntity(pos) instanceof TapePlayerBlockEntity tapePlayer ? tapePlayer.comparatorSignal() : 0;
 	}
 
 	@Nullable

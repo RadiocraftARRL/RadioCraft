@@ -287,8 +287,13 @@ public class QslAwardsNetGameTests {
 		CompoundTag data = new CompoundTag();
 		data.putString("award", "bands");
 		CompoundTag reply = app(computer, player, ComputerApps.AWARDS, "certificate", data);
-		helper.assertTrue(reply.getString("error").isEmpty() && scanner.output().is(Items.FILLED_MAP) && scanner.tray().isEmpty(),
-				"certificate " + reply + " " + scanner.output());
+		net.minecraft.world.item.component.ItemLore lore = scanner.output().get(net.minecraft.core.component.DataComponents.LORE);
+		helper.assertTrue(reply.getString("error").isEmpty() && scanner.output().is(Items.PAPER) && scanner.tray().isEmpty()
+				&& lore != null && !lore.lines().isEmpty(), "certificate on plain paper is a sheet with its words: " + reply + " " + scanner.output());
+		scanner.getInventory().setStackInSlot(ScannerBlockEntity.OUTPUT, ItemStack.EMPTY);
+		scanner.getInventory().setStackInSlot(ScannerBlockEntity.TRAY, new ItemStack(Items.MAP, 1));
+		reply = app(computer, player, ComputerApps.AWARDS, "certificate", data);
+		helper.assertTrue(reply.getString("error").isEmpty() && scanner.output().is(Items.FILLED_MAP), "certificate on a map " + reply + " " + scanner.output());
 		data.putString("award", "contacts");
 		scanner.getInventory().setStackInSlot(ScannerBlockEntity.OUTPUT, ItemStack.EMPTY);
 		helper.assertTrue(app(computer, player, ComputerApps.AWARDS, "certificate", data).getString("error").equals("awards_not_earned"), "three contacts earned the ladder");

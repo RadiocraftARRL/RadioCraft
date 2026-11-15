@@ -31,6 +31,8 @@ public class RadiocraftBlocks {
 	private static final Properties PROPERTIES_STONE = Properties.ofFullCopy(Blocks.STONE);
 	private static final Properties PROPERTIES_STONE_NO_OCCLUDE = Properties.ofFullCopy(Blocks.STONE).noCollission();
 	private static final Properties PROPERTIES_RADIO = Properties.ofFullCopy(Blocks.STONE).noOcclusion();
+	/** Antennas players cannot walk through: their collision shapes follow the model (2026-11-13). */
+	private static final Properties PROPERTIES_STONE_SOLID_ANTENNA = Properties.ofFullCopy(Blocks.STONE).noOcclusion();
 	private static final Properties PROPERTIES_IRON_BARS = Properties.ofFullCopy(Blocks.IRON_BARS);
 	private static final Properties PROPERTIES_FOOTHOLD = Properties.ofFullCopy(Blocks.IRON_BARS).strength(3.0F, 6.0F);
 	private static final Properties PROPERTIES_WIRES = Properties.of().sound(SoundType.STONE).instabreak().noCollission().noOcclusion().mapColor(MapColor.COLOR_LIGHT_GRAY); // No tool needed to pick wire back up.
@@ -83,6 +85,21 @@ public class RadiocraftBlocks {
 			() -> new com.arrl.radiocraft.common.blocks.radios.CbRadioBlock(PROPERTIES_RADIO, com.arrl.radiocraft.common.radio.cb.CbMobileModel.DELUXE_5875));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.CbRadioBlock> CB_MOBILE_PC68 = BLOCKS.register("cb_mobile_pc68",
 			() -> new com.arrl.radiocraft.common.blocks.radios.CbRadioBlock(PROPERTIES_RADIO, com.arrl.radiocraft.common.radio.cb.CbMobileModel.PC68));
+	/** The airband radio and the FM broadcast pair (2026-11-13). */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.AirbandRadioBlock> AIRBAND_RADIO = BLOCKS.register("airband_radio",
+			() -> new com.arrl.radiocraft.common.blocks.radios.AirbandRadioBlock(PROPERTIES_RADIO));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.FmBroadcastTransmitterBlock> FM_BROADCAST_TRANSMITTER = BLOCKS.register("fm_broadcast_transmitter",
+			() -> new com.arrl.radiocraft.common.blocks.radios.FmBroadcastTransmitterBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.FmBroadcastTransmitterTopBlock> FM_BROADCAST_TRANSMITTER_TOP = BLOCKS.register("fm_broadcast_transmitter_top",
+			() -> new com.arrl.radiocraft.common.blocks.radios.FmBroadcastTransmitterTopBlock(Properties.ofFullCopy(Blocks.IRON_BLOCK).noOcclusion()));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.FmBroadcastReceiverBlock> FM_BROADCAST_RECEIVER = BLOCKS.register("fm_broadcast_receiver",
+			() -> new com.arrl.radiocraft.common.blocks.radios.FmBroadcastReceiverBlock(Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(1.5F).noOcclusion()));
+	/** The aircraft VHF antenna (2026-11-13): on top of a block or under one. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.AirbandAntennaBlock> AIRBAND_ANTENNA = BLOCKS.register("airband_antenna",
+			() -> new com.arrl.radiocraft.common.blocks.antennas.AirbandAntennaBlock(PROPERTIES_STONE_SOLID_ANTENNA));
+	/** The airband ground plane (2026-11-13): a ground station's antenna, two blocks tall. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.AirbandGroundPlaneAntennaBlock> AIRBAND_GROUND_PLANE = BLOCKS.register("airband_ground_plane",
+			() -> new com.arrl.radiocraft.common.blocks.antennas.AirbandGroundPlaneAntennaBlock(PROPERTIES_STONE_SOLID_ANTENNA));
 	/** Plays tapes out loud and into the radios it touches, and records on blank ones. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.TapePlayerBlock> TAPE_PLAYER = BLOCKS.register("tape_player",
 			() -> new com.arrl.radiocraft.common.blocks.TapePlayerBlock(Properties.ofFullCopy(Blocks.OAK_PLANKS).strength(1.5F).noOcclusion()));
@@ -102,6 +119,9 @@ public class RadiocraftBlocks {
 			() -> new ComputerMonitorBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
 	public static final DeferredHolder<Block, ScannerBlock> SCANNER = BLOCKS.register("scanner",
 			() -> new ScannerBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
+	/** The External CRT Monitor (2026-11-12): a vintage CRT showing a WXSAT computer's weather satellite mosaic, or a premium radio's waterfall. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.CrtMonitorBlock> EXTERNAL_CRT_MONITOR = BLOCKS.register("external_crt_monitor",
+			() -> new com.arrl.radiocraft.common.blocks.CrtMonitorBlock(Properties.ofFullCopy(Blocks.STONE).strength(2.0F, 6.0F).noOcclusion()));
 	/** ADS-B (1.12 step 9): the 1090 MHz beacon for craft, the receiver with its radar screen, and its antenna. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.adsb.AdsbBeaconBlock> ADSB_BEACON = BLOCKS.register("adsb_beacon",
 			() -> new com.arrl.radiocraft.common.blocks.adsb.AdsbBeaconBlock(PROPERTIES_RADIO));
@@ -114,6 +134,35 @@ public class RadiocraftBlocks {
 			() -> new com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock(PROPERTIES_RADIO));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock> WEATHER_ALERT_RECEIVER = BLOCKS.register("weather_alert_receiver",
 			() -> new com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock(PROPERTIES_RADIO));
+	/** Fire alarms and SCADA on the radio mesh (2026-11-10). Placeholder models until the maintainer's are made. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.FireAlarmBoxBlock> FIRE_ALARM_BOX = BLOCKS.register("fire_alarm_box",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.FireAlarmBoxBlock(PROPERTIES_RADIO));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PullStationBlock> PULL_STATION = BLOCKS.register("pull_station",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PullStationBlock(PROPERTIES_RADIO, false));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PullStationBlock> OUTDOOR_PULL_BOX = BLOCKS.register("outdoor_pull_box",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PullStationBlock(PROPERTIES_RADIO, true));
+	/** Yellow and white pull stations and outdoor pull boxes (2026-11-11): the same, in other colours (any kind of alarm). */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PullStationBlock> YELLOW_PULL_STATION = BLOCKS.register("yellow_pull_station",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PullStationBlock(PROPERTIES_RADIO, false));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PullStationBlock> WHITE_PULL_STATION = BLOCKS.register("white_pull_station",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PullStationBlock(PROPERTIES_RADIO, false));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PullStationBlock> YELLOW_OUTDOOR_PULL_BOX = BLOCKS.register("yellow_outdoor_pull_box",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PullStationBlock(PROPERTIES_RADIO, true));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PullStationBlock> WHITE_OUTDOOR_PULL_BOX = BLOCKS.register("white_outdoor_pull_box",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PullStationBlock(PROPERTIES_RADIO, true));
+	/** A vintage panic button (2026-11-11): a pull station on a wall plate, for under desks. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.PanicButtonBlock> PANIC_BUTTON = BLOCKS.register("panic_button",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.PanicButtonBlock(Block.Properties.of().strength(1.0F).noOcclusion().sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
+	/** A fire alarm bell (2026-11-11): rings while powered by redstone. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.FireBellBlock> FIRE_BELL = BLOCKS.register("fire_bell",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.FireBellBlock(Block.Properties.of().strength(1.5F).noOcclusion().sound(net.minecraft.world.level.block.SoundType.METAL).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
+	// The outdoor warning sirens moved to Another Weather Mod (2026-11-13).
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.FireAlarmControllerBlock> FIRE_ALARM_CONTROLLER = BLOCKS.register("fire_alarm_controller",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.FireAlarmControllerBlock(PROPERTIES_RADIO));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.ScadaBlock> SCADA_RTU = BLOCKS.register("scada_rtu",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.ScadaBlock(PROPERTIES_RADIO, false));
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.ScadaBlock> SCADA_MASTER = BLOCKS.register("scada_master",
+			() -> new com.arrl.radiocraft.common.blocks.mesh.ScadaMasterBlock(PROPERTIES_RADIO)); // Two blocks wide (2026-11-11).
 	/** The Real-World Interface (1.12 step 11): links the game's radios to a real radio on the server's sound card. Off by default. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.radios.RealWorldInterfaceBlock> REAL_WORLD_INTERFACE = BLOCKS.register("real_world_interface",
 			() -> new com.arrl.radiocraft.common.blocks.radios.RealWorldInterfaceBlock(PROPERTIES_RADIO));
@@ -191,18 +240,33 @@ public class RadiocraftBlocks {
 	public static final DeferredHolder<Block, BalunBlock> BALUN_NINE_TO_ONE = BLOCKS.register("balun_nine_to_one", () -> new BalunBlock(PROPERTIES_STONE_NO_OCCLUDE, "balun_nine_to_one"));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.DummyLoadBlock> DUMMY_LOAD = BLOCKS.register("dummy_load", () -> new com.arrl.radiocraft.common.blocks.antennas.DummyLoadBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, JPoleAntennaBlock> J_POLE_ANTENNA = BLOCKS.register("j_pole_antenna", () -> new JPoleAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	/** The EB-VHF eggbeater, the satellite antenna (2026-11-12). */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.EggbeaterAntennaBlock> EGGBEATER_ANTENNA = BLOCKS.register("eggbeater_antenna", () -> new com.arrl.radiocraft.common.blocks.antennas.EggbeaterAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.RingoAntennaBlock> RINGO_ANTENNA = BLOCKS.register("ringo_antenna", () -> new com.arrl.radiocraft.common.blocks.antennas.RingoAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.FoldedDipoleAntennaBlock> FOLDED_DIPOLE_ANTENNA = BLOCKS.register("folded_dipole_antenna", () -> new com.arrl.radiocraft.common.blocks.antennas.FoldedDipoleAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, IonosphericProcessorBlock> IONOSPHERIC_PROCESSOR = BLOCKS.register("ionospheric_processor", () -> new IonosphericProcessorBlock(Properties.ofFullCopy(Blocks.STONE).noOcclusion()
 			.lightLevel(state -> state.getValue(IonosphericProcessorBlock.HALF) == DoubleBlockHalf.UPPER ? IonosphericProcessorBlock.VALVE_LIGHT : 0)));
-	public static final DeferredHolder<Block, FiveBtvAntennaBlock> FIVE_BTV_ANTENNA = BLOCKS.register("5btv_antenna", () -> new FiveBtvAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	public static final DeferredHolder<Block, FiveBtvAntennaBlock> FIVE_BTV_ANTENNA = BLOCKS.register("5btv_antenna", () -> new FiveBtvAntennaBlock(PROPERTIES_STONE_SOLID_ANTENNA));
 	/** A CB ground plane, five blocks tall (2026-11-08). */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.CbGroundPlaneAntennaBlock> CB_GROUND_PLANE_ANTENNA = BLOCKS.register("cb_ground_plane_antenna",
 			() -> new com.arrl.radiocraft.common.blocks.antennas.CbGroundPlaneAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
-	public static final DeferredHolder<Block, IonosondeBlock> IONOSONDE = BLOCKS.register("ionosonde", () -> new IonosondeBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	public static final DeferredHolder<Block, IonosondeBlock> IONOSONDE = BLOCKS.register("ionosonde", () -> new IonosondeBlock(PROPERTIES_STONE_SOLID_ANTENNA));
 	public static final DeferredHolder<Block, SlimJimAntennaBlock> SLIM_JIM_ANTENNA = BLOCKS.register("slim_jim_antenna", () -> new SlimJimAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, YagiAntennaBlock> YAGI_ANTENNA = BLOCKS.register("yagi_antenna", () -> new YagiAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, SatelliteDishBlock> SATELLITE_DISH = BLOCKS.register("satellite_dish", () -> new SatelliteDishBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	/** The iambic keyer (2026-11-12): beside an HF radio, it keys its CW from two paddles. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.IambicKeyerBlock> IAMBIC_KEYER = BLOCKS.register("iambic_keyer",
+			() -> new com.arrl.radiocraft.common.blocks.IambicKeyerBlock(Properties.ofFullCopy(Blocks.STONE).noOcclusion()));
+	/** The Computer Redstone block (2026-11-13): redstone out (and in) for a radio computer, set over the LAN. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.ComputerRedstoneBlock> COMPUTER_REDSTONE = BLOCKS.register("computer_redstone",
+			() -> new com.arrl.radiocraft.common.blocks.ComputerRedstoneBlock(Properties.ofFullCopy(Blocks.STONE)));
+	/** The linear amplifier (2026-11-13): on the coax between an HF radio and its antenna, and on power. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.LinearAmplifierBlock> LINEAR_AMPLIFIER = BLOCKS.register("linear_amplifier",
+			() -> new com.arrl.radiocraft.common.blocks.LinearAmplifierBlock(Properties.ofFullCopy(Blocks.STONE).noOcclusion()
+					.lightLevel(state -> state.getValue(com.arrl.radiocraft.common.blocks.LinearAmplifierBlock.LIT) ? 4 : 0)));
+	/** The satellite tracking antenna (2026-11-12): the dish on a powered az/el mount. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.SatelliteTrackerBlock> SATELLITE_TRACKER = BLOCKS.register("satellite_tracker",
+			() -> new com.arrl.radiocraft.common.blocks.antennas.SatelliteTrackerBlock(PROPERTIES_STONE_NO_OCCLUDE));
 
 	public static final DeferredHolder<Block, TeletypeBlock> TELETYPE = BLOCKS.register("teletype", () -> new TeletypeBlock(PROPERTIES_STONE));
 

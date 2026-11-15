@@ -48,7 +48,9 @@ import java.util.function.Supplier;
 
 /**
  * Power wire, waterproof wire and coax. A wire links to the six blocks around it (other wires of its kind and the
- * devices its kind connects to). Horizontal runs lie on the floor of the block through its middle. Vertical runs
+ * devices its kind connects to). Horizontal runs lie on the floor of the block, through its middle unless there is a
+ * wall beside them: then against the wall they keep to ({@link #HUG}, {@link WireLook#lie}; since 2026-11-11 cable
+ * hugs a block face wherever it can, never floating where a face is near). Vertical runs
  * follow an <em>edge</em> of the block: a run going up picks a solid wall to hug ({@link #HUG}), and the wire above
  * keeps the run on that same edge (see {@link #look}) whether or not there is
  * still a wall there, so a cable going up a post keeps its line above the post. Only where the run must reach
@@ -96,7 +98,10 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	public static final BooleanProperty WEST = BooleanProperty.create("west");
 	public static final BooleanProperty UP = BooleanProperty.create("up");
 	public static final BooleanProperty DOWN = BooleanProperty.create("down");
-	/** The edge this wire's run upwards follows (none: up the middle of the block, or no run upwards). */
+	/**
+	 * The edge this wire's run upwards follows (none: up the middle of the block), or for a wire with no run upwards
+	 * the side wall it keeps to on the level (2026-11-11; none for none or no wall): see {@link #runEdge}.
+	 */
 	public static final EnumProperty<Edge> HUG = EnumProperty.create("hug", Edge.class);
 	/**
 	 * Whether the run up the {@link #HUG} wall is a climb to the block on top of that wall (a diagonal network link),
@@ -110,6 +115,97 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	/** True if {@code state} is a wire hanging from a ceiling (blocks without the property, like the passthrough, are not). */
 	public static boolean isCeiling(BlockState state) {
 		return state.hasProperty(CEILING) && state.getValue(CEILING);
+	}
+
+	/**
+	 * The edge the run up (or the climb) of the wire in {@code state} follows, null for none. Since 2026-11-11
+	 * {@link #HUG} is the side wall a cable keeps to on the level too, so it only means a run up the edge when the wire
+	 * goes up from here or climbs.
+	 */
+	@Nullable
+	public static Direction runEdge(BlockState state) {
+		if(!state.hasProperty(HUG) || state.getValue(HUG) == Edge.NONE)
+			return null;
+		if(state.getValue(CLIMB) != Climb.NONE || state.getValue(upLink(isCeiling(state))))
+			return state.getValue(HUG).direction();
+		return null;
+	}
+
+	/**
+	 * Whether the cable at {@code pos} (with strands of the kinds in {@code strands}) can keep to its {@code dir} side
+	 * (2026-11-11): a face sturdy towards it that none of the strands links to, or a passthrough (the cable runs into
+	 * the wall it is set in). Not a tower beam: cable beside a beam is drawn out to the steel by the run up it
+	 * ({@link WireLook.Look#hugReach}), not moved over.
+	 */
+	public static boolean isSideWall(BlockGetter level, BlockPos pos, Direction dir, List<BlockState> strands) {
+		BlockPos wallPos = pos.relative(dir);
+		BlockState wall = level.getBlockState(wallPos);
+		if(wall.getBlock() instanceof WireBlock wire && wire.conductsAll())
+			return true;
+		if(Strand.isCable(wall) || wall.isAir() || wall.getBlock() instanceof TowerBeamBlock)
+			return false;
+		for(BlockState strand : strands)
+			if(((WireBlock)strand.getBlock()).canConnectTo(level, wallPos))
+				return false;
+		return wall.isFaceSturdy(level, wallPos, dir.getOpposite());
+	}
+
+	/**
+	 * How far the cable at {@code pos} (its strands, half its width {@code halfWidth} pixels) is moved over to keep to
+	 * the walls beside it, sixteenths ({@link WireLook#lie}, 2026-11-11). Where it has nothing under it (nor over it,
+	 * hanging) and no wall on an axis, it follows the cable it joins on that axis, so a run over a gap stays on its
+	 * wall's line; only that cable's own walls count, so this reads no further than the blocks next to its neighbours.
+	 */
+	public static WireLook.Lateral wallShift(BlockGetter level, BlockPos pos, List<BlockState> strands, double halfWidth) {
+		return wallShift(level, pos, strands, halfWidth, true);
+	}
+
+	private static WireLook.Lateral wallShift(BlockGetter level, BlockPos pos, List<BlockState> strands, double halfWidth, boolean follow) {
+		if(strands.isEmpty() || !strands.getFirst().hasProperty(HUG))
+			return WireLook.Lateral.ZERO;
+		boolean n = isSideWall(level, pos, Direction.NORTH, strands), s = isSideWall(level, pos, Direction.SOUTH, strands);
+		boolean w = isSideWall(level, pos, Direction.WEST, strands), e = isSideWall(level, pos, Direction.EAST, strands);
+		int followX = 0, followZ = 0;
+		if(follow && (n == s || w == e) && !supported(level, pos, isCeiling(strands.getFirst()))) {
+			// Across a north-south run (x) from the cable north and south of us; across an east-west one from west and east.
+			followX = w == e ? followSign(level, pos, strands, Direction.NORTH, Direction.Axis.X) : 0;
+			followZ = n == s ? followSign(level, pos, strands, Direction.WEST, Direction.Axis.Z) : 0;
+		}
+		return WireLook.lie(n, s, w, e, strands.getFirst().getValue(HUG).direction(), halfWidth, followX, followZ);
+	}
+
+	/** True if the cable at {@code pos} lies on something: a floor under it, or for a hanging one a ceiling over it. */
+	private static boolean supported(BlockGetter level, BlockPos pos, boolean ceiling) {
+		Direction toSurface = ceiling ? Direction.UP : Direction.DOWN;
+		BlockPos surface = pos.relative(toSurface);
+		return level.getBlockState(surface).isFaceSturdy(level, surface, toSurface.getOpposite());
+	}
+
+	/**
+	 * -1, 0 or 1: the side on {@code axis} that the cable joined to {@code pos} through {@code first}, its opposite, up
+	 * or down keeps to by its own walls (0 if none does, or they disagree).
+	 */
+	private static int followSign(BlockGetter level, BlockPos pos, List<BlockState> strands, Direction first, Direction.Axis axis) {
+		int sign = 0;
+		// The cable above and below counts on both axes: where a run up a wall reaches a block whose wall has ended,
+		// it turns towards its next wall along the top of the one it came up.
+		for(Direction dir : new Direction[] { first, first.getOpposite(), Direction.UP, Direction.DOWN }) {
+			boolean linked = false;
+			for(BlockState strand : strands)
+				linked |= strand.getValue(PROPERTY_BY_DIRECTION.get(dir));
+			BlockPos next = pos.relative(dir);
+			List<BlockState> there = linked ? Strand.statesAt(level, next) : List.of();
+			if(there.isEmpty())
+				continue;
+			WireLook.Lateral theirs = wallShift(level, next, there, 1.0D, false);
+			int s = (int)Math.signum(axis == Direction.Axis.X ? theirs.x() : theirs.z());
+			if(s == 0)
+				continue;
+			if(sign != 0 && sign != s)
+				return 0;
+			sign = s;
+		}
+		return sign;
 	}
 
 	/** "Up" for a wire: away from the floor it lies on, or down for one on a ceiling. */
@@ -307,6 +403,10 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 			ceiling = !ceiling;
 			state = state.setValue(CEILING, ceiling);
 		}
+		if(state.hasProperty(CEILING) && !ceiling && hangsForSupport(level, pos, state)) {
+			ceiling = true;
+			state = state.setValue(CEILING, true);
+		}
 		Direction arrive = arrival(level, pos, state);
 
 		// A climb if there is one, trying the edge the run from below is already on first so the cable keeps its line.
@@ -317,7 +417,48 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 				return state.setValue(HUG, Edge.of(dir)).setValue(CLIMB, climbBack ? Climb.BOTH : Climb.ONE);
 			}
 		}
-		return state.setValue(HUG, Edge.of(hugEdge(level, pos, state, arrive))).setValue(CLIMB, Climb.NONE);
+		return state.setValue(HUG, Edge.of(wallSide(level, pos, state, arrive))).setValue(CLIMB, Climb.NONE);
+	}
+
+	/**
+	 * {@link #HUG} for a wire that does not climb: the edge its run up follows ({@link #hugEdge}), or for a wire with no
+	 * run up, the side wall it keeps to on the level (2026-11-11, {@link WireLook#lie}). Cable already laid keeps its
+	 * wall while the wall is there, so laying more next to it never moves it (maintainer); else it takes the edge the
+	 * run from below comes up on, then the wall the cable it joins keeps to, then the first wall clockwise from north.
+	 */
+	@Nullable
+	private Direction wallSide(BlockGetter level, BlockPos pos, BlockState state, @Nullable Direction arrive) {
+		if(state.getValue(upLink(isCeiling(state))))
+			return hugEdge(level, pos, state, arrive);
+		List<BlockState> strands = sideWallKinds(level, pos, state);
+		BlockState current = Strand.stateOf(level, pos, this);
+		Direction kept = current != null && current.hasProperty(HUG) ? current.getValue(HUG).direction() : null;
+		if(kept != null && isSideWall(level, pos, kept, strands))
+			return kept;
+		if(arrive != null && isSideWall(level, pos, arrive, strands))
+			return arrive;
+		for(Direction dir : Direction.Plane.HORIZONTAL) {
+			if(!state.getValue(PROPERTY_BY_DIRECTION.get(dir)))
+				continue;
+			BlockState there = sameKindState(level, pos.relative(dir));
+			Direction theirs = there == null || !there.hasProperty(HUG) ? null : there.getValue(HUG).direction();
+			if(theirs != null && theirs.getAxis() != dir.getAxis() && isSideWall(level, pos, theirs, strands))
+				return theirs;
+		}
+		for(Direction dir : Direction.Plane.HORIZONTAL)
+			if(isSideWall(level, pos, dir, strands))
+				return dir;
+		return null;
+	}
+
+	/** {@code state} with the other strands of a bundle at {@code pos}: what may not be a wall to any of them. */
+	private List<BlockState> sideWallKinds(BlockGetter level, BlockPos pos, BlockState state) {
+		List<BlockState> out = new ArrayList<>();
+		out.add(state);
+		for(BlockState strand : Strand.statesAt(level, pos))
+			if(strand.getBlock() != this)
+				out.add(strand);
+		return out;
 	}
 
 	/**
@@ -327,6 +468,12 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	 * cannot meet. Up and down links do not count: a run up a wall may turn onto a ceiling at its top.
 	 */
 	private boolean settledCeiling(BlockGetter level, BlockPos pos, BlockState state, boolean ceiling) {
+		// Plugged into a device under it (a cable on a battery), it lies on that device whatever its neighbours do: else
+		// one laid or rebuilt beside it first, hanging, turned it over for good (2026-11-14, the maintainer's house).
+		BlockPos below = pos.below();
+		BlockState under = level.getBlockState(below);
+		if(state.getValue(DOWN) && !under.isAir() && !Strand.isCable(under))
+			return false;
 		int hanging = 0, floor = 0;
 		for(Direction dir : Direction.Plane.HORIZONTAL) {
 			if(!state.getValue(PROPERTY_BY_DIRECTION.get(dir)))
@@ -347,6 +494,41 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	}
 
 	/**
+	 * Whether a floor wire in {@code state} at {@code pos} should hang from the ceiling instead because nothing else
+	 * holds it (2026-11-11): no floor under it, a ceiling over it, no wall beside it, no run up or down, and not joined
+	 * to floor cable that lies on a floor, keeps to a wall, or has no ceiling to follow us onto (it could not meet that
+	 * cable from up there). So a run
+	 * carried on under a block from the top of a run up a wall goes onto the ceiling; the wire at the top of the run
+	 * then follows it there ({@link #settledCeiling}) and turns down the wall. A bundle's strands are left as they are.
+	 */
+	private boolean hangsForSupport(BlockGetter level, BlockPos pos, BlockState state) {
+		BlockState here = level.getBlockState(pos);
+		if(state.getValue(UP) || state.getValue(DOWN) || (Strand.isCable(here) && here.getBlock() != this))
+			return false; // A bundle, or a strand being laid in with another cable: they keep the level they share.
+		BlockPos roof = pos.above();
+		if(supported(level, pos, false) || !level.getBlockState(roof).isFaceSturdy(level, roof, Direction.DOWN))
+			return false;
+		List<BlockState> self = List.of(state);
+		for(Direction dir : Direction.Plane.HORIZONTAL) {
+			if(isSideWall(level, pos, dir, self))
+				return false;
+			if(!state.getValue(PROPERTY_BY_DIRECTION.get(dir)))
+				continue;
+			BlockPos next = pos.relative(dir);
+			BlockState there = sameKindState(level, next);
+			if(there == null || isCeiling(there) || there.getValue(UP) || there.getValue(DOWN))
+				continue;
+			BlockPos theirRoof = next.above();
+			if(supported(level, next, false) || !level.getBlockState(theirRoof).isFaceSturdy(level, theirRoof, Direction.DOWN))
+				return false; // It lies on a floor, or could not follow us up (nothing over it to hang from).
+			for(Direction side : Direction.Plane.HORIZONTAL)
+				if(isSideWall(level, next, side, List.of(there)))
+					return false;
+		}
+		return true;
+	}
+
+	/**
 	 * The look of the wire at {@code pos} in {@code state}: the stored climb and hugged edge, plus the edge a run
 	 * from below arrives on and how the run up ends, both worked out from the neighbours. Called by the client model
 	 * while a chunk is drawn (with a render region as {@code level}) and by the hitbox.
@@ -354,7 +536,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	public WireLook.Look look(BlockGetter level, BlockPos pos, BlockState state) {
 		if(!state.hasProperty(HUG))
 			return WireLook.Look.NONE;
-		Direction hug = state.getValue(HUG).direction();
+		Direction hug = runEdge(state); // HUG on a wire with no run up is only the wall it keeps to (2026-11-11).
 		Climb climb = state.getValue(CLIMB);
 		boolean ceiling = isCeiling(state);
 		WireLook.End end = WireLook.End.NONE;
@@ -363,7 +545,9 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		else if(hug != null) {
 			BlockPos abovePos = above(pos, ceiling);
 			if(sameKindState(level, abovePos) == null && canConnectTo(level, abovePos))
-				end = WireLook.End.UP_DEVICE; // The run up the edge ends at a device above: turn in to its middle.
+				// The run up the edge ends at a device above: turn in to its middle; or, for a device on the very wall
+				// it runs up (a fire alarm box), go straight on into it: the device draws the rest (2026-11-11).
+				end = isData && deviceWall(level, abovePos) == hug || mountWall(level, abovePos) == hug ? WireLook.End.NONE : WireLook.End.UP_DEVICE;
 		}
 		Direction arrive = arrival(level, pos, state);
 		int hugReach = hug == null ? 0 : beamReach(level, pos.relative(hug));
@@ -386,19 +570,60 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 						break;
 					}
 				}
-		int stubs = 0;
+		int stubs = 0, drops = 0, dropEnds = 0;
+		for(Direction dir : Direction.Plane.HORIZONTAL)
+			if(ceiling && dir != hug && state.getValue(PROPERTY_BY_DIRECTION.get(dir)) && floorDevice(level, pos.relative(dir))) {
+				drops |= 1 << dir.get2DDataValue();
+				dropEnds = WireLook.Look.withDropEnd(dropEnds, dir, connectorHeight(level, pos.relative(dir)));
+			}
 		for(Direction dir : Direction.Plane.HORIZONTAL)
 			if(dir != hug && dir != arrive && state.getValue(PROPERTY_BY_DIRECTION.get(dir))) {
 				int set = turnsOutTowards(level, pos.relative(dir), dir.getOpposite());
 				if(set > 0)
 					stubs = WireLook.Look.withStub(stubs, dir, -set);
-				else if(!isCeiling(state)) {
+				else if(!isCeiling(state) || (drops >> dir.get2DDataValue() & 1) != 0) { // Or dropping to it: in to its body.
 					int inset = deviceInset(level, pos.relative(dir), dir.getOpposite());
 					if(inset > 0) // A device whose body is set back in its block: the stub runs in to meet it (2026-11-09).
 						stubs = WireLook.Look.withStub(stubs, dir, inset);
 				}
 			}
-		return new WireLook.Look(hug, arrive, end, climb == Climb.BOTH, hugReach, arriveReach, backReach, feed, feedSide, reachBottom, reachTop, stubs);
+		return new WireLook.Look(hug, arrive, end, climb == Climb.BOTH, hugReach, arriveReach, backReach, feed, feedSide, reachBottom, reachTop, stubs, drops, dropEnds);
+	}
+
+	/**
+	 * Where a drop from the ceiling plugs into a floor device, pixels up from the floor: halfway up its body, at least
+	 * the cable's width (2026-11-14, the maintainer: the drop ran down a radio's back all the way to the desk); an
+	 * antenna at its foot, where its feed is (0).
+	 */
+	private int connectorHeight(BlockGetter level, BlockPos pos) {
+		BlockState state = level.getBlockState(pos);
+		if(isAntenna(level, pos))
+			return 0;
+		net.minecraft.world.phys.shapes.VoxelShape shape = state.getShape(level, pos);
+		if(shape.isEmpty())
+			return 0;
+		double top = shape.max(Direction.Axis.Y) * 16.0D;
+		return (int)Math.max(Math.ceil(width()), Math.round(top / 2.0D));
+	}
+
+	/**
+	 * True for a device (not cable) at {@code pos} standing low on its floor: a radio on a desk, not one hung from the
+	 * ceiling or on a wall, and not a tall one a ceiling wire meets near its top anyway. A ceiling wire linked to it
+	 * drops down its face to meet it ({@link WireLook.Look#drops}, 2026-11-13).
+	 */
+	public static boolean floorDevice(BlockGetter level, BlockPos pos) {
+		BlockState state = level.getBlockState(pos);
+		if(state.isAir() || Strand.isCable(state) || state.getBlock() instanceof WireBlock)
+			return false;
+		if(state.hasProperty(com.arrl.radiocraft.common.blocks.radios.RadioBlock.CEILING) && state.getValue(com.arrl.radiocraft.common.blocks.radios.RadioBlock.CEILING))
+			return false;
+		if(WallMount.onWall(state))
+			return false;
+		net.minecraft.world.phys.shapes.VoxelShape shape = state.getShape(level, pos);
+		if(shape.isEmpty())
+			return false;
+		net.minecraft.world.phys.AABB box = shape.bounds();
+		return box.minY <= 0.25D && box.maxY <= 0.9375D; // Short of the ceiling a hanging cable runs at: it must come down to meet it.
 	}
 
 	/**
@@ -412,7 +637,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 			return own;
 		BlockPos next = pos.relative(face);
 		BlockState there = sameKindState(level, next);
-		if(there == null || !there.hasProperty(HUG) || there.getValue(HUG).direction() != hug)
+		if(there == null || runEdge(there) != hug)
 			return own;
 		return Math.max(own, beamReach(level, next.relative(hug)));
 	}
@@ -500,16 +725,87 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		BlockState below = sameKindState(level, below(pos, ceiling));
 		if(state.getValue(downLink(ceiling)) && below != null) {
 			if(isCeiling(below) == ceiling)
-				return below.getValue(HUG).direction();
+				return runEdge(below);
 			// A floor wire and a ceiling wire joined end to end (a ceiling run turning up a wall, say): one run between
 			// them, on the edge either of them hugs, so each turns its corner on that edge with no stub to the middle.
-			Direction shared = below.getValue(HUG).direction();
-			return shared != null ? shared : state.getValue(HUG).direction();
+			Direction shared = runEdge(below);
+			return shared != null ? shared : runEdge(state);
+		}
+		if(isData && !ceiling && state.getValue(DOWN)) { // Down to a wall-mounted device: the run comes down its wall (2026-11-11).
+			Direction wall = deviceWall(level, pos.below());
+			if(wall != null)
+				return wall;
 		}
 		for(Direction dir : Direction.Plane.HORIZONTAL)
 			if(climbsTowards(level, below(pos.relative(dir), ceiling), dir.getOpposite(), ceiling))
 				return dir;
 		return null;
+	}
+
+	/** The sides climbers of this kind come up to {@code pos} on (see {@link #arrival}), in the usual order. */
+	private List<Direction> climbers(BlockGetter level, BlockPos pos, boolean ceiling) {
+		List<Direction> out = new ArrayList<>(1);
+		for(Direction dir : Direction.Plane.HORIZONTAL)
+			if(climbsTowards(level, below(pos.relative(dir), ceiling), dir.getOpposite(), ceiling))
+				out.add(dir);
+		return out;
+	}
+
+	/** The wall a wall-mounted device at {@code pos} is on ({@link com.arrl.radiocraft.common.blocks.mesh.WallWired}), or null. */
+	/**
+	 * The wall a {@link WallMount} block at {@code pos} (an antenna or power switch on a wall) is fixed to, as a
+	 * direction from it, or null: its connectors sit against that wall, so a run up to it keeps to the wall and goes
+	 * straight in at the top, with no turn out to the middle of the block (2026-11-13).
+	 */
+	@Nullable
+	private static Direction mountWall(BlockGetter level, BlockPos pos) {
+		BlockState state = level.getBlockState(pos);
+		return WallMount.onWall(state) ? state.getValue(WallMount.FACING).getOpposite() : null;
+	}
+
+	@Nullable
+	private static Direction deviceWall(BlockGetter level, BlockPos pos) {
+		BlockState state = level.getBlockState(pos);
+		return state.getBlock() instanceof com.arrl.radiocraft.common.blocks.mesh.WallWired device ? device.wallBehind(state) : null;
+	}
+
+	/**
+	 * {@link #lookConnections(BlockState)}, but a data wire running up (or coming up) a wall drops its link sideways to a
+	 * device on that same wall: the device's own cable runs along the wall to it (2026-11-11). The link is drawn as one
+	 * into the wall instead, so a run that ends there ends at the wall, not with a stub to the block's middle.
+	 */
+	public Set<Direction> lookConnections(BlockGetter level, BlockPos pos, BlockState state) {
+		Set<Direction> out = lookConnections(state);
+		if(state.hasProperty(HUG) && !state.getValue(downLink(isCeiling(state)))) {
+			// A second climber (up the far side of a one-wide wall, 2026-11-11): a stub out to the edge it comes up on,
+			// as to a neighbour. The first is the arrival, drawn as such.
+			List<Direction> climbers = climbers(level, pos, isCeiling(state));
+			for(int i = 1; i < climbers.size(); i++)
+				out.add(climbers.get(i));
+		}
+		if(isCoax() && level.getBlockState(pos).getBlock() instanceof WireBundleBlock) // Coax only running past a device in a bundle draws no stub to it (2026-11-11).
+			for(Strand strand : Strand.at(level, pos))
+				if(strand.kind() == this && com.arrl.radiocraft.common.be_networks.WireUtils.passesDevicesBy(level, strand, state)) {
+					out.removeIf(dir -> Strand.at(level, pos.relative(dir)).isEmpty() && !level.getBlockState(pos.relative(dir)).isAir());
+					break;
+				}
+		if(!isData || isCeiling(state) || !state.hasProperty(HUG))
+			return out;
+		Direction hug = runEdge(state), arrive = null;
+		for(Direction dir : Direction.Plane.HORIZONTAL) {
+			if(!out.contains(dir))
+				continue;
+			Direction wall = deviceWall(level, pos.relative(dir));
+			if(wall == null || wall.getAxis() == dir.getAxis())
+				continue;
+			if(arrive == null)
+				arrive = arrival(level, pos, state);
+			if(wall == hug || wall == arrive) {
+				out.remove(dir);
+				out.add(wall);
+			}
+		}
+		return out;
 	}
 
 	/**
@@ -521,18 +817,38 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		boolean ceiling = isCeiling(state);
 		if(!state.getValue(upLink(ceiling)))
 			return null;
-		if(arrive != null)
+		// Keep the line of the run from below, unless its wall has ended here and another side has one: then go over
+		// to that wall rather than on up through the air (2026-11-11).
+		if(arrive != null && (isWall(level, pos.relative(arrive), arrive.getOpposite()) || !anyWall(level, pos)))
 			return arrive;
+		if(isData && !ceiling) { // A run up to a wall-mounted device keeps to the device's wall (2026-11-11).
+			Direction wall = deviceWall(level, pos.above());
+			if(wall != null)
+				return wall;
+		}
+		if(!ceiling) { // And to a switch on a wall (2026-11-13): its connector is at the wall.
+			Direction wall = mountWall(level, pos.above());
+			if(wall != null && isWall(level, pos.relative(wall), wall.getOpposite()))
+				return wall;
+		}
 		// A floor wire and a ceiling wire running towards each other share the run: follow the edge the other is on.
 		BlockState facing = sameKindState(level, above(pos, ceiling));
-		if(facing != null && isCeiling(facing) != ceiling && facing.getValue(HUG).direction() != null)
-			return facing.getValue(HUG).direction();
+		if(facing != null && isCeiling(facing) != ceiling && runEdge(facing) != null)
+			return runEdge(facing);
 		// Of the solid walls around, prefer the one on the side the run leads to at the top, so the cable goes
 		// straight up to the wire it joins instead of up the nearest wall and across.
 		for(Direction dir : wallOrder(Edge.of(destinationSide(level, pos, ceiling))))
 			if(isWall(level, pos.relative(dir), dir.getOpposite()))
 				return dir;
-		return null;
+		return arrive;
+	}
+
+	/** True if any side of {@code pos} is a wall a run up could follow ({@link #isWall}). */
+	private boolean anyWall(BlockGetter level, BlockPos pos) {
+		for(Direction dir : Direction.Plane.HORIZONTAL)
+			if(isWall(level, pos.relative(dir), dir.getOpposite()))
+				return true;
+		return false;
 	}
 
 	/**
@@ -661,12 +977,9 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 				out.put(pos.relative(dir), dir.getOpposite());
 		}
 		boolean ceiling = isCeiling(state);
-		Direction arrive = arrival(level, pos, state);
-		if(arrive != null && !state.getValue(downLink(ceiling))) { // Not from the wire below, so from a climber on that side.
-			BlockPos climber = below(pos.relative(arrive), ceiling);
-			if(climbsTowards(level, climber, arrive.getOpposite(), ceiling))
-				out.put(climber, arrive);
-		}
+		if(!state.getValue(downLink(ceiling))) // Not from the wire below, so from climbers: every one (both sides of a one-wide wall, 2026-11-11).
+			for(Direction dir : climbers(level, pos, ceiling))
+				out.put(below(pos.relative(dir), ceiling), dir);
 		if(state.getValue(CLIMB) != Climb.NONE) {
 			Direction hug = state.getValue(HUG).direction();
 			BlockPos top = above(pos.relative(hug), ceiling);
@@ -726,7 +1039,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 
 	/** What counts as a connection on this wire's networks. */
 	public Predicate<BENetworkObject> connectionPredicate() {
-		return isPower ? no -> no instanceof PowerNetworkObject : no -> no instanceof ICoaxNetworkObject;
+		return isPower ? no -> no instanceof com.arrl.radiocraft.api.benetworks.PowerMember : no -> no instanceof ICoaxNetworkObject;
 	}
 
 	/** New-network factory for this wire's networks. */
@@ -793,7 +1106,8 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 			com.arrl.radiocraft.common.be_networks.DataWire.changed(level, pos);
 			return;
 		}
-		Map<BlockPos, Direction> links = getLinks(level, pos, state); // The old state: the strand is already gone.
+		// The old state: the strand is already gone. As the walk saw it: not to devices it only ran past (2026-11-11).
+		Map<BlockPos, Direction> links = WireUtils.walkLinks(level, new Strand(pos, this), state);
 		if(links.size() >= 2) // Only bother running split if this wire was actually connecting things.
 			WireUtils.splitNetworks(level, new Strand(pos, this), gone, links, connectionPredicate(), networkWires());
 		if(isPower && level instanceof ServerLevel serverLevel) {
@@ -829,7 +1143,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 			return false;
 
 		boolean climbChanged = !climbTargets(pos, old).equals(climbTargets(pos, fresh));
-		Map<BlockPos, Direction> oldLinks = climbChanged ? getLinks(level, pos, old) : Map.of();
+		Map<BlockPos, Direction> oldLinks = climbChanged ? WireUtils.walkLinks(level, new Strand(pos, this), old) : Map.of(); // As the walk sees them (2026-11-11).
 
 		store.accept(fresh);
 		if(isData)
@@ -837,8 +1151,8 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		if(!climbChanged || isData)
 			return true;
 
-		Map<BlockPos, Direction> newLinks = getLinks(level, pos, fresh);
 		Strand strand = new Strand(pos, this);
+		Map<BlockPos, Direction> newLinks = WireUtils.walkLinks(level, strand, fresh);
 		if(!oldLinks.keySet().containsAll(newLinks.keySet()))
 			WireUtils.mergeNetworks(level, strand, connectionPredicate(), networkSupplier(), networkWires());
 		if(!newLinks.keySet().containsAll(oldLinks.keySet())) {
@@ -870,7 +1184,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		if(state.getValue(CLIMB) != Climb.NONE)
 			return fresh.setValue(CLIMB, state.getValue(CLIMB)).setValue(HUG, state.getValue(HUG));
 		if(fresh.getValue(CLIMB) != Climb.NONE)
-			fresh = fresh.setValue(CLIMB, Climb.NONE).setValue(HUG, Edge.of(hugEdge(level, pos, fresh, arrival(level, pos, fresh))));
+			fresh = fresh.setValue(CLIMB, Climb.NONE).setValue(HUG, Edge.of(wallSide(level, pos, fresh, arrival(level, pos, fresh))));
 		return fresh;
 	}
 
@@ -891,13 +1205,25 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 			// a straight line, and the other side's stub goes all the way to it.
 			boolean linked = own != null && own.getValue(PROPERTY_BY_DIRECTION.get(dir));
 			if(!linked) {
-				at[dir.ordinal()] = offset;
+				// Cable kept to a wall need not sit where its neighbours do (2026-11-11), so where cable comes in
+				// without a link through this face (up the edge from below, or a climb), meet it halfway too.
+				BlockPos other = own == null ? null : unlinkedMeeting(level, pos, own, dir);
+				at[dir.ordinal()] = other == null ? offset : offset.halfwayTo(Strand.offsetOf(level, other, this));
+				if(other == null && own != null && dir == up(isCeiling(own)) && runEndsAtDevice(level, pos, own))
+					at[dir.ordinal()] = intoDevice(level, pos, own, offset);
 				continue;
 			}
 			WireLook.Lateral theirs = Strand.offsetOf(level, pos.relative(dir), this);
-			if(dir.getAxis().isHorizontal() && own.hasProperty(HUG) && (own.getValue(HUG).direction() == dir
-					|| (own.getValue(HUG).direction() == null && arrival(level, pos, own) == dir)))
+			Direction run = runEdge(own);
+			if(dir.getAxis().isHorizontal() && own.hasProperty(HUG) && (run == dir
+					|| (run == null && arrival(level, pos, own) == dir)))
 				at[dir.ordinal()] = offset; // Our run up this edge, or our corner turning out through it: our line.
+			else if(sameKindState(level, pos.relative(dir)) == null) {
+				// A device (or a passthrough): a cable kept to a wall jogs back out to the middle of its face
+				// (maintainer, 2026-11-11); a bundle's strands still spread as before, halfway to their place.
+				WireLook.Lateral shift = Strand.shiftAt(level, pos);
+				at[dir.ordinal()] = new WireLook.Lateral((offset.x() - shift.x()) / 2.0D, (offset.z() - shift.z()) / 2.0D);
+			}
 			else if(dir.getAxis().isHorizontal() && runsUpFace(level, pos.relative(dir), dir.getOpposite()))
 				at[dir.ordinal()] = theirs;
 			else
@@ -905,6 +1231,68 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		}
 		return new WireLook.Faces(at[Direction.DOWN.ordinal()], at[Direction.UP.ordinal()], at[Direction.NORTH.ordinal()],
 				at[Direction.SOUTH.ordinal()], at[Direction.WEST.ordinal()], at[Direction.EAST.ordinal()]);
+	}
+
+	/**
+	 * True if the run up this wire's edge ends at a device: a climb onto a block with a device on it, or a run up to a
+	 * device straight above (not one mounted on the very wall it runs up, which draws its own entry).
+	 */
+	private boolean runEndsAtDevice(BlockGetter level, BlockPos pos, BlockState own) {
+		Direction hug = own.hasProperty(HUG) ? runEdge(own) : null;
+		if(hug == null)
+			return false;
+		boolean ceiling = isCeiling(own);
+		if(own.getValue(CLIMB) != Climb.NONE) {
+			BlockPos top = above(pos.relative(hug), ceiling);
+			return sameKindState(level, top) == null && !isAntenna(level, top);
+		}
+		BlockPos abovePos = above(pos, ceiling);
+		return sameKindState(level, abovePos) == null && canConnectTo(level, abovePos) && !isAntenna(level, abovePos)
+				&& !(isData && deviceWall(level, abovePos) == hug);
+	}
+
+	/**
+	 * An antenna draws its own feed point where coax comes up to it (a J-pole's foot, its mast in the middle): a run
+	 * up to one keeps its line, or it would sit inside the mast and flicker (2026-11-13).
+	 */
+	private static boolean isAntenna(BlockGetter level, BlockPos pos) {
+		return level.getBlockState(pos).is(com.arrl.radiocraft.common.init.RadiocraftTags.Blocks.ANTENNA_BLOCKS);
+	}
+
+	/**
+	 * Where a run up the edge into a device comes out at the top (2026-11-13: a data wire kept to a wall, or a bundle
+	 * pushed into a corner, climbed into a radio at its corner): across the wall it converges on the middle of the
+	 * device's face, a lone wire to the very middle and a bundle's strands to their places in the bundle about it, so
+	 * the strands still sit side by side; how close to the wall it runs stays as it is.
+	 */
+	private WireLook.Lateral intoDevice(BlockGetter level, BlockPos pos, BlockState own, WireLook.Lateral offset) {
+		Direction hug = runEdge(own);
+		WireLook.Lateral shift = level.getBlockState(pos).getBlock() instanceof WireBlock ? offset : Strand.shiftAt(level, pos);
+		return hug.getAxis() == Direction.Axis.Z ? new WireLook.Lateral(offset.x() - shift.x(), offset.z())
+				: new WireLook.Lateral(offset.x(), offset.z() - shift.z());
+	}
+
+	/**
+	 * The cable that meets ours through face {@code dir} with no link there: on the edge a run from below comes up on,
+	 * the wire below (or the climber on that side); at the top of a climb to a wire, that wire. Null for none.
+	 */
+	@Nullable
+	private BlockPos unlinkedMeeting(BlockGetter level, BlockPos pos, BlockState own, Direction dir) {
+		if(!own.hasProperty(HUG))
+			return null;
+		boolean ceiling = isCeiling(own);
+		if(dir == up(ceiling)) {
+			Direction hug = own.getValue(CLIMB) != Climb.NONE ? own.getValue(HUG).direction() : null;
+			BlockPos top = hug == null ? null : above(pos.relative(hug), ceiling);
+			return top != null && sameKindState(level, top) != null ? top : null;
+		}
+		if(!dir.getAxis().isHorizontal() || dir == runEdge(own))
+			return null;
+		BlockPos below = below(pos, ceiling);
+		if(own.getValue(downLink(ceiling)) && sameKindState(level, below) != null)
+			return arrival(level, pos, own) == dir ? below : null;
+		BlockPos climber = below(pos.relative(dir), ceiling);
+		return climbsTowards(level, climber, dir.getOpposite(), ceiling) ? climber : null;
 	}
 
 	/** The most a stub reaches into a device's block to meet its body, pixels. */
@@ -940,7 +1328,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		BlockState there = sameKindState(level, pos);
 		if(there == null || !there.hasProperty(HUG))
 			return false;
-		Direction hug = there.getValue(HUG).direction();
+		Direction hug = runEdge(there);
 		return hug == face || (hug == null && arrival(level, pos, there) == face);
 	}
 
@@ -950,7 +1338,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	 */
 	private int turnsOutTowards(BlockGetter level, BlockPos pos, Direction face) {
 		BlockState there = sameKindState(level, pos);
-		if(there == null || !there.hasProperty(HUG) || there.getValue(HUG).direction() != null || arrival(level, pos, there) != face
+		if(there == null || !there.hasProperty(HUG) || runEdge(there) != null || arrival(level, pos, there) != face
 				|| !there.getValue(PROPERTY_BY_DIRECTION.get(face)))
 			return 0;
 		return Math.max(0, arrivalReach(level, pos, there, face));
@@ -985,7 +1373,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 
 	/** The outline of a wire of this kind in {@code state} at {@code pos}, drawn {@code offset} sixteenths off the middle. */
 	public VoxelShape shapeFor(BlockGetter level, BlockPos pos, BlockState state, WireLook.Lateral offset) {
-		List<WireLook.Placed> parts = WireLook.parts(look(level, pos, state), lookConnections(state));
+		List<WireLook.Placed> parts = WireLook.parts(look(level, pos, state), lookConnections(level, pos, state));
 		WireLook.Faces faces = faces(level, pos, offset);
 		return SHAPE_CACHE.computeIfAbsent(new ShapeKey(parts, isCeiling(state), offset, faces, width()), key -> buildShape(key));
 	}
@@ -1009,8 +1397,8 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 				case HORIZONTAL -> pieces.stubs().get(placed.dir());
 				case CORNER -> pieces.corners().get(placed.dir());
 				case VERTICAL -> pieces.vertical();
-				case EDGE, EDGE_FULL -> pieces.edges().get(placed.dir());
-				case CLIMB_OVERHANG, UP_OVERHANG -> Shapes.empty();
+				case EDGE, EDGE_FULL, DROP -> pieces.edges().get(placed.dir());
+				case CLIMB_OVERHANG, UP_OVERHANG, RISER, SPAN, JOINT, POST -> Shapes.empty(); // Beyond the block, or a small hop.
 			};
 			if(key.ceiling())
 				piece = flipVertically(piece);

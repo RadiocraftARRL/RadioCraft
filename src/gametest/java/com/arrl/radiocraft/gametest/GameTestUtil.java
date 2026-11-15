@@ -33,7 +33,7 @@ public final class GameTestUtil {
         AntennaWire wire = new AntennaWire(helper.getLevel(), helper.absolutePos(from));
         helper.getLevel().addFreshEntity(wire);
         wire.setEndPos(helper.absolutePos(to));
-        wire.updateAntennas();
+        wire.strung();
         return wire;
     }
 
@@ -47,11 +47,20 @@ public final class GameTestUtil {
 
     /** A VHF base station at {@code radio} with a J-pole on its coax: coax one block south, the J-pole two south. */
     public static void radioWithJPole(GameTestHelper helper, BlockPos radio) {
+        radioWithDoubleAntenna(helper, radio, RadiocraftBlocks.J_POLE_ANTENNA.get());
+    }
+
+    /** A VHF base station with an EB-VHF eggbeater, the satellite antenna (2026-11-12), on coax to its south. */
+    public static void radioWithEggbeater(GameTestHelper helper, BlockPos radio) {
+        radioWithDoubleAntenna(helper, radio, RadiocraftBlocks.EGGBEATER_ANTENNA.get());
+    }
+
+    private static void radioWithDoubleAntenna(GameTestHelper helper, BlockPos radio, net.minecraft.world.level.block.Block antenna) {
         helper.setBlock(radio, RadiocraftBlocks.VHF_BASE_STATION.get());
         placeWire(helper, radio.south(), RadiocraftBlocks.COAX_WIRE.get());
         BlockPos lower = radio.south(2);
-        helper.setBlock(lower, RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState().setValue(DoubleVHFAntennaBlock.HALF, DoubleBlockHalf.LOWER));
-        helper.setBlock(lower.above(), RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState().setValue(DoubleVHFAntennaBlock.HALF, DoubleBlockHalf.UPPER));
+        helper.setBlock(lower, antenna.defaultBlockState().setValue(DoubleVHFAntennaBlock.HALF, DoubleBlockHalf.LOWER));
+        helper.setBlock(lower.above(), antenna.defaultBlockState().setValue(DoubleVHFAntennaBlock.HALF, DoubleBlockHalf.UPPER));
     }
 
     public static <T extends BlockEntity> T blockEntity(GameTestHelper helper, BlockPos pos, Class<T> type) {

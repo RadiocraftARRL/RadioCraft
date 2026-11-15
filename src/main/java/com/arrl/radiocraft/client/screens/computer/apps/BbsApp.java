@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosTextArea;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -56,6 +57,34 @@ public final class BbsApp extends DosApp {
 	public BbsApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		messages.onActivate(index -> read());
+		java.util.function.BooleanSupplier sysopList = () -> page == SYSOP && mode == LIST;
+		java.util.function.BooleanSupplier terminal = () -> page == TERMINAL;
+		java.util.function.BooleanSupplier notWriting = () -> !(page == SYSOP && mode == WRITE);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.bbs.post", "^S", () -> {
+							if(page == SYSOP && mode == WRITE)
+								post();
+						}).when(() -> page == SYSOP && mode == WRITE),
+						item("menu.refresh", "F5", GLFW.GLFW_KEY_F5).when(notWriting),
+						item("menu.bbs.back", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == SYSOP && mode != LIST),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == TERMINAL || mode == LIST))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.bbs.switch_page", "Tab", GLFW.GLFW_KEY_TAB).when(notWriting),
+						item("menu.scroll_up", "Up", GLFW.GLFW_KEY_UP).when(notWriting),
+						item("menu.scroll_down", "Down", GLFW.GLFW_KEY_DOWN).when(notWriting),
+						item("menu.page_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP).when(notWriting),
+						item("menu.page_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN).when(notWriting))),
+				new DosMenuBar.Menu(Dos.tr("menu.bbs.mailbox"), List.of(
+						item("menu.bbs.read", "Enter", GLFW.GLFW_KEY_ENTER).when(sysopList),
+						item("menu.bbs.compose", "N", () -> onChar('N')).when(sysopList),
+						item("menu.bbs.bulletin", "B", () -> onChar('B')).when(sysopList),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(sysopList),
+						item("menu.bbs.settings", "F7", GLFW.GLFW_KEY_F7).when(sysopList))),
+				new DosMenuBar.Menu(Dos.tr("menu.bbs.terminal"), List.of(
+						item("menu.bbs.connect", "F7", GLFW.GLFW_KEY_F7).when(terminal),
+						item("menu.bbs.send", "Enter", GLFW.GLFW_KEY_ENTER).when(terminal),
+						item("menu.bbs.clear", "F8", GLFW.GLFW_KEY_F8).when(terminal))))));
 	}
 
 	@Override

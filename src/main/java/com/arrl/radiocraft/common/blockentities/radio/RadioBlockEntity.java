@@ -121,6 +121,11 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     protected boolean onDummyLoad;
     /** The share of the static a radio on a dummy load still plays: the receiver's own hiss. */
     public static final double DUMMY_LOAD_STATIC = 0.05D;
+    /**
+     * The share a radio with nothing on its coax plays (2026-11-13): its own front end's hiss, a little under a dummy
+     * load's. It also hears transmitters a few blocks away through the bare connector ({@link BareConnectorAntenna}).
+     */
+    public static final double BARE_STATIC = 0.04D;
     protected boolean tuneFail; // An automatic tuner on the coax gave up on the antenna; the screen says TUNE FAIL.
     /**
      * More than one radio (or direction finder module) shares this radio's antenna coax, or it has more than one
@@ -135,7 +140,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     // and where it stands. Server side, not saved: a reload lets go of it.
     private UUID deskMicUser = null;
     private boolean deskMicLocked = false;
-    private boolean deskMicKeyed = false;
+    private volatile boolean deskMicKeyed = false; // Read on the voice thread too (getPos).
     private long deskMicKeyedSince = -1L;
     private volatile BlockPos deskMicPos = null; // Read on the voice thread while keyed.
     @Nullable
@@ -289,10 +294,32 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         for(BlockPos at : com.arrl.radiocraft.common.be_networks.DataWire.linked(serverLevel, worldPosition))
             if(serverLevel.isLoaded(at) && serverLevel.getBlockState(at).getBlock() instanceof com.arrl.radiocraft.common.blocks.WiredSpeakerBlock speaker)
                 wired.add(new BEVoiceReceiver.WiredSpeaker(at.immutable(), speaker.getKind()));
+            else if(playsThroughSirens() && serverLevel.isLoaded(at) && serverLevel.getBlockState(at).is(com.arrl.radiocraft.common.init.RadiocraftTags.Blocks.SIREN_SPEAKERS)) {
+                BEVoiceReceiver.WiredSpeaker siren = new BEVoiceReceiver.WiredSpeaker(sirenHead(serverLevel, at), com.arrl.radiocraft.common.radio.voice.SpeakerKind.SIREN);
+                if(!wired.contains(siren)) // Wire touching it twice, or touching its pole and its cabinet.
+                    wired.add(siren);
+            }
         if(!wired.equals(voiceReceiver.getWiredSpeakers())) {
             voiceReceiver.setWiredSpeakers(wired);
             updateBlock(); // Clients play the static through them too.
         }
+    }
+
+    /**
+     * Whether this radio speaks through outdoor warning sirens its data wire reaches ({@link com.arrl.radiocraft.common.init.RadiocraftTags.Blocks#SIREN_SPEAKERS},
+     * 2026-11-13): commercial radios only, as a public address.
+     */
+    protected boolean playsThroughSirens() {
+        return false;
+    }
+
+    /** The top of the siren that has a segment at {@code at}: where its horns are. */
+    static BlockPos sirenHead(ServerLevel level, BlockPos at) {
+        net.minecraft.world.level.block.Block block = level.getBlockState(at).getBlock();
+        BlockPos head = at.immutable();
+        for(int i = 0; i < 16 && level.isLoaded(head.above()) && level.getBlockState(head.above()).is(block); i++)
+            head = head.above();
+        return head;
     }
 
     // -------------------- REMOTE AUDIO (RIGCTL, 2026-11-09) --------------------
@@ -582,7 +609,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             dataVoiceId = Afsk.markDataSource(UUID.nameUUIDFromBytes(("radiocraft-tnc-" + worldPosition.asLong()).getBytes(StandardCharsets.UTF_8)));
         int frames = serverLevel.getGameTime() % 2 == 0 ? 3 : 2;
         for(int i = 0; i < frames && dataFrame < dataFrames.size(); i++) {
-            transmitVoice(() -> serverLevel, dataFrames.get(dataFrame++), getTunedFrequency(), dataVoiceId, 0.0F);
+            transmitVoice(() -> serverLevel, dataFrames.get(dataFrame++), getSimplexTransmitHz(), dataVoiceId, 0.0F);
             recordTransmit();
         }
         if(dataHeaderAt >= 0 && dataFrame >= dataHeaderAt) { // The start tone is done: receivers lock on and start printing.
@@ -602,7 +629,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     protected void transmitData(ServerLevel serverLevel, TncPacket packet) {
         if(isBlown() || isTransmitInhibited())
             return;
-        sendDataOn(serverLevel, packet, getTunedFrequency());
+        sendDataOn(serverLevel, packet, getSimplexTransmitHz());
     }
 
     /**
@@ -653,6 +680,13 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         double noise = getNoiseFloor(skip);
         double quality = strength / copyThreshold(noise);
         TncPacket payload = packet.getPayload();
+        if(payload.kind() == TncPacket.Kind.APT) { // A weather satellite's scan line (2026-11-12): snowier and snowier down to a floor, as APT is.
+            if(quality < com.arrl.radiocraft.common.radio.satellite.imaging.AptLine.FLOOR)
+                return false;
+            recordSignal(strength);
+            feedComputers(payload.withText(com.arrl.radiocraft.common.radio.satellite.imaging.AptLine.withQuality(payload.text(), quality)));
+            return true;
+        }
         boolean ft8 = payload.kind() == TncPacket.Kind.FT8;
         if(ft8) { // FT8 digs far below the copy threshold, and the decoder notes how far above the noise it was.
             if(!com.arrl.radiocraft.common.radio.ft8.Ft8.decodes(quality))
@@ -698,6 +732,25 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         return true;
     }
 
+    /**
+     * A weather satellite's scan line this radio copied (2026-11-12), to the radio computers linked to it: touching it or
+     * on its data wire, or beside a scanner it touches (as {@code ComputerContext#linked} finds radios from the computer).
+     * Their WXSAT program takes it. Each computer takes a line once however many of its radios copy it.
+     */
+    private void feedComputers(TncPacket payload) {
+        if(level == null)
+            return;
+        java.util.Set<com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity> computers = new java.util.LinkedHashSet<>(
+                com.arrl.radiocraft.common.be_networks.DataWire.linked(level, worldPosition, com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity.class));
+        for(net.minecraft.core.Direction side : net.minecraft.core.Direction.values()) {
+            BlockPos at = worldPosition.relative(side);
+            if(level.isLoaded(at) && level.getBlockEntity(at) instanceof com.arrl.radiocraft.common.blockentities.ScannerBlockEntity scanner)
+                computers.addAll(com.arrl.radiocraft.common.be_networks.DataWire.linked(level, scanner.getBlockPos(), com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity.class));
+        }
+        for(com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity computer : computers)
+            computer.receive(payload);
+    }
+
     // -------------------- BAND SCOPE AND CARRIER (computer batch 3B) --------------------
 
     /** The band scope while the rig control program's waterfall watches this radio, else null. */
@@ -732,28 +785,70 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         scope = null;
     }
 
-    /** A voice signal for the band scope, shaped by its mode and how loud the voice is (2026-11-09); one null check if none. */
-    public void scopeHearVoice(com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket packet) {
-        com.arrl.radiocraft.common.radio.BandScope watching = scope;
-        if(watching == null)
-            return;
-        if(level != null && level.getGameTime() > watching.leaseUntil()) {
-            scope = null;
-            return;
+    /**
+     * A second band scope, for an External CRT Monitor touching this radio (2026-11-12): its own narrow span round the
+     * dial, so it and rig control's waterfall (usually the whole band) can both watch the radio. Same lease rules.
+     */
+    private volatile com.arrl.radiocraft.common.radio.BandScope monitorScope;
+
+    /** The monitor's band scope on this radio, as {@link #scope}. Server thread. */
+    public com.arrl.radiocraft.common.radio.BandScope monitorScope(double lowHz, double highHz, int leaseTicks) {
+        long until = (level == null ? 0L : level.getGameTime()) + leaseTicks;
+        com.arrl.radiocraft.common.radio.BandScope current = monitorScope;
+        if(current == null) {
+            current = new com.arrl.radiocraft.common.radio.BandScope(lowHz, highHz, until);
+            monitorScope = current;
         }
-        watching.hearVoice(packet.getFrequency(), packet.getStrength(), packet.getModulation(), packet.isLowerSideband(), packet.envelope());
+        else {
+            current.span(lowHz, highHz);
+            current.renew(until);
+        }
+        return current;
     }
 
-    /** Taps a signal reaching the antenna for the band scope, if one is watching; one null check if not. */
+    /** True while an External CRT Monitor's band scope watches this radio (tests). */
+    public boolean hasMonitorScope() {
+        return monitorScope != null;
+    }
+
+    public void dropMonitorScope() {
+        monitorScope = null;
+    }
+
+    /** A voice signal for the band scopes, shaped by its mode and how loud the voice is (2026-11-09); one null check each if none. */
+    public void scopeHearVoice(com.arrl.radiocraft.common.radio.antenna.AntennaVoicePacket packet) {
+        com.arrl.radiocraft.common.radio.BandScope watching = scope;
+        if(watching != null) {
+            if(level != null && level.getGameTime() > watching.leaseUntil())
+                scope = null;
+            else
+                watching.hearVoice(packet.getFrequency(), packet.getStrength(), packet.getModulation(), packet.isLowerSideband(), packet.envelope());
+        }
+        com.arrl.radiocraft.common.radio.BandScope monitor = monitorScope;
+        if(monitor != null) {
+            if(level != null && level.getGameTime() > monitor.leaseUntil())
+                monitorScope = null;
+            else
+                monitor.hearVoice(packet.getFrequency(), packet.getStrength(), packet.getModulation(), packet.isLowerSideband(), packet.envelope());
+        }
+    }
+
+    /** Taps a signal reaching the antenna for the band scopes, if any is watching; one null check each if not. */
     public void scopeHear(float hz, double strength) {
         com.arrl.radiocraft.common.radio.BandScope watching = scope;
-        if(watching == null)
-            return;
-        if(level != null && level.getGameTime() > watching.leaseUntil()) {
-            scope = null; // Nobody looked for a while.
-            return;
+        if(watching != null) {
+            if(level != null && level.getGameTime() > watching.leaseUntil())
+                scope = null; // Nobody looked for a while.
+            else
+                watching.hear(hz, strength);
         }
-        watching.hear(hz, strength);
+        com.arrl.radiocraft.common.radio.BandScope monitor = monitorScope;
+        if(monitor != null) {
+            if(level != null && level.getGameTime() > monitor.leaseUntil())
+                monitorScope = null;
+            else
+                monitor.hear(hz, strength);
+        }
     }
 
     /** A signal on this radio's frequency reached it: the squelch would open, whatever the speaker is set to. */
@@ -894,7 +989,9 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         if(transmitting && transmitTargets == null) {
             PickupZone zone = RedstoneInterference.getZone(serverLevel, worldPosition);
             boolean vertical = antenna.getAntenna() != null && TransmitInterference.VERTICAL_ANTENNAS.contains(antenna.getAntenna().type.getId());
-            transmitTargets = zone == null ? TransmitInterference.Targets.EMPTY : TransmitInterference.pick(serverLevel, zone, isQrp(), vertical, antennaSWR);
+            com.arrl.radiocraft.common.be_networks.network_objects.LinearAmplifierNetworkObject amplifier = antenna.getAmplifier();
+            int reach = amplifier != null && amplifier.gain(getFrequency()) > 1.0D ? 2 : 1; // An amplified station's RF reaches twice as far.
+            transmitTargets = zone == null ? TransmitInterference.Targets.EMPTY : TransmitInterference.pick(serverLevel, zone, isQrp(), vertical, antennaSWR, reach);
             TransmitInterference.start(serverLevel, transmitTargets);
         }
         else if(!transmitting && transmitTargets != null)
@@ -922,6 +1019,11 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     /** False for a transceiver: it cannot hear while it transmits. True for a repeater. */
     protected boolean hearsWhileTransmitting() {
         return false;
+    }
+
+    /** {@link #isTransmittingNow}, for the linear amplifier on the radio's coax (2026-11-13). */
+    public boolean isOnTheAir(ServerLevel serverLevel) {
+        return isTransmittingNow(serverLevel);
     }
 
     /** True while RF is going out: PTT held in SSB, or morse keyed within the last couple of ticks. A blown radio sends nothing. */
@@ -1749,8 +1851,19 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         return level == null ? 0.0D : getCrystalEffect().driftHz(level.getGameTime(), worldPosition.asLong());
     }
 
-    /** Where the radio really is: the dial frequency plus any crystal drift. It listens and transmits here. */
+    /**
+     * Where the radio listens: the dial frequency plus any crystal drift, and on a CB's clarifier or an HF rig's RIT the
+     * receiver's offset too.
+     */
     public float getTunedFrequency() {
+        return (float)(frequency + getDriftHz());
+    }
+
+    /**
+     * Where CW and data go out (packet is simplex): the dial frequency plus any crystal drift, never a receive-only
+     * offset (a clarifier or RIT), so tuning the receiver never moves the transmitter (2026-11-11).
+     */
+    public float getSimplexTransmitHz() {
         return (float)(frequency + getDriftHz());
     }
 
@@ -1933,6 +2046,51 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     public static final float SQUELCH_STEP = 0.1F;
 
+    /** The squelch knob's settings: OPEN, then tenths of the S-meter's scale. */
+    private static final float[] SQUELCH_STEPS = { 0.0F, 0.1F, 0.2F, 0.3F, 0.4F, 0.5F, 0.6F, 0.7F, 0.8F, 0.9F, 1.0F };
+    /**
+     * An FM radio's (2026-11-11): OPEN (the receiver's hiss plays, as a real FM set's does), a fine first step a quarter
+     * of the way to the next (just shut on the noise: every station still comes through), then tenths.
+     */
+    private static final float[] FM_SQUELCH_STEPS = { 0.0F, 0.025F, 0.1F, 0.2F, 0.3F, 0.4F, 0.5F, 0.6F, 0.7F, 0.8F, 0.9F, 1.0F };
+
+    /** This radio's squelch knob settings. */
+    public float[] squelchSteps() {
+        return isFM() ? FM_SQUELCH_STEPS : SQUELCH_STEPS;
+    }
+
+    /** The knob setting nearest the squelch now, 0 (OPEN) up. */
+    public int squelchIndex() {
+        float[] steps = squelchSteps();
+        int best = 0;
+        for(int i = 1; i < steps.length; i++)
+            if(Math.abs(steps[i] - squelch) < Math.abs(steps[best] - squelch))
+                best = i;
+        return best;
+    }
+
+    /** The squelch {@code by} knob settings from where it is. */
+    public float squelchStep(int by) {
+        float[] steps = squelchSteps();
+        return steps[Mth.clamp(squelchIndex() + by, 0, steps.length - 1)];
+    }
+
+    /** "OPEN", or the knob's number. */
+    public String squelchLabel() {
+        int index = squelchIndex();
+        return index == 0 ? "OPEN" : Integer.toString(index);
+    }
+
+    /** Where the knob points, 0 (OPEN) to 1 (the last setting). */
+    public double squelchKnob() {
+        return squelchIndex() / (double)(squelchSteps().length - 1);
+    }
+
+    /** The squelch a new radio of this kind comes with: open, but see {@link VHFBaseStationBlockEntity}. */
+    protected float defaultSquelch() {
+        return 0.0F;
+    }
+
     /** Server side, from the squelch knob. */
     public void setSquelch(float level) {
         this.squelch = Mth.clamp(level, 0.0F, 1.0F);
@@ -2003,7 +2161,9 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
     private boolean tickReceiverSync(long now, boolean powered) {
         boolean changed = false;
         if(now % 4L == 0L) {
-            double noise = powered ? Math.round(getNoiseFloor(true) * 20.0D) / 20.0D : 0.0D;
+            // The meter reads the band's noise only as far as it gets in: none without an antenna, the receiver's own
+            // hiss on a dummy load, as the static plays (getStaticVolume; 2026-11-11).
+            double noise = powered ? Math.round(getNoiseFloor(true) * getStaticVolume() * 100.0D) / 100.0D : 0.0D; // To 1/100: a bare radio's reading is that low.
             if(noise != meterNoise) {
                 meterNoise = noise;
                 changed = true;
@@ -2250,6 +2410,9 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
 
     @Override
     public Vec3 getPos() {
+        BlockPos deskMic = deskMicPos;
+        if(deskMicKeyed && deskMic != null) // A desk mic keyed: it hears the room it stands in, which may be down a data wire (2026-11-14).
+            return Sublevels.worldCenter(level, deskMic);
         return Sublevels.worldCenter(level, this.micPos.get()); // Players near a radio on a Sable ship are near the ship.
     }
 
@@ -2273,16 +2436,34 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
         return antennaSWR;
     }
 
+    /**
+     * The share of the band noise that comes in: through the antenna's match, a trickle on a dummy load, and with no
+     * antenna the receiver's own faint hiss ({@link #BARE_STATIC}; 2026-11-13, it used to be silent). The S-meter reads
+     * this; the speaker plays {@link #getStaticVolumeHeard()}.
+     */
     public double getStaticVolume() {
         if(antennaSWR <= 0.01D)
-            return 0.0D;
+            return wasPowered ? BARE_STATIC : 0.0D; // Off: nothing at all.
         else {
             return SWRHelper.getEfficiencyMultiplier(antennaSWR) * (onDummyLoad ? DUMMY_LOAD_STATIC : 1.0D);
         }
     }
 
+    /** As {@link #getStaticVolume()}, as the speaker plays it: the AGC lifts a faint hiss a little (ReceiverMix#agcLifted). */
+    public double getStaticVolumeHeard() {
+        return com.arrl.radiocraft.common.radio.voice.ReceiverMix.agcLifted(getStaticVolume(), getAgc() != AGC_OFF);
+    }
+
     public boolean shouldPlayStatic() {
         return getSSBEnabled();
+    }
+
+    /**
+     * The receiver's noise on a VHF band, as the static plays it (VHF has no solar noise): the config's VHF floor, low
+     * because an FM set's hiss comes through its voice path. An AM set on VHF (airband) hisses louder (2026-11-13).
+     */
+    public double vhfStaticFloor() {
+        return RadiocraftServerConfig.VHF_NOISE_FLOOR.get();
     }
 
     /**
@@ -2352,7 +2533,7 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
             frequency = nbt.getFloat("frequency");
         speakerGain = nbt.contains("speakerGain") ? nbt.getFloat("speakerGain") : 1.0F;
         micGain = nbt.contains("micGain") ? nbt.getFloat("micGain") : 1.0F;
-        squelch = nbt.contains("squelch") ? nbt.getFloat("squelch") : 0.0F;
+        squelch = nbt.contains("squelch") ? nbt.getFloat("squelch") : defaultSquelch();
                 agc = nbt.contains("agc") ? nbt.getInt("agc") : AGC_SLOW;
         quickHz = nbt.getFloat("quickHz");
         quickReturnHz = nbt.getFloat("quickReturnHz");

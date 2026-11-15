@@ -63,6 +63,11 @@ public record Strand(BlockPos pos, @Nullable WireBlock kind) {
 		return kind == null ? null : stateOf(level, pos, kind);
 	}
 
+	/** What strand {@code i} of {@code strands} at {@code pos} draws: its look's pieces, and its hops and turns ({@link CableRoutes}). */
+	public static List<WireLook.Placed> drawn(BlockGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, int i) {
+		return CableRoutes.drawn(level, pos, strands, offsets, i);
+	}
+
 	/** True if there is a cable of any kind at {@code pos} (a wire block or a bundle). */
 	public static boolean isCable(BlockState state) {
 		return state.getBlock() instanceof WireBlock || state.getBlock() instanceof WireBundleBlock;
@@ -101,12 +106,38 @@ public record Strand(BlockPos pos, @Nullable WireBlock kind) {
 		int fallback = -1;
 		for(int i = 0; i < strands.size(); i++) {
 			WireBlock there = (WireBlock)strands.get(i).getBlock();
-			if(there == kind)
-				return bundle.lateral(offsets[i]);
+			if(there == kind) {
+				fallback = i;
+				break;
+			}
 			if(fallback < 0 && kind.isSameKind(there))
 				fallback = i;
 		}
-		return fallback < 0 ? WireLook.Lateral.ZERO : bundle.lateral(offsets[fallback]);
+		return fallback < 0 ? WireLook.Lateral.ZERO : plus(bundle.lateral(offsets[fallback]), bundleShift(level, pos, strands, offsets));
+	}
+
+	/**
+	 * How far the cable at {@code pos} (a lone wire or a bundle) is moved over to keep to its walls
+	 * ({@link WireBlock#wallShift}, 2026-11-11): a bundle moves as a whole, until its outer strand touches the wall.
+	 */
+	public static WireLook.Lateral shiftAt(BlockGetter level, BlockPos pos) {
+		List<BlockState> strands = statesAt(level, pos);
+		if(strands.isEmpty())
+			return WireLook.Lateral.ZERO;
+		if(strands.size() == 1 && level.getBlockState(pos).getBlock() instanceof WireBlock wire)
+			return WireBlock.wallShift(level, pos, strands, wire.width() / 2.0D);
+		return bundleShift(level, pos, strands, offsets(strands));
+	}
+
+	private static WireLook.Lateral bundleShift(BlockGetter level, BlockPos pos, List<BlockState> strands, double[] offsets) {
+		double half = 0.0D;
+		for(int i = 0; i < offsets.length; i++)
+			half = Math.max(half, Math.abs(offsets[i]) + ((WireBlock)strands.get(i).getBlock()).width() / 2.0D);
+		return WireBlock.wallShift(level, pos, strands, half);
+	}
+
+	private static WireLook.Lateral plus(WireLook.Lateral a, WireLook.Lateral b) {
+		return b.isZero() ? a : new WireLook.Lateral(a.x() + b.x(), a.z() + b.z());
 	}
 
 	/**
@@ -117,6 +148,14 @@ public record Strand(BlockPos pos, @Nullable WireBlock kind) {
 	public static WireLook.Lateral loneOffset(BlockGetter level, BlockPos pos, BlockState state) {
 		if(!(state.getBlock() instanceof WireBlock wire) || !state.hasProperty(WireBlock.NORTH))
 			return WireLook.Lateral.ZERO;
+		// Kept to its walls (2026-11-11) on each axis that has one; else as below.
+		WireLook.Lateral shift = WireBlock.wallShift(level, pos, List.of(state), wire.width() / 2.0D);
+		WireLook.Lateral line = betweenBundles(level, pos, state, wire);
+		return shift.isZero() ? line : new WireLook.Lateral(shift.x() != 0.0D ? shift.x() : line.x(), shift.z() != 0.0D ? shift.z() : line.z());
+	}
+
+	/** The line of the bundle strands a lone wire only joins (see {@link #loneOffset}), else the middle. */
+	private static WireLook.Lateral betweenBundles(BlockGetter level, BlockPos pos, BlockState state, WireBlock wire) {
 		WireLook.Lateral found = null;
 		int links = 0;
 		for(net.minecraft.core.Direction dir : net.minecraft.core.Direction.values()) {
@@ -143,8 +182,9 @@ public record Strand(BlockPos pos, @Nullable WireBlock kind) {
 		WireLook.Lateral[] out = new WireLook.Lateral[offsets.length];
 		WireBundleBlockEntity bundle = level.getBlockState(pos).getBlock() instanceof WireBundleBlock
 				&& level.getBlockEntity(pos) instanceof WireBundleBlockEntity entity ? entity : null;
+		WireLook.Lateral shift = bundle != null ? bundleShift(level, pos, strands, offsets) : WireLook.Lateral.ZERO;
 		for(int i = 0; i < offsets.length; i++)
-			out[i] = bundle != null ? bundle.lateral(offsets[i])
+			out[i] = bundle != null ? plus(bundle.lateral(offsets[i]), shift)
 					: offsets.length == 1 ? loneOffset(level, pos, strands.get(i)) : WireLook.Lateral.of(offsets[i]);
 		return out;
 	}

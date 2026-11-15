@@ -1,0 +1,151 @@
+package com.arrl.radiocraft.datagen.lang;
+
+import net.neoforged.neoforge.common.data.LanguageProvider;
+
+import java.util.function.BiConsumer;
+
+/** The LAN programs (2026-11-13): LAN RELAY, LAN REDSTONE and LAN EMAIL, keys under {@code screen.radiocraft.computer.}. */
+public final class LanLang {
+
+	private LanLang() {}
+
+	public static void add(LanguageProvider provider) {
+		BiConsumer<String, String> s = (key, text) -> provider.add("screen.radiocraft.computer." + key, text);
+		s.accept("app.relay", "LAN Relay");
+		s.accept("app.relay.description", "Chat with the other computers on the LAN, in a room kept by a relay server.");
+		s.accept("relay.title", "LAN RELAY");
+		s.accept("relay.keys", "Enter=Say  F6=Name  F3=Room  F5=Serve  PgUp/Dn=Scroll");
+		s.accept("relay.reading", "Looking for relay servers...");
+		s.accept("relay.head", "You: %s    Rooms: %s");
+		s.accept("relay.no_name", "(no name)");
+		s.accept("relay.no_rooms", "none");
+		s.accept("relay.no_room", "No room");
+		s.accept("relay.room", "Room: %s");
+		s.accept("relay.none_hint", "No relay server on the LAN. A computer becomes one with F5 here: it needs a name (SETUP) and background services on, and keeps the room's history.");
+		s.accept("relay.pick_hint", "More than one relay server is on the LAN: F3 picks the room to enter.");
+		s.accept("relay.empty", "Nothing said yet.");
+		s.accept("relay.set_name", "F6 to pick your username on this computer.");
+		s.accept("relay.online", "In the room");
+		s.accept("relay.say_title", "Say in %s");
+		s.accept("relay.say_hint", "Enter to send");
+		s.accept("relay.name_title", "Username");
+		s.accept("relay.name_hint", "Up to 16 letters, digits, - or _ (kept on this computer)");
+		s.accept("relay.clear_title", "Clear history");
+		s.accept("relay.clear", "Empty this server's room history?");
+		s.accept("relay.not_serving", "This computer is not a relay server (F5 to serve).");
+		s.accept("relay.serving", "This computer is a relay server: its room is open to the LAN.");
+		s.accept("relay.serving_no_name", "Set to serve, but the computer has no name: give it one in SETUP.");
+		s.accept("relay.serving_no_services", "Set to serve, but background services are off (SETUP): the room is closed.");
+		s.accept("err.relay_bad_name", "A username is 1 to 16 letters, digits, - or _.");
+		s.accept("err.relay_no_name", "Pick a username first (F6).");
+		s.accept("err.relay_no_server", "That relay server cannot be reached.");
+		s.accept("err.relay_needs_name", "Give this computer a name in SETUP first.");
+		s.accept("err.relay_not_owner", "Only the computer's owner can do that.");
+
+		s.accept("app.redstone", "LAN Redstone");
+		s.accept("app.redstone.description", "Set Computer Redstone blocks here and, where allowed, on other computers of the LAN.");
+		s.accept("redstone.title", "LAN REDSTONE");
+		s.accept("redstone.keys", "Enter=On  P=Pulse  O=Off  L=Level  F6=Name  Ins/Del=Levels  F3=Access");
+		s.accept("redstone.reading", "Reading the redstone blocks...");
+		s.accept("redstone.this", "This computer: %s");
+		s.accept("redstone.no_name", "This computer has no name: others on the LAN cannot reach its blocks (SETUP).");
+		s.accept("redstone.blocks", "Redstone blocks");
+		s.accept("redstone.none_0", "No Computer Redstone block.");
+		s.accept("redstone.none_1", "Place one touching the computer,");
+		s.accept("redstone.none_2", "or on its data wire.");
+		s.accept("redstone.unnamed", "(unnamed)");
+		s.accept("redstone.details", "Block");
+		s.accept("redstone.here", "this one");
+		s.accept("redstone.on_computer", "Computer: %s");
+		s.accept("redstone.output", "Out: %s");
+		s.accept("redstone.input", "In:  %s");
+		s.accept("redstone.input_busy", "In:  (not read while it gives out)");
+		s.accept("redstone.entries", "Named levels (Left/Right)");
+		s.accept("redstone.no_entries", "None: Enter gives 15. Ins adds one.");
+		s.accept("redstone.access", "Others who may set it");
+		s.accept("redstone.players", "Players: %s");
+		s.accept("redstone.computers", "Computers: %s");
+		s.accept("redstone.owner_only", "Only the computer's owner changes these.");
+		s.accept("redstone.level_title", "Set a level");
+		s.accept("redstone.level_hint", "0 (off) to 15");
+		s.accept("redstone.rename_title", "Name the block");
+		s.accept("redstone.rename_hint", "Up to 16 characters");
+		s.accept("redstone.entry_title", "Name a level");
+		s.accept("redstone.entry_hint", "Door Open=4");
+		s.accept("redstone.players_title", "Players who may set it");
+		s.accept("redstone.players_hint", "Names, separated by commas (empty: none)");
+		s.accept("redstone.computers_title", "Computers that may set it");
+		s.accept("redstone.computers_hint", "SETUP names, separated by commas (empty: none)");
+		s.accept("err.redstone_no_computer", "That computer cannot be reached on the LAN.");
+		s.accept("err.redstone_no_block", "That redstone block is gone.");
+		s.accept("err.redstone_not_allowed", "You may not set that block.");
+		s.accept("err.redstone_not_owner", "Only the computer's owner can change its redstone blocks.");
+		s.accept("err.redstone_bad_entry", "Type a name and a level from 0 to 15, as Door Open=4 (16 at most).");
+
+		s.accept("app.email", "LAN Email");
+		s.accept("app.email.description", "Mail to user@COMPUTER on the LAN. Mail for a computer that is away waits and goes when it is back.");
+		s.accept("email.title", "LAN EMAIL");
+		s.accept("email.keys", "Enter=Read  N=New  R=Reply  Del=Delete  F3=Outbox  F6=Name");
+		s.accept("email.keys_read", "R=Reply  Del=Delete  Up/Dn=Scroll  Esc=Back");
+		s.accept("email.keys_write", "Ctrl+S=Send  Esc=Discard");
+		s.accept("email.reading", "Opening the mailbox...");
+		s.accept("email.head", "Your address: %s");
+		s.accept("email.writing", "To %s: %s");
+		s.accept("email.length", "%s of %s characters");
+		s.accept("email.inbox", "Inbox (%s)");
+		s.accept("email.outbox", "Waiting to go (%s)");
+		s.accept("email.set_name", "F6 to pick your username on this computer: your address is username@COMPUTER.");
+		s.accept("email.inbox_empty", "No mail.");
+		s.accept("email.outbox_empty", "Nothing waiting: all your mail has gone.");
+		s.accept("email.no_computer_name", "This computer has no name, so it cannot send or get mail: give it one in SETUP.");
+		s.accept("email.outbox_waiting", "%s of your messages wait for their computer to be back on the LAN (F3).");
+		s.accept("email.from", "From:    %s");
+		s.accept("email.to", "To:      %s");
+		s.accept("email.subject", "Subject: %s");
+		s.accept("email.sent", "Sent:    %s");
+		s.accept("email.compose_title", "New mail");
+		s.accept("email.compose_hint", "An address is username@COMPUTER (the computer's SETUP name).");
+		s.accept("email.to_label", "To");
+		s.accept("email.subject_label", "Subject");
+		s.accept("email.sent_ok", "Mail delivered.");
+		s.accept("email.waiting", "That computer is not on the LAN now: the mail waits here and goes when it is back.");
+		s.accept("email.delete_title", "Delete mail");
+		s.accept("email.delete_ask", "Delete \"%s\"?");
+		s.accept("email.discard_title", "Discard mail");
+		s.accept("email.discard_ask", "Throw this mail away unsent?");
+		s.accept("err.email_bad_address", "An address is username@COMPUTER, as bob@SHACK.");
+		s.accept("err.email_needs_name", "Give this computer a name in SETUP first: mail comes from username@COMPUTER.");
+		s.accept("err.email_outbox_full", "Too much mail is waiting to go already.");
+		s.accept("err.email_gone", "That mail is gone.");
+
+		BiConsumer<String, String> m = (key, text) -> provider.add("screen.radiocraft.computer.menu." + key, text);
+		m.accept("relay.room", "Room");
+		m.accept("relay.say", "Say...");
+		m.accept("relay.name", "Username...");
+		m.accept("relay.next_room", "Next room");
+		m.accept("relay.server", "Server");
+		m.accept("relay.serve", "Serve / stop serving");
+		m.accept("relay.clear", "Clear history...");
+		m.accept("redstone.output", "Output");
+		m.accept("redstone.on", "On at the level");
+		m.accept("redstone.pulse", "Pulse");
+		m.accept("redstone.off", "Off");
+		m.accept("redstone.level", "Set a level...");
+		m.accept("redstone.rename", "Name the block...");
+		m.accept("redstone.add_entry", "Name a level...");
+		m.accept("redstone.delete_entry", "Remove the level");
+		m.accept("redstone.access", "Who may set it...");
+		m.accept("redstone.previous_level", "Previous level");
+		m.accept("redstone.next_level", "Next level");
+		m.accept("email.mail", "Mail");
+		m.accept("email.send", "Send");
+		m.accept("email.back", "Back to the list");
+		m.accept("email.read", "Read");
+		m.accept("email.new", "New mail...");
+		m.accept("email.reply", "Reply...");
+		m.accept("email.name", "Username...");
+		m.accept("email.folder", "Inbox / waiting to go");
+		m.accept("relay.older", "Older lines");
+		m.accept("relay.newer", "Newer lines");
+	}
+}

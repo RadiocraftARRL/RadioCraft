@@ -42,7 +42,14 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 		 */
 		DISTRESS,
 		/** A distress beacon's homing tone (2026-11-09): nothing to decode; direction finders take a bearing on it. */
-		HOMING }
+		HOMING,
+		/** A satellite's telemetry frame (2026-11-12): {@code satellite.SatelliteTelemetry#encode}, from the satellite's name. */
+		TELEMETRY,
+		/**
+		 * A weather satellite's scan line (2026-11-12): where it lies ({@code satellite.imaging.AptLine.Geometry#encode}),
+		 * from the satellite's name; its pixels are kept on the server ({@code AptLines}) under the packet's id.
+		 */
+		APT }
 
 	/** A message to this callsign is for every station that hears it, as a bulletin. */
 	public static final String EVERYONE = "ALL";
@@ -83,6 +90,16 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 	/** {@code from} telling {@code to} its message {@code number} arrived. */
 	public static TncPacket ack(long id, String from, String to, String number) {
 		return new TncPacket(id, Kind.ACK, sanitizeCallsign(from), sanitizeCallsign(to), sanitizeText(number, MESSAGE_NUMBER_MAX), null, AprsIcon.HOUSE.name(), 0, ItemStack.EMPTY);
+	}
+
+	/** A satellite's telemetry frame: {@code text} ({@code SatelliteTelemetry#encode}) from the satellite {@code from}. */
+	public static TncPacket telemetry(long id, String from, String text) {
+		return new TncPacket(id, Kind.TELEMETRY, sanitizeCallsign(from), "", sanitizeText(text, MESSAGE_TEXT_MAX), null, AprsIcon.HOUSE.name(), 0, ItemStack.EMPTY);
+	}
+
+	/** A weather satellite's scan line (2026-11-12): {@code geometry} ({@code AptLine.Geometry#encode}) from the satellite {@code from}. */
+	public static TncPacket apt(long id, String from, String geometry) {
+		return new TncPacket(id, Kind.APT, sanitizeCallsign(from), "", sanitizeText(geometry, MESSAGE_TEXT_MAX), null, AprsIcon.HOUSE.name(), 0, ItemStack.EMPTY);
 	}
 
 	/** A message's text without its message number. */

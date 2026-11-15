@@ -101,7 +101,16 @@ public final class MicrophoneBlock extends Block {
 	@Nullable
 	public static RadioBlockEntity radio(BlockState state, BlockGetter level, BlockPos pos) {
 		Direction side = state.getValue(SIDE) == Side.LEFT ? left(state) : left(state).getOpposite();
-		return level.getBlockEntity(pos.relative(side)) instanceof RadioBlockEntity radio ? radio : null;
+		if(level.getBlockEntity(pos.relative(side)) instanceof RadioBlockEntity radio)
+			return radio;
+		// Beside no radio: the radio on its data wire (2026-11-14: a studio mic away from the FM transmitter's cabinet;
+		// works for any radio).
+		if(level instanceof net.minecraft.world.level.Level real && !real.isClientSide) {
+			List<RadioBlockEntity> wired = com.arrl.radiocraft.common.be_networks.DataWire.wired(real, pos, RadioBlockEntity.class);
+			if(!wired.isEmpty())
+				return wired.getFirst();
+		}
+		return null;
 	}
 
 	/**

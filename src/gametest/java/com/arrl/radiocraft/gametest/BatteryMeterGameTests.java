@@ -63,4 +63,23 @@ public class BatteryMeterGameTests {
                 })
                 .thenSucceed();
     }
+
+    /** A sealed Stable Chemical Battery reads nothing on the meter until its seal is broken (2026-11-13). */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200)
+    public static void sealedChemicalBatteryReadsNothing(GameTestHelper helper) {
+        BlockPos battery = new BlockPos(1, 2, 2), meter = new BlockPos(3, 2, 2), redstone = new BlockPos(1, 2, 1);
+        helper.setBlock(battery, RadiocraftBlocks.STABLE_CHEMICAL_BATTERY.get());
+        GameTestUtil.placeWire(helper, new BlockPos(2, 2, 2), RadiocraftBlocks.WIRE.get());
+        helper.setBlock(meter, RadiocraftBlocks.BATTERY_METER.get());
+        helper.startSequence()
+                .thenIdle(10)
+                .thenExecute(() -> {
+                    BatteryMeterReading reading = GameTestUtil.networkObject(helper, meter, BatteryMeterNetworkObject.class).getReading();
+                    helper.assertFalse(reading.hasBatteries(), "The meter reads a sealed battery: " + reading);
+                    helper.setBlock(redstone, net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(GameTestUtil.networkObject(helper, meter, BatteryMeterNetworkObject.class).getReading().batteries() == 1,
+                        "Once activated the meter still does not see it: " + GameTestUtil.networkObject(helper, meter, BatteryMeterNetworkObject.class).getReading()))
+                .thenSucceed();
+    }
 }

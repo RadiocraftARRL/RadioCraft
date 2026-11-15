@@ -6,6 +6,7 @@ import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerFileFormats;
@@ -38,6 +39,17 @@ public final class AwardsApp extends DosApp {
 	public AwardsApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(index -> showDetail());
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.awards.open", "F3", GLFW.GLFW_KEY_F3),
+						item("menu.awards.reread", "F4", GLFW.GLFW_KEY_F4),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == Page.LIST))),
+				new DosMenuBar.Menu(Dos.tr("menu.awards.award"), List.of(
+						item("menu.awards.progress", "Enter", this::showDetail).when(() -> page == Page.LIST),
+						item("menu.awards.certificate", "F5", GLFW.GLFW_KEY_F5))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.awards.records", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.awards.list", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page != Page.LIST))))));
 	}
 
 	@Override

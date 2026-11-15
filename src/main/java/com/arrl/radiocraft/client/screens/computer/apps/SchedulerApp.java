@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerSettings;
@@ -47,6 +48,15 @@ public final class SchedulerApp extends DosApp {
 	public SchedulerApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(i -> edit());
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.sched.job"), List.of(
+						item("menu.sched.add", "F4", GLFW.GLFW_KEY_F4),
+						item("menu.sched.edit", "Enter", this::edit),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE),
+						item("menu.sched.toggle", "Space", GLFW.GLFW_KEY_SPACE),
+						item("menu.sched.run", "F5", GLFW.GLFW_KEY_F5))))));
 	}
 
 	@Override

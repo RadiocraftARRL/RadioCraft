@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -74,6 +75,61 @@ public final class RigControlApp extends DosApp {
 
 	public RigControlApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		java.util.function.BooleanSupplier main = () -> !remotePage, onRemote = () -> remotePage;
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does (on the page it works on).
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.rigctl.pick_radio", "R", GLFW.GLFW_KEY_R).when(main),
+						item("menu.rigctl.load_memories", "F5", GLFW.GLFW_KEY_F5).when(main),
+						item("menu.rigctl.close_screen", "C", GLFW.GLFW_KEY_C).when(main),
+						item("menu.back", "Esc", GLFW.GLFW_KEY_ESCAPE).when(onRemote),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(main))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.rigctl.frequency", "F", GLFW.GLFW_KEY_F).when(main),
+						item("menu.rigctl.step_up", "Right", GLFW.GLFW_KEY_RIGHT).when(main),
+						item("menu.rigctl.step_down", "Left", GLFW.GLFW_KEY_LEFT).when(main),
+						item("menu.rigctl.step_up_ten", "Sh+Right", () -> act("step", intTag("steps", 10))).when(main),
+						item("menu.rigctl.step_down_ten", "Sh+Left", () -> act("step", intTag("steps", -10))).when(main),
+						item("menu.rigctl.band_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP).when(main),
+						item("menu.rigctl.band_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN).when(main),
+						item("menu.rigctl.mode", "M", GLFW.GLFW_KEY_M).when(main),
+						item("menu.rigctl.power", "P", GLFW.GLFW_KEY_P).when(main),
+						item("menu.rigctl.ptt", "T", this::togglePtt).when(main),
+						item("menu.rigctl.squelch_up", "Q", GLFW.GLFW_KEY_Q).when(main),
+						item("menu.rigctl.squelch_down", "Sh+Q", () -> act("squelch", intTag("level", (rig.getInt("squelch") + 9) % 10))).when(main))),
+				new DosMenuBar.Menu(Dos.tr("menu.rigctl.scan"), List.of(
+						item("menu.rigctl.next_signal", "^Right", () -> jump(1)).when(main),
+						item("menu.rigctl.previous_signal", "^Left", () -> jump(-1)).when(main),
+						item("menu.rigctl.scan_range", "S", GLFW.GLFW_KEY_S).when(main),
+						item("menu.rigctl.scan_memories", "F3", GLFW.GLFW_KEY_F3).when(main),
+						item("menu.rigctl.hold", "Space", GLFW.GLFW_KEY_SPACE).when(main),
+						item("menu.rigctl.stop", "X", GLFW.GLFW_KEY_X).when(main),
+						item("menu.rigctl.store_memory", "F4", GLFW.GLFW_KEY_F4).when(main),
+						item("menu.rigctl.memory_up", "Up", GLFW.GLFW_KEY_UP).when(main),
+						item("menu.rigctl.memory_down", "Down", GLFW.GLFW_KEY_DOWN).when(main))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.rigctl.zoom_in", "Z", GLFW.GLFW_KEY_Z).when(main),
+						item("menu.rigctl.zoom_out", "Sh+Z", () -> act("zoom", intTag("zoom", rig.getInt("zoom") - 1))).when(main),
+						item("menu.rigctl.remote_page", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.help_keys", "?", () -> guide = true))),
+				new DosMenuBar.Menu(Dos.tr("menu.rigctl.remote"), List.of(
+						item("menu.rigctl.connect", "Enter", GLFW.GLFW_KEY_ENTER).when(onRemote),
+						item("menu.rigctl.disconnect", "D", GLFW.GLFW_KEY_D).when(onRemote),
+						item("menu.rigctl.take_over", "F8", GLFW.GLFW_KEY_F8).when(() -> remotePage || remote.contains("by")),
+						item("menu.refresh", "H", GLFW.GLFW_KEY_H).when(onRemote),
+						item("menu.rigctl.audio", "L", GLFW.GLFW_KEY_L).when(onRemote),
+						item("menu.rigctl.access", "A", GLFW.GLFW_KEY_A).when(onRemote),
+						item("menu.rigctl.who", "W", GLFW.GLFW_KEY_W).when(onRemote),
+						item("menu.rigctl.code", "C", GLFW.GLFW_KEY_C).when(onRemote))))));
+	}
+
+	/** The menu's PTT (2026-11-12): T is held to talk, so a click keys the rig and the next click lets it go. */
+	private void togglePtt() {
+		if(pttHeld) {
+			pttHeld = false;
+			ptt(false);
+		}
+		else
+			press(GLFW.GLFW_KEY_T);
 	}
 
 	@Override

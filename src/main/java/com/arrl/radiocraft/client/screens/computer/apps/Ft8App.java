@@ -7,6 +7,7 @@ import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.radio.ft8.Ft8;
@@ -51,6 +52,24 @@ public final class Ft8App extends DosApp {
 
 	public Ft8App(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.ft8.clear", "F9", GLFW.GLFW_KEY_F9),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.ft8.cq", "F3", GLFW.GLFW_KEY_F3),
+						item("menu.ft8.answer", "Enter", GLFW.GLFW_KEY_ENTER),
+						item("menu.ft8.halt", "F4", GLFW.GLFW_KEY_F4),
+						item("menu.ft8.tx", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.ft8.dial", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.ft8.offset", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.ft8.parity", "F8", GLFW.GLFW_KEY_F8))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.previous", "Up", GLFW.GLFW_KEY_UP),
+						item("menu.next", "Down", GLFW.GLFW_KEY_DOWN),
+						item("menu.page_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP),
+						item("menu.page_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN),
+						item("menu.rtty.latest", "End", GLFW.GLFW_KEY_END))))));
 	}
 
 	@Override

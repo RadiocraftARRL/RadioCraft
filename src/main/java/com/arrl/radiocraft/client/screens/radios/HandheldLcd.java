@@ -299,7 +299,7 @@ final class HandheldLcd {
 				com.arrl.radiocraft.common.datacomponents.HandheldMemory.EMPTY);
 		com.arrl.radiocraft.common.datacomponents.HandheldMemory.Channel channel = memory.memoryMode() ? memory.get(memory.channel()) : null;
 		com.arrl.radiocraft.common.datacomponents.HandheldAprs aprs = stack.get(com.arrl.radiocraft.common.init.RadiocraftDataComponent.HANDHELD_APRS.value());
-		String frequency = String.format("%.3f", cap.getFrequencyHertz() / 1_000_000.0f);
+		String frequency = com.arrl.radiocraft.common.radio.TuningStep.mhz(cap.getFrequencyHertz());
 		com.arrl.radiocraft.common.datacomponents.HandheldMemory.Display display = channel == null ? com.arrl.radiocraft.common.datacomponents.HandheldMemory.Display.FREQUENCY : memory.display();
 		if(display == com.arrl.radiocraft.common.datacomponents.HandheldMemory.Display.NAME && channel.name().isEmpty())
 			display = com.arrl.radiocraft.common.datacomponents.HandheldMemory.Display.FREQUENCY; // Nothing to show by name.

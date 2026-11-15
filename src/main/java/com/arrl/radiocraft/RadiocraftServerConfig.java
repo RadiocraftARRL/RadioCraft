@@ -32,6 +32,20 @@ public class RadiocraftServerConfig {
 
     public static final ModConfigSpec.ConfigValue<Boolean> CALLSIGN_PERMISSIONS_ENABLED;
 	public static final ModConfigSpec.ConfigValue<Boolean> CALLSIGN_SELF_ASSIGN;
+	/** How commercial frequency licenses are issued (2026-11-10). */
+	public static final ModConfigSpec.EnumValue<LicensingMode> COMMERCIAL_LICENSING;
+	/** Real days a satellite stays on orbit after its launch (2026-11-11, doc/SatellitePlan.md). */
+	public static final ModConfigSpec.ConfigValue<Integer> SATELLITE_DECAY_DAYS;
+	/** Doppler shift on satellites' frequencies (2026-11-12). */
+	public static final ModConfigSpec.ConfigValue<Boolean> SATELLITE_DOPPLER;
+	/** Rare night passes in the Earth's shadow on a flat battery (2026-11-12). */
+	public static final ModConfigSpec.ConfigValue<Boolean> SATELLITE_ECLIPSES;
+
+	/**
+	 * VILLAGER: cartographers sell blank licenses players claim themselves; ADMIN: only operators issue them
+	 * ({@code /license grant}); OFF: no licensing (no programmer prompt, the FCC app flags nothing).
+	 */
+	public enum LicensingMode { VILLAGER, ADMIN, OFF }
 	public static final ModConfigSpec.EnumValue<CwKeying> CW_KEYING;
 
 	/** How CW is sent from a radio's screen (proposal). Both have the keyboard key ({@code key.radiocraft.cw_key}). */
@@ -52,6 +66,12 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<Boolean> WIND_ANTENNA_DAMAGE_ENABLED;
 	public static final ModConfigSpec.ConfigValue<Integer> ALTERNATOR_FE_AT_256_RPM;
 	public static final ModConfigSpec.ConfigValue<Boolean> TAPES_IN_WORLD;
+	/** FM broadcast stations may play public internet radio streams, fetched by the server (2026-11-14, off by default). */
+	public static final ModConfigSpec.ConfigValue<Boolean> FM_INTERNET_STREAMS;
+	/** Streams may come from private, loopback and link-local addresses (a LAN Icecast server, say). */
+	public static final ModConfigSpec.ConfigValue<Boolean> FM_STREAM_ALLOW_PRIVATE_HOSTS;
+	/** The most internet streams the server fetches at once. */
+	public static final ModConfigSpec.ConfigValue<Integer> FM_STREAM_MAX_STREAMS;
 
 	/** How the moderation log keeps voice: as it arrived, or re-encoded narrowband (not available yet). */
 	public enum ModerationQuality { ORIGINAL, NARROWBAND }
@@ -71,7 +91,10 @@ public class RadiocraftServerConfig {
 
 	public static final ModConfigSpec.ConfigValue<Boolean> RADIO_POWER_REQUIRED;
 	public static final ModConfigSpec.ConfigValue<Double> BARE_CONNECTOR_RANGE;
-
+	/** Fire alarms and SCADA (2026-11-10): how far a built-in antenna reaches, and the fire alarm mesh's hop limit. */
+	public static final ModConfigSpec.ConfigValue<Double> MESH_INTERNAL_ANTENNA_RANGE;
+	public static final ModConfigSpec.ConfigValue<Integer> MESH_HOP_LIMIT;
+	
 	public static final ModConfigSpec.ConfigValue<Double> DUMMY_LOAD_RANGE;
 	public static final ModConfigSpec.ConfigValue<Double> DUMMY_LOAD_STRENGTH;
 
@@ -108,6 +131,12 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<Integer> HANDHELD_APRS_BEACON_SECONDS;
 	public static final ModConfigSpec.ConfigValue<Double> ANTENNA_TUNER_MAX_SWR;
 	public static final ModConfigSpec.ConfigValue<Integer> AUTO_TUNER_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Integer> SATELLITE_TRACKER_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Double> AMPLIFIER_POWER_GAIN;
+	public static final ModConfigSpec.ConfigValue<Integer> AMPLIFIER_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Integer> AMPLIFIER_STANDBY_POWER_USE;
+	public static final ModConfigSpec.ConfigValue<Double> COAX_LOSS;
+	public static final ModConfigSpec.ConfigValue<Integer> SCADA_POWER_USE;
 	public static final ModConfigSpec.ConfigValue<Double> RADIO_BLOW_SWR;
 	public static final ModConfigSpec.ConfigValue<Double> RADIO_BLOW_CHANCE;
 	public static final ModConfigSpec.ConfigValue<Double> RADIO_EXPLODE_CHANCE;
@@ -240,6 +269,9 @@ public class RadiocraftServerConfig {
 			case "2m" -> "2m band settings, also known as VHF";
 			case Band.LOW_BAND -> "Commercial Low Band (30-50 MHz)";
 			case Band.VHF_COMMERCIAL -> "Commercial VHF (150-174 MHz and marine)";
+			case Band.CB -> "Citizens Band (26.965-27.405 MHz)";
+			case Band.AIRBAND -> "Airband (118-137 MHz, AM)";
+			case Band.FM_BROADCAST -> "FM broadcast (88-108 MHz)";
 			default -> band.name() + " band settings";
 		};
 	}
@@ -316,6 +348,17 @@ public class RadiocraftServerConfig {
 				.defineInRange("computer_power_use", 8, 0, 10000);
 		BUILDER.pop();
 
+		BUILDER.push("Satellites");
+		SATELLITE_DECAY_DAYS = BUILDER.comment(" Real days a satellite stays on orbit after its contract launches it; then its orbit decays and it comes",
+				" down (its licenses stay as keepsakes). SATTRACK warns in its last week").defineInRange("satellite_decay_days", 90, 1, 3650);
+		SATELLITE_DOPPLER = BUILDER.comment(" Doppler shift: a satellite is heard a few kHz high as it comes up, on frequency overhead and a few kHz low",
+				" as it goes (about 3.4 kHz at the ends of a pass on 2m), so FM receivers must retune to keep it; it hears its",
+				" uplink shifted the same way. SATTRACK shows the shift").define("satellite_doppler", false);
+		SATELLITE_ECLIPSES = BUILDER.comment(" Eclipses: now and then (a 1 in 20 chance each time round its orbit at night) a satellite is in the Earth's",
+				" shadow on a flat battery and silent until it comes out; its telemetry shows the battery low for a while after")
+				.define("satellite_eclipses", false);
+		BUILDER.pop();
+
 		BUILDER.push("ADS-B");
 		ADSB_FULL_RANGE_Y = BUILDER.comment(" How far 1090 MHz ADS-B reaches depends on how high the aircraft flies: at or above this Y (absolute) it is",
 				" heard out to adsb_max_range; below it the range falls off steeply (with the square of its height above sea level)",
@@ -365,13 +408,17 @@ public class RadiocraftServerConfig {
         BUILDER.pop();
 
 		BUILDER.push("CW");
-		CW_KEYING = BUILDER.comment(" TRUE_MORSE: CW is keyed by hand only, with the screen's key button or the CW key (Left Alt by default).",
-				" CHAT_MORSE: as well, a text box under the radio sends typed text as Morse, in time").defineEnum("cw_keying", CwKeying.CHAT_MORSE);
+		CW_KEYING = BUILDER.comment(" TRUE_MORSE (default since 2026-11-12): CW is keyed by hand only, with the screen's PTT button, the CW key",
+				" (Space by default) or an iambic keyer. CHAT_MORSE: as well, a text box under the radio sends typed text as Morse, in time").defineEnum("cw_keying", CwKeying.TRUE_MORSE);
 		BUILDER.pop();
 
 		BUILDER.push("Callsigns");
 		CALLSIGN_SELF_ASSIGN = BUILDER.comment(" Players may choose their own callsign (asked the first time they use a radio, or /callsign claim). False:",
 				" only operators hand them out").define("callsign_self_assign", true);
+		COMMERCIAL_LICENSING = BUILDER.comment(" Commercial frequency licenses. VILLAGER: cartographers sell blank VHF and low band licenses that",
+				" players claim by right-clicking (a random free frequency and a WQ callsign). ADMIN: only operators issue them",
+				" (/license grant); blank ones cannot be claimed. OFF: no licensing at all (the programmer never asks, the FCC app",
+				" flags nothing)").defineEnum("commercial_licensing", LicensingMode.VILLAGER);
 		CALLSIGN_DIGITS = BUILDER.comment(" Digits players may use in a callsign they choose, e.g. \"0123456789\" or \"3\"").define("callsign_digits", "0123456789");
 		CALLSIGN_PREFIXES = BUILDER.comment(" Callsign prefixes players may use (real amateur prefixes: K, W, N, AA to AL, VE, G, 2E, DL, JA, VK ...). A callsign",
 				" is a prefix, a digit and one to three letters. \"Choose one for me\" picks a prefix from this list")
@@ -432,9 +479,31 @@ public class RadiocraftServerConfig {
 				.define("tapes_in_world", false);
 		BUILDER.pop();
 
+		BUILDER.push("FM Broadcast Streams");
+		FM_INTERNET_STREAMS = BUILDER.comment(" Lets players point FM broadcast transmitters at public internet radio streams (a direct MP3 or Ogg Vorbis",
+				" stream, or an .m3u/.pls playlist that points to one), which the server then fetches and puts on the air for",
+				" everyone in range. Off by default: the server downloads whatever URL a station's owner enters, and plays it to",
+				" players. Only http and https; private network addresses are refused unless the setting below allows them")
+				.define("fm_internet_streams", false);
+		FM_STREAM_ALLOW_PRIVATE_HOSTS = BUILDER.comment(" Allow streams from loopback, link-local and private network addresses (10.x, 172.16-31.x, 192.168.x,",
+				" fc00::/7): a stream server on the same LAN as this server. Leave off on a public server")
+				.define("fm_stream_allow_private_hosts", false);
+		FM_STREAM_MAX_STREAMS = BUILDER.comment(" The most internet streams the server fetches at once (one per playing station)")
+				.defineInRange("fm_stream_max_streams", 8, 0, 64);
+		BUILDER.pop();
+
 		BUILDER.push("No Antenna");
 		BARE_CONNECTOR_RANGE = BUILDER.comment(" A radio with nothing on its coax still sends and hears a little through the bare connector: the",
 				" distance in blocks at which that fades to nothing, both ways").defineInRange("bare_connector_range", 8.0D, 1.0D, 64.0D);
+		BUILDER.pop();
+
+		BUILDER.push("Fire Alarms and SCADA");
+		MESH_INTERNAL_ANTENNA_RANGE = BUILDER.comment(" A fire alarm box, controller, RTU or SCADA master with nothing on its coax uses its built-in antenna,",
+				" which reaches this share of the band's line of sight (an antenna on the coax reaches all of it). Two devices",
+				" hear each other out to the band's range times the square root of their two shares").defineInRange("mesh_internal_antenna_range", 0.25D, 0.01D, 1.0D);
+		MESH_HOP_LIMIT = BUILDER.comment(" Fire alarm boxes or SCADA RTUs a message may be relayed through on its way (and the answer on its way back).",
+				" How often a SCADA master polls is set on the master itself, 1 to 3 seconds an RTU")
+				.defineInRange("mesh_hop_limit", 8, 0, 16);
 		BUILDER.pop();
 
 		BUILDER.push("Dummy Load");
@@ -503,6 +572,18 @@ public class RadiocraftServerConfig {
 		ANTENNA_TUNER_LOSS = BUILDER.comment(" Share of the mismatch loss a tuner cannot recover: 0 = perfect tuner, 1 = tuner only quiets the radio").defineInRange("antenna_tuner_loss", 0.25, 0.0, 1.0);
 		AUTO_TUNER_POWER_USE = BUILDER.comment(" Power the automatic tuner draws per tick; without it, it is just a piece of coax (radios_need_power = false runs it free)")
 				.defineInRange("auto_tuner_power_use", 4, 0, 1000);
+		SATELLITE_TRACKER_POWER_USE = BUILDER.comment(" Power the satellite tracking antenna's mount draws per tick while it tracks or slews (radios_need_power = false runs it free)")
+				.defineInRange("satellite_tracker_power_use", 8, 0, 1000);
+		AMPLIFIER_POWER_GAIN = BUILDER.comment(" How much stronger an HF signal leaves a linear amplifier in OPERATE (strength is still capped at full scale, so",
+				" a band's reach hardly moves: the signal is louder, not further). 1 = amplifiers do nothing").defineInRange("amplifier_power_gain", 1.5, 1.0, 10.0);
+		AMPLIFIER_POWER_USE = BUILDER.comment(" Power a linear amplifier draws per tick while its radio transmits through it (about four HF radios'",
+				" worth); without it, it passes the signal through unamplified (radios_need_power = false runs it free)").defineInRange("amplifier_power_use", 100, 0, 10000);
+		AMPLIFIER_STANDBY_POWER_USE = BUILDER.comment(" Power a linear amplifier in OPERATE draws per tick while idle (its tubes warm)")
+				.defineInRange("amplifier_standby_power_use", 2, 0, 1000);
+		COAX_LOSS = BUILDER.comment(" Coax loss: 1 = the standard light loss (per 100 blocks between radio and antenna: about 0.25 dB on 80m, 0.5 on",
+				" 20m, 0.75 on 10m and CB, 2 on VHF), applied both ways. 0 = lossless coax, 2 = twice as lossy").defineInRange("coax_loss", 1.0, 0.0, 10.0);
+		SCADA_POWER_USE = BUILDER.comment(" Power a SCADA RTU or master draws per tick from a power wire; without it, it goes dark: no polls, no replies,",
+				" its outputs drop (radios_need_power = false runs them free)").defineInRange("scada_power_use", 2, 0, 1000);
 		BUILDER.pop();
 
 		BUILDER.push("Blown Radios");

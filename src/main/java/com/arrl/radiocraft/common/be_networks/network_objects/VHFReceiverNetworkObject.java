@@ -1,6 +1,7 @@
 package com.arrl.radiocraft.common.be_networks.network_objects;
 
 import com.arrl.radiocraft.Radiocraft;
+import com.arrl.radiocraft.common.blockentities.radio.CellRadio;
 import com.arrl.radiocraft.common.blockentities.radio.VHFReceiverBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
@@ -10,7 +11,7 @@ import net.minecraft.world.level.Level;
  * The VHF receiver on its power wire and coax (2026-11-09). It pays its draw from the wire first, like any radio; with
  * nothing on the wire it runs from the small cell in it ({@link VHFReceiverBlockEntity#getCellEnergy}), which the block
  * entity drains at its own, much lower, rate while {@link #isOnCell} says so. A flat cell browns it out as a flat
- * battery does a wired radio.
+ * battery does a wired radio. The FM broadcast receiver runs the same way (2026-11-13): any {@link CellRadio}.
  */
 public class VHFReceiverNetworkObject extends RadioNetworkObject {
 
@@ -41,7 +42,7 @@ public class VHFReceiverNetworkObject extends RadioNetworkObject {
     private int cellEnergy() {
         if(level == null || !level.isLoaded(pos))
             return 0;
-        return level.getBlockEntity(pos) instanceof VHFReceiverBlockEntity receiver ? receiver.getCellEnergy() : 0;
+        return level.getBlockEntity(pos) instanceof CellRadio receiver ? receiver.getCellEnergy() : 0;
     }
 
     /** True while it runs (switched on, powered) from its cell, with nothing coming in over the wire. Never with power draw off. */
@@ -52,7 +53,7 @@ public class VHFReceiverNetworkObject extends RadioNetworkObject {
     /** A cell in it counts as a battery, so a flat one makes the panel show PWR as a flat battery on the wire does. */
     @Override
     public boolean hasBattery() {
-        if(level != null && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof VHFReceiverBlockEntity receiver && receiver.hasCell())
+        if(level != null && level.isLoaded(pos) && level.getBlockEntity(pos) instanceof CellRadio receiver && receiver.hasCell())
             return true;
         return super.hasBattery();
     }

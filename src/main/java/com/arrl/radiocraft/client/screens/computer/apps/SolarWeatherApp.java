@@ -4,6 +4,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerServer;
@@ -40,6 +41,17 @@ public final class SolarWeatherApp extends DosApp {
 
 	public SolarWeatherApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.solar.save", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.print", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.solar.solar_page", "Tab", GLFW.GLFW_KEY_TAB).when(() -> forecastPage),
+						item("menu.solar.forecast_page", "Tab", GLFW.GLFW_KEY_TAB).when(() -> !forecastPage),
+						item("menu.refresh", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.page_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP).when(() -> forecastPage),
+						item("menu.page_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN).when(() -> forecastPage))))));
 	}
 
 	@Override

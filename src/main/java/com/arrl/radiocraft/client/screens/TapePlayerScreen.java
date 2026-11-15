@@ -16,13 +16,13 @@ import java.util.Locale;
 
 /**
  * The tape player's controls: the tape in it and where it is, PLAY, STOP, RECORD and EJECT, and when it plays by
- * itself (only when told, over and over, every so many minutes, or on a redstone pulse). Drawn plainly until it has
- * its own panel art.
+ * itself (only when told, over and over, every so many minutes, on a redstone pulse, or the queued tapes in turn), and
+ * how many tapes wait in its queue and its out tray. Drawn plainly until it has its own panel art.
  */
 public class TapePlayerScreen extends AbstractContainerScreen<TapePlayerMenu> {
 
 	private static final int WALNUT = 0xFF4A2E1C, WALNUT_DARK = 0xFF2E1C10, DECK = 0xFF8C8A84, WINDOW = 0xFF101410, AMBER = 0xFFE8B048;
-	private static final String[] MODES = { "MANUAL", "LOOP", "INTERVAL", "REDSTONE" };
+	private static final String[] MODES = { "MANUAL", "LOOP", "INTERVAL", "REDSTONE", "QUEUE" };
 
 	private Button mode, minus, plus;
 
@@ -91,6 +91,10 @@ public class TapePlayerScreen extends AbstractContainerScreen<TapePlayerMenu> {
 			default -> "STOPPED";
 		};
 		graphics.drawString(font, state, 14, 36, AMBER, false);
+		// The hopper side (2026-11-14): tapes waiting, and played ones in the out tray.
+		String trays = "QUEUE " + menu.get(TapePlayerBlockEntity.DATA_QUEUE) + "/" + TapePlayerBlockEntity.QUEUE_SIZE
+				+ "  OUT " + menu.get(TapePlayerBlockEntity.DATA_OUT) + "/" + TapePlayerBlockEntity.OUT_SIZE;
+		graphics.drawString(font, trays, 10, 101, 0xFFE8DCC8, false);
 		if(menu.get(TapePlayerBlockEntity.DATA_MODE) == TapePlayerBlockEntity.Mode.INTERVAL.ordinal())
 			graphics.drawString(font, "EVERY " + menu.get(TapePlayerBlockEntity.DATA_INTERVAL) + " MIN", 108, 85, 0xFFE8DCC8, false);
 	}

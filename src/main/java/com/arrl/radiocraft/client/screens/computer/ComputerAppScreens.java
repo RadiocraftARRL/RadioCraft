@@ -43,6 +43,9 @@ public final class ComputerAppScreens {
 		register(ComputerApps.EDITOR, EditorApp::new);
 		register(ComputerApps.SYSINFO, SysInfoApp::new);
 		register(ComputerApps.BAND_PLAN, BandPlanApp::new);
+		register(ComputerApps.RELAY, com.arrl.radiocraft.client.screens.computer.apps.RelayApp::new); // The LAN (2026-11-13).
+		register(ComputerApps.EMAIL, com.arrl.radiocraft.client.screens.computer.apps.EmailApp::new);
+		register(ComputerApps.REDSTONE, com.arrl.radiocraft.client.screens.computer.apps.RedstoneApp::new);
 		register(ComputerApps.INSTALL, InstallApp::new);
 		register(ComputerApps.SETUP, com.arrl.radiocraft.client.screens.computer.apps.SetupApp::new); // Launcher and SETUP (2026-11-06).
 		register(ComputerApps.ABOUT, com.arrl.radiocraft.client.screens.computer.apps.AboutApp::new);
@@ -89,6 +92,11 @@ public final class ComputerAppScreens {
 		register(ComputerApps.AWARDS, com.arrl.radiocraft.client.screens.computer.apps.AwardsApp::new);
 		register(ComputerApps.QSL, com.arrl.radiocraft.client.screens.computer.apps.QslDesignerApp::new);
 		register(ComputerApps.DISTRESS, com.arrl.radiocraft.client.screens.computer.apps.DistressApp::new); // Distress alerting (2026-11-09).
+		register(ComputerApps.FCC, com.arrl.radiocraft.client.screens.computer.apps.FccApp::new); // Commercial licensing (2026-11-10).
+		register(ComputerApps.FIRE_ALARM, com.arrl.radiocraft.client.screens.computer.apps.FireAlarmApp::new); // The radio mesh (2026-11-10).
+		register(ComputerApps.SCADA, com.arrl.radiocraft.client.screens.computer.apps.ScadaApp::new);
+		register(ComputerApps.SATTRACK, com.arrl.radiocraft.client.screens.computer.apps.SatTrackApp::new); // Satellites (2026-11-11).
+		register(ComputerApps.WXSAT, com.arrl.radiocraft.client.screens.computer.apps.WxSatApp::new); // Weather satellite pictures (2026-11-12).
 
 		// Floppy labels (0xRRGGBB): office programs blue, radio programs red, the secret ones gold, ADS-B green.
 		label(ComputerApps.BOOK_EDITOR, 0x3A6FD8);
@@ -118,6 +126,11 @@ public final class ComputerAppScreens {
 		label(ComputerApps.AWARDS, 0xD4A017);
 		label(ComputerApps.QSL, 0x3A6FD8);
 		label(ComputerApps.DISTRESS, 0xFF6A00); // 2026-11-09: international orange, a distress signal's colour.
+		label(ComputerApps.FCC, 0x1F3A68); // 2026-11-10: the navy of the license certificate.
+		label(ComputerApps.FIRE_ALARM, 0xB02020); // 2026-11-10: fire alarm red.
+		label(ComputerApps.SCADA, 0x5A6470); // 2026-11-10: enclosure grey.
+		label(ComputerApps.SATTRACK, 0x1E2A5A); // 2026-11-11: night-sky blue.
+		label(ComputerApps.WXSAT, 0x2E8B57); // 2026-11-12: radar green.
 	}
 
 	private ComputerAppScreens() {}

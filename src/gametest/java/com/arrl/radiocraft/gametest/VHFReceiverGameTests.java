@@ -141,10 +141,12 @@ public class VHFReceiverGameTests {
 	}
 
 	/** Two channels on scan back and forth; a signal stops the scan on the channel it is on until it goes quiet. */
-	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 400)
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 400, batch = "vhf_receiver_scan")
 	public static void scanStepsChannelsAndStopsOnActivity(GameTestHelper helper) {
 		helper.setBlock(RX, RadiocraftBlocks.VHF_RECEIVER.get());
-		float first = 146_520_000.0F, second = 156_800_000.0F;
+		// Its own batch and quiet channels (2026-11-13): its whip hears the whole level, and other tests calling on
+		// 146.52 or marine 16 held the scan (doc/FlakyTestsReview.md).
+		float first = 152_000_000.0F, second = 170_000_000.0F;
 		Set<Float> seen = new HashSet<>();
 		float[] held = new float[1];
 		boolean[] left = new boolean[1];

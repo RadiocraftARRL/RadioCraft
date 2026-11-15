@@ -16,7 +16,7 @@ import net.neoforged.neoforge.client.event.InputEvent;
 
 /**
  * Sneak and turn the mouse wheel while looking at a radio to tune it, a channel step per notch, without opening its
- * screen (client setting {@code scroll_tuning}). The wheel then leaves the hotbar alone; looking at anything else, or
+ * screen (client setting {@code scroll_tuning}). The FM broadcast receiver's dial needs no sneak (2026-11-13). The wheel then leaves the hotbar alone; looking at anything else, or
  * not sneaking, it works as usual. Small trackpad scrolls add up to whole notches.
  */
 @EventBusSubscriber(modid = Radiocraft.MOD_ID, value = Dist.CLIENT)
@@ -31,10 +31,13 @@ public final class ScrollTuning {
 	public static void onScroll(InputEvent.MouseScrollingEvent event) {
 		Minecraft minecraft = Minecraft.getInstance();
 		if(!RadiocraftClientConfig.SCROLL_TUNING.get() || minecraft.screen != null || minecraft.player == null || minecraft.level == null
-				|| !minecraft.player.isShiftKeyDown() || !(minecraft.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK)
+				|| !(minecraft.hitResult instanceof BlockHitResult hit) || hit.getType() != HitResult.Type.BLOCK)
 			return;
 		BlockPos pos = hit.getBlockPos();
-		if(!SRadioScrollTunePacket.tunes(minecraft.level.getBlockEntity(pos)))
+		var blockEntity = minecraft.level.getBlockEntity(pos);
+		// The table radio's dial turns just by looking at it and scrolling (2026-11-13); other radios want sneak.
+		boolean dial = blockEntity instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity;
+		if(!dial && !minecraft.player.isShiftKeyDown() || !SRadioScrollTunePacket.tunes(blockEntity))
 			return;
 		event.setCanceled(true); // Not the hotbar: the dial.
 		if(!pos.equals(lastPos)) {

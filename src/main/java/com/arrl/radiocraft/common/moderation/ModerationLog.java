@@ -657,6 +657,8 @@ public final class ModerationLog {
 						+ (alert.ackBy().isEmpty() ? "" : " ack by " + alert.ackBy());
 			}
 			case HOMING -> "homing tone";
+			case TELEMETRY -> packet.from() + " telemetry: " + packet.text();
+			case APT -> packet.from() + " weather picture line"; // 2026-11-12.
 		};
 		if(!packet.item().isEmpty())
 			text += " [" + packet.item().getCount() + "x " + packet.item().getHoverName().getString() + "]";

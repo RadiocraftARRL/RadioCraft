@@ -23,7 +23,7 @@ import java.util.List;
  * FM is a voice mode like SSB (the voice path is the same), but it is squelched: no background static between
  * transmissions, as on a real FM rig. On 2m it talks to VHF stations through a VHF antenna.
  */
-public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
+public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity implements MemoryRadio {
 
     /** The knob's positions, in order from fully left to fully right: 3.5, 7, 14, 28 and 144 MHz. */
     public static final List<String> BANDS = List.of("80m", "40m", "20m", "10m", "2m");
@@ -43,15 +43,28 @@ public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
     /** The VFO's frequency, kept while on the memories. */
     private float vfoHz = 0.0F;
 
+    @Override
+    public int memoryCount() {
+        return MEMORIES;
+    }
+
+    @Override
+    public String memoryLabel(int channel) {
+        return getMemoryModeName(channel);
+    }
+
+    @Override
     public boolean isMemoryMode() {
         return memoryMode_;
     }
 
+    @Override
     public int getMemoryChannel() {
         return memoryChannel;
     }
 
     /** Channel {@code channel}'s frequency, 0 if it is empty. */
+    @Override
     public float getMemoryHz(int channel) {
         return channel >= 0 && channel < MEMORIES ? memoryHz[channel] : 0.0F;
     }
@@ -76,6 +89,7 @@ public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
     }
 
     /** MEMORY held: the VFO's frequency and mode into channel {@code channel}. */
+    @Override
     public void storeMemory(int channel) {
         if(channel < 0 || channel >= MEMORIES || memoryMode_)
             return;
@@ -87,6 +101,7 @@ public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
     }
 
     /** VFO/MEM: onto the memories (the last one used, or the first stored) or back to the VFO where it was. */
+    @Override
     public void toggleMemoryMode() {
         if(memoryMode_) {
             memoryMode_ = false;
@@ -106,6 +121,7 @@ public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
     }
 
     /** On the memories: to channel {@code channel}, if it holds a frequency. */
+    @Override
     public void selectMemory(int channel) {
         if(!memoryMode_ || channel < 0 || channel >= MEMORIES || memoryHz[channel] <= 0.0F)
             return;
@@ -121,6 +137,7 @@ public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
     }
 
     /** VFO/MEM held on a memory: the VFO takes the memory's frequency, and the radio goes back to the VFO. */
+    @Override
     public void memoryToVfo() {
         if(!memoryMode_)
             return;
@@ -131,6 +148,7 @@ public class HFRadioAllBandBlockEntity extends HFRadioBlockEntity {
     }
 
     /** The next channel after {@code from} in {@code direction} that holds a frequency (wrapping), -1 if none. */
+    @Override
     public int nextStored(int from, int direction) {
         for(int i = 1; i <= MEMORIES; i++) {
             int channel = Math.floorMod(from + i * direction, MEMORIES);

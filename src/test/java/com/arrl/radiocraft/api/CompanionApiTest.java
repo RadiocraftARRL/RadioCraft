@@ -40,7 +40,7 @@ class CompanionApiTest {
 	@Test
 	void registeredBandsKeepTheirSettings() {
 		assertTrue(SEVENTY_CM.isAmateur());
-		assertTrue(SEVENTY_CM.isVhf(), "From 100 MHz a band is on the VHF network");
+		assertTrue(SEVENTY_CM.isVhf(), "From 80 MHz a band is on the VHF network");
 		assertEquals("70cm", SEVENTY_CM.displayName());
 		assertEquals("unit_70cm", SEVENTY_CM.conditionName(), "No solarLike: its own name");
 		assertFalse(SERVICE.isAmateur());

@@ -75,19 +75,21 @@ public class RadioStaticSoundInstance extends AbstractTickableSoundInstance {
 				volume = cw ? 0.0F : BLOWN_VOLUME;
 			else if(cw != inCw())
 				volume = 0.0F; // The other copy is playing: the CW filter is in or out.
+			else if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.HFRadioBlockEntity hf && hf.keyingQuiet())
+				volume = 0.0F; // Sending CW: the receiver is muted, only the sidetone is heard (2026-11-12).
 			else if(speaker == null && radio.isAudioRouted())
 				volume = 0.0F; // A computer plays this radio (RIGCTL REMOTE audio): the static is there, not here. // Keying a blown transmitter: nothing goes out, the speaker just roars.
 			else if(radio.wasPowered() && radio.shouldPlayStatic() && !radio.isReceiverMuted()) {
 				// Solar noise floor, plus whatever redstone is switching near the station and any aurora overhead, through the antenna match.
 				// VHF has no solar noise, only the receiver's own (an all-band radio in SSB on 2m).
-				double floor = radio.getBand() != null && radio.getBand().isVhf() ? RadiocraftServerConfig.VHF_NOISE_FLOOR.get() : RadiocraftClientValues.NOISE_VOLUME;
+				double floor = radio.getBand() != null && radio.getBand().isVhf() ? radio.vhfStaticFloor() : RadiocraftClientValues.NOISE_VOLUME;
 				double noise = radio.getCrystalEffect().applyNoise(Math.min(1.0D, floor + (radio.getInterference() + auroraNoise()) * radio.getImpulseNoiseFactor()))
 						* radio.getReceiverGain(); // A noise blanker, and the RF gain knob, where there are.
 				// The receiver's AGC: a signal well above the noise pushes the static down, fast in and slower back out.
 				int agc = radio.getAgc(); // Off: nothing ducks the static. Fast: it comes back quickly between words.
 				double wanted = agc == RadioBlockEntity.AGC_OFF ? 1.0D : ReceiverMix.noiseDuck(radio.getSyncedSignal(), noise);
 				duck += (wanted - duck) * (wanted < duck ? DUCK_ATTACK : agc == RadioBlockEntity.AGC_FAST ? DUCK_RELEASE_FAST : DUCK_RELEASE);
-				volume = radio.squelchOpenOnStatic(noise) ? (float)(noise * duck * radio.getStaticVolume() * radio.getSpeakerGain()) : 0.0F;
+				volume = radio.squelchOpenOnStatic(noise) ? (float)(noise * duck * radio.getStaticVolumeHeard() * radio.getSpeakerGain()) : 0.0F;
 			}
 			else
 				volume = 0.0F;

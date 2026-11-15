@@ -45,7 +45,8 @@ public record SRadioScrollTunePacket(BlockPos pos, int steps) implements CustomP
 			Player player = context.player();
 			if(steps == 0 || !player.level().isLoaded(pos) || player.distanceToSqr(pos.getCenter()) > player.blockInteractionRange() * player.blockInteractionRange() + 16.0D)
 				return;
-			if(!tunes(player.level().getBlockEntity(pos)) || !(player.level().getBlockEntity(pos) instanceof RadioBlockEntity radio) || !radio.isPowered())
+			if(!tunes(player.level().getBlockEntity(pos)) || !(player.level().getBlockEntity(pos) instanceof RadioBlockEntity radio)
+					|| !radio.isPowered() && !(radio instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity)) // The table radio's dial turns off too.
 				return;
 			radio.updateFrequency(Math.max(-MAX_STEPS, Math.min(MAX_STEPS, steps)));
 			player.displayClientMessage(Component.translatable(Radiocraft.translationKey("message", "scroll_tuned"), String.format("%.3f", radio.getFrequency() / 1_000_000.0D)), true);

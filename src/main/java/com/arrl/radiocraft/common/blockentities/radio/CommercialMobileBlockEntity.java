@@ -18,7 +18,6 @@ import com.arrl.radiocraft.common.radio.commercial.CommercialProgramming;
 import com.arrl.radiocraft.common.radio.commercial.CommercialRadioModel;
 import com.arrl.radiocraft.common.radio.distress.DistressAlert;
 import com.arrl.radiocraft.common.radio.distress.DistressLog;
-import com.arrl.radiocraft.common.radio.distress.DistressNature;
 import com.arrl.radiocraft.common.radio.distress.DistressPackets;
 import com.arrl.radiocraft.common.radio.voice.Detuning;
 import com.arrl.radiocraft.common.radio.voice.DigitalVoice;
@@ -54,13 +53,15 @@ import java.util.Locale;
  * and will not key. Transmissions go out on the radio's own commercial band, so they are in band (no splatter, see
  * {@link com.arrl.radiocraft.common.radio.BandEdges}). Programmed through {@link CommercialProgramming}.
  * <p>
- * Distress beacons (2026-11-09): a VHF mobile whose channel is on 161.975 MHz (programmed there in the CPS, with the
- * knob on it) decodes the alerts distress beacons send there ({@link DistressPackets#BEACON_HZ}), as a radio with an
- * AIS-SART decoder would. A new alert sounds a short alarm and puts {@code DISTRESS DETECTED 161.975} and the beacon's
- * position on the display ({@link #distressLines}) until it is dismissed ({@link #dismissDistress}: the screen's
- * {@code DISMISS_DISTRESS} control, or sneak and use the radio while the alert shows). What it has heard goes in its
- * {@link DistressLog}, which the DISTRESS program reads. The program's personal SOS goes out through it too
- * ({@link #sendBeaconAlert}). A low band mobile never hears them: it cannot be put on 161.975.
+ * Distress beacons (2026-11-09): a VHF mobile decodes the alerts distress beacons send on 161.975 MHz
+ * ({@link DistressPackets#BEACON_HZ}), as a radio with an AIS-SART decoder would. Since 2026-11-11 (maintainer: "always
+ * listening but dormant, like the DSC ones") that is a built-in receiver of its own, as the marine radio's channel 70
+ * one is: it hears beacons whatever channel the knob is on, with no audio and nothing on the display until an alert
+ * comes in (before, the knob had to be on a channel programmed at 161.975). A new alert sounds a short alarm and
+ * scrolls {@code DISTRESS SOS RX x, y, z} across the display ({@link #distressLines}) until it is dismissed
+ * ({@link #dismissDistress}: the screen's {@code DISMISS_DISTRESS} control, or sneak and use the radio while the alert
+ * shows). What it has heard goes in its {@link DistressLog}, which the DISTRESS program reads. The program's personal
+ * SOS goes out through it too ({@link #sendBeaconAlert}). A low band mobile never hears them: it does not cover 161.975.
  */
 public class CommercialMobileBlockEntity extends RadioBlockEntity implements CommercialProgramming.Target, ChannelDisplay {
 
@@ -144,6 +145,11 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 	@Override
 	protected float snapToTuningRange(float frequency, int stepCount) {
 		return frequency;
+	}
+
+	@Override
+	protected boolean playsThroughSirens() {
+		return true; // A siren on its data wire is its public address (2026-11-13).
 	}
 
 	@Override
@@ -284,18 +290,27 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 
 	// -------------------- DISTRESS BEACONS (2026-11-09) --------------------
 
-	/** The header line while a beacon alert is shown. */
-	public static final String DISTRESS_HEADER = "DISTRESS DETECTED 161.975";
+	/**
+	 * How the display's first line starts while a beacon alert is shown: {@link DistressAlert#sosRx} (2026-11-11; it was
+	 * "DISTRESS DETECTED 161.975" with the position on a line of its own).
+	 */
+	public static final String DISTRESS_HEADER = "DISTRESS SOS RX";
 
 	// Server: what it has heard; client: from the last sync (the alert shown, for the display).
 	private final DistressLog distressLog = new DistressLog();
 
-	/** True for a radio that can be put on 161.975 MHz (the VHF mobile, not the low band one). */
+	/**
+	 * True for a radio whose bands hold 161.975 MHz (the VHF mobile, not the low band one): its built-in beacon receiver
+	 * listens there whatever channel it is on (2026-11-11).
+	 */
 	public boolean hearsBeacons() {
 		return model().covers(DistressPackets.BEACON_HZ);
 	}
 
-	/** True while the knob is on a channel at 161.975 MHz: the radio hears distress beacons. */
+	/**
+	 * True while the knob is on a channel at 161.975 MHz. Since 2026-11-11 the radio hears beacons on any channel
+	 * ({@link #receiveData}); this only says the voice receiver is there as well (the homing tone, a direction finder).
+	 */
 	public boolean isOnBeaconFrequency() {
 		return getChannel() != null && hearsBeacons() && DistressPackets.isBeacon(getTunedFrequency());
 	}
@@ -306,10 +321,10 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 	}
 
 	/**
-	 * The display's lines while a beacon alert is shown, null when none: {@link #DISTRESS_HEADER}, the beacon's
-	 * position ("X 120 Y 64 Z -340") and who it is (the owner, and the nature or, once it is over, its state). Shown
-	 * until dismissed; the position follows the beacon's repeats. Client side from the synced state (on the server,
-	 * the server's own).
+	 * The display's lines while a beacon alert is shown, null when none: {@link DistressAlert#sosRx} ("DISTRESS SOS RX
+	 * 120, 64, -340", which the display scrolls across itself, 2026-11-11) and who it is (the owner, and the nature or,
+	 * once it is over, its state). Shown until dismissed; the position follows the beacon's repeats. Client side from
+	 * the synced state (on the server, the server's own).
 	 */
 	@Nullable
 	public List<String> distressLines() {
@@ -319,9 +334,7 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 		if(shown == null)
 			return null;
 		DistressAlert alert = shown.alert();
-		String what = alert.state() != DistressAlert.State.ACTIVE ? alert.state().name()
-				: alert.nature() == DistressNature.UNDESIGNATED ? "BEACON" : alert.nature().shortLabel();
-		return List.of(DISTRESS_HEADER, alert.coordinates(), (alert.owner() + " " + what).strip());
+		return List.of(alert.sosRx(), alert.who());
 	}
 
 	/** Clears the alert off the display. False if none was shown. Server thread. */
@@ -335,21 +348,22 @@ public class CommercialMobileBlockEntity extends RadioBlockEntity implements Com
 	}
 
 	/**
-	 * A beacon alert reached the antenna: decoded if the radio is on, its knob is on 161.975 MHz and it is strong
-	 * enough. A DSC call is not for this radio (channel 70 is the marine radios'). Anything else goes to the radio as
-	 * usual.
+	 * A beacon alert reached the antenna: decoded by the built-in beacon receiver if the radio is on, covers 161.975 MHz
+	 * and the burst is strong enough, whatever channel the knob is on (2026-11-11: as the marine radio's channel 70
+	 * receiver takes DSC; the burst is held against its own frequency, not the channel's, so it is not detuned). Keyed
+	 * up, the radio hears nothing. A DSC call is not for this radio (channel 70 is the marine radios'). Anything else
+	 * goes to the radio as usual.
 	 */
 	@Override
 	public boolean receiveData(AntennaDataPacket packet) {
 		DistressAlert alert = DistressPackets.alert(packet.getPayload());
 		if(alert == null)
 			return super.receiveData(packet);
-		if(alert.isDsc() || !DistressPackets.isBeacon(packet.getFrequency()) || !isOnBeaconFrequency())
+		if(alert.isDsc() || !DistressPackets.isBeacon(packet.getFrequency()) || !hearsBeacons())
 			return false;
 		if(!(level instanceof ServerLevel serverLevel) || !isPowered() || isDeafNow())
 			return false;
-		Detuning.Effect effect = getDetuning(packet.getFrequency());
-		if(!effect.audible() || !decodes(packet.getStrength() * effect.strength() * desense(packet), getNoiseFloor()))
+		if(!decodes(packet.getStrength() * desense(packet), getNoiseFloor()))
 			return false;
 		hearBeacon(serverLevel, alert);
 		return true;

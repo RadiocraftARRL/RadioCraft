@@ -68,7 +68,9 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		radio(RadiocraftBlocks.COMMERCIAL_MOBILE.get()); // Placeholder models (ModelDesignBounty), case tinted (tintindex 0).
 		radio(RadiocraftBlocks.LOW_BAND_MOBILE.get());
 		radio(RadiocraftBlocks.MARINE_RADIO.get()); // Placeholder model (ModelDesignBounty, tools/marine_radio_assets.py).
-		radio(RadiocraftBlocks.CB_MOBILE_5875.get()); // Placeholder models (ModelDesignBounty, tools/cb_radio_assets.py).
+		radio(RadiocraftBlocks.CB_MOBILE_5875.get());
+		radio(RadiocraftBlocks.AIRBAND_RADIO.get()); // tools/airband_fm_models.py (2026-11-13); the transmitter's blockstates are hand-written.
+		radio(RadiocraftBlocks.FM_BROADCAST_RECEIVER.get()); // Placeholder models (ModelDesignBounty, tools/cb_radio_assets.py).
 		radio(RadiocraftBlocks.CB_MOBILE_PC68.get());
 		radio(RadiocraftBlocks.REAL_WORLD_INTERFACE.get()); // Placeholder model (ModelDesignBounty, tools/real_world_interface_assets.py).
 		radio(RadiocraftBlocks.ALL_BAND_RADIO.get());
@@ -77,6 +79,7 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		complexHorizontalBlockWithItem(RadiocraftBlocks.RADIO_COMPUTER.get());
 		complexHorizontalBlockWithItem(RadiocraftBlocks.COMPUTER_MONITOR.get());
 		complexHorizontalBlockWithItem(RadiocraftBlocks.SCANNER.get());
+		complexHorizontalBlockWithItem(RadiocraftBlocks.EXTERNAL_CRT_MONITOR.get()); // The maintainer's model (tools/crt_monitor_model.py), facing north.
 	}
 
 	/**

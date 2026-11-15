@@ -381,6 +381,11 @@ public class WeatherAlertReceiverBlockEntity extends BlockEntity implements INet
 		return lastAlert;
 	}
 
+	/** Game time of the last alert it sounded, -1 for none (an FM station relays each new one once, 2026-11-14). */
+	public long getLastAlertAt() {
+		return lastAlertAt;
+	}
+
 	/** What it says when right-clicked (and in Jade): the battery, the station it hears and the last alert. */
 	public List<Component> statusLines() {
 		List<Component> out = new ArrayList<>();

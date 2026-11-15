@@ -81,6 +81,12 @@ public class RadioComputerBlock extends BaseEntityBlock {
 			player.displayClientMessage(message("drive_full").withStyle(ChatFormatting.YELLOW), true);
 			return;
 		}
+		if(com.arrl.radiocraft.common.items.AllAppsFloppyItem.is(stack)) { // Creative: installs everything and stays in hand (2026-11-11).
+			int count = com.arrl.radiocraft.common.computer.ComputerServer.installAll(computer);
+			player.displayClientMessage(message("all_apps_installed", count), true);
+			player.level().playSound(null, computer.getBlockPos(), SoundEvents.CHISELED_BOOKSHELF_INSERT, SoundSource.BLOCKS, 0.6F, 1.6F);
+			return;
+		}
 		if(computer.insertFloppy(stack)) {
 			stack.consume(1, player);
 			ComputerApp app = FloppyDiskItem.app(computer.getFloppy());

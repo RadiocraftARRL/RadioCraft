@@ -43,7 +43,7 @@ import java.util.List;
  * <ul>
  * <li>{@link #scanImage()}: the picture on a map or photo on the glass. {@link #scanPages()}: a book's pages.</li>
  * <li>{@link #printImage}: a picture on the tray's paper: color photo paper prints a color photo, an empty map a plain
- * color print, photo paper a black and white photo.</li>
+ * color print, photo paper a black and white photo, plain paper a sheet with the picture's text in its tooltip.</li>
  * <li>{@link #printBook}: a written book, one sheet of paper per page.</li>
  * </ul>
  * Prints go to the output tray; one waiting there jams the next ({@link Result#OUTPUT_FULL}), as a real one would.
@@ -168,17 +168,10 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 
 	/**
 	 * Prints {@code pixels} on the tray's paper (see the class comment), named {@code title} (a photo is named "Photo"
-	 * whatever the title) and marked as printed by {@code by}.
+	 * whatever the title) and marked as printed by {@code by}. On plain paper there is no picture: the sheet carries
+	 * {@code text} in its tooltip instead (2026-11-12: every print takes plain paper).
 	 */
-	public Result printImage(byte[] pixels, String title, String by) {
-		return printImage(pixels, title, by, false);
-	}
-
-	/**
-	 * As {@link #printImage(byte[], String, String)}; with {@code plainPaper} a sheet of paper takes a plain print too
-	 * (as an empty map does): the Awards program's certificates (computer batch 3C).
-	 */
-	public Result printImage(byte[] pixels, String title, String by, boolean plainPaper) {
+	public Result printImage(byte[] pixels, String title, String by, List<String> text) {
 		if(!(level instanceof ServerLevel server))
 			return Result.NO_PAPER;
 		if(pixels == null || pixels.length != PhotoImage.PIXELS)
@@ -189,10 +182,12 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 		ItemStack print;
 		if(paper.is(RadiocraftItems.COLOR_PHOTO_PAPER.get()) || paper.is(RadiocraftItems.PHOTO_PAPER.get()))
 			print = PhotoPrints.photo(server, pixels, new PhotoInfo(by, paper.is(RadiocraftItems.COLOR_PHOTO_PAPER.get()), "scanner"), worldPosition);
-		else if(paper.is(Items.MAP) || plainPaper && paper.is(Items.PAPER)) {
+		else if(paper.is(Items.MAP) || paper.is(Items.PAPER)) {
 			Component name = title == null || title.isBlank() ? Component.translatable(Radiocraft.translationKey("item", "printout"))
 					: Component.literal(title.length() > 32 ? title.substring(0, 32) : title);
-			print = PhotoPrints.print(server, com.arrl.radiocraft.common.photo.MapPalettes.vanilla().sanitised(pixels), name, List.of(), PRINT_TINT, worldPosition);
+			print = paper.is(Items.MAP)
+					? PhotoPrints.print(server, com.arrl.radiocraft.common.photo.MapPalettes.vanilla().sanitised(pixels), name, List.of(), PRINT_TINT, worldPosition)
+					: textSheet(name, text, by);
 		}
 		else
 			return Result.NO_PAPER;
@@ -201,6 +196,19 @@ public class ScannerBlockEntity extends BlockEntity implements MenuProvider {
 		inventory.setStackInSlot(OUTPUT, print);
 		printSound();
 		return Result.OK;
+	}
+
+	/** A sheet of paper named {@code name} with {@code text} (and who printed it) in its tooltip: a picture on plain paper. */
+	public static ItemStack textSheet(Component name, List<String> text, String by) {
+		ItemStack sheet = new ItemStack(Items.PAPER);
+		sheet.set(DataComponents.ITEM_NAME, name);
+		List<Component> lore = new ArrayList<>();
+		for(String line : text)
+			lore.add(Component.literal(line).withStyle(net.minecraft.ChatFormatting.GRAY));
+		if(by != null && !by.isBlank())
+			lore.add(Component.translatable(Radiocraft.translationKey("tooltip", "printed_by"), by).withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+		sheet.set(DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lore));
+		return sheet;
 	}
 
 	/**

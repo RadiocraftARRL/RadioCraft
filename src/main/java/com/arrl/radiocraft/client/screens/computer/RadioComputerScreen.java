@@ -352,12 +352,26 @@ public final class RadioComputerScreen extends AbstractContainerScreen<RadioComp
 
 	@Override
 	public boolean mouseReleased(double rawX, double rawY, int button) {
+		if(menu.isPowered() && !session.touch() && !menu.isLocked() && !naming())
+			session.current().release(gridPixelX(rawX), gridPixelY(rawY), button);
 		return true;
 	}
 
+	/** A drag (2026-11-14, WXSAT's map pans with it): grid pixels, not cells, so a map follows the mouse smoothly. */
 	@Override
 	public boolean mouseDragged(double rawX, double rawY, int button, double dragX, double dragY) {
+		if(menu.isPowered() && !session.touch() && !menu.isLocked() && !naming())
+			session.current().drag(gridPixelX(rawX), gridPixelY(rawY), button);
 		return true;
+	}
+
+	/** Where {@code rawX} is on the text grid, its own pixels ({@link TextGrid#CELL_W} to a cell). */
+	private double gridPixelX(double rawX) {
+		return rawX / scale - gridX;
+	}
+
+	private double gridPixelY(double rawY) {
+		return rawY / scale - gridY;
 	}
 
 	@Override

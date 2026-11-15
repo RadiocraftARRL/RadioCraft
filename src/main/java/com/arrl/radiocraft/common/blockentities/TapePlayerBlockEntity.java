@@ -9,6 +9,7 @@ import com.arrl.radiocraft.common.init.RadiocraftDataComponent;
 import com.arrl.radiocraft.common.items.TapeItem;
 import com.arrl.radiocraft.common.menus.TapePlayerMenu;
 import com.arrl.radiocraft.common.radio.VoiceTransmitters;
+import com.arrl.radiocraft.common.radio.station.ProgramSource;
 import com.arrl.radiocraft.common.radio.tape.TapeLibrary;
 import com.arrl.radiocraft.common.radio.tape.TapeRecordings;
 import com.arrl.radiocraft.common.radio.voice.RadioVoiceProcessor;
@@ -46,10 +47,26 @@ import java.util.UUID;
  * A reel-to-reel tape player. It plays the tape in it out loud and into any radio touching it (keying the radio, as a
  * microphone would): once on PLAY, over and over, every so many minutes, or on a redstone pulse. On a blank or
  * recorded tape it records the voices of players near it, up to {@link TapeRecordings#MAX_SECONDS}.
+ * <p>
+ * Hoppers (2026-11-14, the maintainer's FM station): tapes put in from the top or a side wait in a queue of
+ * {@link #QUEUE_SIZE}; in {@link Mode#QUEUE} it plays the next one whenever it has none, and a played tape goes to the
+ * out tray ({@link #OUT_SIZE}), which a hopper below empties. A comparator reads how full the queue is.
+ * <p>
+ * It is a {@link ProgramSource} for an FM broadcast station on its data wire: while the station pulls it
+ * ({@link #markPulled}, every tick), the station's pulls play the tape, a frame each, and it keys no FM transmitter;
+ * other radios on its wire still hear it as before.
  */
-public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, IVoiceTransmitter {
+public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, IVoiceTransmitter, ProgramSource {
 
-	public enum Mode { MANUAL, LOOP, INTERVAL, REDSTONE }
+	/** QUEUE (2026-11-14): plays the queued tapes one after another, each to the out tray when done. */
+	public enum Mode { MANUAL, LOOP, INTERVAL, REDSTONE, QUEUE }
+
+	/** Tapes waiting to play, and played ones waiting to be taken. */
+	public static final int QUEUE_SIZE = 9, OUT_SIZE = 9;
+	/** Ticks after one queued tape ends before the next starts: the break a station may talk in. */
+	public static final int BREAK_TICKS = 40;
+	/** Ticks a station's pull lasts: unpulled longer, the player plays by itself again. */
+	public static final int PULL_TICKS = 10;
 
 	public static final int STATE_IDLE = 0, STATE_PLAYING = 1, STATE_RECORDING = 2, STATE_LOADING = 3;
 	/** How far it hears a voice to record, blocks. */
@@ -65,6 +82,12 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 	private int position; // Frames played.
 	private long nextPlay = -1L;
 	private boolean wasPowered;
+	private final List<ItemStack> queue = new ArrayList<>();
+	private final List<ItemStack> out = new ArrayList<>();
+	/** When a queued tape ended: the break before the next lasts {@link #BREAK_TICKS}. */
+	private long breakFrom = Long.MIN_VALUE / 2;
+	/** When an FM station last pulled a frame ({@link #markPulled}). */
+	private long pulledAt = Long.MIN_VALUE / 2;
 
 	// Recording, filled on the voice chat thread: each player's frames land in the 20 ms slot they were spoken in, mixed.
 	private final short[] recordBuffer = new short[TapeRecordings.MAX_SECONDS * (int)RadioVoiceProcessor.SAMPLE_RATE];
@@ -126,6 +149,111 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 			return TapeLibrary.audio(level.getServer(), contents.track());
 		UUID id = contents.recordingId();
 		return id == null ? new short[0] : TapeRecordings.audio(level.getServer(), id);
+	}
+
+	// -------------------- QUEUE AND OUT TRAY --------------------
+
+	/** The tapes waiting to play (a copy). */
+	public List<ItemStack> getQueue() {
+		return List.copyOf(queue);
+	}
+
+	/** The played tapes waiting to be taken (a copy). */
+	public List<ItemStack> getOut() {
+		return List.copyOf(out);
+	}
+
+	/** Queues one tape from {@code stack} (a hopper's way in). True if there was room. */
+	public boolean enqueue(ItemStack stack) {
+		if(queue.size() >= QUEUE_SIZE || !(stack.getItem() instanceof TapeItem))
+			return false;
+		queue.add(stack.copyWithCount(1));
+		changed();
+		return true;
+	}
+
+	/** Takes the played tape at {@code index} of the out tray, or empty. */
+	public ItemStack takeOut(int index) {
+		if(index < 0 || index >= out.size())
+			return ItemStack.EMPTY;
+		ItemStack taken = out.remove(index);
+		changed();
+		return taken;
+	}
+
+	/** Every tape in it (playing, queued, played), emptying it: for when it is broken. */
+	public List<ItemStack> emptyAll() {
+		List<ItemStack> all = new ArrayList<>();
+		ItemStack playing = eject();
+		if(!playing.isEmpty())
+			all.add(playing);
+		all.addAll(queue);
+		all.addAll(out);
+		queue.clear();
+		out.clear();
+		changed();
+		return all;
+	}
+
+	/** 0 to 15 for a comparator: how full the queue is. */
+	public int comparatorSignal() {
+		return queue.isEmpty() ? 0 : 1 + (int)Math.floor(queue.size() * 14.0D / QUEUE_SIZE);
+	}
+
+	/** The hopper face of the tape player: in through the top and sides, out through the bottom. */
+	public net.neoforged.neoforge.items.IItemHandler itemHandler(@Nullable Direction side) {
+		return side == Direction.DOWN ? outHandler : inHandler;
+	}
+
+	private final net.neoforged.neoforge.items.IItemHandler inHandler = new net.neoforged.neoforge.items.IItemHandler() {
+		@Override public int getSlots() { return QUEUE_SIZE; }
+		@Override public @NotNull ItemStack getStackInSlot(int slot) { return slot >= 0 && slot < queue.size() ? queue.get(slot) : ItemStack.EMPTY; }
+		@Override public int getSlotLimit(int slot) { return 1; }
+		@Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return stack.getItem() instanceof TapeItem; }
+		@Override public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) { return ItemStack.EMPTY; }
+
+		@Override
+		public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
+			if(stack.isEmpty() || !(stack.getItem() instanceof TapeItem) || queue.size() >= QUEUE_SIZE || slot < queue.size())
+				return stack; // Only into the next free place, one tape at a time.
+			if(!simulate)
+				enqueue(stack);
+			return stack.copyWithCount(stack.getCount() - 1);
+		}
+	};
+
+	private final net.neoforged.neoforge.items.IItemHandler outHandler = new net.neoforged.neoforge.items.IItemHandler() {
+		@Override public int getSlots() { return OUT_SIZE; }
+		@Override public @NotNull ItemStack getStackInSlot(int slot) { return slot >= 0 && slot < out.size() ? out.get(slot) : ItemStack.EMPTY; }
+		@Override public int getSlotLimit(int slot) { return 1; }
+		@Override public boolean isItemValid(int slot, @NotNull ItemStack stack) { return false; }
+		@Override public @NotNull ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) { return stack; }
+
+		@Override
+		public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
+			if(amount <= 0 || slot < 0 || slot >= out.size())
+				return ItemStack.EMPTY;
+			return simulate ? out.get(slot).copy() : takeOut(slot);
+		}
+	};
+
+	/** QUEUE mode with no tape in: the next queued one goes in. */
+	private void loadNext() {
+		if(mode != Mode.QUEUE || !tape.isEmpty() || queue.isEmpty())
+			return;
+		tape = queue.removeFirst();
+		position = 0;
+		changed();
+	}
+
+	/** QUEUE mode, a tape played through: to the out tray if there is room (else it stays in, and the queue waits). */
+	private void putAway(long now) {
+		if(mode != Mode.QUEUE || tape.isEmpty() || out.size() >= OUT_SIZE)
+			return;
+		out.add(tape);
+		tape = ItemStack.EMPTY;
+		breakFrom = now;
+		changed();
 	}
 
 	// -------------------- CONTROLS --------------------
@@ -213,12 +341,19 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 		boolean powered = level.hasNeighborSignal(worldPosition);
 		boolean pulse = powered && !wasPowered;
 		wasPowered = powered;
+		if(mode == Mode.QUEUE && state == STATE_IDLE) {
+			if(!tape.isEmpty() && contents().isBlank())
+				putAway(now); // Nothing to play on it: on with the next.
+			if(tape.isEmpty() && now - breakFrom >= BREAK_TICKS)
+				loadNext();
+		}
 		if(state == STATE_IDLE && !tape.isEmpty() && !contents().isBlank()) {
 			boolean start = switch(mode) {
 				case MANUAL -> false;
 				case LOOP -> nextPlay < 0 || now >= nextPlay;
 				case INTERVAL -> nextPlay < 0 || now >= nextPlay;
 				case REDSTONE -> pulse;
+				case QUEUE -> true;
 			};
 			if(start) {
 				if(mode == Mode.INTERVAL)
@@ -233,26 +368,40 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 		}
 		if(state != STATE_LOADING && state != STATE_PLAYING)
 			return;
+		if(pulled(now))
+			return; // A station plays it, a frame a pull (nextFrame).
+		int count = now % 2 == 0 ? 3 : 2;
+		for(int i = 0; i < count; i++)
+			if(advance(level) == null)
+				return;
+	}
+
+	/**
+	 * The next frame of the tape, sent out loud and into the radios it keys: null while it loads, or once it has played
+	 * through (then it stops, and in QUEUE mode goes to the out tray).
+	 */
+	@Nullable
+	private short[] advance(ServerLevel level) {
+		if(state != STATE_LOADING && state != STATE_PLAYING)
+			return null;
 		short[] audio = audio(level);
 		if(audio == null)
-			return; // Still loading.
+			return null; // Still loading.
 		if(state == STATE_LOADING) {
 			state = STATE_PLAYING;
 			keyRadios(level);
 			changed();
 		}
-		int count = now % 2 == 0 ? 3 : 2;
-		for(int i = 0; i < count; i++) {
-			int from = position * FRAME;
-			if(from >= audio.length) {
-				finished(now);
-				return;
-			}
-			short[] frame = new short[FRAME];
-			System.arraycopy(audio, from, frame, 0, Math.min(FRAME, audio.length - from));
-			position++;
-			send(level, frame);
+		int from = position * FRAME;
+		if(from >= audio.length) {
+			finished(level.getGameTime());
+			return null;
 		}
+		short[] frame = new short[FRAME];
+		System.arraycopy(audio, from, frame, 0, Math.min(FRAME, audio.length - from));
+		position++;
+		send(level, frame);
+		return frame;
 	}
 
 	private void finished(long now) {
@@ -261,7 +410,58 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 		releaseRadios();
 		if(mode == Mode.LOOP)
 			nextPlay = now + 20; // A second's pause, then round again.
+		putAway(now);
 		changed();
+	}
+
+	// -------------------- PROGRAM SOURCE (an FM station on its data wire) --------------------
+
+	/**
+	 * An FM broadcast station is playing this tape player as its program: call every tick it does. While pulled
+	 * (within {@link #PULL_TICKS}), its own tick sends nothing; each {@link #nextFrame} plays a frame.
+	 */
+	public void markPulled(long gameTime) {
+		pulledAt = gameTime;
+	}
+
+	private boolean pulled(long now) {
+		return now - pulledAt <= PULL_TICKS;
+	}
+
+	@Override
+	@Nullable
+	public short[] nextFrame() {
+		if(!(level instanceof ServerLevel serverLevel))
+			return null;
+		markPulled(serverLevel.getGameTime());
+		return advance(serverLevel);
+	}
+
+	@Override
+	public boolean live() {
+		if(state == STATE_PLAYING || state == STATE_LOADING)
+			return true;
+		boolean playable = !tape.isEmpty() && !contents().isBlank();
+		return switch(mode) {
+			case QUEUE -> playable || !queue.isEmpty();
+			case LOOP -> playable;
+			default -> false;
+		};
+	}
+
+	@Override
+	public String nowPlaying() {
+		if(tape.isEmpty())
+			return "";
+		TapeContents contents = contents();
+		if(contents.isFound())
+			return TapeItem.label(contents.track());
+		return tape.getHoverName().getString();
+	}
+
+	@Override
+	public boolean atBreak() {
+		return level != null && state != STATE_PLAYING && mode == Mode.QUEUE && level.getGameTime() - breakFrom < BREAK_TICKS + 20;
 	}
 
 	/** One frame out loud, and into every radio touching it. */
@@ -290,6 +490,8 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 		TapeContents contents = contents(); // The moderation log keeps a pointer to a player tape, a note for a server tape.
 		com.arrl.radiocraft.common.moderation.ModerationHooks.tapePlaying(voiceId, worldPosition, contents.recordingId(), contents.track());
 		for(RadioBlockEntity radio : com.arrl.radiocraft.common.be_networks.DataWire.linked(level, worldPosition, RadioBlockEntity.class)) {
+			if(radio instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastTransmitterBlockEntity)
+				continue; // An FM station pulls its program (ProgramSource); it is not keyed like a radio.
 			radio.setPTTDown(true);
 			keyed.add(radio);
 		}
@@ -380,7 +582,7 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 		return contents.isFound() ? 2 : contents.isRecorded() ? 3 : 1;
 	}
 
-	public static final int DATA_MODE = 0, DATA_INTERVAL = 1, DATA_STATE = 2, DATA_SECONDS = 3, DATA_TAPE = 4, DATA_COUNT = 5;
+	public static final int DATA_MODE = 0, DATA_INTERVAL = 1, DATA_STATE = 2, DATA_SECONDS = 3, DATA_TAPE = 4, DATA_QUEUE = 5, DATA_OUT = 6, DATA_COUNT = 7;
 
 	public ContainerData dataSlots() {
 		return new ContainerData() {
@@ -392,6 +594,8 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 					case DATA_STATE -> state;
 					case DATA_SECONDS -> getSeconds();
 					case DATA_TAPE -> getTapeKind();
+					case DATA_QUEUE -> queue.size();
+					case DATA_OUT -> out.size();
 					default -> 0;
 				};
 			}
@@ -410,6 +614,7 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 	private void changed() {
 		setChanged();
 		if(level != null && !level.isClientSide) {
+			level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock()); // The comparator reads the queue.
 			level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
 			BlockState blockState = getBlockState();
 			boolean running = state == STATE_PLAYING || state == STATE_RECORDING;
@@ -453,9 +658,31 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 			tag.put("tape", tape.save(registries));
 		tag.putString("mode", mode.name().toLowerCase(Locale.ROOT));
 		tag.putInt("interval", intervalMinutes);
+		tag.put("queue", saveStacks(queue, registries));
+		tag.put("out", saveStacks(out, registries));
 	}
 
-	/** Also how a structure presets one: {@code tape} (an item), {@code mode} (manual, loop, interval, redstone), {@code interval} in minutes. */
+	private static net.minecraft.nbt.ListTag saveStacks(List<ItemStack> stacks, HolderLookup.Provider registries) {
+		net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+		for(ItemStack stack : stacks)
+			list.add(stack.save(registries));
+		return list;
+	}
+
+	private static void loadStacks(CompoundTag tag, String key, List<ItemStack> into, int max, HolderLookup.Provider registries) {
+		into.clear();
+		net.minecraft.nbt.ListTag list = tag.getList(key, net.minecraft.nbt.Tag.TAG_COMPOUND);
+		for(int i = 0; i < list.size() && into.size() < max; i++) {
+			ItemStack stack = ItemStack.parseOptional(registries, list.getCompound(i));
+			if(!stack.isEmpty())
+				into.add(stack);
+		}
+	}
+
+	/**
+	 * Also how a structure presets one: {@code tape} (an item), {@code mode} (manual, loop, interval, redstone, queue),
+	 * {@code interval} in minutes, {@code queue} and {@code out} (lists of items).
+	 */
 	@Override
 	protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
 		super.loadAdditional(tag, registries);
@@ -467,6 +694,8 @@ public class TapePlayerBlockEntity extends BlockEntity implements MenuProvider, 
 			mode = Mode.MANUAL;
 		}
 		intervalMinutes = tag.contains("interval") ? Math.max(1, tag.getInt("interval")) : 5;
+		loadStacks(tag, "queue", queue, QUEUE_SIZE, registries);
+		loadStacks(tag, "out", out, OUT_SIZE, registries);
 	}
 
 	@Override

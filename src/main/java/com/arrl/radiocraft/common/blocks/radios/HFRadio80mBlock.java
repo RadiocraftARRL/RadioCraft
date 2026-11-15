@@ -33,6 +33,12 @@ public class HFRadio80mBlock extends RadioBlock {
 		SHAPES.put(Direction.WEST, Block.box(1.0D, 0.0D, 1.0D, 16.0D, 13.0D, 15.0D));
 	}
 
+	/**
+	 * The RC-K2 (the pure crystal one) is a smaller, lower box than the others (its model, 2026-11-14: the shared hit box
+	 * stood well above and behind it): 14 x 7 x 14, the same whichever way it faces.
+	 */
+	public static final VoxelShape K2_SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 7.0D, 15.0D);
+
 	public HFRadio80mBlock(Properties properties, CrystalQuality crystal) {
 		super(properties, crystal);
 	}
@@ -50,7 +56,7 @@ public class HFRadio80mBlock extends RadioBlock {
 
 	@Override
 	public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-		return hanging(state, SHAPES.get(state.getValue(RadioBlock.HORIZONTAL_FACING)));
+		return hanging(state, getCrystalQuality() == CrystalQuality.PURE ? K2_SHAPE : SHAPES.get(state.getValue(RadioBlock.HORIZONTAL_FACING)));
 	}
 
     @Override

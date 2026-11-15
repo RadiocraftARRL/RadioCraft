@@ -77,11 +77,74 @@ public final class ProgrammerApp extends DosApp {
 	private String armed;
 	/** Where the mode's Close button is drawn (row, first column). */
 	private static final int CLOSE_ROW = 21, CLOSE_COL = 70;
+	/** How long reading or writing a radio shows its progress bar, ms (2026-11-11: the server is done at once). */
+	private static final long BUSY_MS = 1200L;
+
+	/** File, Program and Edit (2026-11-11): every F key's job, to click; the keys still work. */
+	private final com.arrl.radiocraft.client.screens.computer.DosMenuBar menu;
+	/** "Reading radio..." or "Writing radio..." while its bar fills, else null; then {@link #busyThen} runs. */
+	@Nullable
+	private String busyText;
+	private long busyStart = 0L;
+	@Nullable
+	private Runnable busyThen;
 
 	public ProgrammerApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(this::edit);
+		menu = new com.arrl.radiocraft.client.screens.computer.DosMenuBar(List.of(
+				new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Menu(Dos.tr("cps.menu.file"), List.of(
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.open"), "F3", this::open),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.save"), "^S", () -> save(null)),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.save_as"), "", this::saveAs),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.exit"), "Esc", () -> whenSafe(this::exit)))),
+				new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Menu(Dos.tr("cps.menu.program"), List.of(
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.read"), "F5", this::readRadio),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.write"), "F6", this::writeRadio),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.hand"), "F9", this::toggleHand),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.factory"), "F8", this::factory))),
+				new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Menu(Dos.tr("cps.menu.edit"), List.of(
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.edit_channel"), "Enter", () -> {
+							if(list.selected() >= 0)
+								edit(list.selected());
+						}),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.clear"), "Del", this::clear),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.copy"), "^C", this::copy),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.paste"), "^V", this::paste),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.import"), "^I", this::importChannel),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.unit"), "F4", this::editUnitId),
+						new com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item(Dos.tr("cps.menu.contacts"), "F7", this::editContacts)))));
 		rebuild();
+	}
+
+	// -------------------- READING AND WRITING: THE PROGRESS BAR --------------------
+
+	/** Shows {@code text} with a bar filling for {@link #BUSY_MS}, then runs {@code then}. One still going finishes first. */
+	private void busy(String text, Runnable then) {
+		if(busyThen != null) {
+			Runnable earlier = busyThen;
+			busyThen = null;
+			earlier.run();
+		}
+		busyText = text;
+		busyStart = System.currentTimeMillis();
+		busyThen = then;
+	}
+
+	/** The bar is full: what waited on it runs. Called each tick and each frame (the monitor draws with the screen shut). */
+	private void finishBusy() {
+		if(busyText == null || System.currentTimeMillis() - busyStart < BUSY_MS)
+			return;
+		Runnable then = busyThen;
+		busyText = null;
+		busyThen = null;
+		if(then != null)
+			then.run();
+	}
+
+	@Override
+	public void tick() {
+		finishBusy();
 	}
 
 	@Override
@@ -205,10 +268,21 @@ public final class ProgrammerApp extends DosApp {
 				showError(response);
 				return;
 			}
+			modified = false; // Saved: nothing to lose now (2026-11-11).
 			session.message(Dos.tr("cps.saved", name), false);
 			if(after != null)
 				after.run();
 		});
+	}
+
+	/** File, Save as: always asks for a name. */
+	private void saveAs() {
+		fileName = null;
+		save(null);
+	}
+
+	private void open() {
+		whenSafe(() -> showDialog(new DosFilePicker(session, Dos.tr("cps.open_title"), ComputerFileFormats.CODEPLUG, this::load)));
 	}
 
 	@Override
@@ -235,8 +309,10 @@ public final class ProgrammerApp extends DosApp {
 					showError(response);
 					return;
 				}
-				took(response);
-				session.message(Dos.tr("cps.read", RadioPicker.name(response.data()), plug.programmedCount()), false);
+				busy(Dos.tr("cps.reading"), () -> {
+					took(response);
+					session.message(Dos.tr("cps.read", RadioPicker.name(response.data()), plug.programmedCount()), false);
+				});
 			});
 		}, () -> promptHand("read")));
 	}
@@ -248,13 +324,44 @@ public final class ProgrammerApp extends DosApp {
 			return;
 		}
 		if(radio == null || radio.getString("id").equals("hand")) { // Read by hand (or nothing read): a wired one, or one in the hand.
-			RadioPicker.pickOrHand(this, session, app, chosen -> confirmWrite(chosen.getString("id"), RadioPicker.name(chosen)), () -> promptHand("write"));
+			RadioPicker.pickOrHand(this, session, app, chosen -> confirmWrite(chosen.getString("id"), RadioPicker.name(chosen)), () -> licensed(() -> promptHand("write")));
 			return;
 		}
 		confirmWrite(radio.getString("id"), RadioPicker.name(radio));
 	}
 
+	/**
+	 * Commercial licenses (2026-11-10): asks the server whether the codeplug transmits on frequencies the license on the
+	 * scanner's glass does not cover. If so the player must confirm they are licensed for them before {@code then} runs;
+	 * an original license on the glass that covers them all (or licensing off) skips the question. A copy does not.
+	 */
+	private void licensed(Runnable then) {
+		CompoundTag data = new CompoundTag();
+		data.put("channels", Codeplug.channelsTag(plug.channels()));
+		session.app(app, "license", data, response -> {
+			if(!response.ok() || response.data().getBoolean("licensed")) {
+				then.run();
+				return;
+			}
+			ListTag freqs = response.data().getList("unlicensed", Tag.TAG_STRING);
+			List<String> mhz = new ArrayList<>();
+			for(int i = 0; i < freqs.size(); i++)
+				mhz.add(freqs.getString(i));
+			String why = response.data().getBoolean("copy") ? Dos.tr("cps.license_copy", response.data().getString("callsign"))
+					: response.data().contains("callsign") ? Dos.tr("cps.license_other", response.data().getString("callsign")) : Dos.tr("cps.license_none");
+			showDialog(DosDialog.choice(Dos.tr("cps.license_title"), Dos.tr("cps.license", String.join(", ", mhz)) + "\n" + why,
+					new String[] { Dos.tr("cps.license_yes"), Dos.tr("button.cancel") }, index -> {
+						if(index == 0)
+							then.run();
+					}));
+		});
+	}
+
 	private void confirmWrite(String id, String name) {
+		licensed(() -> confirmWriteLicensed(id, name));
+	}
+
+	private void confirmWriteLicensed(String id, String name) {
 		showDialog(DosDialog.confirm(Dos.tr("cps.write_title"), Dos.tr("cps.write", plug.programmedCount(), name), () -> {
 			CompoundTag data = new CompoundTag();
 			data.putString("radio", id);
@@ -266,16 +373,19 @@ public final class ProgrammerApp extends DosApp {
 					return;
 				}
 				ListTag refused = response.data().getList("problems", Tag.TAG_COMPOUND);
-				if(refused.isEmpty()) {
-					took(response);
-					session.message(Dos.tr("cps.written", name), false);
-					return;
-				}
-				problems.clear();
-				for(int i = 0; i < refused.size(); i++)
-					problems.put(refused.getCompound(i).getInt("pos"), I18n.get("message.radiocraft.commercial." + refused.getCompound(i).getString("key")));
-				rebuild();
-				showDialog(DosDialog.message(Dos.tr("cps.refused_title"), Dos.tr("cps.refused") + "\n" + problemsText(refused)));
+				busy(Dos.tr("cps.writing"), () -> {
+					if(refused.isEmpty()) {
+						took(response);
+						session.message(Dos.tr("cps.written", name), false);
+						showDialog(DosDialog.message(Dos.tr("cps.write_done_title"), Dos.tr("cps.written", name)));
+						return;
+					}
+					problems.clear();
+					for(int i = 0; i < refused.size(); i++)
+						problems.put(refused.getCompound(i).getInt("pos"), I18n.get("message.radiocraft.commercial." + refused.getCompound(i).getString("key")));
+					rebuild();
+					showDialog(DosDialog.message(Dos.tr("cps.refused_title"), Dos.tr("cps.refused") + "\n" + problemsText(refused)));
+				});
 			});
 		}));
 	}
@@ -509,7 +619,7 @@ public final class ProgrammerApp extends DosApp {
 			session.message(Dos.tr("cps.hand_off"), false);
 			return;
 		}
-		sendHand(true);
+		licensed(() -> sendHand(true));
 	}
 
 	/** Tells the server the mode is on (with the codeplug) or off. Turning on, the answer turns it on here. */
@@ -558,32 +668,52 @@ public final class ProgrammerApp extends DosApp {
 	@Override
 	public void event(String kind, CompoundTag data) {
 		switch(kind) {
+			// Read or written by hand (2026-11-11): the bar fills (on the monitor, with the screen shut), then an armed one's
+			// result waits in a box for the player to come back to it; the status line's message would be gone by then.
 			case "hand_read" -> {
-				if(data.getBoolean("armed"))
+				boolean armedOne = data.getBoolean("armed");
+				if(armedOne)
 					disarm();
-				took(data);
-				plug = plug.withUnitId(0); // Each radio keeps its own unit ID: a read one is not written into the next.
-				rebuild();
-				session.message(Dos.tr("cps.hand_read", RadioPicker.name(data), plug.programmedCount(), data.getInt("unit")), false);
+				busy(Dos.tr("cps.reading"), () -> {
+					took(data);
+					plug = plug.withUnitId(0); // Each radio keeps its own unit ID: a read one is not written into the next.
+					rebuild();
+					String text = Dos.tr("cps.hand_read", RadioPicker.name(data), plug.programmedCount(), data.getInt("unit"));
+					session.message(text, false);
+					if(armedOne)
+						showDialog(DosDialog.message(Dos.tr("cps.read_done_title"), text));
+				});
 			}
 			case "hand_written" -> {
-				if(data.getBoolean("armed"))
+				boolean armedOne = data.getBoolean("armed");
+				if(armedOne)
 					disarm();
-				problems.clear();
-				if(plug.unitId() > 0) // The server moved on to the next unit ID.
-					plug = plug.withUnitId(data.getInt("next"));
-				rebuild();
-				session.message(Dos.tr("cps.hand_written", data.getString("name"), data.getInt("unit")), false);
+				busy(Dos.tr("cps.writing"), () -> {
+					problems.clear();
+					if(plug.unitId() > 0) // The server moved on to the next unit ID.
+						plug = plug.withUnitId(data.getInt("next"));
+					modified = false; // Written to a radio: closing loses nothing it does not have.
+					rebuild();
+					String text = Dos.tr("cps.hand_written", data.getString("name"), data.getInt("unit"));
+					session.message(text, false);
+					if(armedOne)
+						showDialog(DosDialog.message(Dos.tr("cps.write_done_title"), text));
+				});
 			}
 			case "hand_refused" -> {
-				if(data.getBoolean("armed"))
+				boolean armedOne = data.getBoolean("armed");
+				if(armedOne)
 					disarm();
 				ListTag refused = data.getList("problems", Tag.TAG_COMPOUND);
-				problems.clear();
-				for(int i = 0; i < refused.size(); i++)
-					problems.put(refused.getCompound(i).getInt("pos"), I18n.get("message.radiocraft.commercial." + refused.getCompound(i).getString("key")));
-				rebuild();
-				session.message(Dos.tr("cps.hand_refused", data.getString("name")), true);
+				busy(Dos.tr("cps.writing"), () -> {
+					problems.clear();
+					for(int i = 0; i < refused.size(); i++)
+						problems.put(refused.getCompound(i).getInt("pos"), I18n.get("message.radiocraft.commercial." + refused.getCompound(i).getString("key")));
+					rebuild();
+					session.message(Dos.tr("cps.hand_refused", data.getString("name")), true);
+					if(armedOne)
+						showDialog(DosDialog.message(Dos.tr("cps.refused_title"), Dos.tr("cps.refused") + "\n" + problemsText(refused)));
+				});
 			}
 			case "hand_end" -> {
 				disarm();
@@ -619,7 +749,9 @@ public final class ProgrammerApp extends DosApp {
 
 	@Override
 	public void render(TextGrid g, long now) {
-		Dos.frame(g, Dos.tr("cps.title") + (fileName == null ? "" : " - " + fileName) + (modified ? "*" : ""), Dos.tr("cps.keys"));
+		finishBusy();
+		Dos.frame(g, "", Dos.tr("cps.keys"));
+		g.put(menu.end() + 1, 0, Dos.tr("cps.title") + (fileName == null ? "" : " - " + fileName) + (modified ? "*" : ""), DosColours.TITLE_FG, DosColours.TITLE_BG);
 		int fg = DosColours.BODY_FG, bg = DosColours.BODY_BG;
 		if(radio == null)
 			g.put(1, 1, Dos.fit(Dos.tr("cps.no_radio"), TextGrid.COLS - 2), DosColours.YELLOW, bg);
@@ -658,6 +790,14 @@ public final class ProgrammerApp extends DosApp {
 				plug.contacts().size());
 		g.putField(0, 23, " " + (message.isEmpty() ? status : message), TextGrid.COLS,
 				!message.isEmpty() && session.messageIsError() ? DosColours.RED : DosColours.BLACK, DosColours.LIGHT_GREY);
+		if(busyText != null) { // Reading or writing: a box with a filling bar.
+			int w = 44, col = (TextGrid.COLS - w) / 2, row = 9;
+			g.box(col, row, w, 6, true, "", DosColours.WHITE, DosColours.BLUE);
+			g.shadow(col, row, w, 6);
+			g.put(col + 3, row + 2, busyText, DosColours.YELLOW, DosColours.BLUE);
+			g.bar(col + 3, row + 3, w - 6, Math.min(1.0, (System.currentTimeMillis() - busyStart) / (double)BUSY_MS), DosColours.WHITE, DosColours.BLUE);
+		}
+		menu.render(g, 0);
 	}
 
 	private static String yes(boolean value) {
@@ -668,37 +808,118 @@ public final class ProgrammerApp extends DosApp {
 
 	@Override
 	protected boolean onEscape() {
+		if(busyText != null)
+			return true;
+		if(menu.isOpen()) {
+			menu.close();
+			return true;
+		}
 		whenSafe(this::exit);
 		return true;
 	}
 
+	/** Ctrl+C: the selected channel to the clipboard. */
+	private void copy() {
+		if(list.selected() < 0)
+			return;
+		clipboard = plug.channel(list.selected());
+		session.message(Dos.tr("cps.copied", list.selected() + 1), false);
+	}
+
+	/**
+	 * Edit, Import (Ctrl+I, 2026-11-11): a channel from a Frequency Manager list (a .FRQ file) into the selected
+	 * position, or the first blank one if none is selected. Only FM and digital entries can go in a commercial radio.
+	 */
+	private void importChannel() {
+		int position = list.selected() >= 0 ? list.selected() : firstBlank();
+		if(position < 0) {
+			session.message(Dos.tr("cps.import_full"), true);
+			return;
+		}
+		showDialog(new DosFilePicker(session, Dos.tr("cps.import_title"), ComputerFileFormats.FREQUENCIES, name -> session.files().read(name, response -> {
+			if(!response.ok()) {
+				showError(response);
+				return;
+			}
+			CompoundTag tag = ComputerFileFormats.nbt(response.data().getByteArray("data"));
+			if(tag == null) {
+				session.message(Dos.tr("err.bad_contents"), true);
+				return;
+			}
+			List<FrequencyList.Entry> usable = new ArrayList<>();
+			List<String> lines = new ArrayList<>();
+			for(FrequencyList.Entry entry : FrequencyList.fromTag(tag).entries())
+				if(entry.toChannel() != null) {
+					usable.add(entry);
+					String tx = entry.isReceiveOnly() ? Dos.tr("cps.rx_only") : entry.isSplit() ? FrequencyList.mhz(entry.txMhz()) : "";
+					lines.add(String.format(Locale.ROOT, "%-16s %10s %10s %-3s", entry.name(), FrequencyList.mhz(entry.rxMhz()), tx, entry.mode().name()));
+				}
+			if(usable.isEmpty()) {
+				session.message(Dos.tr("cps.import_none", ComputerStorage.normalise(name)), true);
+				return;
+			}
+			showDialog(new DosPickDialog(Dos.tr("cps.import_title"), Dos.tr("cps.import_pick", position + 1), lines, index -> {
+				CommercialChannel channel = usable.get(index).toChannel();
+				if(channel == null)
+					return;
+				plug = plug.with(position, channel);
+				problems.remove(position);
+				modified = true;
+				rebuild();
+				session.message(Dos.tr("cps.imported", channel.name(), position + 1), false);
+			}));
+		})));
+	}
+
+	/** The first blank channel position, or -1. */
+	private int firstBlank() {
+		for(int i = 0; i < capacity(); i++)
+			if(plug.channel(i).isBlank())
+				return i;
+		return -1;
+	}
+
+	/** Ctrl+V: the clipboard's channel over the selected one. */
+	private void paste() {
+		if(list.selected() < 0 || clipboard == null)
+			return;
+		CommercialChannel pasted = clipboard;
+		if(pasted.keyId() == CommercialChannel.KEY_HIDDEN) { // A hidden key belongs to its own channel: it does not copy.
+			session.message(Dos.tr("cps.hidden_no_copy"), true);
+			return;
+		}
+		plug = plug.with(list.selected(), pasted);
+		problems.remove(list.selected());
+		modified = true;
+		rebuild();
+	}
+
 	@Override
 	protected boolean onKey(int key, int scanCode, int modifiers) {
+		if(busyText != null)
+			return true; // The bar is filling: wait.
+		if(menu.keyPressed(key))
+			return true;
 		if(Dos.isSaveKey(key)) {
 			save(null);
 			return true;
 		}
-		if(Dos.ctrl() && key == GLFW.GLFW_KEY_C && list.selected() >= 0) {
-			clipboard = plug.channel(list.selected());
-			session.message(Dos.tr("cps.copied", list.selected() + 1), false);
+		if(Dos.ctrl() && key == GLFW.GLFW_KEY_C) {
+			copy();
 			return true;
 		}
-		if(Dos.ctrl() && key == GLFW.GLFW_KEY_V && list.selected() >= 0 && clipboard != null) {
-			CommercialChannel pasted = clipboard;
-			if(pasted.keyId() == CommercialChannel.KEY_HIDDEN) { // A hidden key belongs to its own channel: it does not copy.
-				session.message(Dos.tr("cps.hidden_no_copy"), true);
-				return true;
-			}
-			plug = plug.with(list.selected(), pasted);
-			problems.remove(list.selected());
-			modified = true;
-			rebuild();
+		if(Dos.ctrl() && key == GLFW.GLFW_KEY_V) {
+			paste();
+			return true;
+		}
+		if(Dos.ctrl() && key == GLFW.GLFW_KEY_I) {
+			importChannel();
 			return true;
 		}
 		switch(key) {
 			case GLFW.GLFW_KEY_F5 -> readRadio();
 			case GLFW.GLFW_KEY_F6 -> writeRadio();
-			case GLFW.GLFW_KEY_F3 -> whenSafe(() -> showDialog(new DosFilePicker(session, Dos.tr("cps.open_title"), ComputerFileFormats.CODEPLUG, this::load)));
+			case GLFW.GLFW_KEY_F3 -> open();
 			case GLFW.GLFW_KEY_F8 -> factory();
 			case GLFW.GLFW_KEY_F4 -> editUnitId();
 			case GLFW.GLFW_KEY_F7 -> editContacts();
@@ -718,6 +939,10 @@ public final class ProgrammerApp extends DosApp {
 
 	@Override
 	protected boolean onClick(int col, int row, int button) {
+		if(busyText != null)
+			return true;
+		if(menu.mouseClicked(col, row, 0))
+			return true;
 		if(handMode && row == CLOSE_ROW && col >= CLOSE_COL) {
 			closeScreen();
 			return true;

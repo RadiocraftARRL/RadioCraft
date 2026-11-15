@@ -1,5 +1,8 @@
 package com.arrl.radiocraft.common.blocks.power;
 
+import com.arrl.radiocraft.common.blocks.WallMount;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import com.arrl.radiocraft.api.benetworks.IWireConnectable;
 import com.arrl.radiocraft.common.blockentities.PowerSwitchBlockEntity;
 import com.arrl.radiocraft.common.blocks.AbstractNetworkBlock;
@@ -39,6 +42,11 @@ import java.util.List;
  * once, as it rises. The terminals it connects are {@link #passes}; the network walk passes through the switch between
  * those only ({@link com.arrl.radiocraft.common.be_networks.network_objects.PowerSwitchNetworkObject}). The two kinds
  * are {@link OnOffPowerSwitchBlock} and {@link LeftRightPowerSwitchBlock}. Placeholder models (ModelDesignBounty).
+ * <p>
+ * 2026-11-13: it goes on a wall too (click the side of a block), tipped up against it ({@link WallMount}): the terminal
+ * {@link #FACING} has on the floor is at the bottom, where a cable comes up the wall to it; the On/Off's other terminal
+ * at the top, the Left/Right's outputs to the left and right as you face the wall. Subclasses work out their terminals
+ * in the box's own frame ({@link #frameFacing}) and {@link #passes} turns them into world sides.
  */
 public abstract class PowerSwitchBlock extends AbstractNetworkBlock implements IWireConnectable {
 
@@ -46,13 +54,29 @@ public abstract class PowerSwitchBlock extends AbstractNetworkBlock implements I
 	public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 	/** A box half a block high, the full width, so wire meets its sides. */
 	public static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
+	/** On the floor or on a wall. */
+	public static final EnumProperty<AttachFace> FACE = WallMount.FACE;
+	private static final java.util.Map<BlockState, VoxelShape> SHAPES = new java.util.concurrent.ConcurrentHashMap<>();
 
 	protected PowerSwitchBlock(Properties properties) {
 		super(properties);
 	}
 
-	/** True if the lever, as it stands in {@code state}, connects the terminal on {@code side} to the others. */
-	public abstract boolean passes(BlockState state, Direction side);
+	/** True if the lever, as it stands in {@code state}, connects the terminal on world side {@code side} to the others. */
+	public boolean passes(BlockState state, Direction side) {
+		return passesInFrame(state, WallMount.toFrame(state, side), frameFacing(state));
+	}
+
+	/**
+	 * True if the lever connects the box's side {@code side}, in its own frame where its terminal side is
+	 * {@code facing} (its {@link #FACING} on the floor, north on a wall).
+	 */
+	protected abstract boolean passesInFrame(BlockState state, Direction side, Direction facing);
+
+	/** The terminal side in the box's own frame: {@link #FACING} on the floor, north on a wall. */
+	public static Direction frameFacing(BlockState state) {
+		return WallMount.frameFacing(state);
+	}
 
 	/** {@code state} with the lever thrown the other way. */
 	protected abstract BlockState thrown(BlockState state);
@@ -84,7 +108,7 @@ public abstract class PowerSwitchBlock extends AbstractNetworkBlock implements I
 
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
-		return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+		return WallMount.place(context, defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite()));
 	}
 
 	@Override
@@ -119,7 +143,7 @@ public abstract class PowerSwitchBlock extends AbstractNetworkBlock implements I
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-		return SHAPE;
+		return WallMount.onWall(state) ? WallMount.cached(SHAPES, state, 0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D) : SHAPE;
 	}
 
 	@Override

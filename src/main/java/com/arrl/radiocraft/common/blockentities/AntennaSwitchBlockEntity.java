@@ -96,8 +96,8 @@ public class AntennaSwitchBlockEntity extends BlockEntity implements INetworkObj
 	/** Turns the input to the side whose coax leads to a radio, if that is not the side it already faces. */
 	public void faceTheRadio(ServerLevel level) {
 		BlockState state = getBlockState();
-		if(!(state.getBlock() instanceof AntennaSwitchBlock))
-			return;
+		if(!(state.getBlock() instanceof AntennaSwitchBlock) || com.arrl.radiocraft.common.blocks.WallMount.onWall(state))
+			return; // On a wall its input stays at the bottom (2026-11-13).
 		Direction input = AntennaSwitchBlock.input(state);
 		Direction radio = radioSide(level, worldPosition, input);
 		if(radio == input)
@@ -119,8 +119,8 @@ public class AntennaSwitchBlockEntity extends BlockEntity implements INetworkObj
 				continue;
 			Set<Strand> blacklist = new HashSet<>();
 			blacklist.add(Strand.device(pos)); // Not back through the switch itself.
-			Map<BENetworkObject, Direction> reached = WireUtils.enter(new HashMap<>(), blacklist, level, link.getKey(), null,
-					object -> object instanceof ICoaxNetworkObject, coax);
+			Map<BENetworkObject, Direction> reached = WireUtils.enterFromDevice(new HashMap<>(), blacklist, level, link.getKey(),
+					object -> object instanceof ICoaxNetworkObject, coax); // Not coax only bundled past it (2026-11-11).
 			boolean radio = reached.keySet().stream().anyMatch(object -> object instanceof RadioNetworkObject && !(object instanceof DirectionFinderModuleNetworkObject));
 			if(!radio)
 				continue;

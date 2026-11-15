@@ -109,7 +109,7 @@ public class MarineRadioScreen extends AbstractContainerScreen<MarineRadioMenu> 
 			case "squelch" -> {
 				int next = Math.max(0, Math.min(100, Math.round(radio().getSquelchLevel() * 100.0F) + 10 * steps));
 				radio().setSquelchClient(next / 100.0F);
-				SBlockRadioControlPacket.updateServer(radio().getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, next);
+				SBlockRadioControlPacket.updateServer(radio().getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, next * 10);
 				click(1.2F);
 			}
 			case "channel" -> press(MarineRadioState.Key.TURN, steps);

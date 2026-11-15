@@ -7,6 +7,7 @@ import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosScheme;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -30,13 +31,15 @@ import java.util.List;
  * <li><b>Screensaver</b> (computer batch 3A): how long the computer waits with no key or click before the screensaver
  * comes on (never, 1, 3, 5 or 10 minutes), which one, and a preview. It needs the screensaver program
  * ({@link ComputerApps#SCREENSAVER}, found in the world) installed.</li>
+ * <li><b>Background services</b> (2026-11-12): on (the default), DISTRESS and WXSAT keep listening, and keep the
+ * computer on, with nobody at it; off, they work only while their program is open (a warning says so first).</li>
  * </ul>
  * Everything is kept on the computer's disk ({@code sys.settings}, {@code sys.password}). Only the owner, an operator,
  * or anyone while the computer has no owner may change them ({@link ComputerSession#mayConfigure}); others can look.
  */
 public final class SetupApp extends DosApp {
 
-	private enum Page { LAUNCHER, COLOURS, PASSWORD, NAME_CLOCK, SAVER }
+	private enum Page { LAUNCHER, COLOURS, PASSWORD, NAME_CLOCK, SAVER, SERVICES }
 
 	private static final Page[] PAGES = Page.values();
 	private static final ComputerSettings.View[] VIEWS = ComputerSettings.View.values();
@@ -50,6 +53,25 @@ public final class SetupApp extends DosApp {
 
 	public SetupApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		List<DosMenuBar.Item> go = new java.util.ArrayList<>();
+		for(int i = 0; i < PAGES.length; i++) {
+			int index = i;
+			go.add(item("setup.page." + PAGES[i].name().toLowerCase(java.util.Locale.ROOT), "", () -> { // As clicking it in the list does.
+				page = index;
+				leavePage();
+			}));
+		}
+		go.add(item("menu.setup.into_page", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> !inPage));
+		go.add(item("menu.setup.back", "Tab", GLFW.GLFW_KEY_TAB).when(() -> inPage));
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> !inPage),
+						item("menu.setup.back", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> inPage))),
+				new DosMenuBar.Menu(Dos.tr("menu.go"), go),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.setup.change", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> inPage),
+						item("menu.previous", "Up", GLFW.GLFW_KEY_UP),
+						item("menu.next", "Down", GLFW.GLFW_KEY_DOWN))))));
 	}
 
 	@Override
@@ -88,6 +110,7 @@ public final class SetupApp extends DosApp {
 			case PASSWORD -> 1;
 			case NAME_CLOCK -> 3;
 			case SAVER -> 3;
+			case SERVICES -> 1;
 		};
 	}
 
@@ -117,6 +140,7 @@ public final class SetupApp extends DosApp {
 			case PASSWORD -> renderPassword(g);
 			case NAME_CLOCK -> renderNameClock(g);
 			case SAVER -> renderSaver(g);
+			case SERVICES -> renderServices(g);
 		}
 		String message = session.message();
 		if(!message.isEmpty())
@@ -217,6 +241,28 @@ public final class SetupApp extends DosApp {
 		value(g, 2, row + 4, Dos.tr("setup.saver.preview"), Dos.tr("setup.saver.preview_now"));
 		row += 7;
 		for(String text : wrap(Dos.tr("setup.saver.about"), PANEL_W - 6))
+			g.put(PANEL_COL + 3, row++, text, DosColours.DIM, DosColours.BODY_BG);
+	}
+
+	/** The background services switch (2026-11-12): which are installed, and what turning them off means. */
+	private void renderServices(TextGrid g) {
+		ComputerSettings s = settings();
+		int row = TOP + 1;
+		g.put(PANEL_COL + 2, row, Dos.tr("setup.services.intro"), DosColours.BODY_FG, DosColours.BODY_BG);
+		row += 2;
+		boolean sel = inPage && line == 0; // As {@link #value}, with room for the longer label.
+		g.putField(PANEL_COL + 2, row, " " + Dos.tr("setup.services"), 22, DosColours.BODY_FG, DosColours.BODY_BG);
+		g.putField(PANEL_COL + 24, row, " " + Dos.tr(s.backgroundServices() ? "setup.services.on" : "setup.services.off") + " ", 8,
+				sel ? DosColours.HIGHLIGHT_FG : DosColours.FIELD_FG, sel ? DosColours.HIGHLIGHT_BG : DosColours.FIELD_BG);
+		row += 2;
+		List<String> names = new java.util.ArrayList<>();
+		for(ComputerApp program : ComputerApps.all())
+			if(ComputerApps.isBackgroundService(program) && session.isInstalled(program))
+				names.add(program.command());
+		g.put(PANEL_COL + 3, row, Dos.fit(Dos.tr("setup.services.installed", names.isEmpty() ? Dos.tr("setup.services.none") : String.join(", ", names)), PANEL_W - 6),
+				DosColours.ACCENT, DosColours.BODY_BG);
+		row += 2;
+		for(String text : wrap(Dos.tr(s.backgroundServices() ? "setup.services.about_on" : "setup.services.about_off"), PANEL_W - 6))
 			g.put(PANEL_COL + 3, row++, text, DosColours.DIM, DosColours.BODY_BG);
 	}
 
@@ -356,6 +402,13 @@ public final class SetupApp extends DosApp {
 					save(s.withSaverStyle(styles.get(Math.floorMod(styles.indexOf(s.saverStyle()) + step, styles.size()))));
 				}
 			}
+			case SERVICES -> {
+				if(s.backgroundServices()) // Turning them off: say what that costs first.
+					showDialog(DosDialog.confirm(Dos.tr("setup.services.off_title"), Dos.tr("setup.services.off_warning"),
+							() -> save(settings().withBackgroundServices(false))));
+				else
+					save(s.withBackgroundServices(true));
+			}
 		}
 	}
 
@@ -409,6 +462,7 @@ public final class SetupApp extends DosApp {
 			case LAUNCHER -> row >= TOP + 3 && (row - TOP - 3) % 4 == 0 ? (row - TOP - 3) / 4 : -1;
 			case COLOURS -> row - TOP - 3;
 			case PASSWORD -> row == TOP + 3 ? 0 : -1;
+			case SERVICES -> row == TOP + 3 ? 0 : -1;
 			case NAME_CLOCK, SAVER -> row >= TOP + 3 && (row - TOP - 3) % 2 == 0 ? (row - TOP - 3) / 2 : -1;
 		};
 		if(hit < 0 || hit >= lines())

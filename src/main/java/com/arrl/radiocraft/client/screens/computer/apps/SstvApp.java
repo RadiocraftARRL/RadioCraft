@@ -4,6 +4,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerFileFormats;
 import com.arrl.radiocraft.common.computer.ComputerStorage;
@@ -42,6 +43,13 @@ public final class SstvApp extends PictureApp {
 	@Override
 	protected String words() {
 		return "sstv";
+	}
+
+	@Override
+	protected List<DosMenuBar.Item> moreItems() {
+		return List.of(
+				item("menu.sstv.caption", "F4", GLFW.GLFW_KEY_F4),
+				item("menu.sstv.scan", "F6", GLFW.GLFW_KEY_F6));
 	}
 
 	@Override

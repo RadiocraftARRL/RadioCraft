@@ -118,6 +118,45 @@ public class NewBlocksGameTests {
 				.thenSucceed();
 	}
 
+	/**
+	 * A commercial radio speaks through an Another Weather Mod siren its data wire reaches, out of the siren's top, and
+	 * an amateur radio wired the same way does not (2026-11-13).
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 120)
+	public static void commercialRadioSpeaksThroughASiren(GameTestHelper helper) {
+		net.minecraft.world.level.block.Block siren = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(
+				net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("anotherweathermod", "horn_siren"));
+		if(siren == net.minecraft.world.level.block.Blocks.AIR) { // Another Weather Mod is not in this run.
+			helper.succeed();
+			return;
+		}
+		BlockPos commercial = new BlockPos(1, 1, 2);
+		BlockPos amateur = new BlockPos(1, 1, 6);
+		BlockPos foot = new BlockPos(5, 1, 4);
+		helper.setBlock(commercial, RadiocraftBlocks.COMMERCIAL_MOBILE.get());
+		helper.setBlock(amateur, RadiocraftBlocks.HF_RADIO_20M.get());
+		@SuppressWarnings("unchecked")
+		net.minecraft.world.level.block.state.properties.Property<Integer> segment = (net.minecraft.world.level.block.state.properties.Property<Integer>)
+				siren.getStateDefinition().getProperty("segment");
+		helper.setBlock(foot, siren.defaultBlockState().setValue(segment, 0));
+		helper.setBlock(foot.above(), siren.defaultBlockState().setValue(segment, 1));
+		helper.startSequence()
+				.thenIdle(2)
+				.thenExecute(() -> {
+					for(BlockPos at : List.of(new BlockPos(2, 1, 2), new BlockPos(3, 1, 2), new BlockPos(4, 1, 2), new BlockPos(5, 1, 2), new BlockPos(5, 1, 3),
+							new BlockPos(2, 1, 6), new BlockPos(3, 1, 6), new BlockPos(4, 1, 6), new BlockPos(5, 1, 6), new BlockPos(5, 1, 5)))
+						GameTestUtil.placeWire(helper, at, RadiocraftBlocks.DATA_WIRE.get());
+				})
+				.thenWaitUntil(() -> {
+					List<BEVoiceReceiver.WiredSpeaker> wired = receiver(helper, commercial).getWiredSpeakers();
+					helper.assertTrue(wired.equals(List.of(new BEVoiceReceiver.WiredSpeaker(helper.absolutePos(foot.above()), SpeakerKind.SIREN))),
+							"Expected the siren's top as the commercial radio's speaker, found " + wired);
+				})
+				.thenExecute(() -> helper.assertTrue(receiver(helper, amateur).getWiredSpeakers().isEmpty(),
+						"An amateur radio speaks through the siren: " + receiver(helper, amateur).getWiredSpeakers()))
+				.thenSucceed();
+	}
+
 	private static BEVoiceReceiver receiver(GameTestHelper helper, BlockPos radio) {
 		return GameTestUtil.blockEntity(helper, radio, RadioBlockEntity.class).getVoiceReceiver();
 	}

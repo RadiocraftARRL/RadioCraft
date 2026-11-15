@@ -171,7 +171,9 @@ public class BandEdgeGameTests {
 		helper.assertTrue(vhf.isVhf() && !low.isVhf(), "Commercial VHF is VHF; low band is on the HF network");
 		Band near = Band.getBand(13_950_000.0F);
 		helper.assertTrue(near != null && near.name().equals("20m"), "13.950 MHz (below 20m) should map to 20m, was " + near);
-		helper.assertTrue(Band.getBand(100_000_000.0F) == null, "100 MHz is in no band");
+		helper.assertTrue(Band.getBand(60_000_000.0F) == null, "60 MHz is in no band");
+		helper.assertTrue(Band.getBand(100_000_000.0F) != null && Band.getBand(100_000_000.0F).name().equals(Band.FM_BROADCAST) && Band.getBand(100_000_000.0F).isVhf(),
+				"100 MHz is FM broadcast, on the VHF network (2026-11-13)");
 		helper.assertTrue(SolarEventManager.getCondition(helper.getLevel(), low) == SolarEventManager.getCondition(helper.getLevel(), Band.getBand("10m")),
 				"Low band should follow 10m's solar weather");
 		helper.succeed();
@@ -199,7 +201,7 @@ public class BandEdgeGameTests {
 		// markers were added (computer batch 3B added the FT8 ones; configs keep their own list).
 		helper.assertTrue(BandPlan.current().markers().size() == BandPlan.parse(List.of(), before).markers().size(), "Markers should be back to the config's");
 		List<BandPlan.Row> rows = BandPlan.current().rows(BandPlan.sheetBands());
-		helper.assertTrue(rows.size() == 8, "Eight bands on the sheet (with CB), was " + rows.size());
+		helper.assertTrue(rows.size() == 10, "Ten bands on the sheet (with CB, airband and FM broadcast, 2026-11-13), was " + rows.size());
 		helper.succeed();
 	}
 }

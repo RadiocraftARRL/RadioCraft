@@ -1,6 +1,8 @@
 package com.arrl.radiocraft.common.blocks;
 
+import com.arrl.radiocraft.api.capabilities.IBENetworks;
 import com.arrl.radiocraft.common.be_networks.WireFaults;
+import com.arrl.radiocraft.common.be_networks.WireUtils;
 import com.arrl.radiocraft.common.blockentities.WireBundleBlockEntity;
 import com.arrl.radiocraft.common.init.RadiocraftBlocks;
 import net.minecraft.core.BlockPos;
@@ -40,7 +42,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,6 +130,7 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 	 * bundle of two. Server side.
 	 */
 	public static void add(Level level, BlockPos pos, WireBlock kind) {
+		Map<WireBlock, Map<BlockPos, Direction>> before = coaxLinks(level, pos);
 		BlockState here = level.getBlockState(pos);
 		boolean ceiling = Strand.isCeilingAt(level, pos);
 		List<BlockState> strands = new ArrayList<>(Strand.statesAt(level, pos));
@@ -143,6 +148,7 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 		strands.add(fresh);
 		entity.setStrands(strands);
 		changed(level, pos);
+		settleCoax(level, pos, before); // A coax already here may now only run past a device beside it.
 		kind.strandPlaced(level, pos, fresh);
 	}
 
@@ -155,6 +161,7 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 		WireBundleBlockEntity entity = entity(level, pos);
 		if(entity == null)
 			return null;
+		Map<WireBlock, Map<BlockPos, Direction>> before = coaxLinks(level, pos);
 		BlockState old = entity.remove(kind);
 		if(old == null)
 			return null;
@@ -164,6 +171,7 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 			level.setBlock(pos, left.getFirst(), Block.UPDATE_ALL); // onRemove sees the strand carrying on; WireBlock#onPlace finds its network already whole.
 		else
 			changed(level, pos);
+		settleCoax(level, pos, before); // A coax left here may take the device beside it again.
 		return old;
 	}
 
@@ -194,25 +202,35 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 		state.updateNeighbourShapes(level, pos, Block.UPDATE_ALL);
 	}
 
-	/** The strand nearest to where the player's crosshair hit the block, or null for an empty bundle. */
+	/**
+	 * The strand nearest to where the player's crosshair hit the block, or null for an empty bundle. Measured to each
+	 * strand's centre line as it is drawn ({@link WireGeometry}, 2026-11-13: after the cable running rework the strands'
+	 * hit boxes no longer sat where they are drawn, so shift-right click took the wrong one).
+	 */
 	@Nullable
 	public static WireBlock strandAt(BlockGetter level, BlockPos pos, BlockHitResult hit) {
-		List<BlockState> strands = Strand.statesAt(level, pos);
-		Vec3 at = hit.getLocation().subtract(Vec3.atLowerCornerOf(pos));
-		WireLook.Lateral[] offsets = Strand.laterals(level, pos, strands);
+		Vec3 at = hit.getLocation();
 		WireBlock best = null;
 		double bestDistance = Double.MAX_VALUE;
-		for(int i = 0; i < strands.size(); i++) {
-			WireBlock kind = (WireBlock)strands.get(i).getBlock();
-			double distance = Double.MAX_VALUE;
-			for(AABB box : kind.shapeFor(level, pos, strands.get(i), offsets[i]).toAabbs())
-				distance = Math.min(distance, box.distanceToSqr(at));
+		for(WireGeometry.Segment segment : WireGeometry.at(level, pos)) {
+			double distance = distanceToSegment(at, segment.from(), segment.to());
 			if(distance < bestDistance) {
 				bestDistance = distance;
-				best = kind;
+				best = segment.kind();
 			}
 		}
-		return best;
+		if(best != null)
+			return best;
+		List<BlockState> strands = Strand.statesAt(level, pos);
+		return strands.isEmpty() ? null : (WireBlock)strands.getFirst().getBlock();
+	}
+
+	/** How far {@code p} is from the segment {@code a}-{@code b}. */
+	static double distanceToSegment(Vec3 p, Vec3 a, Vec3 b) {
+		Vec3 ab = b.subtract(a);
+		double length = ab.lengthSqr();
+		double t = length < 1.0E-12D ? 0.0D : Math.max(0.0D, Math.min(1.0D, p.subtract(a).dot(ab) / length));
+		return p.distanceTo(a.add(ab.scale(t)));
 	}
 
 	// -------------------- KEEPING UP WITH THE NEIGHBOURS --------------------
@@ -224,11 +242,63 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 		WireBundleBlockEntity entity = entity(level, pos);
 		if(entity == null)
 			return;
+		Map<WireBlock, Map<BlockPos, Direction>> before = coaxLinks(level, pos);
 		boolean changed = false;
 		for(BlockState old : entity.strands())
 			changed |= ((WireBlock)old.getBlock()).refreshStrand(level, pos, old, entity::put);
-		if(changed)
+		if(changed) {
 			changed(level, pos);
+			settleCoax(level, pos, before);
+		}
+	}
+
+	/**
+	 * Each coax strand's links at {@code pos} as the network walk follows them ({@link WireUtils#walkLinks}), to be
+	 * handed to {@link #settleCoax} after a change.
+	 */
+	private static Map<WireBlock, Map<BlockPos, Direction>> coaxLinks(Level level, BlockPos pos) {
+		Map<WireBlock, Map<BlockPos, Direction>> out = new HashMap<>();
+		for(Strand strand : Strand.at(level, pos)) {
+			BlockState state = strand.state(level);
+			if(strand.kind() != null && strand.kind().isCoax() && state != null)
+				out.put(strand.kind(), WireUtils.walkLinks(level, strand, state));
+		}
+		return out;
+	}
+
+	/**
+	 * Joins or splits the networks of each coax strand at {@code pos} whose devices changed since {@code before}
+	 * ({@link #coaxLinks}) with nothing placed or removed at the device (2026-11-11): a coax in a bundle with other
+	 * coax only takes a device beside it while it ends there ({@link WireUtils#passesDevicesBy}), so another cable
+	 * laid in, taken out, or carried on from here can give a strand a device or take one away. Strands that are new
+	 * here do their own joining ({@link WireBlock#strandPlaced}).
+	 */
+	private static void settleCoax(Level level, BlockPos pos, Map<WireBlock, Map<BlockPos, Direction>> before) {
+		for(Strand strand : Strand.at(level, pos)) {
+			WireBlock kind = strand.kind();
+			BlockState state = strand.state(level);
+			Map<BlockPos, Direction> old = kind == null ? null : before.get(kind);
+			if(old == null || state == null || !kind.isCoax())
+				continue;
+			Map<BlockPos, Direction> now = WireUtils.walkLinks(level, strand, state);
+			boolean gained = false, lost = false;
+			for(Map.Entry<BlockPos, Direction> link : now.entrySet())
+				gained |= !old.containsKey(link.getKey()) && isDevice(level, link.getKey(), link.getValue());
+			for(Map.Entry<BlockPos, Direction> link : old.entrySet())
+				lost |= !now.containsKey(link.getKey()) && isDevice(level, link.getKey(), link.getValue());
+			if(gained)
+				WireUtils.mergeNetworks(level, strand, kind.connectionPredicate(), kind.networkSupplier(), kind.networkWires());
+			if(lost) {
+				Map<BlockPos, Direction> all = new LinkedHashMap<>(old);
+				all.putAll(now);
+				WireUtils.splitNetworks(level, strand, Set.of(), all, kind.connectionPredicate(), kind.networkWires());
+			}
+		}
+	}
+
+	/** True if a link into {@code pos} (touching its {@code side}) reaches a network device, not a cable. */
+	private static boolean isDevice(Level level, BlockPos pos, Direction side) {
+		return Strand.at(level, pos).isEmpty() && IBENetworks.getObject(level, WireUtils.linkTarget(level, pos, side)) != null;
 	}
 
 	@Override
@@ -238,6 +308,7 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 			level.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		WireBundleBlockEntity entity = entity(level, pos);
 		if(entity != null && level instanceof Level realLevel && !realLevel.isClientSide) {
+			Map<WireBlock, Map<BlockPos, Direction>> before = coaxLinks(realLevel, pos);
 			boolean changed = false;
 			for(BlockState old : entity.strands()) {
 				WireBlock kind = (WireBlock)old.getBlock();
@@ -248,6 +319,7 @@ public class WireBundleBlock extends Block implements SimpleWaterloggedBlock, En
 			if(changed) {
 				realLevel.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
 				BundleOrientation.queue(realLevel, pos);
+				settleCoax(realLevel, pos, before); // A coax carried on from here no longer ends at the device beside it, or now does.
 			}
 		}
 		return state;

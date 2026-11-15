@@ -20,6 +20,11 @@ public class RadiocraftTags {
 		 * alarm): their updates make no redstone interference.
 		 */
 		public static final TagKey<Block> QUIET_SIGNAL_SOURCES = TagKey.create(Registries.BLOCK, Radiocraft.id("quiet_signal_sources"));
+		/**
+		 * Outdoor warning sirens a commercial radio can speak through when its data wire reaches them (2026-11-13): the
+		 * electronic sirens of Another Weather Mod. Any segment of one counts; the voice comes out of its top.
+		 */
+		public static final TagKey<Block> SIREN_SPEAKERS = TagKey.create(Registries.BLOCK, Radiocraft.id("siren_speakers"));
 		/** Blocks RF passes through: an antenna or a handheld under a roof of these is as good as outside. */
 		public static final TagKey<Block> RF_TRANSPARENT = TagKey.create(Registries.BLOCK, Radiocraft.id("rf_transparent"));
 	}

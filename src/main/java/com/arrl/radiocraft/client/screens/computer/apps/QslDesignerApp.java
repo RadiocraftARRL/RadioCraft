@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosPickDialog;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -61,11 +62,29 @@ public final class QslDesignerApp extends DosApp {
 	private QslCard previewOf;
 	private boolean previewBack;
 	private String bbs = "";
+	private final DosMenuBar menu;
 
 	public QslDesignerApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		files.onActivate(index -> open());
 		properties.onActivate(this::editProperty);
+		menu = new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.qsl.new", "Ins", GLFW.GLFW_KEY_INSERT).when(() -> page == Page.LIST),
+						item("menu.qsl.open", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> page == Page.LIST),
+						item("menu.qsl.print", "F5", GLFW.GLFW_KEY_F5).when(() -> page == Page.LIST),
+						item("menu.qsl.scan", "F6", GLFW.GLFW_KEY_F6).when(() -> page == Page.LIST),
+						item("menu.qsl.bbs", "F7", GLFW.GLFW_KEY_F7).when(() -> page == Page.LIST),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(() -> page == Page.LIST),
+						item("menu.refresh", "F4", GLFW.GLFW_KEY_F4).when(() -> page == Page.LIST),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == Page.LIST))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.qsl.edit_property", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> page == Page.EDIT && editable()),
+						item("menu.qsl.remove_picture", "Del", GLFW.GLFW_KEY_DELETE).when(() -> page == Page.EDIT && editable() && properties.selected() == 10),
+						item("menu.qsl.back_to_list", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> page == Page.EDIT))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.qsl.turn_over", "Tab", GLFW.GLFW_KEY_TAB)))));
+		setMenuBar(menu);
 	}
 
 	@Override
@@ -428,7 +447,7 @@ public final class QslDesignerApp extends DosApp {
 
 	private void drawPreview(TextGrid g, QslCard shown) {
 		g.box(35, 3, 45, 18, false, Dos.tr(back ? "qsl.back" : "qsl.front"), DosColours.TEXT_FG, DosColours.BODY_BG);
-		if(shown == null || hasDialog())
+		if(shown == null || hasDialog() || menu.isOpen()) // Pictures are drawn over the text: none under an open menu.
 			return;
 		if(shown != previewOf || back != previewBack) { // A new array only when it changes (the texture repaints on that).
 			preview = back ? QslArt.back(shown) : QslArt.front(shown);

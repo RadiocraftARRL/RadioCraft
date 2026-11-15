@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The distress alerts a marine radio's DSC receiver (or a commercial VHF radio on 161.975, beacons) has heard (2026-11-09), newest first, at most {@link #MAX}: one
+ * The distress alerts a marine radio's DSC receiver (or a commercial VHF radio's beacon receiver on 161.975) has heard (2026-11-09), newest first, at most {@link #MAX}: one
  * entry per alert, kept up to date by its repeats, acknowledgement and cancel (a cancelled call stays listed, marked so).
  * The radio shows one of them on its display for a while ({@link #shown}); the DISTRESS program reads them all.
  * Server thread only; pure, so it is unit tested.

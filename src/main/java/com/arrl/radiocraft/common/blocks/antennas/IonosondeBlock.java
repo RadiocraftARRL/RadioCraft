@@ -34,6 +34,11 @@ import java.util.List;
 public final class IonosondeBlock extends DoubleVHFAntennaBlock {
 
     public static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
+    /** What players bump into (2026-11-13): the four corner posts and the mast, as in the model. */
+    private static final VoxelShape POSTS = net.minecraft.world.phys.shapes.Shapes.or(Block.box(0.0D, 0.0D, 0.0D, 1.0D, 16.0D, 1.0D),
+            Block.box(15.0D, 0.0D, 0.0D, 16.0D, 16.0D, 1.0D), Block.box(0.0D, 0.0D, 15.0D, 1.0D, 16.0D, 16.0D), Block.box(15.0D, 0.0D, 15.0D, 16.0D, 16.0D, 16.0D),
+            Block.box(7.0D, 0.0D, 7.0D, 9.0D, 16.0D, 9.0D));
+    private static final VoxelShape LOWER = net.minecraft.world.phys.shapes.Shapes.or(POSTS, Block.box(6.0D, 0.0D, 6.0D, 10.0D, 1.0D, 10.0D));
     public static final BooleanProperty NORTH = CoaxStubs.NORTH;
     public static final BooleanProperty EAST = CoaxStubs.EAST;
     public static final BooleanProperty SOUTH = CoaxStubs.SOUTH;
@@ -71,6 +76,11 @@ public final class IonosondeBlock extends DoubleVHFAntennaBlock {
     @Override
     public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return SHAPE;
+    }
+
+    @Override
+    public @NotNull VoxelShape getCollisionShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return state.getValue(HALF) == DoubleBlockHalf.LOWER ? LOWER : POSTS;
     }
 
     @Override

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "radiocraft:iambic_keyer"
+    },
+    {
+      "item": "minecraft:brown_dye"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:block_state": {
+        "finish": "brown"
+      }
+    },
+    "count": 1,
+    "id": "radiocraft:iambic_keyer"
+  }
+}

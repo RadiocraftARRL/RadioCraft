@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.Codeplug;
 import com.arrl.radiocraft.common.computer.ComputerApp;
@@ -50,6 +51,25 @@ public final class FrequencyManagerApp extends DosApp {
 	public FrequencyManagerApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(this::edit);
+		java.util.function.BooleanSupplier picked = () -> loaded && list.selected() >= 0;
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.freqman.new_list", "F4", GLFW.GLFW_KEY_F4).when(() -> loaded),
+						item("menu.open", "F3", GLFW.GLFW_KEY_F3).when(() -> loaded),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.freqman.add", "Ins", GLFW.GLFW_KEY_INSERT).when(() -> loaded),
+						item("menu.freqman.edit", "Enter", GLFW.GLFW_KEY_ENTER).when(picked),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(picked),
+						item("menu.freqman.mark", "Space", GLFW.GLFW_KEY_SPACE).when(picked),
+						item("menu.previous", "Up", GLFW.GLFW_KEY_UP).when(() -> loaded),
+						item("menu.next", "Down", GLFW.GLFW_KEY_DOWN).when(() -> loaded),
+						item("menu.freqman.move_up", "^Up", () -> move(-1)).when(picked),
+						item("menu.freqman.move_down", "^Down", () -> move(1)).when(picked),
+						item("menu.freqman.sort", "F8", GLFW.GLFW_KEY_F8).when(() -> loaded))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.freqman.send", "F5", GLFW.GLFW_KEY_F5).when(() -> loaded),
+						item("menu.freqman.read", "F6", GLFW.GLFW_KEY_F6).when(() -> loaded))))));
 	}
 
 	@Override

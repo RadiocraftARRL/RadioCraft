@@ -8,8 +8,8 @@ import net.minecraft.resources.ResourceLocation;
  * The antenna networks. Every antenna on the air, every radio's bare connector and every handheld is on one of two
  * networks, and a signal only reaches antennas on the network it was sent on:
  * <ul>
- *     <li>{@link #HF}: everything below 100 MHz (80m to 10m and commercial low band, 30-50 MHz),</li>
- *     <li>{@link #VHF}: 100 MHz and up (2m, commercial VHF 150-174 MHz and the marine channels). Handhelds are always
+ *     <li>{@link #HF}: everything below 80 MHz (80m to 10m and commercial low band, 30-50 MHz),</li>
+ *     <li>{@link #VHF}: 80 MHz and up (FM broadcast, 2m, airband, commercial VHF 150-174 MHz and the marine channels). Handhelds are always
  *     here.</li>
  * </ul>
  * Which band a signal is on is carried in the packet; the network only decides who is asked.
@@ -26,7 +26,7 @@ public final class AntennaNetworks {
 	private AntennaNetworks() {}
 
 	/**
-	 * The network a band's antennas belong on: {@link #VHF} for bands from 100 MHz up ({@link Band#isVhf()}), else
+	 * The network a band's antennas belong on: {@link #VHF} for bands from 80 MHz up ({@link Band#isVhf()}), else
 	 * {@link #HF}.
 	 *
 	 * @param band the band, or null

@@ -175,7 +175,7 @@ public final class RadiocraftAdvancementProvider {
 
 	/** Antennas that are whole as placed (a wire antenna is built on the wires, and granted from its block entity). */
 	private static Block[] antennas() {
-		return new Block[] { RadiocraftBlocks.J_POLE_ANTENNA.get(), RadiocraftBlocks.SLIM_JIM_ANTENNA.get(), RadiocraftBlocks.YAGI_ANTENNA.get(),
+		return new Block[] { RadiocraftBlocks.J_POLE_ANTENNA.get(), RadiocraftBlocks.EGGBEATER_ANTENNA.get(), RadiocraftBlocks.SLIM_JIM_ANTENNA.get(), RadiocraftBlocks.YAGI_ANTENNA.get(),
 				RadiocraftBlocks.RINGO_ANTENNA.get(), RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get(), RadiocraftBlocks.FIVE_BTV_ANTENNA.get(),
 				RadiocraftBlocks.SATELLITE_DISH.get(), RadiocraftBlocks.MICROWAVE_HORN.get(), RadiocraftBlocks.ADSB_ANTENNA.get() };
 	}

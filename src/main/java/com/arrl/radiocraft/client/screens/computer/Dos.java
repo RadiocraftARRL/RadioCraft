@@ -36,6 +36,14 @@ public final class Dos {
 		statusEnd = end;
 	}
 
+	/** Where {@link #frame} puts the title: right of the program's menu names, set by {@link DosApp} while it draws. */
+	private static int titleCol = 1;
+
+	/** Sets where {@link #frame} puts its title (1, or right of a program's menu bar). */
+	static void titleCol(int col) {
+		titleCol = col;
+	}
+
 	/** The top bar's right-hand text (name and clock), "" for none. */
 	public static String status() {
 		return status;
@@ -83,7 +91,7 @@ public final class Dos {
 	public static void frame(TextGrid g, String title, String keys) {
 		g.clear(DosColours.BODY_FG, DosColours.BODY_BG);
 		g.hline(0, 0, TextGrid.COLS, ' ', DosColours.TITLE_FG, DosColours.TITLE_BG);
-		g.put(1, 0, title, DosColours.TITLE_FG, DosColours.TITLE_BG);
+		g.put(titleCol, 0, fit(title, Math.max(0, statusStart() - 1 - titleCol)), DosColours.TITLE_FG, DosColours.TITLE_BG);
 		if(!status.isEmpty())
 			g.put(statusStart(), 0, status, DosColours.TITLE_FG, DosColours.TITLE_BG);
 		keyBar(g, keys);

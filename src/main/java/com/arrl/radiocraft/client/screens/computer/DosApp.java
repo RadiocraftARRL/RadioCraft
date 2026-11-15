@@ -25,6 +25,9 @@ public abstract class DosApp {
 	protected final ComputerApp app;
 	@Nullable
 	private DosDialog dialog;
+	/** This program's pull-down menus in its title row ({@link #setMenuBar}), or null. */
+	@Nullable
+	private DosMenuBar menuBar;
 
 	protected DosApp(ComputerSession session, @Nullable ComputerApp app) {
 		this.session = session;
@@ -49,6 +52,14 @@ public abstract class DosApp {
 
 	/** Draws the whole screen. {@code now} is the time in ms (for blinking and animation). */
 	public abstract void render(TextGrid g, long now);
+
+	/**
+	 * True for a program that is a background service (2026-11-11, DISTRESS): its computer's session, with it, is kept
+	 * however long the screen stays shut, as unsaved work keeps an editor's.
+	 */
+	public boolean keepsRunning() {
+		return false;
+	}
 
 	/** A key (GLFW key code); true if it was used. */
 	/**
@@ -84,6 +95,19 @@ public abstract class DosApp {
 
 	/** The wheel over a cell ({@code amount} positive is up); true if it was used. */
 	protected boolean onScroll(int col, int row, double amount) {
+		return false;
+	}
+
+	/**
+	 * The mouse dragged with {@code button} held, to grid pixel {@code x, y} ({@link TextGrid#CELL_W} pixels a cell);
+	 * true if it was used. Every move while held comes here; {@link #onRelease} ends it.
+	 */
+	protected boolean onDrag(double x, double y, int button) {
+		return false;
+	}
+
+	/** The mouse button let go at grid pixel {@code x, y}. */
+	protected boolean onRelease(double x, double y, int button) {
 		return false;
 	}
 
@@ -126,6 +150,41 @@ public abstract class DosApp {
 		return dialog != null;
 	}
 
+	/**
+	 * Gives this program pull-down menus in its title row (2026-11-12, every program as the CPS has them). The program
+	 * draws as before; its {@link Dos#frame} title moves right of the menu names, the menus are drawn over the program
+	 * (under any dialog), and they take the clicks on their names, F10 (unless {@link DosMenuBar#withoutF10}) and,
+	 * while one is open, every key. Build the items with {@link #item} so a click does just what the key does.
+	 */
+	protected void setMenuBar(DosMenuBar bar) {
+		menuBar = bar;
+	}
+
+	/** True while one of this program's menus is pulled down (a program drawing pictures over its text leaves them out then). */
+	protected boolean menuOpen() {
+		return menuBar != null && menuBar.isOpen();
+	}
+
+	/** The menus' first column free for words of the program's own on row 0 (1 with no menus). */
+	protected int titleCol() {
+		return menuBar == null ? 1 : menuBar.end() + 1;
+	}
+
+	/** Does what pressing {@code key} (no Ctrl or Shift) does: the same way in as the keyboard, so Esc is {@link #onEscape}. */
+	protected final void press(int key) {
+		key(key, 0, 0);
+	}
+
+	/** A menu item ({@code screen.radiocraft.computer.<labelKey>}) that does what pressing {@code key} does. */
+	protected DosMenuBar.Item item(String labelKey, String keyName, int key) {
+		return new DosMenuBar.Item(Dos.tr(labelKey), keyName, () -> press(key));
+	}
+
+	/** A menu item ({@code screen.radiocraft.computer.<labelKey>}) that runs {@code action}, shown with the key that does the same. */
+	protected DosMenuBar.Item item(String labelKey, String keyName, Runnable action) {
+		return new DosMenuBar.Item(Dos.tr(labelKey), keyName, action);
+	}
+
 	/** Shows an error from the server in a box. */
 	protected void showError(ComputerResponse response) {
 		showDialog(DosDialog.message(Dos.tr("error"), response.errorText()));
@@ -134,7 +193,17 @@ public abstract class DosApp {
 	// -------------------- DISPATCH (the screen calls these) --------------------
 
 	final void draw(TextGrid g, long now) {
-		render(g, now);
+		Dos.titleCol(titleCol());
+		try {
+			render(g, now);
+		}
+		finally {
+			Dos.titleCol(1);
+		}
+		if(menuBar != null) {
+			menuBar.clearUnder(g, 0); // Pictures are drawn over the text: none over the open menu.
+			menuBar.render(g, 0);
+		}
 		if(dialog != null)
 			dialog.render(g, now);
 	}
@@ -147,6 +216,8 @@ public abstract class DosApp {
 				dialog.keyPressed(key, scanCode, modifiers);
 			return true;
 		}
+		if(menuBar != null && menuBar.keyPressed(key))
+			return true; // F10 opens them; an open menu takes every key, Esc closing it.
 		if(key == GLFW.GLFW_KEY_ESCAPE)
 			return onEscape();
 		return onKey(key, scanCode, modifiers);
@@ -157,6 +228,8 @@ public abstract class DosApp {
 			dialog.charTyped(c);
 			return true;
 		}
+		if(menuBar != null && menuBar.isOpen())
+			return true;
 		return onChar(c);
 	}
 
@@ -165,7 +238,19 @@ public abstract class DosApp {
 			dialog.mouseClicked(col, row, button);
 			return true;
 		}
+		if(menuBar != null && menuBar.mouseClicked(col, row, 0))
+			return true;
 		return onClick(col, row, button);
+	}
+
+	final boolean drag(double x, double y, int button) {
+		if(dialog != null || menuBar != null && menuBar.isOpen())
+			return true;
+		return onDrag(x, y, button);
+	}
+
+	final boolean release(double x, double y, int button) {
+		return dialog == null && onRelease(x, y, button);
 	}
 
 	final boolean scroll(int col, int row, double amount) {
@@ -173,6 +258,8 @@ public abstract class DosApp {
 			dialog.mouseScrolled(col, row, amount);
 			return true;
 		}
+		if(menuBar != null && menuBar.isOpen())
+			return true;
 		return onScroll(col, row, amount);
 	}
 }

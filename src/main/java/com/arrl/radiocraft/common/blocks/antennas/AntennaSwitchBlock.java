@@ -1,5 +1,8 @@
 package com.arrl.radiocraft.common.blocks.antennas;
 
+import com.arrl.radiocraft.common.blocks.WallMount;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import com.arrl.radiocraft.common.be_networks.WireUtils;
 import com.arrl.radiocraft.common.blockentities.AntennaSwitchBlockEntity;
 import com.arrl.radiocraft.common.blocks.AbstractNetworkBlock;
@@ -46,6 +49,11 @@ import java.util.Set;
  * and 3 are the other sides, clockwise from it. Right click turns the knob to the next output; a redstone signal
  * turns it as the signal rises, to the next output that has coax on it. Model and texture from
  * {@code tools/antenna_switch_model.py}.
+ * <p>
+ * 2026-11-13: it goes on a wall too (click the side of a block): tipped up against it ({@link WallMount}), the input at
+ * the bottom where coax comes up the wall, outputs 1, 2 and 3 to the left, top and right as on the floor, clockwise.
+ * On a wall it does not turn to the radio (the model cannot turn in the wall's plane): run the radio's coax up to its
+ * bottom.
  */
 public class AntennaSwitchBlock extends AbstractNetworkBlock {
 
@@ -55,34 +63,37 @@ public class AntennaSwitchBlock extends AbstractNetworkBlock {
 	public static final IntegerProperty OUTPUT = IntegerProperty.create("output", 1, 3);
 	/** The 10x6x10 box; the connectors reach the block's sides at floor level. */
 	public static final VoxelShape SHAPE = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 6.0D, 13.0D);
+	/** On the floor or on a wall. */
+	public static final EnumProperty<AttachFace> FACE = WallMount.FACE;
+	private static final java.util.Map<BlockState, VoxelShape> SHAPES = new java.util.concurrent.ConcurrentHashMap<>();
 
 	public AntennaSwitchBlock(Properties properties) {
 		super(properties);
-		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(OUTPUT, 1));
+		registerDefaultState(stateDefinition.any().setValue(FACE, AttachFace.FLOOR).setValue(FACING, Direction.NORTH).setValue(OUTPUT, 1));
 	}
 
-	/** The side the radio's coax comes in on. */
+	/** The side the radio's coax comes in on (the bottom, on a wall). */
 	public static Direction input(BlockState state) {
-		return state.getValue(FACING);
+		return WallMount.toWorld(state, WallMount.frameFacing(state));
 	}
 
-	/** The side of the selected output: {@link #OUTPUT} quarter turns clockwise from the input. */
+	/** The side of the selected output: {@link #OUTPUT} quarter turns clockwise from the input (in the box's frame). */
 	public static Direction output(BlockState state) {
-		Direction side = state.getValue(FACING);
+		Direction side = WallMount.frameFacing(state);
 		for(int i = 0; i < state.getValue(OUTPUT); i++)
 			side = side.getClockWise();
-		return side;
+		return WallMount.toWorld(state, side);
 	}
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FACING, OUTPUT);
+		builder.add(FACE, FACING, OUTPUT);
 	}
 
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext context) {
 		Direction toward = context.getHorizontalDirection().getOpposite(); // Input toward the player, until a radio is found.
-		return defaultBlockState().setValue(FACING, AntennaSwitchBlockEntity.radioSide(context.getLevel(), context.getClickedPos(), toward));
+		return WallMount.place(context, defaultBlockState().setValue(FACING, AntennaSwitchBlockEntity.radioSide(context.getLevel(), context.getClickedPos(), toward)));
 	}
 
 	@Override
@@ -143,7 +154,7 @@ public class AntennaSwitchBlock extends AbstractNetworkBlock {
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-		return SHAPE;
+		return WallMount.onWall(state) ? WallMount.cached(SHAPES, state, 3.0D, 0.0D, 3.0D, 13.0D, 6.0D, 13.0D) : SHAPE;
 	}
 
 	@Override

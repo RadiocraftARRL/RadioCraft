@@ -44,9 +44,9 @@ public class PowerBENetwork extends BENetwork {
      * @return Amount pulled from network
      */
     public int pullPower(int amount, boolean simulate) {
-        List<PowerNetworkObject> sources = new ArrayList<>();
+        List<PowerMember> sources = new ArrayList<>();
         for(BENetworkObject obj : networkObjects)
-            sources.add((PowerNetworkObject)obj);
+            sources.add((PowerMember)obj);
         return pullEvenly(sources, amount, simulate);
     }
 
@@ -64,7 +64,7 @@ public class PowerBENetwork extends BENetwork {
         if(dischargedAt == gameTime)
             return 0;
         dischargedAt = gameTime;
-        List<PowerNetworkObject> batteries = new ArrayList<>();
+        List<PowerMember> batteries = new ArrayList<>();
         long available = 0;
         for(BENetworkObject o : networkObjects)
             if(o instanceof BatteryNetworkObject battery) {
@@ -78,7 +78,7 @@ public class PowerBENetwork extends BENetwork {
     }
 
     /** Takes {@code amount} from {@code sources}, an even share from each (one that runs short leaves the rest to the others). */
-    private static int pullEvenly(List<PowerNetworkObject> sources, int amount, boolean simulate) {
+    private static int pullEvenly(List<? extends PowerMember> sources, int amount, boolean simulate) {
         if(amount <= 0 || sources.isEmpty())
             return 0;
         int[] room = new int[sources.size()];
@@ -106,9 +106,9 @@ public class PowerBENetwork extends BENetwork {
     public int pushPower(int amount, boolean direct, boolean forBatteries, boolean simulate) {
         if(amount <= 0)
             return 0;
-        List<PowerNetworkObject> takers = new ArrayList<>();
+        List<PowerMember> takers = new ArrayList<>();
         for(BENetworkObject o : networkObjects) {
-            PowerNetworkObject obj = (PowerNetworkObject)o;
+            PowerMember obj = (PowerMember)o;
             if((forBatteries && obj instanceof BatteryNetworkObject) || (!forBatteries && !(obj instanceof BatteryNetworkObject))) {
                 if((!direct && obj.isIndirectConsumer()) || (direct && obj.isDirectConsumer()))
                     takers.add(obj);
@@ -132,10 +132,10 @@ public class PowerBENetwork extends BENetwork {
      */
     @Override
     public void add(BENetworkObject networkObject) {
-        if(networkObject instanceof PowerNetworkObject)
+        if(networkObject instanceof PowerMember)
             super.add(networkObject);
         else
-            Radiocraft.LOGGER.warn("Tried to add a non PowerNetworkObject to a PowerBENetwork.");
+            Radiocraft.LOGGER.warn("Tried to add a non PowerMember to a PowerBENetwork.");
     }
 
     /**

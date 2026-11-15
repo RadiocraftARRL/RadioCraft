@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Where each radio's screen is, read from its block model: the element the maintainer names {@code DISPLAY} (in
  * Blockbench), on the model as drawn facing north. Premium and Cheap radios share their plain radio's model shape, so
- * they look up the plain one. Read on first use and again after every resource reload, so a re-export lines up.
+ * they look up the plain one, unless their own model has the element (the premium HF rigs, 2026-11-11). Read on first use and again after every resource reload, so a re-export lines up.
  */
 public final class RadioDisplays {
 
@@ -51,7 +51,15 @@ public final class RadioDisplays {
 			"low_band_mobile", commercialLamps(),
 			"marine_radio", java.util.List.of( // TX and RX lamps under the display, right of the switches (tools/marine_radio_assets.py, 2026-11-09).
 					new Lamp(10.0F, 10.25F, 2.25F, 2.5F, 4.5F, 0xFFFF3B30, true),
-					new Lamp(9.5F, 9.75F, 2.25F, 2.5F, 4.5F, 0xFF3BFF6A, false)));
+					new Lamp(9.5F, 9.75F, 2.25F, 2.5F, 4.5F, 0xFF3BFF6A, false)),
+			"hf_radio_20m_pure", java.util.List.of( // The Swan: TX at the right end of the key row under its screen (2026-11-11).
+					new Lamp(1.0F, 1.5F, 4.0F, 4.5F, 2.0F, 0xFFFF3B30, true)),
+			"hf_radio_40m_pure", java.util.List.of( // The TS-520R's lamp row.
+					new Lamp(8.75F, 9.25F, 6.0F, 6.5F, 2.0F, 0xFFFF3B30, true),
+					new Lamp(7.75F, 8.25F, 6.0F, 6.5F, 2.0F, 0xFF3BFF6A, false)),
+			"hf_radio_10m_pure", java.util.List.of( // The RTX-100's TX/RX lamps.
+					new Lamp(13.5F, 13.75F, 3.5F, 3.75F, 3.0F, 0xFFFF3B30, true),
+					new Lamp(13.5F, 13.75F, 3.0F, 3.25F, 3.0F, 0xFF3BFF6A, false)));
 
 	/** The commercial mobiles' TX and RX lamps, right of the display (placeholder model, see ModelDesignBounty). */
 	private static java.util.List<Lamp> commercialLamps() {
@@ -62,7 +70,8 @@ public final class RadioDisplays {
 
 	/** The lamps of the radio block {@code blockPath}, none if its model has none. */
 	public static java.util.List<Lamp> lamps(String blockPath) {
-		return LAMPS.getOrDefault(blockPath.replaceAll("_(pure|poor)$", ""), java.util.List.of());
+		java.util.List<Lamp> own = LAMPS.get(blockPath);
+		return own != null ? own : LAMPS.getOrDefault(blockPath.replaceAll("_(pure|poor)$", ""), java.util.List.of());
 	}
 
 	private RadioDisplays() {}
@@ -81,8 +90,11 @@ public final class RadioDisplays {
 	 * and the channel) and two SIG_TX_METER meters.
 	 */
 	public static java.util.List<Display> named(String blockPath, String name) {
-		String model = blockPath.replaceAll("_(pure|poor)$", "");
-		return NAMED.computeIfAbsent(model + "#" + name, key -> readNamed(model, name));
+		return NAMED.computeIfAbsent(blockPath + "#" + name, key -> {
+			java.util.List<Display> own = readNamed(blockPath, name);
+			String plain = blockPath.replaceAll("_(pure|poor)$", "");
+			return !own.isEmpty() || plain.equals(blockPath) ? own : readNamed(plain, name);
+		});
 	}
 
 	private static java.util.List<Display> readNamed(String model, String name) {
@@ -115,8 +127,11 @@ public final class RadioDisplays {
 	/** The screen of the radio block {@code blockPath} ("hf_radio_20m_pure"), or null if its model has none. */
 	@Nullable
 	public static Display get(String blockPath) {
-		String model = blockPath.replaceAll("_(pure|poor)$", "");
-		return CACHE.computeIfAbsent(model, RadioDisplays::read).orElse(null);
+		return CACHE.computeIfAbsent(blockPath, path -> {
+			Optional<Display> own = read(path);
+			String plain = path.replaceAll("_(pure|poor)$", "");
+			return own.isPresent() || plain.equals(path) ? own : read(plain);
+		}).orElse(null);
 	}
 
 	private static Optional<Display> read(String model) {

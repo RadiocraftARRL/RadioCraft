@@ -55,7 +55,12 @@ public class GameTestFilter {
 		if(tests == null)
 			return;
 		int before = tests.size();
-		tests.removeIf(test -> !names.contains(test.testName().toLowerCase(Locale.ROOT)));
+		// A batch's name runs every test in it (generated tests, e.g. -Pgametests=cablematrix).
+		// A generated test named class.case also answers to its case alone.
+		tests.removeIf(test -> {
+			String name = test.testName().toLowerCase(Locale.ROOT);
+			return !names.contains(name) && !names.contains(name.substring(name.lastIndexOf('.') + 1)) && !names.contains(test.batchName().toLowerCase(Locale.ROOT));
+		});
 		Radiocraft.LOGGER.info("GameTest filter {}: running {} of {} tests", wanted, tests.size(), before);
 	}
 }

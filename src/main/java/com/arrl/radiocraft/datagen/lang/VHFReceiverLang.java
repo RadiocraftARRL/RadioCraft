@@ -17,6 +17,9 @@ public final class VHFReceiverLang {
 		provider.add("message.radiocraft.vhf_receiver.cell_in", "Cell in");
 		provider.add("message.radiocraft.vhf_receiver.cell_out", "Cell out");
 
+		// The VHF base station's STEP knob (2026-11-14).
+		provider.add("screen.radiocraft.vhf_step.tooltip", "STEP: how far one click of the dial tunes. Click for the next: 5, 6.25, 10, 12.5, 15, 20, 25 kHz. Turn the dial after changing it to land on the new step (164.480 up one 12.5 kHz click is 164.4875).");
+
 		java.util.function.BiConsumer<String, String> s = (key, text) -> provider.add("screen.radiocraft.vhf_receiver." + key, text);
 		s.accept("set_out", "SET: press it in to change a channel's frequency. Then switch on just that channel: the lamp lights and TUNE moves it.");
 		s.accept("set_in", "SET is in. With just one channel switched on the lamp lights and TUNE moves its frequency. Press again to let it out.");

@@ -45,7 +45,11 @@ public final class CallsignPrompt {
 		if(event.getEntity() instanceof ServerPlayer player && event.getLevel().getBlockState(event.getPos()).getBlock() instanceof RadioBlock
 				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.CommercialMobileBlock)
 				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.MarineRadioBlock)
-				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.CbRadioBlock) && prompt(player)) { // Commercial, marine and CB radios need no ham call.
+				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.CbRadioBlock)
+				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.AirbandRadioBlock)
+				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.FmBroadcastTransmitterBlock)
+				&& !(event.getLevel().getBlockState(event.getPos()).getBlock() instanceof com.arrl.radiocraft.common.blocks.radios.FmBroadcastReceiverBlock)
+				&& prompt(player)) { // Commercial, marine, CB, airband and broadcast radios need no ham call.
 			event.setCanceled(true);
 			event.setCancellationResult(InteractionResult.SUCCESS);
 		}

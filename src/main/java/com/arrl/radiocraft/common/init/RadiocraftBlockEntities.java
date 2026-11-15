@@ -48,6 +48,12 @@ public class RadiocraftBlockEntities {
 			() -> BlockEntityType.Builder.of(CommercialMobileBlockEntity::new, RadiocraftBlocks.COMMERCIAL_MOBILE.get(), RadiocraftBlocks.LOW_BAND_MOBILE.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.CbRadioBlockEntity>> CB_RADIO = BLOCK_ENTITY_TYPES.register("cb_radio",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.CbRadioBlockEntity::new, RadiocraftBlocks.CB_MOBILE_5875.get(), RadiocraftBlocks.CB_MOBILE_PC68.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.AirbandRadioBlockEntity>> AIRBAND_RADIO = BLOCK_ENTITY_TYPES.register("airband_radio",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.AirbandRadioBlockEntity::new, RadiocraftBlocks.AIRBAND_RADIO.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.FmBroadcastTransmitterBlockEntity>> FM_BROADCAST_TRANSMITTER = BLOCK_ENTITY_TYPES.register("fm_broadcast_transmitter",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.FmBroadcastTransmitterBlockEntity::new, RadiocraftBlocks.FM_BROADCAST_TRANSMITTER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity>> FM_BROADCAST_RECEIVER = BLOCK_ENTITY_TYPES.register("fm_broadcast_receiver",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity::new, RadiocraftBlocks.FM_BROADCAST_RECEIVER.get()).build(null));
 	public static final Supplier<BlockEntityType<MarineRadioBlockEntity>> MARINE_RADIO = BLOCK_ENTITY_TYPES.register("marine_radio",
 			() -> BlockEntityType.Builder.of(MarineRadioBlockEntity::new, RadiocraftBlocks.MARINE_RADIO.get()).build(null));
 
@@ -114,6 +120,9 @@ public class RadiocraftBlockEntities {
 					RadiocraftBlocks.BALUN_NINE_TO_ONE.get(),
 					RadiocraftBlocks.SLIM_JIM_ANTENNA.get(),
 					RadiocraftBlocks.J_POLE_ANTENNA.get(),
+					RadiocraftBlocks.AIRBAND_ANTENNA.get(),
+					RadiocraftBlocks.AIRBAND_GROUND_PLANE.get(),
+					RadiocraftBlocks.EGGBEATER_ANTENNA.get(),
 					RadiocraftBlocks.RINGO_ANTENNA.get(),
 					RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get(),
 					RadiocraftBlocks.IONOSONDE.get(),
@@ -149,6 +158,8 @@ public class RadiocraftBlockEntities {
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity::new, RadiocraftBlocks.RADIO_COMPUTER.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.ComputerMonitorBlockEntity>> COMPUTER_MONITOR = BLOCK_ENTITY_TYPES.register("computer_monitor",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.ComputerMonitorBlockEntity::new, RadiocraftBlocks.COMPUTER_MONITOR.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.CrtMonitorBlockEntity>> EXTERNAL_CRT_MONITOR = BLOCK_ENTITY_TYPES.register("external_crt_monitor",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.CrtMonitorBlockEntity::new, RadiocraftBlocks.EXTERNAL_CRT_MONITOR.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.ScannerBlockEntity>> SCANNER = BLOCK_ENTITY_TYPES.register("scanner",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.ScannerBlockEntity::new, RadiocraftBlocks.SCANNER.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.adsb.AdsbBeaconBlockEntity>> ADSB_BEACON = BLOCK_ENTITY_TYPES.register("adsb_beacon",
@@ -174,5 +185,25 @@ public class RadiocraftBlockEntities {
 
 	public static final Supplier<BlockEntityType<?>> SATELLITE_DISH = BLOCK_ENTITY_TYPES.register("satellite_dish",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.SatelliteDishBlockEntity::new, RadiocraftBlocks.SATELLITE_DISH.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.SatelliteTrackerBlockEntity>> SATELLITE_TRACKER = BLOCK_ENTITY_TYPES.register("satellite_tracker",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.SatelliteTrackerBlockEntity::new, RadiocraftBlocks.SATELLITE_TRACKER.get()).build(null));
+
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.ComputerRedstoneBlockEntity>> COMPUTER_REDSTONE = BLOCK_ENTITY_TYPES.register("computer_redstone",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.ComputerRedstoneBlockEntity::new, RadiocraftBlocks.COMPUTER_REDSTONE.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.LinearAmplifierBlockEntity>> LINEAR_AMPLIFIER = BLOCK_ENTITY_TYPES.register("linear_amplifier",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.LinearAmplifierBlockEntity::new, RadiocraftBlocks.LINEAR_AMPLIFIER.get()).build(null));
+	/** Fire alarms and SCADA on the radio mesh (2026-11-10). */
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.mesh.FireAlarmBoxBlockEntity>> FIRE_ALARM_BOX = BLOCK_ENTITY_TYPES.register("fire_alarm_box",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.mesh.FireAlarmBoxBlockEntity::new, RadiocraftBlocks.FIRE_ALARM_BOX.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.mesh.PullStationBlockEntity>> PULL_STATION = BLOCK_ENTITY_TYPES.register("pull_station",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.mesh.PullStationBlockEntity::new, RadiocraftBlocks.PULL_STATION.get(), RadiocraftBlocks.OUTDOOR_PULL_BOX.get(), RadiocraftBlocks.PANIC_BUTTON.get(),
+					RadiocraftBlocks.YELLOW_PULL_STATION.get(), RadiocraftBlocks.WHITE_PULL_STATION.get(),
+					RadiocraftBlocks.YELLOW_OUTDOOR_PULL_BOX.get(), RadiocraftBlocks.WHITE_OUTDOOR_PULL_BOX.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.mesh.FireAlarmControllerBlockEntity>> FIRE_ALARM_CONTROLLER = BLOCK_ENTITY_TYPES.register("fire_alarm_controller",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.mesh.FireAlarmControllerBlockEntity::new, RadiocraftBlocks.FIRE_ALARM_CONTROLLER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.mesh.ScadaRtuBlockEntity>> SCADA_RTU = BLOCK_ENTITY_TYPES.register("scada_rtu",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.mesh.ScadaRtuBlockEntity::new, RadiocraftBlocks.SCADA_RTU.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.mesh.ScadaMasterBlockEntity>> SCADA_MASTER = BLOCK_ENTITY_TYPES.register("scada_master",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.mesh.ScadaMasterBlockEntity::new, RadiocraftBlocks.SCADA_MASTER.get()).build(null));
 
 }

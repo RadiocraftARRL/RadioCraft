@@ -38,6 +38,13 @@ public final class WefaxApp extends PictureApp {
 	}
 
 	@Override
+	protected java.util.List<com.arrl.radiocraft.client.screens.computer.DosMenuBar.Item> moreItems() {
+		return java.util.List.of(
+				item("menu.wefax.wxrept", "F4", GLFW.GLFW_KEY_F4),
+				item("menu.wefax.chart", "F7", GLFW.GLFW_KEY_F7));
+	}
+
+	@Override
 	protected boolean moreKeys(int key) {
 		switch(key) {
 			case GLFW.GLFW_KEY_F4 -> wxRept();

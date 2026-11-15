@@ -26,7 +26,8 @@ public class RadioMorseSoundInstance extends AbstractTickableSoundInstance {
 		if(radio.isRemoved())
 			stop();
 		else {
-			volume = radio.getCWReceiveBuffer().getNextStrength();
+			// What it hears, or its own sidetone while it is keyed (2026-11-12).
+			volume = Math.max(radio.getCWReceiveBuffer().getNextStrength(), radio.sidetone());
 			// Played at a computer (RIGCTL REMOTE audio): the Morse is heard there instead (2026-11-09).
 			java.util.List<com.arrl.radiocraft.common.radio.BEVoiceReceiver.WiredSpeaker> at = radio.isAudioRouted() ? radio.getStaticSpeakers() : java.util.List.of();
 			net.minecraft.core.BlockPos pos = at.isEmpty() ? radio.getBlockPos() : at.get(0).pos();

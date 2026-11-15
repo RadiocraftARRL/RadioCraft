@@ -127,6 +127,23 @@ public record DistressAlert(long id, Type type, State state, String owner, Distr
 		return String.format(Locale.ROOT, "X %d Y %d Z %d", x, y, z);
 	}
 
+	/**
+	 * "DISTRESS SOS RX 120, 64, -340": what a commercial VHF radio's display scrolls while it shows a beacon alert
+	 * (2026-11-11, the maintainer's wording), on the mobile and the handheld alike.
+	 */
+	public String sosRx() {
+		return String.format(Locale.ROOT, "DISTRESS SOS RX %d, %d, %d", x, y, z);
+	}
+
+	/**
+	 * Whose alert it is, for a radio's display: the owner and the nature ("BEACON" when undesignated) or, once it is
+	 * over, its state ("Castaway BEACON", "Castaway CANCELLED"). Shared by the commercial mobile and handheld (2026-11-11).
+	 */
+	public String who() {
+		String what = state != State.ACTIVE ? state.name() : nature == DistressNature.UNDESIGNATED ? "BEACON" : nature.shortLabel();
+		return (owner + " " + what).strip();
+	}
+
 	/** Printable ASCII without '|', at most {@code max} characters. */
 	private static String clean(String text, int max) {
 		if(text == null)

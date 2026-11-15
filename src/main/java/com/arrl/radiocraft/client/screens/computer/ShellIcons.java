@@ -54,7 +54,7 @@ final class ShellIcons {
 	private void renderIcons(TextGrid g, ComputerSession session) {
 		List<ComputerApp> programs = programs();
 		grid.setCount(programs.size());
-		boolean pictures = !shell.hasDialog(); // Icons are drawn over the cells: none under a dialog.
+		boolean pictures = !shell.hasDialog() && !shell.menuOpen(); // Icons are drawn over the cells: none under a dialog or an open menu.
 		for(int i = 0; i < programs.size(); i++) {
 			int[] tile = grid.tile(i);
 			if(tile == null)

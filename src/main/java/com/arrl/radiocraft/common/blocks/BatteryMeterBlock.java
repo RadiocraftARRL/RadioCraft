@@ -34,16 +34,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
- * A battery meter: put it on a power wire and its face shows the batteries on that wire, the voltage (as a 12 V bank)
- * and the charge, with an arrow while they charge or discharge. Power passes through it like a wire junction, from
+ * A battery meter: put it on a power wire and its needle shows the voltage of the batteries on that wire (as a 12 V
+ * bank: an analog DC voltmeter, 8 to 16 V, since 2026-11-11), rising while they charge and sagging under load. Power passes through it like a wire junction, from
  * any side. A comparator reads the charge (0 empty, 15 full), and using it prints the reading in chat with the time
  * left to empty or to full.
  */
 public class BatteryMeterBlock extends AbstractNetworkBlock {
 
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
-	/** A box half a block high, the full width so wire meets its sides. Placeholder until the model bounty is drawn. */
-	public static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 8.0D, 16.0D);
+	/** The analog voltmeter's case and binding posts (tools/battery_meter_model.py, 2026-11-11), by facing. */
+	private static final java.util.Map<net.minecraft.core.Direction, VoxelShape> SHAPES =
+			com.arrl.radiocraft.common.blocks.mesh.MeshDeviceBlock.shapes(1.0D, 0.0D, 4.0D, 15.0D, 14.5D, 15.0D);
 
 	public BatteryMeterBlock(Properties properties) {
 		super(properties); // FACING defaults to north, its first value.
@@ -62,7 +63,7 @@ public class BatteryMeterBlock extends AbstractNetworkBlock {
 
 	@Override
 	public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull CollisionContext context) {
-		return SHAPE;
+		return SHAPES.get(state.getValue(FACING));
 	}
 
 	@Override

@@ -142,7 +142,7 @@ public class WireUtils {
 	 * @param wires List of valid {@link WireBlock}s.
 	 */
 	public static void splitNetworks(Level level, Strand from, Set<Strand> gone, Map<BlockPos, Direction> links, Predicate<BENetworkObject> connection, WireBlock... wires) {
-		Map<BlockPos, Map<BENetworkObject, Direction>> connectionsPerSide = new LinkedHashMap<>();
+		Map<Object, Map<BENetworkObject, Direction>> connectionsPerSide = new LinkedHashMap<>(); // By side, and by kind out of a passthrough.
 		Set<WireBlock> wireSet = Set.of(wires);
 		Set<Strand> blacklist = new HashSet<>(gone); // Sharing a set means sides connected to each other actually won't get double processed.
 
@@ -155,7 +155,25 @@ public class WireUtils {
 			if(networkObject != null && connection.test(networkObject)) {
 				Map<BENetworkObject, Direction> side = new HashMap<>();
 				addConnection(side, blacklist, level, checkPos, networkObject, link.getValue(), connection, wireSet); // Keeps what lies beyond a tuner with it.
+				// Another cable of the same block that still takes this device (the coax that ends there, when the one
+				// being split only ran past it in a bundle, 2026-11-11) keeps the device on its run, not on a network of
+				// its own on that side.
+				for(Strand other : Strand.at(level, from.pos()))
+					if(wireSet.contains(other.kind()) && !blacklist.contains(other) && takesDevice(level, other, link.getKey()))
+						getConnections(side, blacklist, level, other, connection, wireSet);
 				connectionsPerSide.put(checkPos, side);
+			}
+			else if(from.kind() != null && from.kind().conductsAll()) {
+				// Out of a passthrough each kind and colour of cable on a side is a run of its own: walking in as the
+				// passthrough (which joins anything) put black and grey coax of one bundle on one network, and making
+				// the passthrough again joined each of them to both (2026-11-14, the maintainer's house).
+				for(Strand strand : Strand.at(level, checkPos)) {
+					if(strand.kind() == null || strand.kind().conductsAll() || !wireSet.contains(strand.kind()) || blacklist.contains(strand))
+						continue;
+					Map<BENetworkObject, Direction> side = enter(new HashMap<>(), blacklist, level, checkPos, strand.kind(), connection, wireSet);
+					if(!side.isEmpty())
+						connectionsPerSide.put(strand, side);
+				}
 			}
 			else {
 				Map<BENetworkObject, Direction> side = enter(new HashMap<>(), blacklist, level, checkPos, from.kind(), connection, wireSet);
@@ -164,7 +182,7 @@ public class WireUtils {
 			}
 		}
 
-		for(BlockPos side : connectionsPerSide.keySet()) {
+		for(Object side : connectionsPerSide.keySet()) {
 			Map<BENetworkObject, Direction> connections = connectionsPerSide.get(side);
 
 			BENetwork networkToReplace = null; // Search for a network on the wire first. Just in case there isn't one for some reason.
@@ -204,7 +222,7 @@ public class WireUtils {
 			return;
 		BlockState state = level.getBlockState(pos);
 		if(state.is(RadiocraftTags.Blocks.POWER_BLOCKS) || com.arrl.radiocraft.api.benetworks.IWireConnectable.accepts(state, true))
-			tryConnect(level, pos, no -> no instanceof PowerNetworkObject, PowerBENetwork::new, powerWires());
+			tryConnect(level, pos, no -> no instanceof com.arrl.radiocraft.api.benetworks.PowerMember, PowerBENetwork::new, powerWires());
 		if(state.is(RadiocraftTags.Blocks.COAX_BLOCKS) || state.getBlock() instanceof RadioBlock || com.arrl.radiocraft.api.benetworks.IWireConnectable.accepts(state, false))
 			tryConnect(level, pos, no -> no instanceof ICoaxNetworkObject, BENetwork::new, coaxWires());
 	}
@@ -242,7 +260,7 @@ public class WireUtils {
 			Direction dir = link.getValue();
 
 			if(through != null && through.passesSide(power, dir)) {
-				enter(allConnections, sharedBlacklist, level, checkPos, null, validConnection, wireSet);
+				enterFromDevice(allConnections, sharedBlacklist, level, checkPos, validConnection, wireSet);
 				if(firstSide == null)
 					firstSide = dir;
 				continue;
@@ -250,7 +268,7 @@ public class WireUtils {
 
 			Set<Strand> blacklist = new HashSet<>();
 			blacklist.add(Strand.device(pos)); // Don't walk back into ourselves through the wire.
-			Map<BENetworkObject, Direction> connections = enter(new HashMap<>(), blacklist, level, checkPos, null, validConnection, wireSet);
+			Map<BENetworkObject, Direction> connections = enterFromDevice(new HashMap<>(), blacklist, level, checkPos, validConnection, wireSet);
 			if(connections.isEmpty())
 				continue; // Nothing on the other end yet; whatever loads there later will connect to us.
 
@@ -334,20 +352,128 @@ public class WireUtils {
 			WireBlock kind = strand.kind();
 			if(kind == null || !wires.contains(kind) || (from != null && !from.joins(kind)) || blackList.contains(strand))
 				continue;
+			walk(connections, blackList, level, strand, connection, wires, from);
+		}
+		return connections;
+	}
+
+	/**
+	 * Joins up what a passthrough at {@code pos} links, one kind of cable at a time (2026-11-11): each cable beside it
+	 * is carried through to the cables of its own kind and colour on its other sides (and the devices there), so red
+	 * and black coax through one passthrough stay two networks. Use it where the passthrough is placed or refreshed.
+	 */
+	public static void mergeThrough(Level level, BlockPos pos, Predicate<BENetworkObject> connection, Supplier<BENetwork> fallbackSupplier, WireBlock... wires) {
+		Set<WireBlock> wireSet = Set.of(wires);
+		Strand self = null;
+		for(Strand strand : Strand.at(level, pos))
+			if(strand.kind() != null && strand.kind().conductsAll())
+				self = strand;
+		if(self == null)
+			return;
+		Set<WireBlock> kinds = new LinkedHashSet<>();
+		for(BlockPos next : self.kind().getLinks(level, pos, level.getBlockState(pos)).keySet())
+			for(Strand strand : Strand.at(level, next))
+				if(strand.kind() != null && wireSet.contains(strand.kind()) && !strand.kind().conductsAll())
+					kinds.add(strand.kind());
+		if(kinds.isEmpty()) { // Only devices round it (or passthroughs): they are joined as before.
+			mergeNetworks(level, self, connection, fallbackSupplier, wires);
+			return;
+		}
+		for(WireBlock kind : kinds) {
+			Map<BENetworkObject, Direction> connections = walk(new HashMap<>(), new HashSet<>(), level, self, connection, wireSet, kind);
+			if(!connections.isEmpty())
+				joinAll(level, connections, fallbackSupplier, isPowerWalk(wireSet));
+		}
+	}
+
+	/**
+	 * {@link #enter} from a device beside {@code pos}: down every strand there of a kind in {@code wires}, but not a
+	 * coax strand that only runs past the device in a bundle shared with other coax ({@link #passesDevicesBy}).
+	 */
+	public static Map<BENetworkObject, Direction> enterFromDevice(Map<BENetworkObject, Direction> connections, Set<Strand> blackList, Level level, BlockPos pos,
+			Predicate<BENetworkObject> connection, Set<WireBlock> wires) {
+		for(Strand strand : Strand.at(level, pos)) {
+			WireBlock kind = strand.kind();
+			if(kind == null || !wires.contains(kind) || blackList.contains(strand))
+				continue;
+			BlockState state = strand.state(level);
+			if(state == null || passesDevicesBy(level, strand, state))
+				continue;
 			getConnections(connections, blackList, level, strand, connection, wires);
 		}
 		return connections;
 	}
 
+	/**
+	 * True if {@code strand}, in {@code state}, is coax that runs on through a bundle holding other coax: it links two
+	 * or more cables there, so it is passing through, not ending. Such a strand does not take the devices beside the
+	 * bundle (2026-11-11, maintainer's playtest: red and black coax bundled past the black run's radio both joined it,
+	 * and both radios showed COAX SHARED). A lone coax block, or the only coax in a bundle, still takes every device
+	 * it touches; in a bundle the device goes to the coax that ends there, since the strand drawn to it cannot be
+	 * picked out by the player.
+	 */
+	public static boolean passesDevicesBy(BlockGetter level, Strand strand, BlockState state) {
+		WireBlock kind = strand.kind();
+		if(kind == null || !kind.isCoax())
+			return false;
+		boolean shared = false;
+		for(Strand other : Strand.at(level, strand.pos()))
+			if(other.kind() != null && other.kind() != kind && other.kind().isCoax()) {
+				shared = true;
+				break;
+			}
+		if(!shared)
+			return false;
+		int cables = 0;
+		for(BlockPos target : kind.getLinks(level, strand.pos(), state).keySet())
+			if(!Strand.at(level, target).isEmpty() && ++cables >= 2)
+				return true;
+		return false;
+	}
+
+	/**
+	 * What the network walk follows out of {@code strand} in {@code state}: its links ({@link WireBlock#getLinks}),
+	 * less the devices it only runs past ({@link #passesDevicesBy}, 2026-11-11). Use this, not getLinks, wherever
+	 * networks are joined or split, so placing, removing and walking agree.
+	 */
+	public static Map<BlockPos, Direction> walkLinks(BlockGetter level, Strand strand, BlockState state) {
+		WireBlock kind = Objects.requireNonNull(strand.kind());
+		Map<BlockPos, Direction> links = kind.getLinks(level, strand.pos(), state);
+		if(!passesDevicesBy(level, strand, state))
+			return links;
+		Map<BlockPos, Direction> out = new LinkedHashMap<>();
+		for(Map.Entry<BlockPos, Direction> link : links.entrySet())
+			if(!Strand.at(level, link.getKey()).isEmpty())
+				out.put(link.getKey(), link.getValue());
+		return out;
+	}
+
+	/** True if {@code strand} is there and the walk goes from it into the device block at {@code devicePos}. */
+	private static boolean takesDevice(BlockGetter level, Strand strand, BlockPos devicePos) {
+		BlockState state = strand.state(level);
+		return state != null && walkLinks(level, strand, state).containsKey(devicePos);
+	}
+
 	/** Get all connections found along {@code strand} and the cables it links to. */
 	public static Map<BENetworkObject, Direction> getConnections(Map<BENetworkObject, Direction> connections, Set<Strand> blackList, Level level, Strand strand, Predicate<BENetworkObject> connection, Set<WireBlock> wires) {
+		return walk(connections, blackList, level, strand, connection, wires, null);
+	}
+
+	/**
+	 * {@link #getConnections}, where {@code carried} is the kind of cable the walk came into {@code strand} from. A
+	 * passthrough joins any kind, so walking out of one goes on only into cable that joins the kind carried in
+	 * (2026-11-11, maintainer's playtest: red and black coax through one passthrough became one network, and both
+	 * radios showed COAX SHARED). Null carried (the walk started at the passthrough or a device) joins any, as before.
+	 */
+	private static Map<BENetworkObject, Direction> walk(Map<BENetworkObject, Direction> connections, Set<Strand> blackList, Level level, Strand strand,
+			Predicate<BENetworkObject> connection, Set<WireBlock> wires, @Nullable WireBlock carried) {
 		blackList.add(strand);
 		WireBlock wire = strand.kind();
 		BlockState state = strand.state(level);
 		if(wire == null || state == null)
 			return connections;
 
-				for(Map.Entry<BlockPos, Direction> link : wire.getLinks(level, strand.pos(), state).entrySet()) {
+		for(Map.Entry<BlockPos, Direction> link : walkLinks(level, strand, state).entrySet()) { // Not to devices a shared bundle's coax only runs past.
 			if(skipUnloaded(level, link.getKey()))
 				continue;
 			BlockPos checkPos = linkTarget(level, link.getKey(), link.getValue());
@@ -362,7 +488,7 @@ public class WireUtils {
 			if(networkObject != null && connection.test(networkObject))
 				addConnection(connections, blackList, level, checkPos, networkObject, link.getValue(), connection, wires);
 			else
-				enter(connections, blackList, level, checkPos, wire, connection, wires);
+				enter(connections, blackList, level, checkPos, wire.conductsAll() && carried != null ? carried : wire, connection, wires);
 		}
 		return connections;
 	}
@@ -380,7 +506,7 @@ public class WireUtils {
 
 		for(Map.Entry<BlockPos, Direction> link : wireLinksOf(level, pos, wires).entrySet())
 			if(through.passesSide(power, link.getValue())) // Out of the sides it passes only (the antenna switch).
-				enter(connections, blackList, level, link.getKey(), null, connection, wires);
+				enterFromDevice(connections, blackList, level, link.getKey(), connection, wires);
 		// ...and into devices it links to by touching (the next solar panel in a row, the charge controller at its end).
 		for(Direction dir : Direction.values()) {
 			BlockPos checkPos = pos.relative(dir);

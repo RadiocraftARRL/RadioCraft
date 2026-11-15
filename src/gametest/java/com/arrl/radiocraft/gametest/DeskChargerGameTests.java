@@ -133,4 +133,35 @@ public class DeskChargerGameTests {
 				.thenExecute(() -> charger(helper).inventory.setStackInSlot(0, ItemStack.EMPTY)) // Off the air again.
 				.thenSucceed();
 	}
+
+	/**
+	 * Both commercial handhelds dock and charge too (2026-11-14, the maintainer asked): each goes into the cradle by hand
+	 * and its battery fills from a charged charger.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 300, batch = "desk_charger")
+	public static void commercialHandheldsDockAndCharge(GameTestHelper helper) {
+		helper.setBlock(CHARGER, RadiocraftBlocks.DESK_CHARGER.get());
+		net.minecraft.world.entity.player.Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+		net.minecraft.world.item.Item[] models = { RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get(), RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get() };
+		int[] start = new int[1];
+		var sequence = helper.startSequence();
+		for(net.minecraft.world.item.Item model : models) {
+			sequence = sequence.thenExecute(() -> {
+				ItemStack radio = new ItemStack(model);
+				IEnergyStorage battery = radio.getCapability(Capabilities.EnergyStorage.ITEM);
+				helper.assertTrue(battery != null, model + " has no battery");
+				battery.extractEnergy(battery.getEnergyStored(), false);
+				start[0] = battery.getEnergyStored();
+				player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, radio);
+				charger(helper).energyStorage.setEnergy(charger(helper).energyStorage.getMaxEnergyStored());
+				charger(helper).dock(player, net.minecraft.world.InteractionHand.MAIN_HAND);
+				helper.assertTrue(docked(helper).is(model), model + " did not go into the cradle");
+			}).thenWaitUntil(() -> helper.assertTrue(docked(helper).getCapability(Capabilities.EnergyStorage.ITEM).getEnergyStored() > start[0],
+					model + " does not charge in the cradle")).thenExecute(() -> {
+				player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+				charger(helper).takeRadio(player);
+			});
+		}
+		sequence.thenSucceed();
+	}
 }

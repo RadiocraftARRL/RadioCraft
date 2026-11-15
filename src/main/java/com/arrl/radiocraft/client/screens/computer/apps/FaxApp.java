@@ -9,6 +9,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerApps;
@@ -48,10 +49,24 @@ public final class FaxApp extends DosApp {
 	private String viewing;
 	@Nullable
 	private byte[] picture;
+	private final DosMenuBar menuBar;
 
 	public FaxApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		inbox.onActivate(index -> open());
+		menuBar = new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.fax.open", "Enter", this::open).when(() -> viewing == null && selected() != null),
+						item("menu.print", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(() -> viewing == null),
+						item("menu.back", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> viewing != null),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE).when(() -> viewing == null))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.fax.send", "F3", GLFW.GLFW_KEY_F3).when(() -> viewing == null),
+						item("menu.fax.scan_send", "F6", GLFW.GLFW_KEY_F6).when(() -> viewing == null),
+						item("menu.fax.hang_up", "F4", GLFW.GLFW_KEY_F4).when(() -> viewing == null),
+						item("menu.fax.auto", "F7", GLFW.GLFW_KEY_F7).when(() -> viewing == null)))));
+		setMenuBar(menuBar);
 	}
 
 	@Override
@@ -216,7 +231,7 @@ public final class FaxApp extends DosApp {
 		if(viewing != null && picture != null) {
 			Dos.frame(g, Dos.tr("view.title", viewing), Dos.tr("view.keys"));
 			g.box((TextGrid.COLS - 36) / 2, 1, 36, 23, false, "", DosColours.TEXT_FG, DosColours.BODY_BG);
-			if(!hasDialog())
+			if(!hasDialog() && !menuBar.isOpen()) // The picture is drawn over the text: not over an open menu.
 				g.image((TextGrid.WIDTH - 200) / 2, (TextGrid.HEIGHT - 200) / 2, 200, 200, "fax:" + viewing, picture, 128, 128);
 			return;
 		}

@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosFormDialog;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.ComputerFileFormats;
@@ -49,6 +50,25 @@ public final class RttyApp extends DosApp {
 
 	public RttyApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does. F10 is this program's own.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.rtty.send_file", "F6", GLFW.GLFW_KEY_F6),
+						item("menu.rtty.save_copy", "F7", GLFW.GLFW_KEY_F7),
+						item("menu.rtty.clear", "F8", GLFW.GLFW_KEY_F8),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.radio"), List.of(
+						item("menu.rtty.cq", "F3", GLFW.GLFW_KEY_F3),
+						item("menu.rtty.exchange", "F4", GLFW.GLFW_KEY_F4),
+						item("menu.rtty.sign_off", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.rtty.abort", "^X", this::abort))),
+				new DosMenuBar.Menu(Dos.tr("menu.edit"), List.of(
+						item("menu.rtty.macros", "F9", GLFW.GLFW_KEY_F9),
+						item("menu.rtty.call", "F10", GLFW.GLFW_KEY_F10))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.page_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP),
+						item("menu.page_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN),
+						item("menu.rtty.latest", "End", GLFW.GLFW_KEY_END)))))
+				.withoutF10());
 	}
 
 	@Override
@@ -148,8 +168,7 @@ public final class RttyApp extends DosApp {
 	@Override
 	protected boolean onKey(int key, int scanCode, int modifiers) {
 		if(key == GLFW.GLFW_KEY_X && Dos.ctrl()) {
-			outbox.setLength(0);
-			session.app(app, "abort", new CompoundTag(), response -> pending = response.data().getString("pending"));
+			abort();
 			return true;
 		}
 		switch(key) {
@@ -185,6 +204,12 @@ public final class RttyApp extends DosApp {
 			}
 		}
 		return true;
+	}
+
+	/** Ctrl+X: drops the type-ahead buffer, what is not sent yet. */
+	private void abort() {
+		outbox.setLength(0);
+		session.app(app, "abort", new CompoundTag(), response -> pending = response.data().getString("pending"));
 	}
 
 	@Override

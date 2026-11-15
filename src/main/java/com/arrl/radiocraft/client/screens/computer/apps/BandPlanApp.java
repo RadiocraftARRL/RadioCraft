@@ -4,6 +4,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.radio.bandplan.BandPlan;
@@ -28,6 +29,16 @@ public final class BandPlanApp extends DosApp {
 
 	public BandPlanApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.bandplan.band_up", "Up", GLFW.GLFW_KEY_UP),
+						item("menu.bandplan.band_down", "Down", GLFW.GLFW_KEY_DOWN),
+						item("menu.bandplan.left", "Left", GLFW.GLFW_KEY_LEFT),
+						item("menu.bandplan.right", "Right", GLFW.GLFW_KEY_RIGHT),
+						item("menu.bandplan.start", "Home", GLFW.GLFW_KEY_HOME),
+						item("menu.bandplan.end", "End", GLFW.GLFW_KEY_END))))));
 	}
 
 	private static BandPlan plan() {

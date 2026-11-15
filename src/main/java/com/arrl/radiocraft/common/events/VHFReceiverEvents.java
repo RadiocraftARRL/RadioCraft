@@ -22,10 +22,15 @@ public final class VHFReceiverEvents {
 	@SubscribeEvent
 	public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
 		if(event.getHand() != InteractionHand.MAIN_HAND || !event.getEntity().isSecondaryUseActive()
-				|| !PortableBatteries.isCell(event.getItemStack())
-				|| !(event.getLevel().getBlockEntity(event.getPos()) instanceof VHFReceiverBlockEntity))
+				|| !PortableBatteries.isCell(event.getItemStack()))
 			return;
-		VHFReceiverBlock.swapCell(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack());
+		var blockEntity = event.getLevel().getBlockEntity(event.getPos());
+		if(blockEntity instanceof VHFReceiverBlockEntity)
+			VHFReceiverBlock.swapCell(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack());
+		else if(blockEntity instanceof com.arrl.radiocraft.common.blockentities.radio.FmBroadcastReceiverBlockEntity) // The table radio too (2026-11-13).
+			com.arrl.radiocraft.common.blocks.radios.FmBroadcastReceiverBlock.swapCell(event.getLevel(), event.getPos(), event.getEntity(), event.getItemStack());
+		else
+			return;
 		event.setCanceled(true);
 		event.setCancellationResult(InteractionResult.sidedSuccess(event.getLevel().isClientSide));
 	}

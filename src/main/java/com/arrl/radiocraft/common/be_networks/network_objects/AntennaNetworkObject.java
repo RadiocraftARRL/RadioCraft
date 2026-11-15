@@ -45,6 +45,8 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
     protected final Set<DuplexerNetworkObject> duplexers = Collections.synchronizedSet(new HashSet<>());
     /** Receive-only splitters on the run: every radio behind one hears the antenna, and none can transmit through it. */
     protected final Set<AntennaSplitterNetworkObject> splitters = Collections.synchronizedSet(new HashSet<>());
+    /** Linear amplifiers on the run (2026-11-13); one is enough, more do not stack. */
+    protected final Set<LinearAmplifierNetworkObject> amplifiers = Collections.synchronizedSet(new HashSet<>());
     protected StaticAntenna<?> antenna = null;
     protected ResourceLocation networkId;
 
@@ -71,7 +73,7 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
     }
 
     public void receiveAudioPacket(AntennaVoicePacket packet) {
-        packet.setStrength(packet.getStrength() * receivePass(packet.getFrequency()) * splitShare());
+        packet.setStrength(packet.getStrength() * receivePass(packet.getFrequency()) * splitShare() * coaxFactor(packet.getFrequency()));
         for(BlockPos checkPos : receivers()) {
             if(level.isLoaded(checkPos)) {
                 BlockEntity be = level.getChunkAt(checkPos).getBlockEntity(checkPos, LevelChunk.EntityCreationType.IMMEDIATE);
@@ -115,6 +117,7 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
     }
 
     public void receiveCWPacket(AntennaCWPacket packet) {
+        packet.setStrength(packet.getStrength() * coaxFactor(packet.getFrequency())); // The coax loses a little on the way in too.
         for(BlockPos checkPos : receivers()) {
             if(level.isLoaded(checkPos)) {
                 BlockEntity be = level.getBlockEntity(checkPos);
@@ -145,7 +148,7 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
 
     /** Hands a data packet to the radio on this coax, which decides whether it decodes it. */
     public void receiveDataPacket(AntennaDataPacket packet) {
-        packet.setStrength(packet.getStrength() * receivePass(packet.getFrequency()) * splitShare());
+        packet.setStrength(packet.getStrength() * receivePass(packet.getFrequency()) * splitShare() * coaxFactor(packet.getFrequency()));
         for(BlockPos checkPos : receivers()) {
             if(level.isLoaded(checkPos) && level.getBlockEntity(checkPos) instanceof com.arrl.radiocraft.api.blockentities.radio.IAntennaReceiver receiver)
                 receiver.receiveData(packet);
@@ -208,6 +211,9 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
         }
         else if(object instanceof AntennaSplitterNetworkObject splitter) {
             if(add) splitters.add(splitter); else splitters.remove(splitter);
+        }
+        else if(object instanceof LinearAmplifierNetworkObject amplifier) {
+            if(add) amplifiers.add(amplifier); else amplifiers.remove(amplifier);
         }
     }
 
@@ -281,6 +287,39 @@ public class AntennaNetworkObject extends BENetworkObject implements ICoaxNetwor
         double efficiency = match(frequencyHertz).efficiency();
         DuplexerNetworkObject duplexer = getDuplexer();
         return duplexer == null ? efficiency : efficiency * duplexer.txPass(frequencyHertz);
+    }
+
+    /**
+     * What goes out of the antenna for each unit of the radio's power at a frequency: the match
+     * ({@link #getMatchEfficiency}), the coax loss ({@link #coaxFactor}) and a linear amplifier's gain if one is on
+     * the run and working. Can be over 1 with an amplifier: callers cap the strength.
+     */
+    public double getTransmitFactor(float frequencyHertz) {
+        LinearAmplifierNetworkObject amplifier = getAmplifier();
+        return getMatchEfficiency(frequencyHertz) * coaxFactor(frequencyHertz) * (amplifier == null ? 1.0D : amplifier.gain(frequencyHertz));
+    }
+
+    /** The linear amplifier on the run, null without one. */
+    @Nullable
+    public LinearAmplifierNetworkObject getAmplifier() {
+        synchronized(amplifiers) {
+            return amplifiers.isEmpty() ? null : amplifiers.iterator().next();
+        }
+    }
+
+    /** The coax run's length in blocks: from this antenna to the nearest radio on it, 0 without one. */
+    public int coaxLength() {
+        int best = Integer.MAX_VALUE;
+        synchronized(radios) {
+            for(RadioNetworkObject radio : radios)
+                best = Math.min(best, com.arrl.radiocraft.common.radio.CoaxLoss.length(radio.getPos(), pos));
+        }
+        return best == Integer.MAX_VALUE ? 0 : best;
+    }
+
+    /** Share of the signal the coax run lets through at a frequency (light loss, see {@link com.arrl.radiocraft.common.radio.CoaxLoss}). */
+    public double coaxFactor(float frequencyHertz) {
+        return com.arrl.radiocraft.common.radio.CoaxLoss.factor(coaxLength(), frequencyHertz, RadiocraftServerConfig.COAX_LOSS.get());
     }
 
     /** True when an automatic tuner on the run has given up on the antenna: the radio shows TUNE FAIL. */

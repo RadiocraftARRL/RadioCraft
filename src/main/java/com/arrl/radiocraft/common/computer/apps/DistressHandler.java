@@ -1,6 +1,5 @@
 package com.arrl.radiocraft.common.computer.apps;
 
-import com.arrl.radiocraft.common.be_networks.DataWire;
 import com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity;
 import com.arrl.radiocraft.common.blockentities.ScannerBlockEntity;
 import com.arrl.radiocraft.common.blockentities.radio.CommercialMobileBlockEntity;
@@ -33,8 +32,9 @@ import java.util.Locale;
 /**
  * The DISTRESS program's server side (2026-11-09). It listens through every radio cabled to the computer (touching, or
  * on its data wire: {@link ComputerContext#linked}) that can hear distress traffic, with no picker: each marine radio's
- * DSC receiver (DSC calls on channel 70, {@link MarineRadioBlockEntity}) and each commercial VHF mobile, which hears
- * distress beacons while its channel is on 161.975 MHz ({@link CommercialMobileBlockEntity}). Their logs are merged
+ * DSC receiver (DSC calls on channel 70, {@link MarineRadioBlockEntity}) and each commercial VHF mobile, whose built-in
+ * receiver hears distress beacons on 161.975 MHz whatever channel it is on ({@link CommercialMobileBlockEntity}; since
+ * 2026-11-11, before which its knob had to be on a 161.975 channel). Their logs are merged
  * into one list ({@link DistressLog#merge}: one entry per alert, its state only moving on). It acknowledges DSC calls
  * through the first powered marine radio that heard them, prints a map round an alert on the scanner, and sends an SOS:
  * a MARINE SOS is the DSC distress call of a cabled marine radio (as its DISTRESS button), a PERSONAL SOS a beacon-style
@@ -43,7 +43,8 @@ import java.util.Locale;
  * <ul>
  * <li>{@code status}: {@code radio} (some radio that hears distress traffic is cabled), {@code powered} (one is on),
  * {@code marines} / {@code marinesOn} (marine radios cabled / on), {@code commercials} / {@code commercialsOn}
- * (commercial VHF mobiles cabled / on) and {@code beaconRadios} (of those, on 161.975), {@code x}/{@code z} where the
+ * (commercial VHF mobiles cabled / on) and {@code beaconRadios} (of those, the ones listening for beacons: every one
+ * that is on, since 2026-11-11), {@code x}/{@code z} where the
  * station is, the user's {@code mmsi}, {@code alerts} (each {@code a}, {@link DistressAlert#encode}, {@code age} and
  * {@code heard} in seconds), {@code marineWhy} / {@code personalWhy} (why that SOS cannot be sent now, empty if it
  * can), {@code outDsc} (the outgoing DSC call: {@code state}, {@code nature}, {@code ackBy}, {@code next} seconds) and
@@ -61,9 +62,33 @@ public final class DistressHandler implements ComputerAppHandler {
 	/** Ticks between the personal SOS checks (power, cable, repeat due). */
 	private static final int CHECK_TICKS = 20;
 
-	/** One computer's outgoing personal SOS. */
+	/** Ticks between reminders of an alert no one has looked at yet: the alarm sounds again (2026-11-11). */
+	private static final int REMIND_TICKS = 20 * 20;
+	/** How many alert ids a computer remembers having announced. */
+	private static final int SEEN_MAX = 64;
+
+	/**
+	 * One computer's outgoing personal SOS, and the background service (2026-11-11, maintainer: the program should run
+	 * as a service once installed): the alerts it has already announced, and how many came in that no one has opened
+	 * DISTRESS to see since.
+	 */
 	public static final class State implements ComputerAppState {
 		PersonalSos personal = PersonalSos.IDLE;
+		final java.util.LinkedHashSet<Long> seen = new java.util.LinkedHashSet<>();
+		/** False until the first look at the radios: alerts already in their logs then are not announced. */
+		boolean primed = false;
+		int unread = 0;
+		long remindAt = 0L;
+
+		/** Alerts in that no one has seen on the screen yet. */
+		public int unread() {
+			return unread;
+		}
+
+		/** True once the service has looked at the radios (alerts logged before then are not announced). */
+		public boolean primed() {
+			return primed;
+		}
 
 		public PersonalSos personal() {
 			return personal;
@@ -79,6 +104,9 @@ public final class DistressHandler implements ComputerAppHandler {
 			tag.putLong("sent", personal.sentAt());
 			tag.putLong("next", personal.nextAt());
 			tag.putString("reason", personal.reason());
+			tag.putLongArray("seen", seen.stream().mapToLong(Long::longValue).toArray());
+			tag.putBoolean("primed", primed);
+			tag.putInt("unread", unread);
 		}
 
 		@Override
@@ -92,6 +120,11 @@ public final class DistressHandler implements ComputerAppHandler {
 			}
 			personal = state == PersonalSos.State.IDLE ? PersonalSos.IDLE : new PersonalSos(state, tag.getLong("id"), tag.getString("owner"),
 					DistressNature.byName(tag.getString("nature")), tag.getLong("radio"), tag.getLong("sent"), tag.getLong("next"), tag.getString("reason"));
+			seen.clear();
+			for(long id : tag.getLongArray("seen"))
+				seen.add(id);
+			primed = tag.getBoolean("primed");
+			unread = tag.getInt("unread");
 		}
 	}
 
@@ -156,10 +189,10 @@ public final class DistressHandler implements ComputerAppHandler {
 	/** The radios cabled to the computer at {@code pos}. */
 	public static Radios radios(Level level, BlockPos pos) {
 		List<CommercialMobileBlockEntity> commercials = new ArrayList<>();
-		for(CommercialMobileBlockEntity radio : DataWire.linked(level, pos, CommercialMobileBlockEntity.class))
-			if(radio.hearsBeacons()) // A low band mobile cannot be put on 161.975.
+		for(CommercialMobileBlockEntity radio : com.arrl.radiocraft.common.computer.ComputerContext.linked(level, pos, CommercialMobileBlockEntity.class))
+			if(radio.hearsBeacons()) // A low band mobile does not cover 161.975.
 				commercials.add(radio);
-		return new Radios(DataWire.linked(level, pos, MarineRadioBlockEntity.class), commercials);
+		return new Radios(com.arrl.radiocraft.common.computer.ComputerContext.linked(level, pos, MarineRadioBlockEntity.class), commercials);
 	}
 
 	public static Radios radios(ComputerContext context) {
@@ -175,7 +208,14 @@ public final class DistressHandler implements ComputerAppHandler {
 			return;
 		}
 		switch(action) {
-			case "status" -> reply.ok(status(context, radios));
+			case "status" -> {
+				State state = state(context.computer());
+				if(state.unread > 0) { // Seen on the screen: the alarm stops reminding.
+					state.unread = 0;
+					context.computer().setChanged();
+				}
+				reply.ok(status(context, radios));
+			}
 			case "map" -> reply.ok(map(context, radios));
 			case "ack" -> {
 				String error = acknowledge(radios, data.getLong("id"), Mmsi.of(context.player().getUUID()));
@@ -196,7 +236,8 @@ public final class DistressHandler implements ComputerAppHandler {
 					return;
 				}
 				ScannerBlockEntity.Result result = scanner.printImage(printout(context, radios, entry.alert()),
-						(entry.alert().isDsc() ? "DSC " : "BEACON ") + entry.alert().owner(), context.player().getGameProfile().getName());
+						(entry.alert().isDsc() ? "DSC " : "BEACON ") + entry.alert().owner(), context.player().getGameProfile().getName(),
+						com.arrl.radiocraft.common.radio.distress.DistressMap.captionLines(entry.alert())); // Plain paper: the caption as text (2026-11-12).
 				if(result != ScannerBlockEntity.Result.OK) {
 					reply.error(result.key());
 					return;
@@ -348,15 +389,42 @@ public final class DistressHandler implements ComputerAppHandler {
 		return true;
 	}
 
-	/** The personal SOS repeats while it is on, and stops if its radio loses its power or its cable. */
+	/**
+	 * SETUP's background services are off and DISTRESS was closed (2026-11-12). An outgoing personal SOS holds the
+	 * service on until it is ended ({@link #holdsService}), so this comes only once there is none. Alerts heard
+	 * meanwhile are not announced when it opens again: they are in its list.
+	 */
+	@Override
+	public void serviceStopped(RadioComputerBlockEntity computer) {
+		State state = state(computer);
+		state.primed = false;
+		state.unread = 0;
+		computer.setChanged();
+	}
+
+	/** A personal SOS keeps repeating until it is ended, whatever SETUP says (2026-11-12, maintainer). */
+	@Override
+	public boolean holdsService(RadioComputerBlockEntity computer) {
+		return state(computer).personal.active();
+	}
+
+	/**
+	 * Runs while the program is installed, whether or not anyone has it open (2026-11-11): watches the cabled radios for
+	 * alerts it has not announced, sounds the alarm at the computer and brings DISTRESS up on the screens of whoever is at
+	 * it, and sounds it again every {@link #REMIND_TICKS} until someone opens DISTRESS. The personal SOS repeats while
+	 * it is on, and stops if its radio loses its power or its cable.
+	 */
 	@Override
 	public void tick(RadioComputerBlockEntity computer, long gameTime) {
 		if((gameTime + computer.getBlockPos().asLong()) % CHECK_TICKS != 0 || computer.getLevel() == null)
 			return;
 		State state = state(computer);
+		Radios radios = radios(computer.getLevel(), computer.getBlockPos());
+		if(computer.isPowered())
+			watch(computer, state, radios, gameTime);
 		if(!state.personal.active())
 			return;
-		CommercialMobileBlockEntity radio = personalRadio(radios(computer.getLevel(), computer.getBlockPos()), state.personal);
+		CommercialMobileBlockEntity radio = personalRadio(radios, state.personal);
 		if(radio == null) {
 			state.personal = state.personal.stopped("unlinked");
 			computer.setChanged();
@@ -373,6 +441,54 @@ public final class DistressHandler implements ComputerAppHandler {
 			state.personal = state.personal.repeated(gameTime);
 			computer.setChanged();
 		}
+	}
+
+	/** The service's look at the radios: new active alerts are announced, unread ones reminded of. */
+	private static void watch(RadioComputerBlockEntity computer, State state, Radios radios, long gameTime) {
+		boolean announce = state.primed;
+		DistressAlert fresh = null;
+		for(DistressLog.Entry entry : radios.alerts()) {
+			DistressAlert alert = entry.alert();
+			if(state.seen.contains(alert.id()))
+				continue;
+			if(alert.state() != DistressAlert.State.ACTIVE)
+				continue; // Heard first as acknowledged or cancelled: nothing to call anyone over for.
+			state.seen.add(alert.id());
+			while(state.seen.size() > SEEN_MAX)
+				state.seen.remove(state.seen.iterator().next());
+			if(announce && !alert.owner().equals(personalOwner(state))) {
+				state.unread++;
+				fresh = alert;
+			}
+			computer.setChanged();
+		}
+		if(!state.primed) {
+			state.primed = true;
+			computer.setChanged();
+		}
+		if(fresh != null) {
+			alarm(computer);
+			state.remindAt = gameTime + REMIND_TICKS;
+			CompoundTag data = new CompoundTag();
+			data.putString("a", fresh.encode());
+			data.putInt("unread", state.unread);
+			computer.push(ComputerApps.DISTRESS, "new_alert", data);
+		}
+		else if(state.unread > 0 && gameTime >= state.remindAt) {
+			alarm(computer);
+			state.remindAt = gameTime + REMIND_TICKS;
+		}
+	}
+
+	/** Our own outgoing personal SOS's owner, so the computer does not call us over for our own alert. */
+	private static String personalOwner(State state) {
+		return state.personal.active() ? state.personal.owner() : "";
+	}
+
+	private static void alarm(RadioComputerBlockEntity computer) {
+		if(computer.getLevel() != null)
+			computer.getLevel().playSound(null, computer.getBlockPos(), com.arrl.radiocraft.common.init.RadiocraftSoundEvents.DSC_ALARM.get(),
+					net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
 	}
 
 	// -------------------- STATUS AND MAPS --------------------
@@ -400,8 +516,7 @@ public final class DistressHandler implements ComputerAppHandler {
 		for(CommercialMobileBlockEntity radio : radios.commercials())
 			if(radio.isPowered()) {
 				commercialsOn++;
-				if(radio.isOnBeaconFrequency())
-					beaconRadios++;
+				beaconRadios++; // Its beacon receiver listens on 161.975 whatever channel it is on (2026-11-11).
 			}
 		out.putInt("marines", radios.marines().size());
 		out.putInt("marinesOn", marinesOn);

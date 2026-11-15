@@ -125,6 +125,11 @@ public final class HfPanel {
 		return loadLayout("hf_" + radio);
 	}
 
+	/** True if {@code gui_layouts/hf_<radio>.json} is there (a premium rig's own panel, 2026-11-11). */
+	public static boolean exists(String radio) {
+		return Minecraft.getInstance().getResourceManager().getResource(Radiocraft.id("gui_layouts/hf_" + radio + ".json")).isPresent();
+	}
+
 	/** Loads {@code gui_layouts/<file>.json} in the same format (the marine radios' panels use it too, 2026-11-09). */
 	public static HfPanel loadLayout(String file) {
 		ResourceLocation location = Radiocraft.id("gui_layouts/" + file + ".json");
@@ -143,7 +148,7 @@ public final class HfPanel {
 		}
 	}
 
-	static int parseColour(String hex, int fallback) {
+	public static int parseColour(String hex, int fallback) {
 		try {
 			String digits = hex.startsWith("#") ? hex.substring(1) : hex;
 			return 0xFF000000 | Integer.parseInt(digits, 16);

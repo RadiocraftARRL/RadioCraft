@@ -43,7 +43,7 @@ public abstract class HFRadioScreen<T extends RadioMenu<?>> extends RadioScreen<
 
 		if(cwOn()) {
 			if(RadiocraftClientValues.SCREEN_PTT_PRESSED || cwKeyHeld)
-				hfRadio().getCWSendBuffer().setShouldAccumulate();
+				hfRadio().keyCW();
 		}
 		if(chatBox != null) {
 			boolean show = cwOn();
@@ -112,12 +112,13 @@ public abstract class HFRadioScreen<T extends RadioMenu<?>> extends RadioScreen<
 		super.containerTick();
 		Boolean unit = chatQueue.poll();
 		if(unit != null && unit && cwOn())
-			hfRadio().getCWSendBuffer().setShouldAccumulate();
+			hfRadio().keyCW();
 	}
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if(canSendCw() && cwOn() && RadiocraftKeys.CW_KEY.matches(keyCode, scanCode)) {
+		boolean typing = chatBox != null && chatBox.isFocused() && chatBox.visible; // Space types in the Morse box.
+		if(!typing && canSendCw() && cwOn() && RadiocraftKeys.CW_KEY.matches(keyCode, scanCode)) {
 			cwKeyHeld = true;
 			return true;
 		}

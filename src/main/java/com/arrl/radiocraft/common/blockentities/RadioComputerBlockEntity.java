@@ -66,7 +66,8 @@ import java.util.function.Supplier;
  * It is a terminal on the station bus ({@link StationTerminal}), so packets the radio interfaces on its bus decode
  * reach its installed programs ({@link ComputerAppHandler#receive}), each once however many radio interfaces hear it.
  * It is on the power wire ({@link RadioComputerNetworkObject}): while in use (someone at its screen, or a program that
- * runs in the background installed) it draws {@code computer_power_use} a tick, and with no power its screen goes dark,
+ * runs in the background installed; a background service only while SETUP's switch is on, {@link #serviceRunning})
+ * it draws {@code computer_power_use} a tick, and with no power its screen goes dark,
  * its programs stop and it hears no packets ({@link #isPowered}). It ticks on the server for that and for the programs
  * that ask to ({@link ComputerAppHandler#ticks}), and keeps each program's server state ({@link #state}).
  */
@@ -84,7 +85,20 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	private final Map<String, ComputerAppState> states = new HashMap<>();
 	private CompoundTag savedStates = new CompoundTag();
 	private ComputerAppHandler[] tickers = new ComputerAppHandler[0];
+	private ComputerApp[] tickerApps = new ComputerApp[0];
 	private boolean tickersStale = true;
+	/**
+	 * SETUP's "Background services" switch (2026-11-12), read from the disk every {@link #VIEWER_CHECK_TICKS} and when
+	 * the settings are saved. Off, the background services ({@link ComputerApps#isBackgroundService}) do not keep the
+	 * computer on, and work only while their program is open ({@link #serviceRunning}).
+	 */
+	private boolean servicesOn = true;
+	/** When each program last asked its server side for something (a program on the screen asks every second or so). */
+	private final Map<String, Long> programSeen = new HashMap<>();
+	/** The background services stopped by the switch (each told once, {@link ComputerAppHandler#serviceStopped}). */
+	private final Set<String> servicesStopped = new HashSet<>();
+	/** A program counts as open this long after its last request, ticks. */
+	public static final int PROGRAM_OPEN_TICKS = 60;
 	private final SeenPackets seen = new SeenPackets();
 	/** Someone has its screen open (looked at every {@link #VIEWER_CHECK_TICKS}, and set at once when one opens it). */
 	private boolean hasViewers = false;
@@ -233,6 +247,19 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	 */
 	public boolean isPowered() {
 		return powered;
+	}
+
+	/**
+	 * True when LAN EMAIL can reach its disk (2026-11-13): it runs now, or its background services are on and it has
+	 * the power to wake for it.
+	 */
+	public boolean takesMail() {
+		if(powered)
+			return true;
+		if(!backgroundServicesOn())
+			return false;
+		RadioComputerNetworkObject object = powerObject();
+		return object == null ? !RadiocraftServerConfig.RADIO_POWER_REQUIRED.get() : object.canRun();
 	}
 
 	/**
@@ -386,11 +413,13 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 			pruneListeners();
 			pruneHandSessions(false);
 			saverOn = saverDue(at);
+			readServicesSetting();
 		}
 		RadioComputerNetworkObject object = powerObject();
 		if(object != null)
 			object.saving = saverOn;
-		boolean inUse = hasViewers || !listeners.isEmpty() || !handSessions.isEmpty() || tickers.length > 0;
+		boolean keptOn = tickersKeepOn();
+		boolean inUse = hasViewers || !listeners.isEmpty() || !handSessions.isEmpty() || keptOn;
 		if(object == null)
 			powered = inUse && !RadiocraftServerConfig.RADIO_POWER_REQUIRED.get();
 		else {
@@ -402,11 +431,76 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		}
 		if(!powered && !handSessions.isEmpty() && level != null && !level.isClientSide) { // No power: the mode ends (and stops asking for power).
 			pruneHandSessions(true);
-			if(object != null && object.wantsOn && !hasViewers && listeners.isEmpty() && tickers.length == 0)
+			if(object != null && object.wantsOn && !hasViewers && listeners.isEmpty() && !keptOn)
 				object.wantsOn = false;
 		}
 		if(powered != was && level != null && !level.isClientSide)
 			level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS); // Clients see the power (MUSIC).
+	}
+
+	// -------------------- BACKGROUND SERVICES (2026-11-12) --------------------
+
+	/**
+	 * True if a ticking program keeps the computer on with nobody at it: any that is not a background service, or a
+	 * background service while SETUP's switch is on.
+	 */
+	private boolean tickersKeepOn() {
+		for(int i = 0; i < tickerApps.length; i++)
+			if((servicesOn || !ComputerApps.isBackgroundService(tickerApps[i])) && tickers[i].keepsOn(this) || tickers[i].holdsService(this))
+				return true;
+		return false;
+	}
+
+	private void readServicesSetting() {
+		if(level instanceof ServerLevel)
+			servicesOn = files().settings().backgroundServices();
+	}
+
+	/** The settings were saved (SETUP): the background services switch takes effect now, not at the next check. */
+	public void settingsChanged() {
+		readServicesSetting();
+		updatePower(false);
+	}
+
+	/** SETUP's "Background services" switch, as the computer last read it. */
+	public boolean backgroundServicesOn() {
+		return servicesOn;
+	}
+
+	/** Program {@code app} asked its server side for something: it is open on someone's screen. Server thread. */
+	public void programUsed(ComputerApp app) {
+		if(level != null)
+			programSeen.put(app.id(), level.getGameTime());
+	}
+
+	/** True while program {@code app} is open on a screen here (it asked for something in the last {@link #PROGRAM_OPEN_TICKS}). */
+	public boolean programOpen(ComputerApp app) {
+		Long at = programSeen.get(app.id());
+		return at != null && level != null && level.getGameTime() - at <= PROGRAM_OPEN_TICKS;
+	}
+
+	/**
+	 * True if background service {@code app} runs now: always with SETUP's switch on, else only while its program is
+	 * open. Any other program: true.
+	 */
+	public boolean serviceRunning(ComputerApp app) {
+		if(servicesOn || !ComputerApps.isBackgroundService(app) || programOpen(app))
+			return true;
+		ComputerAppHandler handler = ComputerAppHandlers.get(app); // Or it has work to finish (a personal SOS).
+		return handler != null && handler.holdsService(this);
+	}
+
+	/** Tells each background service the switch has just stopped (once, until it runs again). */
+	private void checkServices() {
+		for(int i = 0; i < tickers.length; i++) {
+			ComputerApp app = tickerApps[i];
+			if(!ComputerApps.isBackgroundService(app))
+				continue;
+			if(serviceRunning(app))
+				servicesStopped.remove(app.id());
+			else if(servicesStopped.add(app.id()))
+				tickers[i].serviceStopped(this);
+		}
 	}
 
 	// -------------------- CLIENT SYNC --------------------
@@ -644,7 +738,7 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 			return;
 		for(ComputerApp app : availableApps()) {
 			ComputerAppHandler handler = ComputerAppHandlers.get(app);
-			if(handler != null)
+			if(handler != null && serviceRunning(app)) // A background service switched off hears nothing while shut.
 				handler.receive(this, packet);
 		}
 	}
@@ -687,22 +781,28 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		if(tickersStale) {
 			tickersStale = false;
 			List<ComputerAppHandler> list = new ArrayList<>();
+			List<ComputerApp> apps = new ArrayList<>();
 			for(ComputerApp app : availableApps()) {
 				ComputerAppHandler handler = ComputerAppHandlers.get(app);
-				if(handler != null && handler.ticks())
+				if(handler != null && handler.ticks()) {
 					list.add(handler);
+					apps.add(app);
+				}
 			}
 			tickers = list.toArray(new ComputerAppHandler[0]);
+			tickerApps = apps.toArray(new ComputerApp[0]);
 		}
 		updatePower((gameTime + worldPosition.asLong()) % VIEWER_CHECK_TICKS == 0L);
 		if((gameTime + worldPosition.asLong()) % 20L == 0L && level instanceof ServerLevel server) // Speakers come and go rarely.
 			refreshSpeakers(server);
 		if((powered || hasViewers) && (gameTime + worldPosition.asLong()) % com.arrl.radiocraft.common.computer.ComputerNetwork.CHECK_TICKS == 0L)
 			com.arrl.radiocraft.common.computer.ComputerNetwork.check(this); // Joined to another network, or a name clash.
+		checkServices();
 		if(!powered)
 			return; // Dark: the background programs wait for power.
-		for(ComputerAppHandler handler : tickers)
-			handler.tick(this, gameTime);
+		for(int i = 0; i < tickers.length; i++)
+			if(serviceRunning(tickerApps[i])) // A background service switched off works only while its program is open.
+				tickers[i].tick(this, gameTime);
 	}
 
 	// -------------------- MENU --------------------

@@ -19,7 +19,8 @@ import java.util.HashMap;
 public class BlockEntityCallsignSavedData extends SavedData implements IBlockEntityCallsignCapability {
 
     private static final String DATA_NAME = Radiocraft.MOD_ID + "_block_entity_callsign_data";
-    private static final HashMap<GlobalPos, BlockEntityCallsignData> callsigns = new HashMap<>();
+    // Per world (2026-11-12): a static map carried one world's callsigns into the next world opened in the same session.
+    private final HashMap<GlobalPos, BlockEntityCallsignData> callsigns = new HashMap<>();
 
     public static BlockEntityCallsignSavedData get(ServerLevel level) {
         return level.getDataStorage().computeIfAbsent(
@@ -30,8 +31,7 @@ public class BlockEntityCallsignSavedData extends SavedData implements IBlockEnt
     private static BlockEntityCallsignSavedData load(@NotNull CompoundTag nbt, HolderLookup.@NotNull Provider provider) {
         CompoundTag callData = nbt.getCompound("block_entity_callsign_data");
         BlockEntityCallsignSavedData data = new BlockEntityCallsignSavedData();
-        BlockEntityCallsignSavedData.callsigns.clear();
-
+        
         for (String globalPosKey : callData.getAllKeys()) {
             try {
                 CompoundTag posData = callData.getCompound(globalPosKey);
@@ -43,7 +43,7 @@ public class BlockEntityCallsignSavedData extends SavedData implements IBlockEnt
 
                     // Note: Level cannot be reconstructed from NBT, so we pass null
                     BlockEntityCallsignData blockData = new BlockEntityCallsignData(globalPos, callsign, licenseClass);
-                    BlockEntityCallsignSavedData.callsigns.put(globalPos, blockData);
+                    data.callsigns.put(globalPos, blockData);
                 }
             } catch (IllegalArgumentException e) {
                 Radiocraft.LOGGER.error("Invalid block entity callsign data for position {}", globalPosKey);

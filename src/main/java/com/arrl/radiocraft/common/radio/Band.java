@@ -32,6 +32,16 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
      * 10m's solar weather.
      */
     public static final String CB = "cb";
+    /**
+     * The aircraft band, 118-137 MHz (2026-11-13): AM voice on 25 kHz channels (the airband radio). On the VHF antenna
+     * network, line of sight like 2m.
+     */
+    public static final String AIRBAND = "airband";
+    /**
+     * FM broadcast, 88-108 MHz (2026-11-13): broadcast stations (the FM broadcast transmitter) on 200 kHz channels, heard
+     * on the FM broadcast receiver. On the VHF antenna network (see {@link #VHF_NETWORK_FROM_HZ}).
+     */
+    public static final String FM_BROADCAST = "fm_broadcast";
     /** The CB channels' span (channel 1 to 40, with a little room), for code that must not touch the config. */
     public static final double CB_MIN_HZ = 26_960_000.0D, CB_MAX_HZ = 27_410_000.0D;
 
@@ -40,9 +50,12 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
         return hz >= CB_MIN_HZ && hz <= CB_MAX_HZ;
     }
     /** The bands that are not amateur bands: no MARS extension, and left out of {@link #getDefaults()}. */
-    public static final Set<String> COMMERCIAL_BANDS = Set.of(LOW_BAND, VHF_COMMERCIAL, CB);
-    /** Frequencies at or above this are on the VHF antenna network (and line of sight like 2m). */
-    public static final float VHF_NETWORK_FROM_HZ = 100_000_000.0F;
+    public static final Set<String> COMMERCIAL_BANDS = Set.of(LOW_BAND, VHF_COMMERCIAL, CB, AIRBAND, FM_BROADCAST);
+    /**
+     * Frequencies at or above this are on the VHF antenna network (and line of sight like 2m). 80 MHz since 2026-11-13
+     * (it was 100), so FM broadcast (88-108) is VHF; no band sat between 50 and 100 MHz before.
+     */
+    public static final float VHF_NETWORK_FROM_HZ = 80_000_000.0F;
     /** Slack on band edges, for float rounding at VHF (16 Hz at 174 MHz). */
     public static final float EDGE_TOLERANCE_HZ = 50.0F;
 
@@ -108,6 +121,21 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
         return minFrequency >= VHF_NETWORK_FROM_HZ;
     }
 
+    /**
+     * The SWR of a VHF antenna cut for 2m and commercial VHF (a J-pole, a Ringo, a yagi...) on {@code band}
+     * (2026-11-13): matched on those, a fair mismatch on the airband and FM broadcast below them (the aircraft antenna
+     * and the broadcast antennas are cut for those), useless off VHF.
+     */
+    public static double twoMetreAntennaSwr(@javax.annotation.Nullable Band band) {
+        if(band == null || !band.isVhf())
+            return 10.0D;
+        return switch(band.name()) {
+            case AIRBAND -> 2.2D;
+            case FM_BROADCAST -> 2.8D;
+            default -> 1.0D;
+        };
+    }
+
     /** True for amateur (ham) bands; false for {@link #COMMERCIAL_BANDS}. */
     public boolean isAmateur() {
         Registered registered = REGISTERED.get(name);
@@ -138,6 +166,8 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
             case LOW_BAND -> "Low Band";
             case VHF_COMMERCIAL -> "VHF Comm";
             case CB -> "CB";
+            case AIRBAND -> "Airband";
+            case FM_BROADCAST -> "FM Bcst";
             default -> name;
         };
     }
@@ -216,7 +246,9 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
         return List.of(
                 new Band(LOW_BAND, 650, 3000, 7000, 0, 0, 30_000_000, 50_000_000),
                 new Band(VHF_COMMERCIAL, 500, 0, 0, 0, 0, 150_000_000, 174_000_000),
-                new Band(CB, 600, 1750, 5600, 1750, 4200, 26_960_000, 27_410_000) // 10m's reach, toned down for 5 W.
+                new Band(CB, 600, 1750, 5600, 1750, 4200, 26_960_000, 27_410_000), // 10m's reach, toned down for 5 W.
+                new Band(AIRBAND, 600, 0, 0, 0, 0, 118_000_000, 137_000_000), // Line of sight, a little further than 2m.
+                new Band(FM_BROADCAST, 800, 0, 0, 0, 0, 88_000_000, 108_000_000) // A broadcast station carries far.
         );
     }
 

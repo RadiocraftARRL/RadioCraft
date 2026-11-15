@@ -57,7 +57,7 @@ public class CommercialVHFAntennaType extends NonDirectionalAntennaType<EmptyAnt
     @Override
     public double getSWR(EmptyAntennaData data, float frequencyHertz) {
         Band band = Band.getBand(frequencyHertz);
-        return band != null && band.isVhf() ? 1.0D : 10.0D;
+        return com.arrl.radiocraft.common.radio.Band.twoMetreAntennaSwr(band);
     }
 
     @Override

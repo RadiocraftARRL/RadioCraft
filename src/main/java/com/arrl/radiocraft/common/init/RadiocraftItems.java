@@ -96,6 +96,52 @@ public class RadiocraftItems {
 	/** A distress beacon whose battery ran out: it does nothing more. */
 	public static final Supplier<Item> SPENT_DISTRESS_BEACON = simpleItem("spent_distress_beacon",
 			Component.translatable("tooltip.radiocraft.spent_distress_beacon").withStyle(net.minecraft.ChatFormatting.GRAY));
+	/** Blank commercial frequency licenses (2026-11-10), sold by cartographers: right-click to claim one. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.BlankLicenseItem> BLANK_VHF_LICENSE = ITEMS.register("blank_vhf_license",
+			() -> new com.arrl.radiocraft.common.items.BlankLicenseItem(com.arrl.radiocraft.common.radio.Band.VHF_COMMERCIAL, new Properties().stacksTo(16)));
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.BlankLicenseItem> BLANK_LOW_BAND_LICENSE = ITEMS.register("blank_low_band_license",
+			() -> new com.arrl.radiocraft.common.items.BlankLicenseItem(com.arrl.radiocraft.common.radio.Band.LOW_BAND, new Properties().stacksTo(16)));
+	/** A claimed commercial license (or a copy of one): a map with the license drawn on it. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.CommercialLicenseItem> COMMERCIAL_LICENSE = ITEMS.register("commercial_license",
+			() -> new com.arrl.radiocraft.common.items.CommercialLicenseItem(new Properties().stacksTo(1)));
+	/** Crafted with a license: a base and a repeater input on the first, then twice the units and bases each time. */
+	public static final Supplier<Item> COMMERCIAL_LICENSE_UPGRADE = simpleItem("commercial_license_upgrade",
+			Component.translatable("tooltip.radiocraft.commercial_license_upgrade").withStyle(net.minecraft.ChatFormatting.GRAY));
+	/** Satellite contracts (2026-11-11), sold by master cartographers: right-click to put a satellite on orbit. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SatelliteContractItem> AMATEUR_SATELLITE_CONTRACT = ITEMS.register("amateur_satellite_contract",
+			() -> new com.arrl.radiocraft.common.items.SatelliteContractItem(true, new Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.RARE)));
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SatelliteContractItem> COMMERCIAL_SATELLITE_CONTRACT = ITEMS.register("commercial_satellite_contract",
+			() -> new com.arrl.radiocraft.common.items.SatelliteContractItem(false, new Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.RARE)));
+	/** Geostationary satellite contracts (2026-11-12): dearer, parked over where they are used. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SatelliteContractItem> AMATEUR_GEOSTATIONARY_CONTRACT = ITEMS.register("amateur_geostationary_contract",
+			() -> new com.arrl.radiocraft.common.items.SatelliteContractItem(true, true, new Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC)));
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SatelliteContractItem> COMMERCIAL_GEOSTATIONARY_CONTRACT = ITEMS.register("commercial_geostationary_contract",
+			() -> new com.arrl.radiocraft.common.items.SatelliteContractItem(false, true, new Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.EPIC)));
+	/** What a contract hands out with the satellite: its name, frequencies, tone and launch day. */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SatelliteLicenseItem> SATELLITE_LICENSE = ITEMS.register("satellite_license",
+			() -> new com.arrl.radiocraft.common.items.SatelliteLicenseItem(new Properties().stacksTo(1)));
+	/** Fire alarms and SCADA on the radio mesh (2026-11-10). */
+	public static final Supplier<BlockItem> FIRE_ALARM_BOX = simpleBlockItem("fire_alarm_box", RadiocraftBlocks.FIRE_ALARM_BOX);
+	public static final Supplier<BlockItem> PULL_STATION = simpleBlockItem("pull_station", RadiocraftBlocks.PULL_STATION);
+	public static final Supplier<BlockItem> OUTDOOR_PULL_BOX = simpleBlockItem("outdoor_pull_box", RadiocraftBlocks.OUTDOOR_PULL_BOX);
+	public static final Supplier<BlockItem> PANIC_BUTTON = simpleBlockItem("panic_button", RadiocraftBlocks.PANIC_BUTTON);
+	public static final Supplier<BlockItem> FIRE_BELL = simpleBlockItem("fire_bell", RadiocraftBlocks.FIRE_BELL);
+	public static final Supplier<BlockItem> YELLOW_PULL_STATION = simpleBlockItem("yellow_pull_station", RadiocraftBlocks.YELLOW_PULL_STATION);
+	public static final Supplier<BlockItem> WHITE_PULL_STATION = simpleBlockItem("white_pull_station", RadiocraftBlocks.WHITE_PULL_STATION);
+	public static final Supplier<BlockItem> YELLOW_OUTDOOR_PULL_BOX = simpleBlockItem("yellow_outdoor_pull_box", RadiocraftBlocks.YELLOW_OUTDOOR_PULL_BOX);
+	public static final Supplier<BlockItem> WHITE_OUTDOOR_PULL_BOX = simpleBlockItem("white_outdoor_pull_box", RadiocraftBlocks.WHITE_OUTDOOR_PULL_BOX);
+	public static final Supplier<BlockItem> FIRE_ALARM_CONTROLLER = simpleBlockItem("fire_alarm_controller", RadiocraftBlocks.FIRE_ALARM_CONTROLLER);
+	public static final Supplier<BlockItem> SCADA_RTU = simpleBlockItem("scada_rtu", RadiocraftBlocks.SCADA_RTU);
+	public static final Supplier<BlockItem> SCADA_MASTER = simpleBlockItem("scada_master", RadiocraftBlocks.SCADA_MASTER);
+	/** Resets a pulled pull station; turned in a fire alarm box, sends a TEST. */
+	public static final DeferredHolder<Item, Item> FIRE_ALARM_KEY = ITEMS.register("fire_alarm_key", () -> new Item(new Properties().stacksTo(1)) {
+		@Override
+		public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+			tooltip.add(Component.translatable("tooltip.radiocraft.fire_alarm_key").withStyle(net.minecraft.ChatFormatting.GRAY));
+		}
+	});
+	/** A slip a fire alarm controller's printer prints: what happened is in its lore. */
+	public static final DeferredHolder<Item, Item> FIRE_ALARM_REPORT = ITEMS.register("fire_alarm_report", () -> new Item(new Properties().stacksTo(1)));
 	/**
 	 * One floppy disk per radio computer program that is not built in, by app id ({@code floppy_<id>}; see
 	 * {@link com.arrl.radiocraft.common.computer.ComputerApps}). The secret ones (found in structures) are rare.
@@ -154,6 +200,9 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> LOW_BAND_MOBILE = ITEMS.register("low_band_mobile", () -> new BlockItem(RadiocraftBlocks.LOW_BAND_MOBILE.get(), new Properties().stacksTo(1)));
 	public static final Supplier<BlockItem> MARINE_RADIO = ITEMS.register("marine_radio", () -> new BlockItem(RadiocraftBlocks.MARINE_RADIO.get(), new Properties().stacksTo(1)));
 	public static final Supplier<BlockItem> CB_MOBILE_5875 = ITEMS.register("cb_mobile_5875", () -> new BlockItem(RadiocraftBlocks.CB_MOBILE_5875.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> AIRBAND_RADIO = ITEMS.register("airband_radio", () -> new BlockItem(RadiocraftBlocks.AIRBAND_RADIO.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> FM_BROADCAST_TRANSMITTER = ITEMS.register("fm_broadcast_transmitter", () -> new BlockItem(RadiocraftBlocks.FM_BROADCAST_TRANSMITTER.get(), new Properties().stacksTo(1)));
+	public static final Supplier<BlockItem> FM_BROADCAST_RECEIVER = ITEMS.register("fm_broadcast_receiver", () -> new BlockItem(RadiocraftBlocks.FM_BROADCAST_RECEIVER.get(), new Properties().stacksTo(1)));
 	public static final Supplier<BlockItem> CB_MOBILE_PC68 = ITEMS.register("cb_mobile_pc68", () -> new BlockItem(RadiocraftBlocks.CB_MOBILE_PC68.get(), new Properties().stacksTo(1)));
 	/** The TRC-217 style CB portable (2026-11-08). */
 	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.CbPortableItem> CB_PORTABLE = ITEMS.register("cb_portable",
@@ -216,6 +265,12 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> YAGI_ANTENNA = simpleBlockItem("yagi_antenna", RadiocraftBlocks.YAGI_ANTENNA);
 	public static final Supplier<BlockItem> DUMMY_LOAD = simpleBlockItem("dummy_load", RadiocraftBlocks.DUMMY_LOAD);
 	public static final Supplier<BlockItem> J_POLE_ANTENNA = simpleBlockItem("j_pole_antenna", RadiocraftBlocks.J_POLE_ANTENNA);
+	public static final Supplier<BlockItem> AIRBAND_ANTENNA = simpleBlockItem("airband_antenna", RadiocraftBlocks.AIRBAND_ANTENNA);
+	public static final Supplier<BlockItem> AIRBAND_GROUND_PLANE = simpleBlockItem("airband_ground_plane", RadiocraftBlocks.AIRBAND_GROUND_PLANE);
+	public static final Supplier<BlockItem> EGGBEATER_ANTENNA = simpleBlockItem("eggbeater_antenna", RadiocraftBlocks.EGGBEATER_ANTENNA);
+	public static final Supplier<BlockItem> IAMBIC_KEYER = simpleBlockItem("iambic_keyer", RadiocraftBlocks.IAMBIC_KEYER); // 2026-11-12.
+	public static final Supplier<BlockItem> COMPUTER_REDSTONE = simpleBlockItem("computer_redstone", RadiocraftBlocks.COMPUTER_REDSTONE); // 2026-11-13.
+	public static final Supplier<BlockItem> LINEAR_AMPLIFIER = simpleBlockItem("linear_amplifier", RadiocraftBlocks.LINEAR_AMPLIFIER); // 2026-11-13.
 	public static final Supplier<BlockItem> RINGO_ANTENNA = simpleBlockItem("ringo_antenna", RadiocraftBlocks.RINGO_ANTENNA);
 	public static final Supplier<BlockItem> FOLDED_DIPOLE_ANTENNA = simpleBlockItem("folded_dipole_antenna", RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA);
 	public static final Supplier<BlockItem> IONOSONDE = simpleBlockItem("ionosonde", RadiocraftBlocks.IONOSONDE);
@@ -254,6 +309,7 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> RADIO_COMPUTER = simpleBlockItem("radio_computer", RadiocraftBlocks.RADIO_COMPUTER);
 	public static final Supplier<BlockItem> COMPUTER_MONITOR = simpleBlockItem("computer_monitor", RadiocraftBlocks.COMPUTER_MONITOR);
 	public static final Supplier<BlockItem> SCANNER = simpleBlockItem("scanner", RadiocraftBlocks.SCANNER);
+	public static final Supplier<BlockItem> EXTERNAL_CRT_MONITOR = simpleBlockItem("external_crt_monitor", RadiocraftBlocks.EXTERNAL_CRT_MONITOR);
 	public static final Supplier<BlockItem> ADSB_BEACON = simpleBlockItem("adsb_beacon", RadiocraftBlocks.ADSB_BEACON);
 	public static final Supplier<BlockItem> ADSB_RECEIVER = simpleBlockItem("adsb_receiver", RadiocraftBlocks.ADSB_RECEIVER);
 	public static final Supplier<BlockItem> ADSB_ANTENNA = simpleBlockItem("adsb_antenna", RadiocraftBlocks.ADSB_ANTENNA);
@@ -278,6 +334,8 @@ public class RadiocraftItems {
 
 	public static final DeferredHolder<Item, DeskChargerBlockItem> DESK_CHARGER = ITEMS.register("desk_charger", () -> new DeskChargerBlockItem(RadiocraftBlocks.DESK_CHARGER.get(), new Properties()));
 	public static final DeferredHolder<Item, SatelliteDishBlockItem> SATELLITE_DISH = ITEMS.register("satellite_dish", () -> new SatelliteDishBlockItem(RadiocraftBlocks.SATELLITE_DISH.get(), new Properties()));
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.SatelliteTrackerBlockItem> SATELLITE_TRACKER = ITEMS.register("satellite_tracker",
+			() -> new com.arrl.radiocraft.common.items.SatelliteTrackerBlockItem(RadiocraftBlocks.SATELLITE_TRACKER.get(), new Properties()));
 
 
 	// Helper methods to cut down on boilerplate

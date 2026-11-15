@@ -5,6 +5,7 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import net.neoforged.fml.ModList;
@@ -32,6 +33,14 @@ public final class AboutApp extends DosApp {
 
 	public AboutApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.about.top", "Home", GLFW.GLFW_KEY_HOME),
+						item("menu.page_up", "PgUp", GLFW.GLFW_KEY_PAGE_UP),
+						item("menu.page_down", "PgDn", GLFW.GLFW_KEY_PAGE_DOWN),
+						item("menu.about.end", "End", GLFW.GLFW_KEY_END))))));
 	}
 
 	private List<Line> lines() {

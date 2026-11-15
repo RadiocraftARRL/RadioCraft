@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "block": "radiocraft:iambic_keyer",
+              "function": "minecraft:copy_state",
+              "properties": [
+                "finish"
+              ]
+            }
+          ],
+          "name": "radiocraft:iambic_keyer"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "radiocraft:blocks/iambic_keyer"
+}

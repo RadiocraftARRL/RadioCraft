@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:stone_button"
+    },
+    "D": {
+      "item": "radiocraft:data_wire"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "R": {
+      "item": "minecraft:red_dye"
+    }
+  },
+  "pattern": [
+    " B ",
+    "IRI",
+    " D "
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:panic_button"
+  }
+}

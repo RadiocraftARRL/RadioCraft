@@ -18,7 +18,7 @@ public final class DistressLang {
 	public static void add(LanguageProvider provider) {
 		provider.addItem(RadiocraftItems.DISTRESS_BEACON, "Distress Beacon");
 		provider.addItem(RadiocraftItems.SPENT_DISTRESS_BEACON, "Spent Distress Beacon");
-		provider.add(Radiocraft.translationKey("tooltip", "distress_beacon"), "Sends your position on 161.975 MHz every 50 s, and a homing tone a direction finder can follow. A commercial VHF radio on 161.975 hears it, and the DISTRESS program through one.");
+		provider.add(Radiocraft.translationKey("tooltip", "distress_beacon"), "Sends your position on 161.975 MHz every 50 s, and a homing tone a direction finder can follow. Every commercial VHF radio in reach hears it, whatever channel it is on, and the DISTRESS program through one.");
 		provider.add(Radiocraft.translationKey("tooltip", "distress_beacon.one_use"), "One use: once on, it cannot be switched off, and lasts one day.");
 		provider.add(Radiocraft.translationKey("tooltip", "distress_beacon.safe"), "Right click to open the arming cover.");
 		provider.add(Radiocraft.translationKey("tooltip", "distress_beacon.armed"), "Armed: hold right click to switch it on. Sneak and right click to shut the cover.");
@@ -27,6 +27,8 @@ public final class DistressLang {
 		provider.add(Radiocraft.translationKey("tooltip", "spent_distress_beacon"), "Its battery is flat. A beacon is used once.");
 		provider.add("subtitles.radiocraft.dsc_alarm", "DSC distress alarm");
 		provider.add("subtitles.radiocraft.dsc_beep", "DSC beep");
+		// The commercial VHF handheld's screen, while its beacon receiver has an alert on it (2026-11-11).
+		provider.add(Radiocraft.translationKey("screen", "commercial.dismiss"), "DISMISS");
 
 		BiConsumer<String, String> s = (key, text) -> provider.add("screen.radiocraft.computer." + key, text);
 		s.accept("app.distress", "Distress");
@@ -43,8 +45,7 @@ public final class DistressLang {
 		s.accept("distress.hear.dsc", "DSC: %s marine radio(s)");
 		s.accept("distress.hear.dsc_off", "DSC: the marine radio is off");
 		s.accept("distress.hear.dsc_none", "DSC: no marine radio cabled");
-		s.accept("distress.hear.beacons", "BEACONS: %s radio(s) on 161.975");
-		s.accept("distress.hear.beacons_tune", "BEACONS: no commercial radio on 161.975");
+		s.accept("distress.hear.beacons", "BEACONS: %s radio(s) listening on 161.975"); // Any channel, 2026-11-11.
 		s.accept("distress.hear.beacons_off", "BEACONS: the commercial radio is off");
 		s.accept("distress.hear.beacons_none", "BEACONS: no commercial VHF radio cabled");
 		// Sending an SOS (2026-11-09).

@@ -8,6 +8,7 @@ import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosDialog;
 import com.arrl.radiocraft.client.screens.computer.DosFilePicker;
 import com.arrl.radiocraft.client.screens.computer.DosInput;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.DosTextArea;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.BookPages;
@@ -18,6 +19,8 @@ import com.arrl.radiocraft.common.computer.ComputerStorage;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.List;
 
 /**
  * EDIT, the built-in text editor (in the manner of MS-DOS Editor): one {@code .TXT} file at a time, up to 64K. Ctrl+S saves
@@ -37,6 +40,15 @@ public final class EditorApp extends DosApp {
 
 	public EditorApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.new", "F4", GLFW.GLFW_KEY_F4),
+						item("menu.open", "F3", GLFW.GLFW_KEY_F3),
+						item("menu.save", "^S", () -> save(null)),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.tools"), List.of(
+						item("menu.editor.print", "F5", GLFW.GLFW_KEY_F5),
+						item("menu.editor.scan", "F6", GLFW.GLFW_KEY_F6))))));
 	}
 
 	@Override

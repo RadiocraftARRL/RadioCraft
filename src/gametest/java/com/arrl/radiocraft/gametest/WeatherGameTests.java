@@ -125,8 +125,9 @@ public class WeatherGameTests {
 	}
 
 	/**
-	 * Hurricane winds blow an antenna pole down sooner or later (a 30 % chance each time the wind picks it at 60 m/s),
-	 * and never with {@code wind_antenna_damage_enabled} off.
+	 * Storm winds and a station (2026-11-13 ladder, AWM's chance rolls switched off): a bare wire holder stays; a mounted
+	 * antenna (a J-pole) stands a category 4's wind and comes down only past 70 m/s, never with
+	 * {@code wind_antenna_damage_enabled} off; coax only in a category 5 hurricane or EF5 tornado.
 	 */
 	@GameTest(template = GameTestUtil.EMPTY)
 	public static void windBlowsAntennasDown(GameTestHelper helper) {
@@ -135,20 +136,35 @@ public class WeatherGameTests {
 			return;
 		}
 		ServerLevel level = helper.getLevel();
-		BlockPos pole = new BlockPos(8, 2, 8);
+		BlockPos pole = new BlockPos(8, 2, 8), jpole = new BlockPos(4, 2, 8), coax = new BlockPos(12, 2, 8);
 		helper.setBlock(pole, com.arrl.radiocraft.common.init.RadiocraftBlocks.ANTENNA_POLE.get());
-		com.arrl.radiocraft.RadiocraftServerConfig.WIND_ANTENNA_DAMAGE_ENABLED.set(false);
+		helper.setBlock(jpole, com.arrl.radiocraft.common.init.RadiocraftBlocks.J_POLE_ANTENNA.get());
+		helper.setBlock(coax, com.arrl.radiocraft.common.init.RadiocraftBlocks.COAX_WIRE.get());
+		boolean was = com.itcmd.anotherweathermod.world.WindDamage.certain;
+		com.itcmd.anotherweathermod.world.WindDamage.certain = true;
 		try {
-			for(int i = 0; i < 40; i++)
-				com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(pole), 60, 0, 60);
+			com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(pole), 90, 0, 90);
 			helper.assertBlockPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.ANTENNA_POLE.get(), pole);
+			com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(jpole), 65, 0, 65);
+			helper.assertBlockPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.J_POLE_ANTENNA.get(), jpole);
+			com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(coax), 90, 0, 90, false, false);
+			helper.assertBlockPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.COAX_WIRE.get(), coax);
+			com.arrl.radiocraft.RadiocraftServerConfig.WIND_ANTENNA_DAMAGE_ENABLED.set(false);
+			try {
+				com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(jpole), 80, 0, 80);
+				helper.assertBlockPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.J_POLE_ANTENNA.get(), jpole);
+			}
+			finally {
+				com.arrl.radiocraft.RadiocraftServerConfig.WIND_ANTENNA_DAMAGE_ENABLED.set(true);
+			}
+			com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(jpole), 80, 0, 80);
+			helper.assertBlockNotPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.J_POLE_ANTENNA.get(), jpole);
+			com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(coax), 80, 0, 80, false, true);
+			helper.assertBlockNotPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.COAX_WIRE.get(), coax);
 		}
 		finally {
-			com.arrl.radiocraft.RadiocraftServerConfig.WIND_ANTENNA_DAMAGE_ENABLED.set(true);
+			com.itcmd.anotherweathermod.world.WindDamage.certain = was;
 		}
-		for(int i = 0; i < 60 && !helper.getBlockState(pole).isAir(); i++)
-			com.itcmd.anotherweathermod.world.WindDamage.apply(level, helper.absolutePos(pole), 60, 0, 60);
-		helper.assertBlockNotPresent(com.arrl.radiocraft.common.init.RadiocraftBlocks.ANTENNA_POLE.get(), pole);
 		helper.succeed();
 	}
 

@@ -29,6 +29,10 @@ import java.util.List;
  * Drive A: (computer batch 3A): with a blank or data floppy in the drive, F3 shows its files instead of C:'s (and back),
  * F8 copies the file in the list to the other drive, and F4 labels the floppy. Files on A: open only as pictures here;
  * copy them to C: for the programs. Programs never go on a floppy.
+ * <p>
+ * Typing in the list or icon view searches (2026-11-11): a box opens over the launcher with the programs, then the
+ * files, whose names hold what was typed (names starting with it first); arrows pick, Enter runs or opens, Backspace
+ * edits, Esc closes it.
  */
 final class ShellApp extends DosApp {
 
@@ -48,6 +52,16 @@ final class ShellApp extends DosApp {
 	private String viewing;
 	@Nullable
 	private byte[] picture;
+	/** What has been typed to search for, or null when not searching. */
+	@Nullable
+	private StringBuilder search;
+	private int searchSelected = 0;
+	private static final int SEARCH_MAX = 24, SEARCH_ROWS = 12;
+	/** The list and icon views' menus (2026-11-12); the command line has none, as DOS's prompt had none. */
+	private final DosMenuBar menu;
+
+	/** A search hit: a program, or a file on the drive shown. */
+	private record Hit(@Nullable ComputerApp app, @Nullable String file) {}
 
 	ShellApp(ComputerSession session) {
 		super(session, null);
@@ -59,15 +73,62 @@ final class ShellApp extends DosApp {
 			if(index >= 0 && index < fileList.size())
 				openFile(fileList.get(index).name());
 		});
+		java.util.function.BooleanSupplier launcher = () -> viewing == null && search == null;
+		java.util.function.BooleanSupplier onFile = () -> launcher.getAsBoolean() && filesFocused;
+		menu = new DosMenuBar(List.of( // Each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.shell.run", "Enter", GLFW.GLFW_KEY_ENTER).when(launcher),
+						item("menu.print", "F5", GLFW.GLFW_KEY_F5).when(() -> search == null && (viewing != null || filesFocused)),
+						item("menu.shell.rename", "F7", GLFW.GLFW_KEY_F7).when(onFile),
+						item("menu.delete", "Del", GLFW.GLFW_KEY_DELETE).when(onFile),
+						item("menu.shell.copy_across", "F8", GLFW.GLFW_KEY_F8).when(onFile),
+						item("menu.shell.scan", "F6", GLFW.GLFW_KEY_F6).when(launcher),
+						item("menu.exit", "Esc", this::leave))),
+				new DosMenuBar.Menu(Dos.tr("menu.view"), List.of(
+						item("menu.switch_pane", "Tab", GLFW.GLFW_KEY_TAB).when(launcher),
+						item("menu.search", "", this::startSearch).when(launcher),
+						item("menu.shell.drive", "F3", GLFW.GLFW_KEY_F3).when(onFile),
+						item("menu.shell.label", "F4", GLFW.GLFW_KEY_F4).when(onFile)))));
+		syncMenu();
+	}
+
+	/** The menus in the list and icon views; none at the command line. */
+	private void syncMenu() {
+		boolean atPrompt = view() == ComputerSettings.View.COMMAND;
+		if(atPrompt)
+			menu.close();
+		setMenuBar(atPrompt ? null : menu);
+	}
+
+	/** File, Exit: what Esc does (back out of a search or picture), or else closes the screen as Esc does. */
+	private void leave() {
+		if(!onEscape()) {
+			net.minecraft.client.gui.screens.Screen screen = net.minecraft.client.Minecraft.getInstance().screen;
+			if(screen != null)
+				screen.onClose();
+		}
+	}
+
+	/** View, Search: opens the search box, as typing does. */
+	private void startSearch() {
+		search = new StringBuilder();
+		searchSelected = 0;
 	}
 
 	@Override
 	public void opened() {
+		syncMenu();
 		refreshFiles();
 	}
 
 	@Override
+	public void tick() {
+		syncMenu(); // SETUP may have changed the view.
+	}
+
+	@Override
 	public void resumed() {
+		syncMenu();
 		session.refresh();
 		refreshFiles();
 		if(view() == ComputerSettings.View.COMMAND)
@@ -197,10 +258,17 @@ final class ShellApp extends DosApp {
 
 	@Override
 	public void render(TextGrid g, long now) {
+		syncMenu();
 		if(viewing != null && picture != null) {
 			renderPicture(g);
 			return;
 		}
+		renderLauncher(g, now);
+		if(search != null)
+			renderSearch(g, now);
+	}
+
+	private void renderLauncher(TextGrid g, long now) {
 		programList.clear();
 		programList.addAll(session.apps());
 		switch(view()) {
@@ -246,6 +314,96 @@ final class ShellApp extends DosApp {
 		renderMessage(g);
 	}
 
+	// -------------------- SEARCH --------------------
+
+	/** Programs first, then files; within each, names starting with the search before names only holding it. */
+	private List<Hit> hits() {
+		List<Hit> out = new ArrayList<>();
+		if(search == null || search.isEmpty())
+			return out;
+		String q = search.toString().toLowerCase(java.util.Locale.ROOT);
+		List<Hit> later = new ArrayList<>();
+		for(ComputerApp app : session.apps().isEmpty() ? programList : session.apps()) {
+			String name = Dos.name(app).toLowerCase(java.util.Locale.ROOT), file = app.fileName().toLowerCase(java.util.Locale.ROOT);
+			if(name.startsWith(q) || file.startsWith(q))
+				out.add(new Hit(app, null));
+			else if(name.contains(q) || file.contains(q))
+				later.add(new Hit(app, null));
+		}
+		out.addAll(later);
+		later.clear();
+		List<Hit> files = new ArrayList<>();
+		for(ComputerFiles.Info info : fileList) {
+			String name = info.name().toLowerCase(java.util.Locale.ROOT);
+			if(name.startsWith(q))
+				files.add(new Hit(null, info.name()));
+			else if(name.contains(q))
+				later.add(new Hit(null, info.name()));
+		}
+		out.addAll(files);
+		out.addAll(later);
+		return out;
+	}
+
+	private void runHit(Hit hit) {
+		search = null;
+		if(hit.app() != null)
+			session.launch(hit.app());
+		else if(hit.file() != null)
+			openFile(hit.file());
+	}
+
+	private void renderSearch(TextGrid g, long now) {
+		List<Hit> hits = hits();
+		int w = 56, col = (TextGrid.COLS - w) / 2, row = 3, h = SEARCH_ROWS + 5;
+		// Icons and pictures are drawn over the text, so the ones under the box (and its shadow) go (2026-11-11).
+		int px0 = col * TextGrid.CELL_W, py0 = row * TextGrid.CELL_H, px1 = (col + w + 2) * TextGrid.CELL_W, py1 = (row + h + 1) * TextGrid.CELL_H;
+		g.icons().removeIf(icon -> icon.x() < px1 && icon.x() + icon.w() > px0 && icon.y() < py1 && icon.y() + icon.h() > py0);
+		g.images().removeIf(image -> image.x() < px1 && image.x() + image.w() > px0 && image.y() < py1 && image.y() + image.h() > py0);
+		g.box(col, row, w, h, true, Dos.tr("shell.search_title"), DosColours.WHITE, DosColours.BLUE);
+		g.shadow(col, row, w, h);
+		String line = "> " + search;
+		g.putField(col + 2, row + 1, line, w - 4, DosColours.YELLOW, DosColours.BLUE);
+		if((now / 500L) % 2L == 0L)
+			g.set(col + 2 + line.length(), row + 1, '_', DosColours.YELLOW, DosColours.BLUE);
+		if(hits.isEmpty())
+			g.put(col + 2, row + 3, Dos.fit(Dos.tr("shell.search_none"), w - 4), DosColours.LIGHT_GREY, DosColours.BLUE);
+		searchSelected = Math.max(0, Math.min(searchSelected, hits.size() - 1));
+		int first = Math.max(0, searchSelected - SEARCH_ROWS + 1);
+		for(int i = first; i < hits.size() && i < first + SEARCH_ROWS; i++) {
+			Hit hit = hits.get(i);
+			String text = hit.app() != null ? String.format("%-12s %s", hit.app().fileName(), Dos.name(hit.app()))
+					: String.format("%-12s %s", hit.file(), Dos.tr("shell.search_file"));
+			boolean on = i == searchSelected;
+			g.putField(col + 2, row + 3 + i - first, " " + Dos.fit(text, w - 6), w - 4, on ? DosColours.BLUE : DosColours.WHITE, on ? DosColours.LIGHT_GREY : DosColours.BLUE);
+		}
+		g.put(col + 2, row + h - 1, Dos.tr("shell.search_keys"), DosColours.LIGHT_GREY, DosColours.BLUE);
+	}
+
+	/** A key while searching: true if the search took it (it takes every key). */
+	private boolean searchKey(int key) {
+		List<Hit> hits = hits();
+		switch(key) {
+			case GLFW.GLFW_KEY_BACKSPACE -> {
+				if(search.length() > 0)
+					search.setLength(search.length() - 1);
+				if(search.isEmpty())
+					search = null;
+				searchSelected = 0;
+			}
+			case GLFW.GLFW_KEY_UP -> searchSelected = Math.max(0, searchSelected - 1);
+			case GLFW.GLFW_KEY_DOWN -> searchSelected = Math.min(Math.max(0, hits.size() - 1), searchSelected + 1);
+			case GLFW.GLFW_KEY_PAGE_UP -> searchSelected = Math.max(0, searchSelected - SEARCH_ROWS);
+			case GLFW.GLFW_KEY_PAGE_DOWN -> searchSelected = Math.min(Math.max(0, hits.size() - 1), searchSelected + SEARCH_ROWS);
+			case GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> {
+				if(searchSelected >= 0 && searchSelected < hits.size())
+					runHit(hits.get(searchSelected));
+			}
+			default -> {}
+		}
+		return true;
+	}
+
 	/** The disk's use (row {@code row}) and the floppy drive (the row below). */
 	void renderDisk(TextGrid g, int row) {
 		String disk = Dos.tr("shell.disk", drive, Dos.size(used), Dos.size(capacity), count);
@@ -269,13 +427,18 @@ final class ShellApp extends DosApp {
 		Dos.frame(g, Dos.tr("view.title", viewing), Dos.tr("view.keys"));
 		int size = 200;
 		g.box((TextGrid.COLS - 36) / 2, 1, 36, 23, false, "", DosColours.TEXT_FG, DosColours.BODY_BG);
-		g.image((TextGrid.WIDTH - size) / 2, (TextGrid.HEIGHT - size) / 2, size, size, "shell:" + viewing, picture, PhotoImage.SIZE, PhotoImage.SIZE);
+		if(!menu.isOpen()) // Pictures are drawn over the text: none under an open menu.
+			g.image((TextGrid.WIDTH - size) / 2, (TextGrid.HEIGHT - size) / 2, size, size, "shell:" + viewing, picture, PhotoImage.SIZE, PhotoImage.SIZE);
 	}
 
 	// -------------------- INPUT --------------------
 
 	@Override
 	protected boolean onEscape() {
+		if(search != null) {
+			search = null;
+			return true;
+		}
 		if(viewing != null) {
 			viewing = null;
 			picture = null;
@@ -288,11 +451,22 @@ final class ShellApp extends DosApp {
 
 	@Override
 	protected boolean onChar(char c) {
-		return viewing == null && view() == ComputerSettings.View.COMMAND && prompt.typed(c);
+		if(viewing == null && view() == ComputerSettings.View.COMMAND)
+			return prompt.typed(c);
+		if(viewing != null || c < ' ' || c == 127 || Dos.ctrl() || search == null && c == ' ')
+			return false;
+		if(search == null) // Typing in the list or icon view starts a search (2026-11-11).
+			search = new StringBuilder();
+		if(search.length() < SEARCH_MAX)
+			search.append(c);
+		searchSelected = 0;
+		return true;
 	}
 
 	@Override
 	protected boolean onKey(int key, int scanCode, int modifiers) {
+		if(search != null && viewing == null && view() != ComputerSettings.View.COMMAND)
+			return searchKey(key);
 		if(viewing != null) {
 			if(key == GLFW.GLFW_KEY_F5)
 				print(viewing);
@@ -378,6 +552,16 @@ final class ShellApp extends DosApp {
 	protected boolean onClick(int col, int row, int button) {
 		if(viewing != null || view() == ComputerSettings.View.COMMAND)
 			return true;
+		if(search != null) { // A click on a hit runs it; anywhere else closes the search.
+			int w = 56, left = (TextGrid.COLS - w) / 2, top = 3;
+			int index = Math.max(0, searchSelected - SEARCH_ROWS + 1) + row - (top + 3);
+			List<Hit> hits = hits();
+			if(col > left && col < left + w - 1 && row >= top + 3 && row < top + 3 + SEARCH_ROWS && index >= 0 && index < hits.size())
+				runHit(hits.get(index));
+			else
+				search = null;
+			return true;
+		}
 		if(view() == ComputerSettings.View.ICONS && !filesFocused)
 			return icons.click(col, row);
 		if(programs.contains(col, row)) {

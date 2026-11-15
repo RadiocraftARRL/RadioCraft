@@ -7,6 +7,7 @@ import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
 import com.arrl.radiocraft.client.screens.computer.DosList;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.MusicTracks;
@@ -45,6 +46,21 @@ public final class MusicApp extends DosApp {
 	public MusicApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		list.onActivate(this::play);
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.file"), List.of(
+						item("menu.music.close", "C", GLFW.GLFW_KEY_C),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))),
+				new DosMenuBar.Menu(Dos.tr("menu.music.play_menu"), List.of(
+						item("menu.music.play", "Enter", () -> play(list.selected())).when(() -> !tracks.isEmpty()),
+						item("menu.music.pause", "Space", GLFW.GLFW_KEY_SPACE),
+						item("menu.music.stop", "S", GLFW.GLFW_KEY_S),
+						item("menu.next", "N", GLFW.GLFW_KEY_N),
+						item("menu.previous", "B", GLFW.GLFW_KEY_B),
+						item("menu.music.repeat", "R", GLFW.GLFW_KEY_R),
+						item("menu.music.shuffle", "H", GLFW.GLFW_KEY_H))),
+				new DosMenuBar.Menu(Dos.tr("menu.music.volume_menu"), List.of(
+						item("menu.music.louder", "+", GLFW.GLFW_KEY_EQUAL),
+						item("menu.music.quieter", "-", GLFW.GLFW_KEY_MINUS))))));
 	}
 
 	@Override

@@ -53,7 +53,7 @@ public class AntennaWireItem extends Item {
                                 entity.setEndPos(pos);
                                 entity.setHolder(null);
                                 level.playSound(null, entity.getEndPos(), SoundEvents.LEASH_KNOT_PLACE, SoundSource.BLOCKS, 1.0F, 1.0F);
-                                entity.updateAntennas();
+                                entity.strung(); // Its balun, and any balun near it (a Moxon's reflector touches none).
                             } else {
                                 Radiocraft.LOGGER.warn("Could not find player's first held wire.");
                             }

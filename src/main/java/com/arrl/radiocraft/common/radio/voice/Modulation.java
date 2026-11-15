@@ -59,10 +59,12 @@ public enum Modulation {
 			LOWER_SIDEBAND.set(was);
 	}
 
-	/** What a transmitter on {@code band} that says nothing uses: FM on VHF, SSB below, AM on CB. */
+	/** What a transmitter on {@code band} that says nothing uses: FM on VHF, SSB below, AM on CB and the airband. */
 	public static Modulation usual(@Nullable Band band) {
 		if(band == null)
 			return SSB;
+		if(Band.AIRBAND.equals(band.name()))
+			return AM;
 		if(band.isVhf())
 			return FM;
 		return Band.CB.equals(band.name()) ? AM : SSB;

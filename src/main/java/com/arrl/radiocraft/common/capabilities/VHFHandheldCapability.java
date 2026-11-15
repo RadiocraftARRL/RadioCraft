@@ -142,6 +142,16 @@ public class VHFHandheldCapability implements IVHFHandheldCapability {
 		updateState((old) -> old.withToneAndOffset(old.ctcssTone(), Ctcss.sanitizeOffset(offsetHz)));
 	}
 
+	@Override
+	public int getTuneStepHz() {
+		return getState().tuneStep();
+	}
+
+	@Override
+	public void setTuneStepHz(int stepHz) {
+		updateState((old) -> old.withTuneStep(stepHz));
+	}
+
 	protected HandheldRadioState getState(){
 		return thisRadio.getOrDefault(RadiocraftDataComponent.HANDHELD_RADIO_STATE_COMPONENT.value(), HandheldRadioState.getDefault());
 	}

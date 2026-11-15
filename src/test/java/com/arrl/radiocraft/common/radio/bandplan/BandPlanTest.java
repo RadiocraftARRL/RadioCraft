@@ -52,7 +52,8 @@ class BandPlanTest {
 		assertEquals("Military / federal", PLAN.useAt(30_100_000), "low band starts with a military pocket");
 		assertEquals("CW", PLAN.useAt(14_010_000));
 		assertEquals("SSTV / fax", PLAN.useAt(14_230_000));
-		assertNull(PLAN.useAt(100_000_000), "nothing at 100 MHz");
+		assertEquals("FM broadcast stations", PLAN.useAt(100_000_000), "FM broadcast (2026-11-13)");
+		assertNull(PLAN.useAt(60_000_000), "nothing at 60 MHz");
 	}
 
 	@Test

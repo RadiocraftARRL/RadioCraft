@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_commercial_mobile": {
+      "conditions": {
+        "items": [
+          {
+            "items": "radiocraft:commercial_mobile"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "radiocraft:fire_alarm_box"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_commercial_mobile"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "radiocraft:fire_alarm_box"
+    ]
+  }
+}

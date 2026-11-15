@@ -72,15 +72,23 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.MARINE_RADIO.get(),
 				RadiocraftBlocks.CB_MOBILE_5875.get(),
 				RadiocraftBlocks.CB_MOBILE_PC68.get(),
+				RadiocraftBlocks.AIRBAND_RADIO.get(),
+				RadiocraftBlocks.FM_BROADCAST_TRANSMITTER.get(),
+				RadiocraftBlocks.FM_BROADCAST_RECEIVER.get(),
 				RadiocraftBlocks.DUPLEXER.get(),
 				RadiocraftBlocks.ANTENNA_SPLITTER.get(),
 				RadiocraftBlocks.ANTENNA_SWITCH.get(),
 				RadiocraftBlocks.ANTENNA_TUNER.get(),
 				RadiocraftBlocks.AUTO_TUNER.get(),
+				RadiocraftBlocks.LINEAR_AMPLIFIER.get(),
 				RadiocraftBlocks.BALUN_ONE_TO_ONE.get(),
 				RadiocraftBlocks.BALUN_FOUR_TO_ONE.get(), RadiocraftBlocks.BALUN_TWO_TO_ONE.get(),
 				RadiocraftBlocks.BALUN_NINE_TO_ONE.get(),
 				RadiocraftBlocks.J_POLE_ANTENNA.get(),
+				RadiocraftBlocks.AIRBAND_ANTENNA.get(),
+				RadiocraftBlocks.AIRBAND_GROUND_PLANE.get(),
+				RadiocraftBlocks.EGGBEATER_ANTENNA.get(),
+				RadiocraftBlocks.SATELLITE_TRACKER.get(),
 				RadiocraftBlocks.RINGO_ANTENNA.get(),
 				RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get(),
 				RadiocraftBlocks.IONOSONDE.get(),
@@ -107,6 +115,8 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.MICROWAVE_HORN.get(),
 				RadiocraftBlocks.ADSB_BEACON.get(), RadiocraftBlocks.ADSB_RECEIVER.get(), RadiocraftBlocks.ADSB_ANTENNA.get(), // ADS-B (1.12 step 9).
 				RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get(), RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get(), // Weather alerts (1.12): power and coax.
+				RadiocraftBlocks.FIRE_ALARM_BOX.get(), RadiocraftBlocks.FIRE_ALARM_CONTROLLER.get(), // The radio mesh (2026-11-10): coax to an antenna.
+				RadiocraftBlocks.SCADA_RTU.get(), RadiocraftBlocks.SCADA_MASTER.get(),
 				RadiocraftBlocks.REAL_WORLD_INTERFACE.get(), // A radio station on power and coax (1.12 step 11).
 				RadiocraftBlocks.RADIO_COMPUTER.get(), // On the power wire (1.12).
 				net.minecraft.world.level.block.Blocks.LIGHTNING_ROD); // An antenna when coax runs to it (LightningRodAntennas).
@@ -120,6 +130,8 @@ public class RadiocraftCapabilities {
 		// Hoppers stock a radio fax's paper, books and maps; one underneath takes the copies received.
 		event.registerBlock(Capabilities.ItemHandler.BLOCK, (level, pos, state, be, side) -> be instanceof com.arrl.radiocraft.common.blockentities.TeletypeBlockEntity teletype
 				? teletype.getPaper() : null, RadiocraftBlocks.TELETYPE.get()); // Hoppers feed the teletype paper.
+		event.registerBlock(Capabilities.ItemHandler.BLOCK, (level, pos, state, be, side) -> be instanceof com.arrl.radiocraft.common.blockentities.TapePlayerBlockEntity tapePlayer
+				? tapePlayer.itemHandler(side) : null, RadiocraftBlocks.TAPE_PLAYER.get()); // Tapes in at the top and sides, played ones out the bottom (2026-11-14).
 		event.registerBlock(Capabilities.ItemHandler.BLOCK, (level, pos, state, be, side) -> be instanceof RadioFaxBlockEntity fax
 						? side == net.minecraft.core.Direction.DOWN ? fax.getReceived() : fax.getSupplies() : null,
 				RadiocraftBlocks.RADIO_FAXES.values().stream().map(net.neoforged.neoforge.registries.DeferredHolder::get).toArray(Block[]::new));

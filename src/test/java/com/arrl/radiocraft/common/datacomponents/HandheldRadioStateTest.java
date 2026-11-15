@@ -51,4 +51,17 @@ class HandheldRadioStateTest {
 		assertEquals(123.0F, retuned.rxTone());
 		assertEquals(-600_000, retuned.offsetHz());
 	}
+
+	@Test
+	void theStepSurvivesSavingTheNetworkAndRetuning() {
+		HandheldRadioState stepped = STATE.withTuneStep(12_500);
+		JsonElement saved = HandheldRadioState.CODEC.encodeStart(JsonOps.INSTANCE, stepped).getOrThrow();
+		assertEquals(12_500, HandheldRadioState.CODEC.parse(JsonOps.INSTANCE, saved).getOrThrow().tuneStep());
+		ByteBuf buf = Unpooled.buffer();
+		HandheldRadioState.STREAM_CODEC.encode(buf, stepped);
+		assertEquals(stepped, HandheldRadioState.STREAM_CODEC.decode(buf));
+		assertEquals(12_500, new HandheldRadioState(true, false, 164_480_000.0F, 1.0F, 1.0F, 0.0F).withTonesOf(stepped).tuneStep());
+		assertEquals(0, STATE.withTuneStep(7_000).tuneStep(), "an odd step is the server's");
+		assertEquals(0, STATE.tuneStep(), "an old save has the server's step");
+	}
 }

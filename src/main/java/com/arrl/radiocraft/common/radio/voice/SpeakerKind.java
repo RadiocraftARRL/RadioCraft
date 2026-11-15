@@ -11,6 +11,9 @@ package com.arrl.radiocraft.common.radio.voice;
  *     <li>{@link #WALL}: a wall speaker on the radio's power wire, 80% with a little extra distortion.</li>
  *     <li>{@link #LOUDSPEAKER}: a PA horn on the radio's power wire: loud, heard from much further, rather
  *     distorted, and narrow like any horn.</li>
+ *     <li>{@link #SIREN}: an outdoor warning siren (Another Weather Mod) on a commercial radio's data wire, used as a
+ *     public address (2026-11-13): very narrow, driven hard, heard a long way off, with an echo
+ *     ({@link SirenEcho}).</li>
  * </ul>
  */
 public enum SpeakerKind {
@@ -18,7 +21,8 @@ public enum SpeakerKind {
 	STANDARD(0.9D, 1.0D, 1.0D, 16.0F),
 	PREMIUM(1.0D, 1.0D, 1.0D, 16.0F),
 	WALL(0.8D, 1.6D, 1.0D, 16.0F),
-	LOUDSPEAKER(0.8D, 2.2D, 1.5D, 64.0F);
+	LOUDSPEAKER(0.8D, 2.2D, 1.5D, 64.0F),
+	SIREN(0.6D, 2.8D, 2.0D, 192.0F);
 
 	/** Share of the receiver's passband this speaker reproduces. */
 	public final double range;
@@ -38,7 +42,7 @@ public enum SpeakerKind {
 
 	/** True for speakers wired to the radio (they play the audio where they stand); false for ones that touch it. */
 	public boolean isWired() {
-		return this == WALL || this == LOUDSPEAKER;
+		return this == WALL || this == LOUDSPEAKER || this == SIREN;
 	}
 
 	/** {@code settings} as heard through this speaker: the passband narrowed to {@link #range}, the drive raised. */

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "radiocraft:antenna_wire"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "O": {
+      "item": "radiocraft:coax_wire"
+    },
+    "R": {
+      "item": "minecraft:iron_bars"
+    }
+  },
+  "pattern": [
+    " A ",
+    "AOA",
+    "RIR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:eggbeater_antenna"
+  }
+}

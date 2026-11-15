@@ -4,12 +4,15 @@ import com.arrl.radiocraft.client.screens.computer.ComputerSession;
 import com.arrl.radiocraft.client.screens.computer.Dos;
 import com.arrl.radiocraft.client.screens.computer.DosApp;
 import com.arrl.radiocraft.client.screens.computer.DosColours;
+import com.arrl.radiocraft.client.screens.computer.DosMenuBar;
 import com.arrl.radiocraft.client.screens.computer.TextGrid;
 import com.arrl.radiocraft.common.computer.ComputerApp;
 import com.arrl.radiocraft.common.computer.games.HighScores;
 import com.arrl.radiocraft.common.computer.games.SnakeGame;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.List;
 
 /**
  * SNAKE, a secret program (1.12 step 8, floppy found in structure chests): {@link SnakeGame} on a 36 by 20 board, each
@@ -32,6 +35,11 @@ public final class SnakeApp extends DosApp {
 	public SnakeApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
 		this.scores = new HighScoreFile(session, "SNAKE.DAT");
+		setMenuBar(new DosMenuBar(List.of( // 2026-11-12: each item does what its key does.
+				new DosMenuBar.Menu(Dos.tr("menu.game"), List.of(
+						item("menu.snake.start", "Enter", GLFW.GLFW_KEY_ENTER).when(() -> state != State.PLAYING),
+						item("menu.snake.pause", "P", GLFW.GLFW_KEY_P).when(() -> state == State.PLAYING || state == State.PAUSED),
+						item("menu.exit", "Esc", GLFW.GLFW_KEY_ESCAPE))))));
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.arrl.radiocraft.common.blocks.power;
 
+import com.arrl.radiocraft.common.blocks.WallMount;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
@@ -10,7 +12,8 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 /**
  * Power Switch - Left/Right (2026-11-09): an input on the {@link #FACING} side and an output to each side of it, left
  * and right as the player who placed it saw them (the input faces that player). Power passes between the input and
- * the selected output only; the other output is a circuit of its own. Made on the left.
+ * the selected output only; the other output is a circuit of its own. Made on the left. On a wall the input is at the
+ * bottom and the outputs left and right as you face the wall.
  */
 public class LeftRightPowerSwitchBlock extends PowerSwitchBlock {
 
@@ -19,17 +22,17 @@ public class LeftRightPowerSwitchBlock extends PowerSwitchBlock {
 
 	public LeftRightPowerSwitchBlock(Properties properties) {
 		super(properties);
-		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(RIGHT, false));
+		registerDefaultState(stateDefinition.any().setValue(FACE, AttachFace.FLOOR).setValue(FACING, Direction.NORTH).setValue(RIGHT, false));
 	}
 
 	/** The left output's side, as seen by someone facing the input: clockwise from it, looking down. */
 	public static Direction left(BlockState state) {
-		return state.getValue(FACING).getClockWise();
+		return WallMount.toWorld(state, frameFacing(state).getClockWise());
 	}
 
 	/** The right output's side. */
 	public static Direction right(BlockState state) {
-		return state.getValue(FACING).getCounterClockWise();
+		return WallMount.toWorld(state, frameFacing(state).getCounterClockWise());
 	}
 
 	/** The side of the output the lever selects. */
@@ -39,12 +42,12 @@ public class LeftRightPowerSwitchBlock extends PowerSwitchBlock {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FACING, RIGHT);
+		builder.add(FACE, FACING, RIGHT);
 	}
 
 	@Override
-	public boolean passes(BlockState state, Direction side) {
-		return side == state.getValue(FACING) || side == selected(state);
+	protected boolean passesInFrame(BlockState state, Direction side, Direction facing) {
+		return side == facing || side == (state.getValue(RIGHT) ? facing.getCounterClockWise() : facing.getClockWise());
 	}
 
 	@Override

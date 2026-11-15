@@ -68,8 +68,8 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 		renderGainReadout(pGuiGraphics, speakerGainDial, menu.blockEntity.getSpeakerGain());
 		renderGainReadout(pGuiGraphics, micGainDial, menu.blockEntity.getMicGain());
 		if(squelchDial != null && squelchDial.isHoveredOrChanging()) { // SQL and the setting, OPEN at 0.
-			float squelch = menu.blockEntity.getSquelchLevel();
-			String text = squelch <= 0.0F ? "OPEN" : String.format(Locale.ROOT, "SQL %d", Math.round(squelch * 10.0F));
+			String label = menu.blockEntity.squelchLabel();
+			String text = label.equals("OPEN") ? label : "SQL " + label;
 			pGuiGraphics.drawString(font, text, squelchDial.getRectangle().getCenterInAxis(ScreenAxis.HORIZONTAL) - font.width(text) / 2,
 					squelchDial.getRectangle().getCenterInAxis(ScreenAxis.VERTICAL) - font.lineHeight / 2, 0xFFFFFF);
 		}
@@ -88,17 +88,17 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 	protected Dial squelchDial;
 
 	protected void onSquelchUp(AbstractWidget dial) {
-		setSquelch(menu.blockEntity.getSquelchLevel() + com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.SQUELCH_STEP);
+		setSquelch(menu.blockEntity.squelchStep(1));
 	}
 
 	protected void onSquelchDown(AbstractWidget dial) {
-		setSquelch(menu.blockEntity.getSquelchLevel() - com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity.SQUELCH_STEP);
+		setSquelch(menu.blockEntity.squelchStep(-1));
 	}
 
 	private void setSquelch(float level) {
-		int percent = Math.round(Mth.clamp(level, 0.0F, 1.0F) * 10.0F) * 10;
-		menu.blockEntity.setSquelchClient(percent / 100.0F);
-		SBlockRadioControlPacket.updateServer(menu.blockEntity.getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, percent);
+		int thousandths = Math.round(Mth.clamp(level, 0.0F, 1.0F) * 1000.0F);
+		menu.blockEntity.setSquelchClient(thousandths / 1000.0F);
+		SBlockRadioControlPacket.updateServer(menu.blockEntity.getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, thousandths);
 	}
 
 	/** Gain steps per click of a gain dial, out of 1 (full) and up to {@link #MAX_GAIN}. */
@@ -186,8 +186,10 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 		boolean transmitting = isTransmitting();
 		boolean inhibited = menu.blockEntity.isTransmitInhibited();
 		// Keyed out of band without a MARS mod: the rig refuses, and says so where the frequency was.
-		String text = inhibited && menu.blockEntity.isPTTDown() ? "OUT OF BAND" : String.format("%.3f MHz", menu.getFrequency() / 1_000_000.0F);
-		drawScaled(guiGraphics, text, leftPos + x + w / 2.0F, topPos + y + h / 2.0F + (h >= 20 ? displayTextDrop : 0.0F), scale, transmitting || inhibited && menu.blockEntity.isPTTDown() ? DISPLAY_TX_COLOUR : colour);
+		String text = inhibited && menu.blockEntity.isPTTDown() ? "OUT OF BAND" : com.arrl.radiocraft.common.radio.TuningStep.mhz(menu.getFrequency()) + " MHz";
+		// Shrunk to fit its window: four decimals (164.4875 on a 6.25 kHz step) ran off the side (2026-11-14).
+		float fit = Math.min(scale, (w - 4.0F) / Math.max(1, font.width(text)));
+		drawScaled(guiGraphics, text, leftPos + x + w / 2.0F, topPos + y + h / 2.0F + (h >= 20 ? displayTextDrop : 0.0F), fit, transmitting || inhibited && menu.blockEntity.isPTTDown() ? DISPLAY_TX_COLOUR : colour);
 		if(h < 20)
 			return; // Too small for the corner markers.
 		float markerScale = Math.min(1.0F, scale * 0.6F);
@@ -199,10 +201,10 @@ public abstract class RadioScreen<T extends RadioMenu<?>> extends AbstractContai
 			float markerWidth = font.width("TX") * markerScale;
 			drawScaled(guiGraphics, "TX", leftPos + x + w - 2 - markerWidth / 2.0F, markerY, markerScale, DISPLAY_TX_COLOUR);
 		}
-		else if(inhibited || menu.blockEntity.isOutOfBand()) { // Top right: tuned outside the band (OOB; MARS with a MARS mod).
-			String flag = inhibited ? "OOB" : "MARS";
-			float markerWidth = font.width(flag) * markerScale;
-			drawScaled(guiGraphics, flag, leftPos + x + w - 2 - markerWidth / 2.0F, markerY, markerScale, inhibited ? DISPLAY_TX_COLOUR : colour);
+		else if(inhibited) { // Top right: tuned outside the band with no MARS mod. A modded rig shows nothing: it just
+			// tunes out of band, which says enough (maintainer, 2026-11-14; "MARS" there ran into the step size).
+			float markerWidth = font.width("OOB") * markerScale;
+			drawScaled(guiGraphics, "OOB", leftPos + x + w - 2 - markerWidth / 2.0F, markerY, markerScale, DISPLAY_TX_COLOUR);
 		}
 	}
 

@@ -95,7 +95,7 @@ public class VHFReceiverScreen extends AbstractContainerScreen<VHFReceiverMenu> 
 			case "squelch" -> {
 				int next = Math.max(0, Math.min(100, Math.round(rx.getSquelchLevel() * 100.0F) + 10 * steps));
 				rx.setSquelchClient(next / 100.0F);
-				SBlockRadioControlPacket.updateServer(rx.getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, next);
+				SBlockRadioControlPacket.updateServer(rx.getBlockPos(), SBlockRadioControlPacket.Action.SET_SQUELCH, next * 10);
 				click(1.2F);
 			}
 			case "tune" -> {
