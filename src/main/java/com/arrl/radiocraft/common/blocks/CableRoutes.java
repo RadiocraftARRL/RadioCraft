@@ -404,6 +404,234 @@ public final class CableRoutes {
 	 * ({@link #squared}).
 	 */
 	public static Drawn layout(BlockGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, int i) {
+		return layout(level, pos, strands, offsets, i, true);
+	}
+
+	/** {@link #layout}, with or without the {@link #bridges} where strands cross. */
+	public static Drawn layout(BlockGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, int i, boolean bridges) {
+		Drawn base = plainLayout(level, pos, strands, offsets, i);
+		if(!bridges || strands.size() < 2 || base.parts().stream().noneMatch(p -> p.part() == WireLook.Part.SPAN && !p.lifted()))
+			return base; // A lone wire, or no step to move or raise (most strands): the others need not be looked at.
+		Drawn[] all = new Drawn[strands.size()];
+		for(int j = 0; j < all.length; j++)
+			all[j] = j == i ? base : plainLayout(level, pos, strands, offsets, j);
+		return bridges(pos, strands, all, i);
+	}
+
+	// -------------------- BRIDGES --------------------
+
+	/**
+	 * Where two strands of a bundle must cross on the floor (2026-11-15, the maintainer: "keep on working on all the wire
+	 * crossings"): they come into the block in one order and leave it in the other, so one's step across runs through
+	 * the other. The step is raised over it instead, a bridge: the piece across lifted half of each cable's width and
+	 * half a pixel, the cubes at its two ends stood up into columns to meet it. Only a step between two bends (both ends
+	 * inside the block, a {@link WireLook.Part#SPAN} between {@link WireLook.Part#JOINT}s) is raised, so the cable still
+	 * meets the next block where it did. Of two steps crossing, the later strand's is raised; a step crossing anything
+	 * else (a stub, the middle) is raised over it. Worked out from every strand's plain layout, so each strand's model
+	 * agrees with the others' without asking them back. The bundle solver counts crossings without bridges
+	 * ({@link WireGeometry#crossings}), so it still turns bundles to need as few as it can.
+	 */
+	static Drawn bridges(BlockPos pos, List<BlockState> strands, Drawn[] all, int i) {
+		Drawn mine = all[i];
+		WireBlock own = (WireBlock)strands.get(i).getBlock();
+		boolean ceiling = WireBlock.isCeiling(strands.get(i));
+		List<WireLook.Placed> parts = new ArrayList<>(mine.parts());
+		boolean changed = false;
+		// The other strands' centre lines, worked out once.
+		Others others = new Others(strands, all, i, ceiling, new ArrayList<>());
+		for(int j = 0; j < all.length; j++)
+			others.lines().add(j == i || WireBlock.isCeiling(strands.get(j)) != ceiling ? List.of()
+					: WireGeometry.segments(pos, (WireBlock)strands.get(j).getBlock(), ceiling, all[j]));
+		for(int k = 0; k < parts.size(); k++) {
+			WireLook.Placed p = parts.get(k);
+			if(p.part() != WireLook.Part.SPAN || p.lifted() || clashes(pos, own, mine, parts, k, others) == 0)
+				continue;
+			int[] ends = spanEnds(parts, p, own.width(), mine.offset());
+			if(ends == null)
+				continue; // An end on a block face: moving or raising it would part it from the next block.
+			int lift = 0;
+			for(int j = 0; j < all.length; j++)
+				if(j != i)
+					lift = Math.max(lift, (int)Math.ceil((own.width() + ((WireBlock)strands.get(j).getBlock()).width()) / 2.0D + 0.5D));
+			// The step slid along a little (nearest first), flat or raised: the first that clears every other strand.
+			List<WireLook.Placed> best = null;
+			search:
+			for(int d : SHIFTS)
+				for(boolean raise : new boolean[] { false, true }) {
+					List<WireLook.Placed> tried = shifted(parts, k, ends, d, own.width());
+					if(tried == null)
+						continue;
+					if(raise)
+						raise(tried, k, ends, lift, own.width(), mine.offset());
+					if(total(pos, own, mine, others, tried) == 0 && (!raise || clearOfOwnRuns(pos, own, ceiling, mine, tried))) {
+						best = tried;
+						break search;
+					}
+				}
+			if(best == null) { // Nothing clears it all: raised where it is, the fewest clashes.
+				best = new ArrayList<>(parts);
+				raise(best, k, ends, lift, own.width(), mine.offset());
+				if(total(pos, own, mine, others, best) >= total(pos, own, mine, others, parts)
+						|| !clearOfOwnRuns(pos, own, ceiling, mine, best))
+					continue;
+			}
+			parts = best;
+			changed = true;
+		}
+		return changed ? new Drawn(List.copyOf(parts), mine.offset(), mine.faces()) : mine;
+	}
+
+	/** How far a step may slide to clear another strand, 1/256 of a block: none first, then nearest first either way. */
+	private static final int[] SHIFTS = { 0, 16, -16, 24, -24, 32, -32, 48, -48, 64, -64 };
+
+	/** {@code parts} with step {@code k} raised {@code lift} pixels and its end joints stood up into columns to meet it. */
+	private static void raise(List<WireLook.Placed> parts, int k, int[] ends, int lift, double width, WireLook.Lateral middle) {
+		parts.set(k, parts.get(k).withHeight(lift * 16, 256 + lift * 16));
+		int column = (int)Math.round(256.0D * (lift + width) / width);
+		for(int e : ends) {
+			if(e == AT_MIDDLE) // Up from the middle cube: a column standing on it.
+				parts.add(new WireLook.Placed(WireLook.Part.JOINT, null, sixteenths(8.0D + middle.x()), sixteenths(8.0D + middle.z()), 0, 0, column, 0));
+			else
+				parts.set(e, parts.get(e).withHeight(0, column));
+		}
+	}
+
+	/** In {@link #spanEnds}: the end is at the strand's middle, not a joint. */
+	private static final int AT_MIDDLE = -2;
+
+	/**
+	 * {@code parts} with step {@code k} slid {@code d} (1/256 of a block) across its length: the step, its two end
+	 * joints, and the two pieces running into those joints stretched or cut to meet them. Null if a piece would vanish.
+	 */
+	private static List<WireLook.Placed> shifted(List<WireLook.Placed> parts, int k, int[] ends, int d, double width) {
+		List<WireLook.Placed> out = new ArrayList<>(parts);
+		if(d == 0)
+			return out;
+		if(ends[0] == AT_MIDDLE || ends[1] == AT_MIDDLE)
+			return null; // It starts at the middle: it cannot slide.
+		WireLook.Placed span = parts.get(k);
+		boolean alongX = span.dir() == Direction.WEST;
+		int half = sixteenths(width / 2.0D);
+		out.set(k, new WireLook.Placed(span.part(), span.dir(), span.foot(), span.head(), span.side() + d, span.lo(), span.hi(), span.length()));
+		for(int e : ends) {
+			WireLook.Placed joint = parts.get(e);
+			// A joint's foot is x, head z; the step runs along x (side z) or along z (side x).
+			int jx = joint.foot() + (alongX ? 0 : d), jz = joint.head() + (alongX ? d : 0);
+			out.set(e, new WireLook.Placed(joint.part(), joint.dir(), jx, jz, joint.side(), joint.lo(), joint.hi(), joint.length()));
+			int old = alongX ? joint.head() : joint.foot(); // The joint's place across the step, before.
+			int along = alongX ? joint.foot() : joint.head();
+			boolean found = false;
+			for(int q = 0; q < out.size(); q++) {
+				WireLook.Placed r = out.get(q);
+				if(q == k || r.part() != WireLook.Part.SPAN || (r.dir() == Direction.WEST) == alongX || Math.abs(r.side() - along) > 1)
+					continue; // Not a piece across the step's way through this joint.
+				int foot = r.foot(), head = r.head();
+				if(Math.abs(head - (old - half)) <= 1)
+					head += d;
+				else if(Math.abs(foot - (old + half)) <= 1)
+					foot += d;
+				else
+					continue;
+				if(head - foot < 4)
+					return null;
+				out.set(q, new WireLook.Placed(r.part(), r.dir(), foot, head, r.side(), r.lo(), r.hi(), r.length()));
+				found = true;
+			}
+			if(!found)
+				return null; // Something else meets this joint (the middle): leave the step where it is.
+		}
+		return out;
+	}
+
+	/**
+	 * True if no column of a bridge stands within a cable's width of the strand's own run up a wall: beside it, the two
+	 * read as one cable bulging (a bridge from a strand's middle in a corner, 2026-11-15). Better left crossing flat.
+	 */
+	private static boolean clearOfOwnRuns(BlockPos pos, WireBlock own, boolean ceiling, Drawn mine, List<WireLook.Placed> parts) {
+		List<WireGeometry.Segment> segs = WireGeometry.segments(pos, own, ceiling, new Drawn(parts, mine.offset(), mine.faces()));
+		for(int c = 0; c < parts.size(); c++) {
+			WireLook.Placed column = parts.get(c);
+			if(column.part() != WireLook.Part.JOINT || column.hi() - column.lo() <= 256)
+				continue;
+			for(int r = 0; r < parts.size(); r++)
+				switch(parts.get(r).part()) {
+					case EDGE, EDGE_FULL, POST, VERTICAL, RISER, DROP -> {
+						if(WireGeometry.distance(segs.get(c), segs.get(r)) < own.width() / 16.0D)
+							return false;
+					}
+					default -> {}
+				}
+		}
+		return true;
+	}
+
+	/** How many of the other strands' pieces piece {@code k} of {@code parts} runs through. */
+	/** The other strands of a bundle as {@link #bridges} weighs them: their plain layouts and centre lines (empty for this one). */
+	private record Others(List<BlockState> strands, Drawn[] all, int i, boolean ceiling, List<List<WireGeometry.Segment>> lines) {}
+
+	private static int clashes(BlockPos pos, WireBlock own, Drawn mine, List<WireLook.Placed> parts, int k, Others others) {
+		List<WireGeometry.Segment> segs = WireGeometry.segments(pos, own, others.ceiling(), new Drawn(parts, mine.offset(), mine.faces()));
+		return clashesOf(own, segs.get(k), parts.get(k), others);
+	}
+
+	/** How many times any piece of {@code parts} runs through another strand's. */
+	private static int total(BlockPos pos, WireBlock own, Drawn mine, Others others, List<WireLook.Placed> parts) {
+		List<WireGeometry.Segment> segs = WireGeometry.segments(pos, own, others.ceiling(), new Drawn(parts, mine.offset(), mine.faces()));
+		int n = 0;
+		for(int k = 0; k < segs.size(); k++)
+			n += clashesOf(own, segs.get(k), parts.get(k), others);
+		return n;
+	}
+
+	private static int clashesOf(WireBlock own, WireGeometry.Segment seg, WireLook.Placed piece, Others others) {
+		int n = 0, i = others.i();
+		for(int j = 0; j < others.all().length; j++) {
+			List<WireGeometry.Segment> theirs = others.lines().get(j);
+			if(theirs.isEmpty())
+				continue;
+			WireBlock other = (WireBlock)others.strands().get(j).getBlock();
+			for(int q = 0; q < theirs.size(); q++) {
+				WireLook.Placed tp = others.all()[j].parts().get(q);
+				if(tp.part() == WireLook.Part.SPAN && !tp.lifted() && j > i && piece.part() == WireLook.Part.SPAN)
+					continue; // Two steps: the later strand's moves or goes over.
+				if(WireGeometry.distance(seg, theirs.get(q)) < (own.width() + other.width()) / 32.0D - 1.0E-4D)
+					n++;
+			}
+		}
+		return n;
+	}
+
+	/**
+	 * The indices of the two {@link WireLook.Part#JOINT}s at {@code span}'s ends ({@link #AT_MIDDLE} for an end at the
+	 * strand's {@code middle}), or null unless both ends are inside the block.
+	 */
+	private static int[] spanEnds(List<WireLook.Placed> parts, WireLook.Placed span, double width, WireLook.Lateral middle) {
+		boolean alongX = span.dir() == Direction.WEST;
+		int half = sixteenths(width / 2.0D);
+		int a = -1, b = -1;
+		int mAlong = sixteenths(8.0D + (alongX ? middle.x() : middle.z())), mAcross = sixteenths(8.0D + (alongX ? middle.z() : middle.x()));
+		if(Math.abs(mAcross - span.side()) <= 1) {
+			if(Math.abs(mAlong - (span.foot() - half)) <= 1)
+				a = AT_MIDDLE;
+			else if(Math.abs(mAlong - (span.head() + half)) <= 1)
+				b = AT_MIDDLE;
+		}
+		for(int k = 0; k < parts.size(); k++) {
+			WireLook.Placed p = parts.get(k);
+			if(p.part() != WireLook.Part.JOINT)
+				continue;
+			int along = alongX ? p.foot() : p.head(), across = alongX ? p.head() : p.foot();
+			if(Math.abs(across - span.side()) > 1)
+				continue;
+			if(Math.abs(along - (span.foot() - half)) <= 1 && a == -1)
+				a = k;
+			else if(Math.abs(along - (span.head() + half)) <= 1 && b == -1)
+				b = k;
+		}
+		return a == -1 || b == -1 ? null : new int[] { a, b };
+	}
+
+	private static Drawn plainLayout(BlockGetter level, BlockPos pos, List<BlockState> strands, WireLook.Lateral[] offsets, int i) {
 		BlockState state = strands.get(i);
 		WireBlock wire = (WireBlock)state.getBlock();
 		WireLook.Lateral offset = strands.size() == 1 && level.getBlockState(pos).getBlock() instanceof WireBlock ? Strand.loneOffset(level, pos, state) : offsets[i];

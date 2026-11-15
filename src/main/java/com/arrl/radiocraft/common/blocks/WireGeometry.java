@@ -26,25 +26,31 @@ public final class WireGeometry {
 
 	/** Every strand's centre line at {@code pos}. */
 	public static List<Segment> at(BlockGetter level, BlockPos pos) {
+		return at(level, pos, true);
+	}
+
+	/**
+	 * Every strand's centre line at {@code pos}; {@code bridges} false leaves out where strands are raised over each other
+	 * ({@link CableRoutes#bridges}): the crossings as they would be, which the bundle solver keeps as few as it can.
+	 */
+	public static List<Segment> at(BlockGetter level, BlockPos pos, boolean bridges) {
 		List<Segment> out = new ArrayList<>();
 		List<BlockState> strands = Strand.statesAt(level, pos);
 		WireLook.Lateral[] offsets = Strand.laterals(level, pos, strands);
 		for(int i = 0; i < strands.size(); i++) {
 			BlockState state = strands.get(i);
 			WireBlock wire = (WireBlock)state.getBlock();
-			CableRoutes.Drawn drawn = CableRoutes.layout(level, pos, strands, offsets, i); // As the model draws it.
-			List<WireLook.Placed> parts = drawn.parts();
-			WireLook.Faces faces = drawn.faces();
-			WireLook.Lateral offset = drawn.offset();
+			CableRoutes.Drawn drawn = CableRoutes.layout(level, pos, strands, offsets, i, bridges); // As the model draws it.
 			boolean ceiling = WireBlock.isCeiling(state);
-			double w = wire.width() / 16.0D, h = w / 2.0D;
+			double w = wire.width() / 16.0D;
 			int first = out.size();
 			Vec3 arriveEnd = null, middle = null;
 			WireLook.Look look = wire.look(level, pos, state);
-			for(WireLook.Placed placed : parts)
-				for(Vec3[] line : local(placed.part(), w, h)) {
-					WireLook.Affine affine = WireLook.affine(placed, offset, faces, ceiling);
-					Segment seg = new Segment(wire, world(pos, line[0], placed, ceiling, affine), world(pos, line[1], placed, ceiling, affine), w);
+			List<WireLook.Placed> parts = drawn.parts();
+			List<Segment> segs = segments(pos, wire, ceiling, drawn);
+			for(int k = 0; k < segs.size(); k++) {
+					Segment seg = segs.get(k);
+					WireLook.Placed placed = parts.get(k); // One line a piece.
 					out.add(seg);
 					if(placed.part() == WireLook.Part.MIDDLE)
 						middle = seg.from();
@@ -53,7 +59,7 @@ public final class WireGeometry {
 						for(Vec3 e : new Vec3[] { seg.from(), seg.to() })
 							if(onFace(e, pos, arrive))
 								arriveEnd = e; // Where the cable meets the edge it comes up on (a stub, or a squared one's last piece).
-				}
+			}
 			footOfRun(out, first, wire, state, pos, ceiling, arriveEnd != null ? arriveEnd : middle, w);
 		}
 		return out;
@@ -86,6 +92,21 @@ public final class WireGeometry {
 		if(Math.abs(from.y - floor) > w)
 			return; // Not lying on the floor: something else.
 		out.add(new Segment(wire, from, new Vec3(from.x, floor, from.z), w));
+	}
+
+	/** The centre lines of one strand's pieces as {@code drawn}, one a piece, in order. No level needed. */
+	static List<Segment> segments(BlockPos pos, WireBlock wire, boolean ceiling, CableRoutes.Drawn drawn) {
+		List<Segment> out = new ArrayList<>(drawn.parts().size());
+		double w = wire.width() / 16.0D, h = w / 2.0D;
+		for(WireLook.Placed placed : drawn.parts()) {
+			Vec3[] line = local(placed.part(), w, h).getFirst();
+			double stretch = (placed.hi() - placed.lo()) / 256.0D;
+			if(placed.part() == WireLook.Part.JOINT && stretch > 1.0D + 1.0E-6D) // A joint stood up into a column (a bridge's end).
+				line = new Vec3[] { new Vec3(0.5D, h / stretch, 0.5D), new Vec3(0.5D, w - h / stretch, 0.5D) };
+			WireLook.Affine affine = WireLook.affine(placed, drawn.offset(), drawn.faces(), ceiling);
+			out.add(new Segment(wire, world(pos, line[0], placed, ceiling, affine), world(pos, line[1], placed, ceiling, affine), w));
+		}
+		return out;
 	}
 
 	/** A part's centre line(s) as its model draws it facing north, block units. */
@@ -196,7 +217,7 @@ public final class WireGeometry {
 	public static int crossings(BlockGetter level, Iterable<BlockPos> blocks) {
 		int count = 0;
 		for(BlockPos pos : blocks) {
-			List<Segment> here = at(level, pos);
+			List<Segment> here = at(level, pos, false); // Crossings as they are, not as they are bridged.
 			Set<Long> pairs = new HashSet<>();
 			for(int i = 0; i < here.size(); i++)
 				for(int j = i + 1; j < here.size(); j++) {

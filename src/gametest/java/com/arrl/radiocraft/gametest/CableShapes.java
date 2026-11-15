@@ -106,13 +106,16 @@ final class CableShapes {
 					if(t == s || !together(s.kind(), t.kind()) || distanceToSegment(e, t.from(), t.to()) >= tol)
 						continue;
 					touched = true;
-					Vec3 joint = e.distanceTo(t.from()) < tol ? t.from() : e.distanceTo(t.to()) < tol ? t.to() : null;
+					Vec3 nearer = e.distanceTo(t.from()) <= e.distanceTo(t.to()) ? t.from() : t.to(); // A short piece has both ends within reach.
+					Vec3 joint = e.distanceTo(nearer) < tol ? nearer : null;
+					if(joint != null && other.distanceTo(joint) < e.distanceTo(joint))
+						continue; // This piece's other end is the one at that joint (a short piece).
 					if(joint == null || point(t))
 						continue; // It meets t partway along (a junction), or a point.
 					Vec3 tAway = (joint == t.from() ? t.to() : t.from()).subtract(joint).normalize();
 					if(away.dot(tAway) > SHARP) {
-						out.add(String.format(Locale.ROOT, "%s: %s doubles back on itself (%.0f degrees)", rel(home.get(s), origin), name(s.kind()),
-								Math.toDegrees(Math.acos(Math.max(-1.0D, Math.min(1.0D, away.dot(tAway)))))));
+						out.add(String.format(Locale.ROOT, "%s: %s doubles back on itself (%.0f degrees) %s / %s", rel(home.get(s), origin), name(s.kind()),
+								Math.toDegrees(Math.acos(Math.max(-1.0D, Math.min(1.0D, away.dot(tAway))))), px(s, home.get(s)), px(t, home.get(s))));
 					}
 				}
 				if(!touched) {
@@ -158,6 +161,18 @@ final class CableShapes {
 	 * A piece too short to have a way it goes: shorter than most of the cable's width, it lies inside the cube it starts
 	 * from (2026-11-15: the half-pixel line down from a cable lying on the floor to the run under it).
 	 */
+	/** A piece in pixels of the block at {@code pos}, for the messages. */
+	private static String px(WireGeometry.Segment s, BlockPos pos) {
+		return String.format(Locale.ROOT, "(%.1f %.1f %.1f)-(%.1f %.1f %.1f)", (s.from().x - pos.getX()) * 16, (s.from().y - pos.getY()) * 16, (s.from().z - pos.getZ()) * 16,
+				(s.to().x - pos.getX()) * 16, (s.to().y - pos.getY()) * 16, (s.to().z - pos.getZ()) * 16);
+	}
+
+	/** A short upright piece: a bridge's column or a hop's riser (under four pixels). */
+	private static boolean stepUp(WireGeometry.Segment s) {
+		Vec3 d = s.to().subtract(s.from());
+		return d.length() < 4.0D / 16.0D && Math.abs(d.y) > 0.9D * d.length();
+	}
+
 	private static boolean point(WireGeometry.Segment s) {
 		return s.from().distanceTo(s.to()) < Math.max(1.0E-4D, s.width() * 0.75D);
 	}
@@ -378,8 +393,8 @@ final class CableShapes {
 					if(nearest < 0 || !joints.add(Math.min(i, nearest) + ":" + Math.max(i, nearest)))
 						continue;
 					Vec3 u = (end == 0 ? s.to() : s.from()).subtract(e).normalize(), v = far(lines.get(nearest), joint).subtract(joint).normalize();
-					if(u.dot(v) > -Math.cos(Math.toRadians(10.0D)))
-						bends++;
+					if(u.dot(v) > -Math.cos(Math.toRadians(10.0D)) && !stepUp(s) && !stepUp(lines.get(nearest)))
+						bends++; // A short piece up or down (a bridge's column, a hop's riser) is a step over, not a bend.
 				}
 			if(bends > MAX_BENDS)
 				out.add(String.format(Locale.ROOT, "%s: %s bends %d times in one block", rel(pos, origin), kind, bends));

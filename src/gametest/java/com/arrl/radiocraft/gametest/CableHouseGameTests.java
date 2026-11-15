@@ -48,6 +48,26 @@ public class CableHouseGameTests {
 	}
 
 	/**
+	 * A bundle in the house whose two strands come in from the east in one order and leave in the other (2026-11-15):
+	 * the grey power strand's step across goes over the plain one, a bridge (CableRoutes#bridges), instead of running
+	 * through it, and the bundle solver still sees the crossing it could not avoid.
+	 */
+	@GameTest(template = "house_cables", timeoutTicks = 200, batch = "cablehouse")
+	public static void houseCrossingIsBridged(GameTestHelper helper) {
+		helper.startSequence().thenIdle(5).thenExecute(() -> {
+			BlockPos at = helper.absolutePos(new BlockPos(15, 2, 19));
+			java.util.List<String> problems = WireGeometry.check(helper.getLevel(), at, at);
+			problems.removeIf(p -> !p.contains("runs through"));
+			helper.assertTrue(problems.isEmpty(), "The strands still run through each other: " + problems);
+			boolean raised = false;
+			for(WireGeometry.Segment s : WireGeometry.at(helper.getLevel(), at))
+				raised |= s.from().y - at.getY() > 2.0D / 16.0D && s.to().y - at.getY() > 2.0D / 16.0D && s.from().y < at.getY() + 0.5D;
+			helper.assertTrue(raised, "No strand is raised over the other");
+			helper.assertTrue(WireGeometry.crossings(helper.getLevel(), java.util.List.of(at)) == 1, "The solver no longer sees the crossing it must keep few");
+		}).thenSucceed();
+	}
+
+	/**
 	 * Every radio in the house and the antennas its coax reaches (2026-11-14, the maintainer: Jade said two antennas on
 	 * a radio with only black coax to an eggbeater; grey coax in the same bundle and passthrough went to a VHF dipole).
 	 * Logged for now, house positions.
