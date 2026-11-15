@@ -42,6 +42,8 @@ public record SManpackPacket(String action, float value) implements CustomPacket
 	public void handle(IPayloadContext context) {
 		context.enqueueWork(() -> {
 			Player player = context.player();
+			if(!Float.isFinite(value))
+				return; // NaN slips through every clamp (2026-11-15).
 			ItemStack stack = ManpackRadio.find(player);
 			if(stack.isEmpty())
 				return;

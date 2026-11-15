@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 public class AntennaNetworkCommands {
-    public static final LiteralArgumentBuilder<CommandSourceStack> BUILDER = Commands.literal("antenna")
+    public static final LiteralArgumentBuilder<CommandSourceStack> BUILDER = Commands.literal("antenna").requires(source -> source.hasPermission(2)) // Lists every antenna's place: admins only
             .executes(command -> listAntennas(command.getSource()));
 
     private static String toStringEvenNull(Object o) {

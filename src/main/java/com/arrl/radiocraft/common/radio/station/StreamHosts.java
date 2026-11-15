@@ -40,6 +40,13 @@ public final class StreamHosts {
 		return uri;
 	}
 
+	private static boolean allZero(byte[] b, int from, int to) {
+		for(int i = from; i < to; i++)
+			if(b[i] != 0)
+				return false;
+		return true;
+	}
+
 	/** True if the server may connect to {@code address}. */
 	public static boolean allowed(InetAddress address, boolean allowPrivate) {
 		if(address.isMulticastAddress() || address.isAnyLocalAddress())
@@ -58,6 +65,23 @@ public final class StreamHosts {
 		}
 		if(address instanceof Inet6Address && (b[0] & 0xFE) == 0xFC)
 			return false; // Unique local, fc00::/7.
+		if(address instanceof Inet6Address) { // An IPv4 address carried inside IPv6 (2026-11-15): judged as that address.
+			int from = -1;
+			if((b[0] & 0xFF) == 0x20 && (b[1] & 0xFF) == 0x02)
+				from = 2; // 6to4, 2002::/16.
+			else if(b[0] == 0 && (b[1] & 0xFF) == 0x64 && (b[2] & 0xFF) == 0xFF && (b[3] & 0xFF) == 0x9B && allZero(b, 4, 12))
+				from = 12; // NAT64, 64:ff9b::/96.
+			else if(allZero(b, 0, 10) && ((b[10] & 0xFF) == 0xFF && (b[11] & 0xFF) == 0xFF || allZero(b, 10, 12)))
+				from = 12; // IPv4-mapped ::ffff:0:0/96, or IPv4-compatible ::/96.
+			if(from >= 0) {
+				try {
+					return allowed(InetAddress.getByAddress(java.util.Arrays.copyOfRange(b, from, from + 4)), false);
+				}
+				catch(java.net.UnknownHostException e) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 }

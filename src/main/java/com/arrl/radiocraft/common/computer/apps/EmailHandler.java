@@ -42,6 +42,8 @@ import java.util.Map;
 public final class EmailHandler implements ComputerAppHandler {
 
 	public static final int MAX_SUBJECT = 40, MAX_BODY = 600;
+	/** Mailboxes one computer keeps. */
+	static final int MAX_USERS = 32;
 	/** Messages one user's inbox keeps (the oldest go first). */
 	public static final int INBOX = 60;
 	/** Messages one computer's outbox holds. */
@@ -123,6 +125,9 @@ public final class EmailHandler implements ComputerAppHandler {
 
 		/** Puts {@code mail} in {@code user}'s inbox here, under a new id. */
 		void deliver(String user, Mail mail) {
+			String key = user.toLowerCase(Locale.ROOT);
+			if(!inboxes.containsKey(key) && inboxes.size() >= MAX_USERS) // A computer keeps so many mailboxes; the oldest goes (2026-11-15).
+				inboxes.remove(inboxes.keySet().iterator().next());
 			List<Mail> box = inbox(user);
 			box.add(new Mail(nextId++, mail.from(), mail.to(), mail.subject(), mail.body(), mail.sent(), mail.at(), false));
 			while(box.size() > INBOX)

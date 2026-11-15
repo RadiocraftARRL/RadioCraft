@@ -75,6 +75,15 @@ class InternetStreamPartsTest {
 	}
 
 	@Test
+	void privateHostsInsideIpv6AreRefused() throws IOException {
+		// 6to4, NAT64 and IPv4-compatible forms of 127.0.0.1, 10.0.0.1 and 169.254.169.254.
+		for(String host : new String[] {"2002:7f00:1::1", "2002:a00:1::", "64:ff9b::a9fe:a9fe", "64:ff9b::7f00:1", "::a00:1"})
+			assertFalse(StreamHosts.allowed(InetAddress.getByName(host), false), host);
+		assertTrue(StreamHosts.allowed(InetAddress.getByName("2002:808:808::1"), false), "6to4 of a public address");
+		assertTrue(StreamHosts.allowed(InetAddress.getByName("64:ff9b::808:808"), false), "NAT64 of a public address");
+	}
+
+	@Test
 	void downmixAndResampleCarryOnAcrossChunks() {
 		float[] mono = StreamResampler.downmix(new short[] {1000, 3000, -2000, 2000}, 2, 2);
 		assertEquals(2000 / 32768.0F, mono[0], 1e-6);

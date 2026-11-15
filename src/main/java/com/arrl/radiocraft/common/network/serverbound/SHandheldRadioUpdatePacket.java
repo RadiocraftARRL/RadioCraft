@@ -114,10 +114,12 @@ public class SHandheldRadioUpdatePacket implements CustomPacketPayload {
                 return;
             }
 
+            if(!Float.isFinite(gain) || !Float.isFinite(micGain) || !Float.isFinite(frequencyHertz) || !Float.isFinite(ctcssTone) || !Float.isFinite(rxTone))
+                return; // NaN slips through every clamp (2026-11-15): a real client never sends one.
             cap.setPowered(this.powered);
             cap.setPTTDown(this.ptt);
-            cap.setGain(this.gain);
-            cap.setMicGain(this.micGain);
+            cap.setGain(Math.max(0.0F, Math.min(com.arrl.radiocraft.RadiocraftServerConfig.HANDHELD_MAX_GAIN.get().floatValue(), this.gain)));
+            cap.setMicGain(Math.max(0.0F, Math.min(com.arrl.radiocraft.RadiocraftServerConfig.HANDHELD_MAX_MIC_GAIN.get().floatValue(), this.micGain)));
             if(com.arrl.radiocraft.common.items.CommercialHandheldItem.is(stack)) {
                 // Channelized: its frequency, tones and offset come only from its programming, never from a client.
                 com.arrl.radiocraft.common.items.CommercialHandheldItem.syncState(stack);

@@ -33,6 +33,9 @@ import java.util.TreeMap;
  */
 public final class ScadaHandler implements ComputerAppHandler {
 
+	/** The longest rule line and the most rules a master keeps. */
+	static final int MAX_RULE_LENGTH = 120, MAX_RULES = 64;
+
 	@Nullable
 	public static ScadaMasterBlockEntity master(ComputerContext context) {
 		List<ScadaMasterBlockEntity> found = context.linked(ScadaMasterBlockEntity.class);
@@ -58,7 +61,9 @@ public final class ScadaHandler implements ComputerAppHandler {
 			case "add" -> {
 				String text = data.getString("text").trim();
 				ScadaRules.Parsed parsed = ScadaRules.parse(List.of(text));
-				if(!parsed.errors().isEmpty() || (parsed.rules().isEmpty() && parsed.pollSeconds() == 0)) {
+				// A line no longer than a screen row, and a list that fits the master's screen packet (2026-11-15).
+				if(text.length() > MAX_RULE_LENGTH || master.ruleText.size() >= MAX_RULES
+						|| !parsed.errors().isEmpty() || (parsed.rules().isEmpty() && parsed.pollSeconds() == 0)) {
 					reply.error("scada_bad_rule");
 					return;
 				}

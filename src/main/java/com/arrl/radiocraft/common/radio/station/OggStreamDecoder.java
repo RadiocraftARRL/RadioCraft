@@ -86,6 +86,8 @@ public final class OggStreamDecoder {
 					if(headers < 3) {
 						if(info.synthesis_headerin(comment, packet) < 0)
 							throw new IOException("not Vorbis audio");
+						if(info.channels < 1 || info.channels > 2 || info.rate < 8_000 || info.rate > 96_000)
+							throw new IOException("unsupported Vorbis format"); // The header's numbers size every buffer: never trusted (2026-11-15).
 						if(++headers == 3) {
 							// JOrbis keeps the nominal bitrate package-private: the bytes-per-second cap on the connection limits it instead.
 							dsp = new DspState();

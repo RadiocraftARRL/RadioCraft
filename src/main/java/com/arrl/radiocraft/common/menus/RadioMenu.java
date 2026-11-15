@@ -65,7 +65,7 @@ public class RadioMenu<T extends RadioBlockEntity> extends AbstractContainerMenu
 
 	@Override
 	public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
-		return null;
+		return ItemStack.EMPTY;
 	}
 
 	@Override

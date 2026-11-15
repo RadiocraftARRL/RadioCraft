@@ -670,8 +670,12 @@ public final class ComputerServer {
 			return;
 		}
 		ScannerBlockEntity scanner = scanner(context, reply);
-		if(scanner != null)
-			printed(scanner.printBook(title, context.player().getGameProfile().getName(), pages), reply);
+		if(scanner == null)
+			return;
+		List<String> cut = new ArrayList<>(pages.size()); // No page longer than a page holds (2026-11-15): the client sends them.
+		for(String page : pages)
+			cut.add(page.length() > BookPages.PAGE_CHARS ? page.substring(0, BookPages.PAGE_CHARS) : page);
+		printed(scanner.printBook(title, context.player().getGameProfile().getName(), cut), reply);
 	}
 
 	private static void printed(ScannerBlockEntity.Result result, ComputerReply reply) {
