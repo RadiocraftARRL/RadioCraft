@@ -18,7 +18,7 @@ someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
   Broadcast Receiver (none yet, 2026-11-13); the 1.13 batch recipes (fire alarm, SCADA, keyer, amp, tracker, Computer
   Redstone) are in the provider (check: maybe approved in the 2026-11-13 review, see RadiocraftRecipesProvider.java)
 
-- [ ] Performance leftovers from the 2026-11-15 review (build/agy-notes/performance.md; done: CRT textures reused, bundle
+- [ ] 1.14 is the performance release: plan in doc/Plan-1.14.md (draft, for review). Performance leftovers from the 2026-11-15 review (build/agy-notes/performance.md; done: CRT textures reused, bundle
   layouts worked out once a block, wire caches capped, audio not copied for out-of-reach antennas, CRT wall poll):
   wire blockstates (52 wire blocks x 3,840 states, about 200,000; measured 2026-11-15: 82% of all blockstates, roughly 170-340 MB of an 850 MB title-screen heap without FerriteCore; merging hug/climb/ceiling only saves 13%, since
   ceiling wires hug and climb too; the big levers are the 48 dyed copies and a stored climb: maintainer to decide), the bundle solver re-reading every node per trial flip, and
