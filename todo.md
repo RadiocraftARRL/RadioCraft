@@ -20,8 +20,8 @@ someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
 
 - [ ] Performance leftovers from the 2026-11-15 review (build/agy-notes/performance.md; done: CRT textures reused, bundle
   layouts worked out once a block, wire caches capped, audio not copied for out-of-reach antennas, CRT wall poll):
-  wire blockstates (52 wire blocks x 3,840 states, about 200,000; one MOUNT property for hug/climb/ceiling would halve
-  it but changes saved wires: maintainer to decide), the bundle solver re-reading every node per trial flip, and
+  wire blockstates (52 wire blocks x 3,840 states, about 200,000; merging hug/climb/ceiling only saves 13%, since
+  ceiling wires hug and climb too; the big levers are the 48 dyed copies and a stored climb: maintainer to decide), the bundle solver re-reading every node per trial flip, and
   radios working out their SWR every tick
 
 ### Radios & bands
