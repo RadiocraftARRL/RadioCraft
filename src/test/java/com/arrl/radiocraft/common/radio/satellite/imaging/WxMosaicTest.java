@@ -127,4 +127,20 @@ class WxMosaicTest {
 		assertEquals(40, back.stationX());
 		assertArrayEquals(mosaic.view(0, 0, 50, 50, 16, -1), back.view(0, 0, 50, 50, 16, -1));
 	}
+
+	@Test
+	void linesOfOnePassJoinOneLayerHoweverTheyArrive() {
+		WxMosaic mosaic = new WxMosaic(0, 0);
+		WxMosaic.Pass a = mosaic.join("CS-1", -1, 100L, 400L);
+		mosaic.line(a, line((byte)5), 0, 0, 1, 0, 100L);
+		assertSame(a, mosaic.join("CS-1", -1, 300L, 400L), "the same pass, within the gap");
+		assertNotSame(a, mosaic.join("CS-2", -1, 300L, 400L), "another satellite is another layer");
+		WxMosaic.Pass later = mosaic.join("CS-1", -1, 2000L, 400L);
+		assertNotSame(a, later, "past the gap it is a new pass");
+		WxMosaic.Pass f1 = mosaic.join("GEO", 1, 2000L, 400L), f2 = mosaic.join("GEO", 2, 2010L, 400L);
+		assertNotSame(f1, f2, "each geostationary frame is its own layer");
+		assertSame(f2, mosaic.join("GEO", 2, 2020L, 400L));
+		WxMosaic back = WxMosaic.load(mosaic.save());
+		assertEquals(2, back.passes().getLast().frame(), "the frame is saved");
+	}
 }

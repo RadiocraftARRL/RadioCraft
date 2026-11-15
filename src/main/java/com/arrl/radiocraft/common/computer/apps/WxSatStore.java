@@ -44,6 +44,20 @@ public final class WxSatStore extends SavedData {
 		return session * 1_000_003L + mosaic.version();
 	}
 
+	private boolean lanBlocked;
+
+	/** True when WXSAT's "Block LAN sync" is set (2026-11-15, off by default): it neither shares its lines nor takes others'. */
+	public boolean lanBlocked() {
+		return lanBlocked;
+	}
+
+	public void lanBlocked(boolean blocked) {
+		if(blocked != lanBlocked) {
+			lanBlocked = blocked;
+			setDirty();
+		}
+	}
+
 	/** Empties it (WXSAT's "clear"). */
 	public void clear() {
 		mosaic = new WxMosaic(mosaic.stationX(), mosaic.stationZ());
@@ -53,10 +67,13 @@ public final class WxSatStore extends SavedData {
 	@Override
 	public @NotNull CompoundTag save(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
 		tag.put("mosaic", mosaic.save());
+		tag.putBoolean("lan_block", lanBlocked);
 		return tag;
 	}
 
 	public static WxSatStore load(CompoundTag tag, HolderLookup.Provider registries) {
-		return new WxSatStore(WxMosaic.load(tag.getCompound("mosaic")));
+		WxSatStore store = new WxSatStore(WxMosaic.load(tag.getCompound("mosaic")));
+		store.lanBlocked = tag.getBoolean("lan_block");
+		return store;
 	}
 }

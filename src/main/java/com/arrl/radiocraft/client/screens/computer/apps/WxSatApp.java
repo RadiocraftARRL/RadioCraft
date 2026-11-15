@@ -79,7 +79,13 @@ public final class WxSatApp extends DosApp {
 
 	public WxSatApp(ComputerSession session, ComputerApp app) {
 		super(session, app);
-		setMenuBar(new DosMenuBar(List.of(
+		setMenuBar(menuBar());
+	}
+
+	/** The menu bar; rebuilt when "Block LAN sync" changes, so its tick shows (2026-11-15). */
+	private DosMenuBar menuBar() {
+		boolean blocked = status != null && status.getBoolean("lan_block");
+		return new DosMenuBar(List.of(
 				new DosMenuBar.Menu(Dos.tr("wx.menu.file"), List.of(
 						new DosMenuBar.Item(Dos.tr("wx.menu.save"), "F3", this::save),
 						new DosMenuBar.Item(Dos.tr("wx.menu.print"), "F4", this::print),
@@ -92,7 +98,20 @@ public final class WxSatApp extends DosApp {
 						new DosMenuBar.Item(Dos.tr("wx.menu.loop"), "F7", () -> show(View.LOOP)),
 						new DosMenuBar.Item(Dos.tr("wx.menu.zoom_out"), "F8", () -> zoom(1)),
 						new DosMenuBar.Item(Dos.tr("wx.menu.zoom_in"), "+", () -> zoom(-1)),
-						new DosMenuBar.Item(Dos.tr("wx.menu.home"), "Home", this::home))))));
+						new DosMenuBar.Item(Dos.tr("wx.menu.home"), "Home", this::home))),
+				new DosMenuBar.Menu(Dos.tr("wx.menu.options"), List.of(
+						new DosMenuBar.Item((blocked ? "[x] " : "[ ] ") + Dos.tr("wx.menu.lan_block"), "L", this::toggleLanBlock)))));
+	}
+
+	/** "Block LAN sync": this computer stops sharing its pictures with WXSAT computers on its LAN and taking theirs. */
+	private void toggleLanBlock() {
+		CompoundTag data = new CompoundTag();
+		data.putBoolean("on", status == null || !status.getBoolean("lan_block"));
+		session.app(app, "lan_block", data, response -> {
+			if(response.ok())
+				session.message(Dos.tr(data.getBoolean("on") ? "wx.lan_blocked" : "wx.lan_unblocked"), false);
+			refresh();
+		});
 	}
 
 	@Override
@@ -143,7 +162,10 @@ public final class WxSatApp extends DosApp {
 		session.app(app, "status", new CompoundTag(), response -> {
 			if(!response.ok())
 				return;
+			boolean wasBlocked = status != null && status.getBoolean("lan_block");
 			status = response.data();
+			if(wasBlocked != status.getBoolean("lan_block"))
+				setMenuBar(menuBar());
 			if(!centred) {
 				centreX = status.getInt("sx");
 				centreZ = status.getInt("sz");
@@ -325,6 +347,7 @@ public final class WxSatApp extends DosApp {
 			case GLFW.GLFW_KEY_F5 -> show(View.LIVE);
 			case GLFW.GLFW_KEY_F6 -> show(View.MOSAIC);
 			case GLFW.GLFW_KEY_F7 -> show(View.LOOP);
+			case GLFW.GLFW_KEY_L -> toggleLanBlock();
 			case GLFW.GLFW_KEY_F8 -> zoom(zoom == ZOOMS.length - 1 ? -ZOOMS.length : 1);
 			case GLFW.GLFW_KEY_EQUAL, GLFW.GLFW_KEY_KP_ADD -> zoom(-1);
 			case GLFW.GLFW_KEY_MINUS, GLFW.GLFW_KEY_KP_SUBTRACT -> zoom(1);
@@ -503,6 +526,10 @@ public final class WxSatApp extends DosApp {
 		else if(st.getInt("lines") > 0)
 			g.put(c, r++, Dos.fit(Dos.tr("wx.lines", st.getInt("lines"), st.getInt("lost")), w), DosColours.TEXT_FG, bg);
 		g.put(c, r++, Dos.fit(Dos.tr("wx.stored", st.getInt("passes"), st.getInt("tiles")), w), DosColours.TEXT_FG, bg);
+		if(st.getBoolean("lan_block"))
+			g.put(c, r++, Dos.fit(Dos.tr("wx.lan_off"), w), DosColours.DIM, bg);
+		else if(st.getInt("lan") > 0)
+			g.put(c, r++, Dos.fit(Dos.tr("wx.lan_on", st.getInt("lan")), w), DosColours.LIGHT_CYAN, bg);
 		r++;
 		g.put(c, r++, Dos.fit(Dos.tr("wx.imagers"), w), DosColours.YELLOW, bg);
 		ListTag imagers = st.getList("imagers", Tag.TAG_COMPOUND);

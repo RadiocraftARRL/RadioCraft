@@ -178,7 +178,34 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	private static boolean supported(BlockGetter level, BlockPos pos, boolean ceiling) {
 		Direction toSurface = ceiling ? Direction.UP : Direction.DOWN;
 		BlockPos surface = pos.relative(toSurface);
-		return level.getBlockState(surface).isFaceSturdy(level, surface, toSurface.getOpposite());
+		return level.getBlockState(surface).isFaceSturdy(level, surface, toSurface.getOpposite())
+				|| !ceiling && stepUnder(level, pos) != null; // A step of a staircase holds it up (2026-11-15).
+	}
+
+	/**
+	 * Whether the block at {@code stairPos}, in direction {@code dir} from a floor wire, is a step it climbs (2026-11-15,
+	 * the maintainer: "make wires and bundles cleanly run up stairs"): a straight, right-way-up stair rising away from
+	 * the wire. Its face towards the wire is only half a block high, so it is no wall to run up; the cable follows the
+	 * step instead ({@link CableRoutes}: up the riser, along the tread, up the next riser) to the wire on top.
+	 */
+	public static boolean isStepUp(BlockGetter level, BlockPos stairPos, Direction dir) {
+		if(!dir.getAxis().isHorizontal())
+			return false;
+		BlockState stair = level.getBlockState(stairPos);
+		return stair.getBlock() instanceof net.minecraft.world.level.block.StairBlock
+				&& stair.getValue(net.minecraft.world.level.block.StairBlock.HALF) == net.minecraft.world.level.block.state.properties.Half.BOTTOM
+				&& stair.getValue(net.minecraft.world.level.block.StairBlock.SHAPE) == net.minecraft.world.level.block.state.properties.StairsShape.STRAIGHT
+				&& stair.getValue(net.minecraft.world.level.block.StairBlock.FACING) == dir;
+	}
+
+	/** The way the step under a floor wire at {@code pos} rises ({@link #isStepUp}), or null if it is not on one. */
+	@Nullable
+	public static Direction stepUnder(BlockGetter level, BlockPos pos) {
+		BlockState below = level.getBlockState(pos.below());
+		if(!(below.getBlock() instanceof net.minecraft.world.level.block.StairBlock))
+			return null;
+		Direction rise = below.getValue(net.minecraft.world.level.block.StairBlock.FACING);
+		return isStepUp(level, pos.below(), rise) ? rise : null;
 	}
 
 	/**
@@ -914,7 +941,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	 */
 	public boolean canClimb(BlockGetter level, BlockPos pos, Direction direction, boolean ceiling) {
 		BlockPos wall = pos.relative(direction);
-		if(!isWall(level, wall, direction.getOpposite()))
+		if(!isWall(level, wall, direction.getOpposite()) && (ceiling || !isStepUp(level, wall, direction)))
 			return false;
 		BlockPos targetPos = above(wall, ceiling);
 		BlockState target = sameKindState(level, targetPos);

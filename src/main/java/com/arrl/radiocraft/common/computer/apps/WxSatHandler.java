@@ -6,6 +6,7 @@ import com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity;
 import com.arrl.radiocraft.common.computer.ComputerAppHandler;
 import com.arrl.radiocraft.common.computer.ComputerAppState;
 import com.arrl.radiocraft.common.computer.ComputerApps;
+import com.arrl.radiocraft.common.computer.ComputerNetwork;
 import com.arrl.radiocraft.common.computer.ComputerContext;
 import com.arrl.radiocraft.common.computer.ComputerReply;
 import com.arrl.radiocraft.common.computer.ComputerStorage;
@@ -203,7 +204,6 @@ public final class WxSatHandler implements ComputerAppHandler {
 			state.lost = 0;
 			state.frame = geometry.frame();
 			state.frameDone = false;
-			mosaic.begin(packet.from(), now);
 		}
 		else
 			for(int s = state.lastSeq + 1; s < geometry.seq() && s - state.lastSeq <= MAX_GAP; s++) { // Lines that never came: gaps.
@@ -221,9 +221,35 @@ public final class WxSatHandler implements ComputerAppHandler {
 		state.lastAt = now;
 		state.quality = quality;
 		state.version++;
-		if(line != null)
-			mosaic.line(packet.from(), line, geometry.cx(), geometry.cz(), geometry.rx(), geometry.rz(), now);
+		WxMosaic.Pass pass = mosaic.join(packet.from(), geometry.frame(), now, PASS_GAP_TICKS); // A peer on the LAN may have begun this pass's layer already.
+		if(line != null) {
+			mosaic.line(pass, line, geometry.cx(), geometry.cz(), geometry.rx(), geometry.rz(), now);
+			share(computer, store, packet.from(), geometry, line, now);
+		}
 		store.setDirty();
+	}
+
+	/**
+	 * Shares a line this computer copied with the WXSAT computers on its LAN (2026-11-15, the maintainer: "WXSAT maps can
+	 * be merged over LAN"), into the same pass's layer in each mosaic ({@link WxMosaic#join}), so every computer on the
+	 * network shows the pictures any of them hears. Not passed on further (each copy comes from the computer that heard
+	 * it). Neither end may have "Block LAN sync" set ({@link WxSatStore#lanBlocked}, off by default).
+	 */
+	static void share(RadioComputerBlockEntity computer, WxSatStore store, String satellite, AptLine.Geometry geometry, byte[] line, long now) {
+		if(store.lanBlocked())
+			return;
+		for(ComputerNetwork.Peer peer : ComputerNetwork.peers(computer)) {
+			RadioComputerBlockEntity other = peer.computer();
+			if(!peer.link().up() || other.isRemoved() || !other.isInstalled(ComputerApps.WXSAT))
+				continue;
+			WxSatStore theirs = store(other);
+			if(theirs.lanBlocked())
+				continue;
+			WxMosaic mosaic = theirs.mosaic();
+			mosaic.station(other.getBlockPos().getX(), other.getBlockPos().getZ());
+			mosaic.line(mosaic.join(satellite, geometry.frame(), now, PASS_GAP_TICKS), line, geometry.cx(), geometry.cz(), geometry.rx(), geometry.rz(), now);
+			theirs.setDirty();
+		}
 	}
 
 	@Override
@@ -234,12 +260,27 @@ public final class WxSatHandler implements ComputerAppHandler {
 			case "view" -> reply.ok(view(context, data));
 			case "save" -> save(context, data, reply);
 			case "print" -> print(context, data, reply);
+			case "lan_block" -> {
+				store(context.computer()).lanBlocked(data.getBoolean("on"));
+				reply.ok();
+			}
 			case "clear" -> {
 				store(context.computer()).clear();
 				reply.ok();
 			}
 			default -> reply.error("unknown_request", action);
 		}
+	}
+
+	/** How many WXSAT computers on the LAN share with this one (0 while either blocks it). */
+	static int lanSharers(RadioComputerBlockEntity computer, WxSatStore store) {
+		if(store.lanBlocked())
+			return 0;
+		int n = 0;
+		for(ComputerNetwork.Peer peer : ComputerNetwork.peers(computer))
+			if(peer.link().up() && !peer.computer().isRemoved() && peer.computer().isInstalled(ComputerApps.WXSAT) && !store(peer.computer()).lanBlocked())
+				n++;
+		return n;
 	}
 
 	private static CompoundTag status(ComputerContext context) {
@@ -263,6 +304,8 @@ public final class WxSatHandler implements ComputerAppHandler {
 		out.putLong("v", store.version());
 		out.putInt("passes", store.mosaic().passCount());
 		out.putInt("tiles", store.mosaic().tileCount());
+		out.putBoolean("lan_block", store.lanBlocked());
+		out.putInt("lan", lanSharers(context.computer(), store));
 		BlockPos at = context.pos();
 		out.putInt("sx", at.getX());
 		out.putInt("sz", at.getZ());

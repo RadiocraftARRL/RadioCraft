@@ -3969,3 +3969,10 @@ From the playtest: a satellite on 164.4875 could not be tuned (20 kHz steps; 164
 - [ ] Tape player in QUEUE mode: a hopper on top feeds tapes into the queue (QUEUE n/9), each plays in turn with a short break, played tapes drop into a hopper below (OUT n/9); a comparator reads the queue. Right-clicking a tape on a playing QUEUE player queues it. Breaking it drops the playing tape, the queue and the out tray.
 - [ ] A tape player touching or data-wired to an FM transmitter no longer keys it (the station pulls it); it still keys other radios.
 
+
+## WXSAT over the LAN, CRT waiting message, cable up stairs (added 2026-11-15)
+
+- [ ] Two computers with WXSAT on one LAN (touching, data wire or microwave), only one with a radio: after a pass, the other's mosaic has the same pictures, as one pass (not two). Its panel says "LAN: sharing with 1 computer(s)".
+- [ ] WXSAT Options > Block LAN sync (or L): the menu item shows [x], the panel says "LAN sync blocked"; that computer neither gets the other's passes nor gives its own. Off again, new passes are shared (old ones are not copied over).
+- [ ] An External CRT Monitor on a computer with no pictures yet (or a fresh world) shows WAITING FOR SATELLITE PASS in phosphor green, centred, larger on a wall of monitors and lined up across them; it goes once a picture comes.
+- [ ] Cable up a staircase (straight oak/stone stairs, the right way up): lay wire from the floor up each stair and onto a landing. Each step shows a riser and a tread at right angles hugging the stairs, nothing floating over the treads, and Jade shows it as one run. Same with a power + data bundle. Corner stairs and upside-down stairs keep the old look.

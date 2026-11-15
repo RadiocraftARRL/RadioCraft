@@ -10,6 +10,7 @@ import com.arrl.radiocraft.common.computer.ComputerApps;
 import com.arrl.radiocraft.common.computer.ComputerReply;
 import com.arrl.radiocraft.common.computer.ComputerServer;
 import com.arrl.radiocraft.common.computer.apps.WxSatHandler;
+import com.arrl.radiocraft.common.computer.apps.WxSatStore;
 import com.arrl.radiocraft.common.init.RadiocraftBlocks;
 import com.arrl.radiocraft.common.radio.satellite.Satellite;
 import com.arrl.radiocraft.common.radio.satellite.SatelliteMode;
@@ -244,6 +245,44 @@ public class WxSatGameTests {
 					helper.assertTrue(commercial.mode() == SatelliteMode.IMAGING, "the mode is " + commercial.mode());
 					helper.assertTrue("sat_no_modes".equals(sattrack(computer, owner, commercial, SatelliteMode.SSTV).getString("error")), "a commercial one took SSTV");
 					helper.assertFalse(sattrack(computer, owner, commercial, SatelliteMode.REPEATER).contains("error"), "could not switch back to repeater");
+				})
+				.thenSucceed();
+	}
+
+	/**
+	 * WXSAT over the LAN (2026-11-15, the maintainer: "WXSAT maps can be merged over LAN"): a second computer touching
+	 * the station's, with no radio of its own, gets the pass in its mosaic too, in one layer; a third with "Block LAN
+	 * sync" set, touching the second, gets nothing (and the second does not pass lines on).
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 300, batch = BATCH)
+	public static void lanComputersShareThePictures(GameTestHelper helper) {
+		GameTestUtil.radioWithJPole(helper, RADIO);
+		RadioComputerBlockEntity station = computer(helper, COMPUTER);
+		RadioComputerBlockEntity office = computer(helper, COMPUTER.east());
+		RadioComputerBlockEntity blocked = computer(helper, COMPUTER.east(2));
+		Satellite satellite = imager(helper, 4402L);
+		FakePlayer player = FakePlayerFactory.get(helper.getLevel(), new GameProfile(OPERATOR, "gametest"));
+		BlockPos stand = helper.absolutePos(COMPUTER.south(2));
+		player.moveTo(stand.getX() + 0.5D, stand.getY(), stand.getZ() + 0.5D);
+		helper.startSequence()
+				.thenExecute(() -> {
+					CompoundTag on = new CompoundTag();
+					on.putBoolean("on", true);
+					app(blocked, player, "lan_block", on);
+					helper.assertTrue(WxSatHandler.store(blocked).lanBlocked(), "Block LAN sync did not set");
+				})
+				.thenWaitUntil(() -> antennaUp(helper))
+				.thenExecute(() -> radioOn(helper, satellite.downlinkHz))
+				.thenWaitUntil(() -> helper.assertTrue(WxSatHandler.state(station).received() >= 20, "lines recorded: " + WxSatHandler.state(station).lineCount()))
+				.thenExecute(() -> {
+					helper.assertTrue(WxSatHandler.state(office).received() == 0, "the office computer hears the radio itself: the test proves nothing");
+					WxSatStore theirs = WxSatHandler.store(office);
+					helper.assertTrue(theirs.mosaic().passCount() == 1 && theirs.mosaic().tileCount() > 0,
+							"the office's mosaic did not get the pass: " + theirs.mosaic().passCount() + " passes, " + theirs.mosaic().tileCount() + " tiles");
+					helper.assertTrue(WxSatHandler.store(station).mosaic().passCount() == 1, "the station's own pass split in two");
+					helper.assertTrue(WxSatHandler.store(blocked).mosaic().tileCount() == 0, "a computer blocking LAN sync got pictures");
+					CompoundTag status = app(office, player, "status", new CompoundTag()).getCompound("data");
+					helper.assertTrue(status.getInt("lan") == 1 && !status.getBoolean("lan_block"), "office status: lan " + status.getInt("lan"));
 				})
 				.thenSucceed();
 	}

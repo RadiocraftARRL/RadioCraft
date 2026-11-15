@@ -43,6 +43,8 @@ public final class WxMosaic {
 		private final long started;
 		private long last;
 		private int lines;
+		/** The geostationary frame it holds, or -1 for an orbiting pass (2026-11-15, to join a frame shared over the LAN). */
+		private int frame = -1;
 		private final Map<Long, byte[]> tiles = new HashMap<>();
 
 		Pass(String satellite, long started) {
@@ -72,6 +74,10 @@ public final class WxMosaic {
 
 		public int tileCount() {
 			return tiles.size();
+		}
+
+		public int frame() {
+			return frame;
 		}
 	}
 
@@ -166,6 +172,23 @@ public final class WxMosaic {
 		return pass;
 	}
 
+	/**
+	 * The layer for a pass of {@code satellite} (geostationary {@code frame}, -1 for an orbiting pass) at {@code time}:
+	 * the newest layer of the same satellite and frame if its last line came within {@code gap} ticks, else a new one
+	 * (2026-11-15). Two computers on a LAN hearing the same pass both put their lines into one layer this way, however
+	 * the lines arrive, instead of each starting its own.
+	 */
+	public Pass join(String satellite, int frame, long time, long gap) {
+		for(int i = passes.size() - 1; i >= 0; i--) {
+			Pass pass = passes.get(i);
+			if(pass.satellite.equals(satellite) && pass.frame == frame && time - pass.last <= gap)
+				return pass;
+		}
+		Pass pass = begin(satellite, time);
+		pass.frame = frame;
+		return pass;
+	}
+
 	/** Drops passes whose last line is older than {@link #MAX_AGE_TICKS} at {@code now}. */
 	public void age(long now) {
 		if(passes.removeIf(pass -> now - pass.last > MAX_AGE_TICKS))
@@ -182,6 +205,13 @@ public final class WxMosaic {
 		Pass pass = current();
 		if(pass == null)
 			pass = begin(satellite, time);
+		line(pass, pixels, cx, cz, rx, rz, time);
+	}
+
+	/** Stitches a scan line into {@code pass} (one of {@link #passes()}, as {@link #join} gives), as {@link #line}. */
+	public void line(Pass pass, byte[] pixels, double cx, double cz, double rx, double rz, long time) {
+		if(!passes.contains(pass))
+			return; // Aged or pushed out meanwhile.
 		double[] along = AptSwath.along(rx, rz);
 		double quarter = AptSwath.BLOCKS_PER_PIXEL / 4.0D;
 		int count = Math.min(pixels.length, AptSwath.PIXELS);
@@ -304,6 +334,7 @@ public final class WxMosaic {
 			p.putLong("started", pass.started);
 			p.putLong("last", pass.last);
 			p.putInt("lines", pass.lines);
+			p.putInt("frame", pass.frame);
 			ListTag tiles = new ListTag();
 			for(Map.Entry<Long, byte[]> e : pass.tiles.entrySet()) {
 				CompoundTag t = new CompoundTag();
@@ -326,6 +357,7 @@ public final class WxMosaic {
 			Pass pass = new Pass(p.getString("sat"), p.getLong("started"));
 			pass.last = p.getLong("last");
 			pass.lines = p.getInt("lines");
+			pass.frame = p.contains("frame") ? p.getInt("frame") : -1;
 			ListTag tiles = p.getList("tiles", Tag.TAG_COMPOUND);
 			for(int j = 0; j < tiles.size(); j++) {
 				CompoundTag t = tiles.getCompound(j);

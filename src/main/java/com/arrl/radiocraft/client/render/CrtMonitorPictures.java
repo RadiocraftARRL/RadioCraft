@@ -31,6 +31,8 @@ public final class CrtMonitorPictures {
 	private static final int MAX = 32;
 	/** "No data": the tube's own dark green-black, ABGR. */
 	private static final int DARK = 0xFF0A0D0A;
+	/** The words on an empty screen: phosphor green, ABGR. */
+	private static final int WORDS = 0xFF60E070;
 	/** How long each LOOP frame shows, ms. */
 	public static final long LOOP_FRAME_MS = 1000L;
 
@@ -142,11 +144,20 @@ public final class CrtMonitorPictures {
 		if(image == null)
 			return;
 		PhotoPalette palette = MapPalettes.vanilla();
+		boolean empty = true;
 		for(int y = 0; y < height; y++)
 			for(int x = 0; x < width; x++) {
 				byte id = pixels[y * width + x];
+				if(id != 0)
+					empty = false;
 				int rgb = id == 0 ? -1 : palette.rgbOf(id);
 				image.setPixelRGBA(x, y, rgb < 0 ? DARK : 0xFF000000 | (rgb & 0xFF) << 16 | rgb & 0xFF00 | rgb >> 16 & 0xFF);
 			}
+		if(empty) { // Nothing received here yet (2026-11-15): say so on the tube rather than show it blank.
+			boolean[] words = CrtText.mask(width, height, "WAITING FOR", "SATELLITE PASS");
+			for(int i = 0; i < words.length; i++)
+				if(words[i])
+					image.setPixelRGBA(i % width, i / width, WORDS);
+		}
 	}
 }

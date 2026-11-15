@@ -110,4 +110,50 @@ public class CableShapesGameTests {
 			helper.assertTrue(!atTheBack.getAsBoolean(), "With stone behind the radio the cable still goes round");
 		}).thenSucceed();
 	}
+
+	/**
+	 * Cable up a staircase (2026-11-15, the maintainer: "make wires and bundles cleanly run up stairs"): a lone power
+	 * wire and a power + data bundle from the floor, up three stairs rising north, onto a landing. Each wire climbs the
+	 * stair in front of it to the wire on top, so the run is linked end to end; it follows the steps at right angles
+	 * (CableRoutes#steps) and every centre line meets the next with nothing left hanging.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY)
+	public static void cableRunsCleanlyUpStairs(GameTestHelper helper) {
+		net.minecraft.world.level.block.state.BlockState stair = net.minecraft.world.level.block.Blocks.OAK_STAIRS.defaultBlockState()
+				.setValue(net.minecraft.world.level.block.StairBlock.FACING, net.minecraft.core.Direction.NORTH);
+		for(int x : new int[] { 2, 5 }) {
+			helper.setBlock(new BlockPos(x, 2, 6), stair);
+			helper.setBlock(new BlockPos(x, 3, 5), stair);
+			helper.setBlock(new BlockPos(x, 4, 4), stair);
+			helper.setBlock(new BlockPos(x, 2, 5), net.minecraft.world.level.block.Blocks.STONE);
+			helper.setBlock(new BlockPos(x, 2, 4), net.minecraft.world.level.block.Blocks.STONE);
+			helper.setBlock(new BlockPos(x, 3, 4), net.minecraft.world.level.block.Blocks.STONE);
+			for(int y = 2; y <= 4; y++)
+				for(int z = 2; z <= 3; z++)
+					helper.setBlock(new BlockPos(x, y, z), net.minecraft.world.level.block.Blocks.STONE); // The landing.
+		}
+		// Top down, so each wire sees the one it climbs to when it is placed.
+		BlockPos[] run = { new BlockPos(0, 5, 2), new BlockPos(0, 5, 3), new BlockPos(0, 5, 4), new BlockPos(0, 4, 5), new BlockPos(0, 3, 6), new BlockPos(0, 2, 7), new BlockPos(0, 2, 8) };
+		for(BlockPos at : run) {
+			GameTestUtil.placeWire(helper, at.offset(2, 0, 0), RadiocraftBlocks.WIRE.get());
+			GameTestUtil.placeWire(helper, at.offset(5, 0, 0), RadiocraftBlocks.WIRE.get());
+			com.arrl.radiocraft.common.blocks.WireBundleBlock.add(helper.getLevel(), helper.absolutePos(at.offset(5, 0, 0)), RadiocraftBlocks.DATA_WIRE.get());
+		}
+		helper.startSequence().thenIdle(3).thenExecute(() -> {
+			// The wires below each stair climb it (the floor wire and the two on the lower stairs).
+			for(BlockPos at : new BlockPos[] { new BlockPos(2, 2, 7), new BlockPos(2, 3, 6), new BlockPos(2, 4, 5) }) {
+				net.minecraft.world.level.block.state.BlockState state = helper.getBlockState(at);
+				helper.assertTrue(state.getBlock() instanceof WireBlock && state.getValue(WireBlock.CLIMB) != WireBlock.Climb.NONE
+						&& state.getValue(WireBlock.HUG).direction() == net.minecraft.core.Direction.NORTH, "the wire at " + at + " does not climb the stair: " + state);
+			}
+			for(BlockPos at : new BlockPos[] { new BlockPos(5, 2, 7), new BlockPos(5, 3, 6), new BlockPos(5, 4, 5) })
+				for(net.minecraft.world.level.block.state.BlockState strand : com.arrl.radiocraft.common.blocks.Strand.statesAt(helper.getLevel(), helper.absolutePos(at)))
+					helper.assertTrue(strand.getValue(WireBlock.CLIMB) != WireBlock.Climb.NONE, "a bundle strand at " + at + " does not climb the stair: " + strand);
+			BlockPos lo = helper.absolutePos(new BlockPos(0, 1, 0)), hi = helper.absolutePos(new BlockPos(7, 7, 10));
+			List<String> problems = new ArrayList<>(WireGeometry.check(helper.getLevel(), lo, hi));
+			problems.addAll(CableShapes.check(helper.getLevel(), lo, hi, helper.absolutePos(BlockPos.ZERO), null, null));
+			helper.assertTrue(problems.isEmpty(), "Cable up the stairs: " + problems + " | the wire on the first stair: "
+					+ WireGeometry.describe(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 6))));
+		}).thenSucceed();
+	}
 }

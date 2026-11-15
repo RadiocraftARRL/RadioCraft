@@ -472,6 +472,7 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
   at 1/sqrt(n) of the signal and none can transmit through it (`AntennaSplitterNetworkObject`, `SplitterGameTests`).
   Placeholder box (bounty); recipe 4 coax round an iron ingot.
 - [ ] Combined coax-and-wire cable: power and coax run side by side in one block into a radio, split out later
+- [ ] Maybe: a redstone strand in cable bundles (maintainer, 2026-11-15: skipped for now, kept here)
 - [x] Lightning (2026-10-30): being struck breaks every handheld and manpack you carry into salvage; a manpack
   switched on adds `lightning_manpack_extra_damage` (`CarriedRadioStrikes`, server config to switch it off).
 - [ ] Another Weather Mod: ball lightning, a rare event in swamps for players who have not slept
@@ -695,6 +696,10 @@ Models and textures we want drawn by someone else are listed in [doc/ModelDesign
     ack-by) and `encode()` is one line a relay re-sends unchanged; receivers file bursts by id, so a relayed copy
     merges with the direct one. Needs a sky check at the receiver and a way to not relay a relay. Done 2026-11-11
     (`satellite.SatelliteRadio`: every satellite, on or off; each burst relayed once by packet id).
+  - [x] WXSAT over the LAN (2026-11-15, maintainer): every WXSAT computer on a LAN gets the lines any of them copies,
+    in the same pass's layer; Options > Block LAN sync (L, off by default) keeps one computer's mosaic its own.
+    `lanComputersShareThePictures`. The External CRT Monitor says WAITING FOR SATELLITE PASS until it has a picture.
+  - [-] ~~Combining or splitting licenses~~ Not wanted (maintainer, 2026-11-15).
 - [x] Manpack radio (maintainer, 2026-10-23): a radio worn on the back (built; the backpack mods' versions are open)
   - [ ] [Traveler's Backpack](https://www.curseforge.com/minecraft/mc-mods/travelers-backpack) version
   - [ ] [Sophisticated Backpacks](https://modrinth.com/mod/sophisticated-backpacks) version

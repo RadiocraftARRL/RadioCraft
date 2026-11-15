@@ -34,7 +34,7 @@ public final class CableRoutes {
 		BlockState state = strands.get(i);
 		WireBlock wire = (WireBlock)state.getBlock();
 		WireLook.Look look = wire.look(level, pos, state);
-		List<WireLook.Placed> parts = dropsToConnectors(WireLook.parts(look, wire.lookConnections(level, pos, state)), look, wire.width());
+		List<WireLook.Placed> parts = steps(level, pos, state, look, dropsToConnectors(WireLook.parts(look, wire.lookConnections(level, pos, state)), look, wire.width()), wire.width());
 		if(strands.size() > 1)
 			return hops(level, pos, strands, offsets, i, parts);
 		if(level.getBlockState(pos).getBlock() instanceof WireBlock)
@@ -119,6 +119,51 @@ public final class CableRoutes {
 		if(out == null)
 			return parts;
 		out.removeIf(java.util.Objects::isNull);
+		return List.copyOf(out);
+	}
+
+	// -------------------- STAIRS --------------------
+
+	/** Half a block, 1/256 of a block: a step's rise. */
+	private static final int STEP = 128;
+
+	/**
+	 * Cable up a staircase (2026-11-15, the maintainer: "make wires and bundles cleanly run up stairs"), following the
+	 * steps at right angles. A stair is two steps of half a block in one block: the tread at the front, half a block up,
+	 * and the top at the back, a whole block up; the wire on a stair lies on the top ({@link WireBlock#stepUnder}), with
+	 * its middle over the riser between the two. The wire below climbs the stair ({@link WireBlock#isStepUp}) to it:
+	 * <ul>
+	 * <li>the climber's run up the wall stops at the tread, half a block up, instead of going up the whole block;</li>
+	 * <li>the wire on the stair takes it from there: its stub towards the climber comes down to the tread, and a riser at
+	 * its middle goes up the step to its own level.</li>
+	 * </ul>
+	 * So each step is a riser and a tread, one after another, the whole way up.
+	 */
+	static List<WireLook.Placed> steps(BlockGetter level, BlockPos pos, BlockState state, WireLook.Look look, List<WireLook.Placed> parts, double width) {
+		if(WireBlock.isCeiling(state))
+			return parts;
+		Direction hug = look.hug(), arrive = look.arrive();
+		boolean climbsStep = look.end() == WireLook.End.CLIMB_WIRE && hug != null && WireBlock.isStepUp(level, pos.relative(hug), hug);
+		Direction rise = WireBlock.stepUnder(level, pos);
+		boolean onStep = arrive != null && arrive.getAxis().isHorizontal() && rise == arrive.getOpposite();
+		if(!climbsStep && !onStep)
+			return parts;
+		List<WireLook.Placed> out = new ArrayList<>(parts.size() + 1);
+		boolean edgeDone = false, stubDone = false;
+		for(WireLook.Placed p : parts) {
+			if(climbsStep && !edgeDone && (p.part() == WireLook.Part.EDGE || p.part() == WireLook.Part.EDGE_FULL) && p.dir() == hug && !p.lifted()) {
+				out.add(p.withHeight(0, STEP)); // Up the riser to the tread only.
+				edgeDone = true;
+			}
+			else if(onStep && !stubDone && p.part() == WireLook.Part.HORIZONTAL && p.dir() == arrive && !p.lifted()) {
+				out.add(p.withHeight(-STEP, 256 - STEP)); // Down on the tread.
+				stubDone = true;
+			}
+			else
+				out.add(p);
+		}
+		if(stubDone) // Up the step from the tread to the middle.
+			out.add(new WireLook.Placed(WireLook.Part.RISER, null).withHeight(-STEP, (int)Math.round(width * 16.0D)));
 		return List.copyOf(out);
 	}
 

@@ -39,6 +39,12 @@ public final class WxSatLang {
 		s.accept("wx.menu.zoom_out", "Zoom out");
 		s.accept("wx.menu.zoom_in", "Zoom in");
 		s.accept("wx.menu.home", "Back to the station");
+		s.accept("wx.menu.options", "Options");
+		s.accept("wx.menu.lan_block", "Block LAN sync");
+		s.accept("wx.lan_blocked", "LAN sync blocked: this mosaic is its own");
+		s.accept("wx.lan_unblocked", "LAN sync on: sharing pictures with WXSAT on the LAN");
+		s.accept("wx.lan_on", "LAN: sharing with %s computer(s)");
+		s.accept("wx.lan_off", "LAN sync blocked");
 		s.accept("wx.reading", "Listening for weather satellites...");
 		s.accept("wx.loading", "Painting the mosaic...");
 		s.accept("wx.live", "Live pass");
