@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,keyed=false,lit=false": {
+      "model": "radiocraft:block/linear_amplifier"
+    },
+    "facing=north,keyed=true,lit=false": {
+      "model": "radiocraft:block/linear_amplifier_keyed"
+    },
+    "facing=north,keyed=false,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_on"
+    },
+    "facing=north,keyed=true,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_keyed"
+    },
+    "facing=east,keyed=false,lit=false": {
+      "model": "radiocraft:block/linear_amplifier",
+      "y": 90
+    },
+    "facing=east,keyed=true,lit=false": {
+      "model": "radiocraft:block/linear_amplifier_keyed",
+      "y": 90
+    },
+    "facing=east,keyed=false,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_on",
+      "y": 90
+    },
+    "facing=east,keyed=true,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_keyed",
+      "y": 90
+    },
+    "facing=south,keyed=false,lit=false": {
+      "model": "radiocraft:block/linear_amplifier",
+      "y": 180
+    },
+    "facing=south,keyed=true,lit=false": {
+      "model": "radiocraft:block/linear_amplifier_keyed",
+      "y": 180
+    },
+    "facing=south,keyed=false,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_on",
+      "y": 180
+    },
+    "facing=south,keyed=true,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_keyed",
+      "y": 180
+    },
+    "facing=west,keyed=false,lit=false": {
+      "model": "radiocraft:block/linear_amplifier",
+      "y": 270
+    },
+    "facing=west,keyed=true,lit=false": {
+      "model": "radiocraft:block/linear_amplifier_keyed",
+      "y": 270
+    },
+    "facing=west,keyed=false,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_on",
+      "y": 270
+    },
+    "facing=west,keyed=true,lit=true": {
+      "model": "radiocraft:block/linear_amplifier_keyed",
+      "y": 270
+    }
+  }
+}

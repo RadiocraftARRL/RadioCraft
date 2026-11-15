@@ -1,0 +1,265 @@
+{
+  "credit": "Made with tools/fire_alarm_assets.py (a vintage panic button)",
+  "parent": "block/block",
+  "texture_size": [
+    128,
+    128
+  ],
+  "textures": {
+    "0": "radiocraft:block/panic_button",
+    "particle": "radiocraft:block/panic_button",
+    "m": "radiocraft:block/fire_alarm_mount"
+  },
+  "elements": [
+    {
+      "name": "mounting_plate",
+      "from": [
+        0.0,
+        0.0,
+        15.5
+      ],
+      "to": [
+        16.0,
+        16.0,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#m"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#m"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#m"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#m"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#m"
+        }
+      }
+    },
+    {
+      "name": "plate",
+      "from": [
+        5.0,
+        5.5,
+        15.0
+      ],
+      "to": [
+        11.0,
+        10.5,
+        16.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.0,
+            0.0,
+            6.0,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0.0,
+            0.0,
+            6.0,
+            5.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            5.0,
+            6.0,
+            6.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0.0,
+            5.0,
+            6.0,
+            6.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0.0,
+            5.0,
+            6.0,
+            6.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0.0,
+            5.0,
+            6.0,
+            6.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "bezel",
+      "from": [
+        6.25,
+        6.25,
+        14.5
+      ],
+      "to": [
+        9.75,
+        9.75,
+        15.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.0,
+            0.0,
+            9.5,
+            3.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            6.0,
+            3.5,
+            9.5,
+            4.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            6.0,
+            3.5,
+            9.5,
+            4.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6.0,
+            3.5,
+            9.5,
+            4.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6.0,
+            3.5,
+            9.5,
+            4.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "button",
+      "from": [
+        6.75,
+        6.75,
+        14.25
+      ],
+      "to": [
+        9.25,
+        9.25,
+        15.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10.0,
+            0.0,
+            12.5,
+            2.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            10.0,
+            2.5,
+            12.5,
+            4.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            10.0,
+            2.5,
+            12.5,
+            4.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            10.0,
+            2.5,
+            12.5,
+            4.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            10.0,
+            2.5,
+            12.5,
+            4.0
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ],
+  "ambientocclusion": false
+}

@@ -1,0 +1,16 @@
+{
+  "texture": "radiocraft:textures/gui/fire_alarm/fire_alarm_controller.png",
+  "width": 256,
+  "height": 176,
+  "controls": [
+    {
+      "name": "crt",
+      "type": "display",
+      "x": 50,
+      "y": 18,
+      "w": 196,
+      "h": 140,
+      "ink": "#5CFF7A"
+    }
+  ]
+}

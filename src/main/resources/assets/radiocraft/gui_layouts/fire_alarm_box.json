@@ -1,0 +1,166 @@
+{
+  "texture": "radiocraft:textures/gui/fire_alarm/fire_alarm_box.png",
+  "width": 176,
+  "height": 176,
+  "controls": [
+    {
+      "name": "power_lamp",
+      "type": "lamp",
+      "x": 46,
+      "y": 99,
+      "w": 6,
+      "h": 6,
+      "colour": "#3CDC5A"
+    },
+    {
+      "name": "trouble_lamp",
+      "type": "lamp",
+      "x": 64,
+      "y": 99,
+      "w": 6,
+      "h": 6,
+      "colour": "#FFB020"
+    },
+    {
+      "name": "alarm_lamp",
+      "type": "lamp",
+      "x": 82,
+      "y": 99,
+      "w": 6,
+      "h": 6,
+      "colour": "#FF2820"
+    },
+    {
+      "name": "zone_lamp_1",
+      "type": "lamp",
+      "x": 104,
+      "y": 100,
+      "w": 5,
+      "h": 5,
+      "colour": "#FF2A20"
+    },
+    {
+      "name": "zone_lamp_2",
+      "type": "lamp",
+      "x": 114,
+      "y": 100,
+      "w": 5,
+      "h": 5,
+      "colour": "#FF2A20"
+    },
+    {
+      "name": "zone_lamp_3",
+      "type": "lamp",
+      "x": 124,
+      "y": 100,
+      "w": 5,
+      "h": 5,
+      "colour": "#FF2A20"
+    },
+    {
+      "name": "zone_lamp_4",
+      "type": "lamp",
+      "x": 134,
+      "y": 100,
+      "w": 5,
+      "h": 5,
+      "colour": "#FF2A20"
+    },
+    {
+      "name": "zone_lamp_5",
+      "type": "lamp",
+      "x": 144,
+      "y": 100,
+      "w": 5,
+      "h": 5,
+      "colour": "#FF2A20"
+    },
+    {
+      "name": "zone_lamp_6",
+      "type": "lamp",
+      "x": 154,
+      "y": 100,
+      "w": 5,
+      "h": 5,
+      "colour": "#FF2A20"
+    },
+    {
+      "name": "drill",
+      "type": "switch",
+      "x": 40,
+      "y": 122,
+      "w": 12,
+      "h": 18,
+      "positions": [
+        "OFF",
+        "DRILL"
+      ],
+      "handles": [
+        [
+          44,
+          123,
+          5,
+          7
+        ],
+        [
+          44,
+          132,
+          5,
+          7
+        ]
+      ],
+      "handle_colour": "#D8D8DC",
+      "handle_shadow": "#5A5A5E"
+    },
+    {
+      "name": "silence",
+      "type": "button",
+      "x": 60,
+      "y": 123,
+      "w": 24,
+      "h": 12
+    },
+    {
+      "name": "reset",
+      "type": "button",
+      "x": 92,
+      "y": 123,
+      "w": 24,
+      "h": 12
+    },
+    {
+      "name": "test",
+      "type": "button",
+      "x": 122,
+      "y": 123,
+      "w": 24,
+      "h": 12
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 126,
+      "y": 22,
+      "w": 30,
+      "h": 18,
+      "pivot": [
+        141,
+        40
+      ],
+      "radius": 14,
+      "zero_deg": -50,
+      "full_deg": 50,
+      "s9_fraction": 0.6,
+      "needle_colour": "#1A1A1A"
+    },
+    {
+      "name": "plate",
+      "type": "display",
+      "x": 40,
+      "y": 147,
+      "w": 72,
+      "h": 14,
+      "ink": "#E8E4D8"
+    }
+  ]
+}

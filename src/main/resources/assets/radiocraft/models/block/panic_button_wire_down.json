@@ -1,0 +1,9 @@
+{
+  "credit": "Made with tools/fire_alarm_assets.py (data wire into a wall device)",
+  "parent": "block/block",
+  "textures": {
+    "c": "radiocraft:block/fire_alarm_cable",
+    "particle": "radiocraft:block/fire_alarm_cable"
+  },
+  "elements": []
+}

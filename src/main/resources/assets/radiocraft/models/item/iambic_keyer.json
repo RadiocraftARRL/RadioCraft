@@ -1,0 +1,161 @@
+{
+	"parent": "radiocraft:block/iambic_keyer_amber",
+	"overrides": [
+		{
+			"predicate": {
+				"radiocraft:finish": 0.01
+			},
+			"model": "radiocraft:block/iambic_keyer_clear"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.02
+			},
+			"model": "radiocraft:block/iambic_keyer_white"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.03
+			},
+			"model": "radiocraft:block/iambic_keyer_orange"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.04
+			},
+			"model": "radiocraft:block/iambic_keyer_magenta"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.05
+			},
+			"model": "radiocraft:block/iambic_keyer_light_blue"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.06
+			},
+			"model": "radiocraft:block/iambic_keyer_yellow"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.07
+			},
+			"model": "radiocraft:block/iambic_keyer_lime"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.08
+			},
+			"model": "radiocraft:block/iambic_keyer_pink"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.09
+			},
+			"model": "radiocraft:block/iambic_keyer_gray"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.1
+			},
+			"model": "radiocraft:block/iambic_keyer_light_gray"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.11
+			},
+			"model": "radiocraft:block/iambic_keyer_cyan"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.12
+			},
+			"model": "radiocraft:block/iambic_keyer_purple"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.13
+			},
+			"model": "radiocraft:block/iambic_keyer_blue"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.14
+			},
+			"model": "radiocraft:block/iambic_keyer_brown"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.15
+			},
+			"model": "radiocraft:block/iambic_keyer_green"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.16
+			},
+			"model": "radiocraft:block/iambic_keyer_red"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.17
+			},
+			"model": "radiocraft:block/iambic_keyer_black"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.18
+			},
+			"model": "radiocraft:block/iambic_keyer_iron"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.19
+			},
+			"model": "radiocraft:block/iambic_keyer_gold"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.2
+			},
+			"model": "radiocraft:block/iambic_keyer_copper"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.21
+			},
+			"model": "radiocraft:block/iambic_keyer_diamond"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.22
+			},
+			"model": "radiocraft:block/iambic_keyer_emerald"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.23
+			},
+			"model": "radiocraft:block/iambic_keyer_lapis"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.24
+			},
+			"model": "radiocraft:block/iambic_keyer_amethyst"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.25
+			},
+			"model": "radiocraft:block/iambic_keyer_quartz"
+		},
+		{
+			"predicate": {
+				"radiocraft:finish": 0.26
+			},
+			"model": "radiocraft:block/iambic_keyer_netherite"
+		}
+	]
+}

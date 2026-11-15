@@ -1,0 +1,151 @@
+{
+  "credit": "tools/airband_fm_models.py",
+  "parent": "block/block",
+  "textures": {
+    "zinc": "radiocraft:block/airband_ground_plane_zinc",
+    "radome": "radiocraft:block/airband_ground_plane_radome",
+    "clamp": "radiocraft:block/airband_antenna_whip",
+    "coax": "radiocraft:block/airband_radio_case",
+    "particle": "radiocraft:block/airband_ground_plane_zinc"
+  },
+  "elements": [
+    {
+      "name": "mast",
+      "from": [
+        7.25,
+        0,
+        7.25
+      ],
+      "to": [
+        8.75,
+        16,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        }
+      }
+    },
+    {
+      "name": "coax",
+      "from": [
+        7.5,
+        0,
+        8.75
+      ],
+      "to": [
+        8.5,
+        1,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        }
+      }
+    }
+  ]
+}

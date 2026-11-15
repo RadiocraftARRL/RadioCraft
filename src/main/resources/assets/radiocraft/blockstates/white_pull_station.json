@@ -1,0 +1,364 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station"
+      }
+    },
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station_pulled"
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station_pulled",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station_pulled",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/white_pull_station_pulled",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_up"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "north"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "north"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "north"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_down"
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_wall"
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_floor"
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_wall"
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_floor"
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "east"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "east"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "east"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "south"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "south"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "south"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "west"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "west"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "west"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_down",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_cw_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/pull_station_wire_ccw_floor",
+        "y": 270
+      }
+    }
+  ]
+}

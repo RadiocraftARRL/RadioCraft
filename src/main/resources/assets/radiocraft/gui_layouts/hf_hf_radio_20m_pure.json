@@ -1,0 +1,313 @@
+{
+ "texture": "radiocraft:textures/gui/hf_panels/hf_radio_20m_pure.png",
+ "width": 256,
+ "height": 160,
+ "controls": [
+  {
+   "name": "meter",
+   "type": "meter",
+   "x": 10,
+   "y": 11,
+   "w": 70,
+   "h": 38,
+   "pivot": [
+    45.0,
+    58
+   ],
+   "radius": 38,
+   "zero_deg": -50,
+   "full_deg": 50,
+   "s9_fraction": 0.62,
+   "needle_colour": "#202020"
+  },
+  {
+   "name": "ptt",
+   "type": "button",
+   "x": 10,
+   "y": 78,
+   "w": 44,
+   "h": 16
+  },
+  {
+   "name": "rit_clear",
+   "type": "button",
+   "x": 59,
+   "y": 82,
+   "w": 16,
+   "h": 9
+  },
+  {
+   "name": "dial_window",
+   "type": "slide_rule",
+   "x": 88,
+   "y": 12,
+   "w": 66,
+   "h": 26,
+   "cx": 121.0,
+   "cy": 84,
+   "r": 58,
+   "deg_per_khz": 0.1452,
+   "ink": "#28241E",
+   "hairline": "#AA1E18"
+  },
+  {
+   "name": "tuning",
+   "type": "dial",
+   "x": 99,
+   "y": 50,
+   "w": 44,
+   "h": 44,
+   "cx": 121,
+   "cy": 72,
+   "mark_r": 13,
+   "mark_size": 6,
+   "mark_colour": "#8E9094",
+   "mark_shadow": "#3A3C40"
+  },
+  {
+   "name": "display",
+   "type": "display",
+   "x": 166,
+   "y": 12,
+   "w": 80,
+   "h": 28,
+   "ink": "#7CFFA0"
+  },
+  {
+   "name": "step_up",
+   "type": "button",
+   "x": 166,
+   "y": 53,
+   "w": 12,
+   "h": 8
+  },
+  {
+   "name": "step_down",
+   "type": "button",
+   "x": 180,
+   "y": 53,
+   "w": 12,
+   "h": 8
+  },
+  {
+   "name": "quick",
+   "type": "button",
+   "x": 194,
+   "y": 53,
+   "w": 12,
+   "h": 8,
+   "lit": [
+    197,
+    55,
+    6,
+    3,
+    "#7CFFA0"
+   ]
+  },
+  {
+   "name": "coarse",
+   "type": "button",
+   "x": 208,
+   "y": 53,
+   "w": 12,
+   "h": 8,
+   "lit": [
+    211,
+    55,
+    6,
+    3,
+    "#7CFFA0"
+   ]
+  },
+  {
+   "name": "rit_on",
+   "type": "button",
+   "x": 222,
+   "y": 53,
+   "w": 12,
+   "h": 8,
+   "lit": [
+    225,
+    55,
+    6,
+    3,
+    "#7CFFA0"
+   ]
+  },
+  {
+   "name": "nb_on",
+   "type": "button",
+   "x": 236,
+   "y": 53,
+   "w": 12,
+   "h": 8,
+   "lit": [
+    239,
+    55,
+    6,
+    3,
+    "#7CFFA0"
+   ]
+  },
+  {
+   "name": "agc",
+   "type": "knob3",
+   "x": 169,
+   "y": 73,
+   "w": 22,
+   "h": 22,
+   "cx": 180,
+   "cy": 84,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135,
+   "positions": [
+    "OFF",
+    "SLOW",
+    "FAST"
+   ],
+   "angles_deg": [
+    -60,
+    0,
+    60
+   ]
+  },
+  {
+   "name": "squelch",
+   "type": "knob",
+   "x": 199,
+   "y": 73,
+   "w": 22,
+   "h": 22,
+   "cx": 210,
+   "cy": 84,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "rit",
+   "type": "knob",
+   "x": 229,
+   "y": 73,
+   "w": 22,
+   "h": 22,
+   "cx": 240,
+   "cy": 84,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "af_gain",
+   "type": "knob",
+   "x": 10,
+   "y": 120,
+   "w": 24,
+   "h": 24,
+   "cx": 22,
+   "cy": 132,
+   "pointer_from": 7,
+   "pointer_r": 10,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "mode_lever",
+   "type": "knob3",
+   "x": 50,
+   "y": 120,
+   "w": 24,
+   "h": 24,
+   "cx": 62,
+   "cy": 132,
+   "pointer_from": 7,
+   "pointer_r": 10,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135,
+   "positions": [
+    "SSB",
+    "CW",
+    "AM"
+   ],
+   "angles_deg": [
+    -50,
+    0,
+    50
+   ]
+  },
+  {
+   "name": "rf_gain",
+   "type": "knob",
+   "x": 86,
+   "y": 120,
+   "w": 24,
+   "h": 24,
+   "cx": 98,
+   "cy": 132,
+   "pointer_from": 7,
+   "pointer_r": 10,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "mic_gain",
+   "type": "knob",
+   "x": 192,
+   "y": 120,
+   "w": 24,
+   "h": 24,
+   "cx": 204,
+   "cy": 132,
+   "pointer_from": 7,
+   "pointer_r": 10,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "power",
+   "type": "switch",
+   "x": 238,
+   "y": 116,
+   "w": 8,
+   "h": 18,
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "handles": [
+    [
+     240,
+     118,
+     5,
+     6
+    ],
+    [
+     240,
+     127,
+     5,
+     6
+    ]
+   ],
+   "handle_colour": "#D6D6D6",
+   "handle_shadow": "#4A4A4A"
+  }
+ ]
+}

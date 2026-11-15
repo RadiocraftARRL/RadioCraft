@@ -1,0 +1,453 @@
+{
+  "credit": "tools/airband_fm_models.py",
+  "parent": "block/block",
+  "textures": {
+    "fin": "radiocraft:block/airband_antenna_fin",
+    "whip": "radiocraft:block/airband_antenna_whip",
+    "particle": "radiocraft:block/airband_antenna_fin"
+  },
+  "elements": [
+    {
+      "name": "mount",
+      "from": [
+        5.5,
+        0,
+        4
+      ],
+      "to": [
+        10.5,
+        0.5,
+        12.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        }
+      }
+    },
+    {
+      "name": "fin_root",
+      "from": [
+        7,
+        0.5,
+        4.5
+      ],
+      "to": [
+        9,
+        2,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "east": {
+          "uv": [
+            4.5,
+            14,
+            12,
+            15.5
+          ],
+          "texture": "#fin"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "west": {
+          "uv": [
+            4.5,
+            14,
+            12,
+            15.5
+          ],
+          "texture": "#fin"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        }
+      }
+    },
+    {
+      "name": "fin_mid",
+      "from": [
+        7.2,
+        2,
+        6.5
+      ],
+      "to": [
+        8.8,
+        3.5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        }
+      }
+    },
+    {
+      "name": "fin_tip",
+      "from": [
+        7.4,
+        3.5,
+        8.5
+      ],
+      "to": [
+        8.6,
+        5,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        }
+      }
+    },
+    {
+      "name": "fin_top",
+      "from": [
+        7.5,
+        5,
+        10
+      ],
+      "to": [
+        8.5,
+        6,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#fin"
+        }
+      }
+    },
+    {
+      "name": "whip",
+      "from": [
+        7.75,
+        5.5,
+        10.75
+      ],
+      "to": [
+        8.25,
+        16.5,
+        11.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            0,
+            8,
+            11
+          ],
+          "texture": "#whip"
+        },
+        "east": {
+          "uv": [
+            7,
+            0,
+            8,
+            11
+          ],
+          "texture": "#whip"
+        },
+        "south": {
+          "uv": [
+            7,
+            0,
+            8,
+            11
+          ],
+          "texture": "#whip"
+        },
+        "west": {
+          "uv": [
+            7,
+            0,
+            8,
+            11
+          ],
+          "texture": "#whip"
+        },
+        "up": {
+          "uv": [
+            7,
+            0,
+            8,
+            11
+          ],
+          "texture": "#whip"
+        },
+        "down": {
+          "uv": [
+            7,
+            0,
+            8,
+            11
+          ],
+          "texture": "#whip"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          5.5,
+          11
+        ]
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        20,
+        135,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    }
+  }
+}

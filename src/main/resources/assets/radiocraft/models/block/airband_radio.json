@@ -1,0 +1,433 @@
+{
+  "credit": "tools/airband_fm_models.py",
+  "parent": "block/block",
+  "texture_size": [
+    64,
+    32
+  ],
+  "textures": {
+    "front": "radiocraft:block/airband_radio_front",
+    "case": "radiocraft:block/airband_radio_case",
+    "knob": "radiocraft:block/airband_radio_knob",
+    "particle": "radiocraft:block/airband_radio_case"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        1.5,
+        0,
+        3
+      ],
+      "to": [
+        14.5,
+        4.5,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "faceplate",
+      "from": [
+        0.5,
+        0,
+        2.5
+      ],
+      "to": [
+        15.5,
+        5,
+        3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            15,
+            10
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            5
+          ],
+          "texture": "#case"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            0.5,
+            5
+          ],
+          "texture": "#case"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            15,
+            0.5
+          ],
+          "texture": "#case"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            15,
+            0.5
+          ],
+          "texture": "#case"
+        }
+      }
+    },
+    {
+      "name": "DISPLAY",
+      "from": [
+        8.25,
+        2.5,
+        2.45
+      ],
+      "to": [
+        12.25,
+        4.25,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.25,
+            1.5,
+            7.25,
+            5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "DISPLAY",
+      "from": [
+        3.25,
+        2.5,
+        2.45
+      ],
+      "to": [
+        7.25,
+        4.25,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8.25,
+            1.5,
+            12.25,
+            5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "volume",
+      "from": [
+        13.25,
+        2.75,
+        1.75
+      ],
+      "to": [
+        14.75,
+        4.25,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        }
+      }
+    },
+    {
+      "name": "nav_volume",
+      "from": [
+        13.25,
+        0.75,
+        1.75
+      ],
+      "to": [
+        14.75,
+        2.25,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        }
+      }
+    },
+    {
+      "name": "tune_outer",
+      "from": [
+        1.0,
+        0.75,
+        1.75
+      ],
+      "to": [
+        3.5,
+        3.25,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            5.0,
+            5.0
+          ],
+          "texture": "#knob"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            5.0,
+            5.0
+          ],
+          "texture": "#knob"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            5.0,
+            5.0
+          ],
+          "texture": "#knob"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            5.0,
+            5.0
+          ],
+          "texture": "#knob"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            5.0,
+            5.0
+          ],
+          "texture": "#knob"
+        }
+      }
+    },
+    {
+      "name": "tune_inner",
+      "from": [
+        1.5,
+        1.25,
+        1.0
+      ],
+      "to": [
+        3.0,
+        2.75,
+        2.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            3.0,
+            3.0
+          ],
+          "texture": "#knob"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "radiocraft:block/computer_redstone_top",
+    "side": "radiocraft:block/computer_redstone_side"
+  }
+}

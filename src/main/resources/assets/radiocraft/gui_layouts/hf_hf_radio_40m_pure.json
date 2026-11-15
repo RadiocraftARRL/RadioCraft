@@ -1,0 +1,369 @@
+{
+ "texture": "radiocraft:textures/gui/hf_panels/hf_radio_40m_pure.png",
+ "width": 256,
+ "height": 160,
+ "controls": [
+  {
+   "name": "meter",
+   "type": "meter",
+   "x": 10,
+   "y": 12,
+   "w": 58,
+   "h": 32,
+   "pivot": [
+    39.0,
+    53
+   ],
+   "radius": 32,
+   "zero_deg": -50,
+   "full_deg": 50,
+   "s9_fraction": 0.62,
+   "needle_colour": "#202020"
+  },
+  {
+   "name": "meter_select",
+   "type": "knob3",
+   "x": 75,
+   "y": 15,
+   "w": 22,
+   "h": 22,
+   "cx": 86,
+   "cy": 26,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135,
+   "positions": [
+    "PO",
+    "SWR"
+   ],
+   "angles_deg": [
+    -120,
+    120
+   ]
+  },
+  {
+   "name": "ptt",
+   "type": "button",
+   "x": 12,
+   "y": 62,
+   "w": 14,
+   "h": 17
+  },
+  {
+   "name": "coarse",
+   "type": "button",
+   "x": 30,
+   "y": 62,
+   "w": 14,
+   "h": 17,
+   "lit": [
+    33,
+    65,
+    8,
+    2,
+    "#FFB050"
+   ]
+  },
+  {
+   "name": "quick",
+   "type": "button",
+   "x": 48,
+   "y": 62,
+   "w": 14,
+   "h": 17,
+   "lit": [
+    51,
+    65,
+    8,
+    2,
+    "#FFB050"
+   ]
+  },
+  {
+   "name": "nb",
+   "type": "switch",
+   "x": 66,
+   "y": 62,
+   "w": 14,
+   "h": 17,
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "handles": [
+    [
+     68,
+     63,
+     10,
+     7
+    ],
+    [
+     68,
+     70,
+     10,
+     7
+    ]
+   ],
+   "handle_colour": "#C8C8C8",
+   "handle_shadow": "#505050"
+  },
+  {
+   "name": "agc",
+   "type": "switch",
+   "x": 84,
+   "y": 62,
+   "w": 14,
+   "h": 17,
+   "positions": [
+    "FAST",
+    "SLOW",
+    "OFF"
+   ],
+   "handles": [
+    [
+     86,
+     63,
+     10,
+     5
+    ],
+    [
+     86,
+     68,
+     10,
+     5
+    ],
+    [
+     86,
+     73,
+     10,
+     5
+    ]
+   ],
+   "handle_colour": "#C8C8C8",
+   "handle_shadow": "#505050"
+  },
+  {
+   "name": "tx_lamp",
+   "type": "lamp",
+   "x": 120,
+   "y": 15,
+   "w": 4,
+   "h": 4,
+   "colour": "#FF3020"
+  },
+  {
+   "name": "pilot_lamp",
+   "type": "lamp",
+   "x": 136,
+   "y": 15,
+   "w": 4,
+   "h": 4,
+   "colour": "#FFA030"
+  },
+  {
+   "name": "rit_lamp",
+   "type": "lamp",
+   "x": 152,
+   "y": 15,
+   "w": 4,
+   "h": 4,
+   "colour": "#FFA030"
+  },
+  {
+   "name": "display",
+   "type": "display",
+   "x": 111,
+   "y": 25,
+   "w": 54,
+   "h": 22,
+   "ink": "#FFB050"
+  },
+  {
+   "name": "squelch",
+   "type": "knob",
+   "x": 172,
+   "y": 14,
+   "w": 22,
+   "h": 22,
+   "cx": 183,
+   "cy": 25,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "mic_gain",
+   "type": "knob",
+   "x": 197,
+   "y": 14,
+   "w": 22,
+   "h": 22,
+   "cx": 208,
+   "cy": 25,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "rf_gain",
+   "type": "knob",
+   "x": 222,
+   "y": 14,
+   "w": 22,
+   "h": 22,
+   "cx": 233,
+   "cy": 25,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "rit",
+   "type": "knob",
+   "x": 172,
+   "y": 52,
+   "w": 22,
+   "h": 22,
+   "cx": 183,
+   "cy": 63,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "af_gain",
+   "type": "knob",
+   "x": 222,
+   "y": 52,
+   "w": 22,
+   "h": 22,
+   "cx": 233,
+   "cy": 63,
+   "pointer_from": 6,
+   "pointer_r": 8,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135
+  },
+  {
+   "name": "mode_lever",
+   "type": "knob3",
+   "x": 45,
+   "y": 101,
+   "w": 22,
+   "h": 22,
+   "cx": 56,
+   "cy": 112,
+   "pointer_from": 7,
+   "pointer_r": 9,
+   "pointer_width": 1,
+   "pointer_colour": "#EEEEEE",
+   "min_deg": -135,
+   "max_deg": 135,
+   "positions": [
+    "SSB",
+    "CW",
+    "AM"
+   ],
+   "angles_deg": [
+    -50,
+    0,
+    50
+   ]
+  },
+  {
+   "name": "tuning",
+   "type": "dial",
+   "x": 103,
+   "y": 89,
+   "w": 50,
+   "h": 50,
+   "cx": 128,
+   "cy": 114,
+   "mark_r": 14,
+   "mark_size": 6,
+   "mark_colour": "#9A9CA0",
+   "mark_shadow": "#0E0E0E"
+  },
+  {
+   "name": "rit_switch",
+   "type": "switch",
+   "x": 168,
+   "y": 131,
+   "w": 8,
+   "h": 17,
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "handles": [
+    [
+     170,
+     133,
+     5,
+     6
+    ],
+    [
+     170,
+     141,
+     5,
+     6
+    ]
+   ],
+   "handle_colour": "#E0E0E4",
+   "handle_shadow": "#4A4A4A"
+  },
+  {
+   "name": "rit_clear",
+   "type": "button",
+   "x": 196,
+   "y": 134,
+   "w": 16,
+   "h": 9
+  },
+  {
+   "name": "power",
+   "type": "switch",
+   "x": 230,
+   "y": 100,
+   "w": 14,
+   "h": 22,
+   "positions": [
+    "ON",
+    "OFF"
+   ],
+   "handles": [
+    [
+     232,
+     102,
+     10,
+     9
+    ],
+    [
+     232,
+     111,
+     10,
+     9
+    ]
+   ],
+   "handle_colour": "#E8E8E8",
+   "handle_shadow": "#606060"
+  }
+ ]
+}

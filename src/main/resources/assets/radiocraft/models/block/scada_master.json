@@ -1,0 +1,203 @@
+{
+  "credit": "Made with tools/scada_assets.py (after a 1970s mainframe operator's console)",
+  "parent": "block/block",
+  "texture_size": [
+    128,
+    128
+  ],
+  "textures": {
+    "0": "radiocraft:block/scada_master",
+    "particle": "radiocraft:block/scada_master"
+  },
+  "elements": [
+    {
+      "name": "cabinet",
+      "from": [
+        0,
+        0,
+        1
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.0,
+            0.0,
+            8.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8.0,
+            0.0,
+            16.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8.0,
+            0.0,
+            16.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8.0,
+            0.0,
+            16.0,
+            8.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0.0,
+            8.0,
+            8.0,
+            16.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0.0,
+            8.0,
+            8.0,
+            16.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "rotary_0",
+      "from": [
+        4.25,
+        13.25,
+        0
+      ],
+      "to": [
+        5.25,
+        14.25,
+        1
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.0,
+            8.0,
+            10.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "rotary_1",
+      "from": [
+        1.5,
+        13.25,
+        0
+      ],
+      "to": [
+        2.5,
+        14.25,
+        1
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.0,
+            8.0,
+            10.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8.0,
+            8.0,
+            9.0,
+            9.0
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

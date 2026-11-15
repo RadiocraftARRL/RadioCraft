@@ -1,0 +1,6 @@
+{
+	"parent": "radiocraft:block/iambic_keyer",
+	"textures": {
+		"paddle": "radiocraft:block/keyer_paddle/light_gray"
+	}
+}

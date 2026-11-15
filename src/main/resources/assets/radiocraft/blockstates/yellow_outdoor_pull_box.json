@@ -1,0 +1,82 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box"
+      }
+    },
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "pulled": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box_pulled"
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box_pulled",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box_pulled",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "pulled": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/yellow_outdoor_pull_box_pulled",
+        "y": 270
+      }
+    }
+  ]
+}

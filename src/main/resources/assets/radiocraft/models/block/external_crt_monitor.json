@@ -1,0 +1,562 @@
+{
+	"credit": "Made with tools/crt_monitor_model.py (a vintage studio CRT monitor)",
+	"parent": "block/block",
+	"texture_size": [
+		64,
+		64
+	],
+	"textures": {
+		"0": "radiocraft:block/external_crt_monitor",
+		"particle": "radiocraft:block/external_crt_monitor"
+	},
+	"elements": [
+		{
+			"name": "case",
+			"from": [
+				0,
+				0,
+				2
+			],
+			"to": [
+				16,
+				15,
+				16
+			],
+			"faces": {
+				"south": {
+					"uv": [
+						5.0,
+						14.0,
+						16.0,
+						16.0
+					],
+					"texture": "#0",
+					"cullface": "south"
+				},
+				"east": {
+					"uv": [
+						8.0,
+						0.0,
+						16.0,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "east"
+				},
+				"west": {
+					"uv": [
+						8.0,
+						0.0,
+						16.0,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "west"
+				},
+				"down": {
+					"uv": [
+						0.0,
+						0.0,
+						8.0,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "down"
+				},
+				"up": {
+					"uv": [
+						4.0,
+						10.0,
+						12.0,
+						14.0
+					],
+					"texture": "#0"
+				}
+			}
+		},
+		{
+			"name": "rim_front",
+			"from": [
+				0,
+				15,
+				2
+			],
+			"to": [
+				16,
+				16,
+				4
+			],
+			"faces": {
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						8.0,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				},
+				"north": {
+					"uv": [
+						0.0,
+						8.0,
+						16.0,
+						9.0
+					],
+					"texture": "#0"
+				},
+				"south": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						11.0
+					],
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						8.0,
+						0.0,
+						10.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "east"
+				},
+				"west": {
+					"uv": [
+						8.0,
+						0.0,
+						10.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "west"
+				}
+			}
+		},
+		{
+			"name": "rim_back",
+			"from": [
+				0,
+				15,
+				14
+			],
+			"to": [
+				16,
+				16,
+				16
+			],
+			"faces": {
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						8.0,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				},
+				"south": {
+					"uv": [
+						0.0,
+						0.0,
+						8.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "south"
+				},
+				"north": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						11.0
+					],
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						8.0,
+						0.0,
+						10.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "east"
+				},
+				"west": {
+					"uv": [
+						8.0,
+						0.0,
+						10.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "west"
+				}
+			}
+		},
+		{
+			"name": "rim_left",
+			"from": [
+				0,
+				15,
+				4
+			],
+			"to": [
+				1.5,
+				16,
+				14
+			],
+			"faces": {
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						1.5,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				},
+				"west": {
+					"uv": [
+						8.0,
+						0.0,
+						16.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "west"
+				},
+				"east": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						11.0
+					],
+					"texture": "#0"
+				}
+			}
+		},
+		{
+			"name": "rim_right",
+			"from": [
+				14.5,
+				15,
+				4
+			],
+			"to": [
+				16,
+				16,
+				14
+			],
+			"faces": {
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						1.5,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				},
+				"east": {
+					"uv": [
+						8.0,
+						0.0,
+						16.0,
+						1.0
+					],
+					"texture": "#0",
+					"cullface": "east"
+				},
+				"west": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						11.0
+					],
+					"texture": "#0"
+				}
+			}
+		},
+		{
+			"name": "bezel_left",
+			"from": [
+				0,
+				0,
+				0
+			],
+			"to": [
+				1.25,
+				16,
+				2.0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0.0,
+						10.0,
+						1.25,
+						16.0
+					],
+					"texture": "#0",
+					"cullface": "north"
+				},
+				"east": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						16.0
+					],
+					"texture": "#0"
+				},
+				"west": {
+					"uv": [
+						8.0,
+						0.0,
+						10.0,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "west"
+				},
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						1.25,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				},
+				"down": {
+					"uv": [
+						0.0,
+						0.0,
+						1.25,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "down"
+				}
+			}
+		},
+		{
+			"name": "bezel_right",
+			"from": [
+				14.75,
+				0,
+				0
+			],
+			"to": [
+				16,
+				16,
+				2.0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0.0,
+						10.0,
+						1.25,
+						16.0
+					],
+					"texture": "#0",
+					"cullface": "north"
+				},
+				"west": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						16.0
+					],
+					"texture": "#0"
+				},
+				"east": {
+					"uv": [
+						8.0,
+						0.0,
+						10.0,
+						8.0
+					],
+					"texture": "#0",
+					"cullface": "east"
+				},
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						1.25,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				},
+				"down": {
+					"uv": [
+						0.0,
+						0.0,
+						1.25,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "down"
+				}
+			}
+		},
+		{
+			"name": "bezel_top",
+			"from": [
+				1.25,
+				14.5,
+				0
+			],
+			"to": [
+				14.75,
+				16,
+				2.0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0.0,
+						8.0,
+						13.5,
+						9.5
+					],
+					"texture": "#0",
+					"cullface": "north"
+				},
+				"down": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						16.0
+					],
+					"texture": "#0"
+				},
+				"up": {
+					"uv": [
+						0.0,
+						0.0,
+						8.0,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "up"
+				}
+			}
+		},
+		{
+			"name": "bezel_chin",
+			"from": [
+				1.25,
+				0,
+				0
+			],
+			"to": [
+				14.75,
+				1.75,
+				2.0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						0.0,
+						8.0,
+						13.5,
+						9.75
+					],
+					"texture": "#0",
+					"cullface": "north"
+				},
+				"up": {
+					"uv": [
+						2.0,
+						10.0,
+						4.0,
+						16.0
+					],
+					"texture": "#0"
+				},
+				"down": {
+					"uv": [
+						0.0,
+						0.0,
+						8.0,
+						2.0
+					],
+					"texture": "#0",
+					"cullface": "down"
+				}
+			}
+		},
+		{
+			"name": "glass",
+			"from": [
+				1.25,
+				1.75,
+				1.99
+			],
+			"to": [
+				14.75,
+				14.5,
+				2.0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						12.0,
+						10.0,
+						16.0,
+						14.0
+					],
+					"texture": "#0"
+				}
+			}
+		},
+		{
+			"name": "power_lamp",
+			"from": [
+				2.15,
+				0.6,
+				-0.1
+			],
+			"to": [
+				2.75,
+				1.1,
+				0
+			],
+			"faces": {
+				"north": {
+					"uv": [
+						4.0,
+						14.0,
+						5.0,
+						15.0
+					],
+					"texture": "#0"
+				}
+			},
+			"neoforge_data": {
+				"block_light": 15,
+				"sky_light": 15,
+				"ambient_occlusion": false
+			}
+		}
+	]
+}

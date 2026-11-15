@@ -1,0 +1,830 @@
+{
+  "credit": "tools/airband_fm_models.py",
+  "parent": "block/block",
+  "texture_size": [
+    64,
+    64
+  ],
+  "textures": {
+    "front": "radiocraft:block/fm_broadcast_receiver_front",
+    "wood": "radiocraft:block/fm_broadcast_receiver_wood",
+    "back": "radiocraft:block/fm_broadcast_receiver_case",
+    "chrome": "radiocraft:block/airband_radio_knob_chrome",
+    "particle": "radiocraft:block/fm_broadcast_receiver_wood"
+  },
+  "elements": [
+    {
+      "name": "body",
+      "from": [
+        1,
+        0,
+        5
+      ],
+      "to": [
+        15,
+        8,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            14,
+            8
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            4,
+            15,
+            12
+          ],
+          "texture": "#back"
+        },
+        "east": {
+          "uv": [
+            0,
+            4,
+            6.5,
+            12
+          ],
+          "texture": "#wood"
+        },
+        "west": {
+          "uv": [
+            0,
+            4,
+            6.5,
+            12
+          ],
+          "texture": "#wood"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            6.5
+          ],
+          "texture": "#wood"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            6.5
+          ],
+          "texture": "#back"
+        }
+      }
+    },
+    {
+      "name": "lip_top",
+      "from": [
+        1,
+        7.25,
+        4.5
+      ],
+      "to": [
+        15,
+        8,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "name": "lip_bottom",
+      "from": [
+        1,
+        0,
+        4.5
+      ],
+      "to": [
+        15,
+        0.75,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            0.75
+          ],
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "name": "lip_left",
+      "from": [
+        14.25,
+        0.75,
+        4.5
+      ],
+      "to": [
+        15,
+        7.25,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "east": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "west": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "up": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "down": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "name": "lip_right",
+      "from": [
+        1,
+        0.75,
+        4.5
+      ],
+      "to": [
+        1.75,
+        7.25,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "east": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "west": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "up": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        },
+        "down": {
+          "uv": [
+            0,
+            1,
+            0.75,
+            7.5
+          ],
+          "texture": "#wood"
+        }
+      }
+    },
+    {
+      "name": "panel_frame",
+      "from": [
+        2.0,
+        1.0,
+        4.85
+      ],
+      "to": [
+        6.5,
+        7.0,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8.5,
+            1.0,
+            13.0,
+            7.0
+          ],
+          "texture": "#front"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            1,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "DIAL",
+      "from": [
+        4.5,
+        1.5,
+        4.8
+      ],
+      "to": [
+        6.0,
+        6.5,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.0,
+            1.5,
+            10.5,
+            6.5
+          ],
+          "texture": "#front"
+        }
+      }
+    },
+    {
+      "name": "tuning_knob",
+      "from": [
+        2.5,
+        4.75,
+        3.8499999999999996
+      ],
+      "to": [
+        4.25,
+        6.5,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "tuning_cap",
+      "from": [
+        2.75,
+        5.0,
+        3.6
+      ],
+      "to": [
+        4.0,
+        6.25,
+        3.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "volume_knob",
+      "from": [
+        2.75,
+        3.0,
+        4.05
+      ],
+      "to": [
+        4.0,
+        4.25,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "bass_knob",
+      "from": [
+        3.5,
+        2.0,
+        4.25
+      ],
+      "to": [
+        4.25,
+        2.75,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "treble_knob",
+      "from": [
+        2.5,
+        2.0,
+        4.25
+      ],
+      "to": [
+        3.25,
+        2.75,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "switch_1",
+      "from": [
+        3.75,
+        1.25,
+        4.55
+      ],
+      "to": [
+        4.25,
+        1.75,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    },
+    {
+      "name": "switch_2",
+      "from": [
+        2.5,
+        1.25,
+        4.55
+      ],
+      "to": [
+        3.0,
+        1.75,
+        4.85
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#chrome"
+        }
+      }
+    }
+  ]
+}

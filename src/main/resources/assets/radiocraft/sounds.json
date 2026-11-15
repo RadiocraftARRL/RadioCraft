@@ -508,5 +508,29 @@
     "sounds": [
       "radiocraft:dsc_beep"
     ]
+  },
+  "mesh_chirp": {
+    "subtitle": "subtitles.radiocraft.mesh_chirp",
+    "sounds": [
+      "radiocraft:mesh_chirp"
+    ]
+  },
+  "fire_bell": {
+    "subtitle": "subtitles.radiocraft.fire_bell",
+    "sounds": [
+      "radiocraft:fire_bell"
+    ]
+  },
+  "fire_alarm_buzzer": {
+    "subtitle": "subtitles.radiocraft.fire_alarm_buzzer",
+    "sounds": [
+      "radiocraft:fire_alarm_buzzer"
+    ]
+  },
+  "fire_alarm_printer": {
+    "subtitle": "subtitles.radiocraft.fire_alarm_printer",
+    "sounds": [
+      "radiocraft:fire_alarm_printer"
+    ]
   }
 }

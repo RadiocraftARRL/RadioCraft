@@ -1,0 +1,944 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button"
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall_pressed"
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "north",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed"
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "north",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall_pressed",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "east",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "east",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall_pressed",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "south",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "south",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "pulled": "false"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wall_pressed",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "floor",
+        "facing": "west",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "ceiling",
+        "facing": "west",
+        "pulled": "true"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_pressed",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "north",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_up"
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "north",
+            "face": "wall"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "north",
+            "face": "wall"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "north",
+            "face": "wall"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_down"
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "north",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_wall"
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "north",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_floor"
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "north",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_wall"
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "north",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_floor"
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "east",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_up",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "east",
+            "face": "wall"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "east",
+            "face": "wall"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "east",
+            "face": "wall"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_down",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "east",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "east",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "east",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_wall",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "east",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_floor",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "south",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_up",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "south",
+            "face": "wall"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "south",
+            "face": "wall"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "south",
+            "face": "wall"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_down",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "south",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "south",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "south",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_wall",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "south",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_floor",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "facing": "west",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_up",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "OR": [
+          {
+            "wire_down": "true",
+            "facing": "west",
+            "face": "wall"
+          },
+          {
+            "wire_cw": "floor",
+            "facing": "west",
+            "face": "wall"
+          },
+          {
+            "wire_ccw": "floor",
+            "facing": "west",
+            "face": "wall"
+          }
+        ]
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_down",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "wall",
+        "facing": "west",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "facing": "west",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_cw_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "wall",
+        "facing": "west",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_wall",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "facing": "west",
+        "face": "wall"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_wire_ccw_floor",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front"
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back"
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw"
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "floor",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw"
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "floor",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "floor",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "floor",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "ceiling",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "ceiling",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "ceiling",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "ceiling",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "ceiling",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "ceiling",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "ceiling",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "ceiling",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "ceiling",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "ceiling",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "ceiling",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "ceiling",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "wire_up": "true",
+        "face": "ceiling",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_front",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_down": "true",
+        "face": "ceiling",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_back",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_cw": "floor",
+        "face": "ceiling",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_cw",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "wire_ccw": "floor",
+        "face": "ceiling",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/panic_button_floor_wire_ccw",
+        "x": 180,
+        "y": 90
+      }
+    }
+  ]
+}

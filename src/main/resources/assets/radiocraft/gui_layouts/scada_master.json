@@ -1,0 +1,344 @@
+{
+  "texture": "radiocraft:textures/gui/scada/scada_master.png",
+  "width": 256,
+  "height": 144,
+  "controls": [
+    {
+      "name": "crt",
+      "type": "display",
+      "x": 9,
+      "y": 24,
+      "w": 118,
+      "h": 96,
+      "ink": "#6EE68C"
+    },
+    {
+      "name": "poll",
+      "type": "knob3",
+      "x": 149,
+      "y": 54,
+      "w": 22,
+      "h": 22,
+      "cx": 159.5,
+      "cy": 64.5,
+      "pointer_from": 2,
+      "pointer_r": 7,
+      "pointer_width": 1,
+      "pointer_colour": "#202020",
+      "positions": [
+        "1",
+        "2",
+        "3"
+      ],
+      "angles_deg": [
+        -50,
+        0,
+        50
+      ]
+    },
+    {
+      "name": "page",
+      "type": "knob3",
+      "x": 203,
+      "y": 54,
+      "w": 22,
+      "h": 22,
+      "cx": 213.5,
+      "cy": 64.5,
+      "pointer_from": 2,
+      "pointer_r": 7,
+      "pointer_width": 1,
+      "pointer_colour": "#202020",
+      "positions": [
+        "POINTS",
+        "RULES",
+        "I/O",
+        "SETUP"
+      ],
+      "angles_deg": [
+        -70,
+        -25,
+        25,
+        70
+      ]
+    },
+    {
+      "name": "scroll_up",
+      "type": "button",
+      "x": 233,
+      "y": 90,
+      "w": 11,
+      "h": 9
+    },
+    {
+      "name": "scroll_down",
+      "type": "button",
+      "x": 233,
+      "y": 102,
+      "w": 11,
+      "h": 9
+    },
+    {
+      "name": "face_d",
+      "type": "switch",
+      "x": 143,
+      "y": 91,
+      "w": 8,
+      "h": 16,
+      "positions": [
+        "OFF",
+        "IN",
+        "OUT"
+      ],
+      "handles": [
+        [
+          145,
+          101,
+          4,
+          4
+        ],
+        [
+          145,
+          97,
+          4,
+          4
+        ],
+        [
+          145,
+          93,
+          4,
+          4
+        ]
+      ],
+      "handle_colour": "#D6D8DA",
+      "handle_shadow": "#5A5E60"
+    },
+    {
+      "name": "face_u",
+      "type": "switch",
+      "x": 156,
+      "y": 91,
+      "w": 8,
+      "h": 16,
+      "positions": [
+        "OFF",
+        "IN",
+        "OUT"
+      ],
+      "handles": [
+        [
+          158,
+          101,
+          4,
+          4
+        ],
+        [
+          158,
+          97,
+          4,
+          4
+        ],
+        [
+          158,
+          93,
+          4,
+          4
+        ]
+      ],
+      "handle_colour": "#D6D8DA",
+      "handle_shadow": "#5A5E60"
+    },
+    {
+      "name": "face_n",
+      "type": "switch",
+      "x": 169,
+      "y": 91,
+      "w": 8,
+      "h": 16,
+      "positions": [
+        "OFF",
+        "IN",
+        "OUT"
+      ],
+      "handles": [
+        [
+          171,
+          101,
+          4,
+          4
+        ],
+        [
+          171,
+          97,
+          4,
+          4
+        ],
+        [
+          171,
+          93,
+          4,
+          4
+        ]
+      ],
+      "handle_colour": "#D6D8DA",
+      "handle_shadow": "#5A5E60"
+    },
+    {
+      "name": "face_s",
+      "type": "switch",
+      "x": 182,
+      "y": 91,
+      "w": 8,
+      "h": 16,
+      "positions": [
+        "OFF",
+        "IN",
+        "OUT"
+      ],
+      "handles": [
+        [
+          184,
+          101,
+          4,
+          4
+        ],
+        [
+          184,
+          97,
+          4,
+          4
+        ],
+        [
+          184,
+          93,
+          4,
+          4
+        ]
+      ],
+      "handle_colour": "#D6D8DA",
+      "handle_shadow": "#5A5E60"
+    },
+    {
+      "name": "face_w",
+      "type": "switch",
+      "x": 195,
+      "y": 91,
+      "w": 8,
+      "h": 16,
+      "positions": [
+        "OFF",
+        "IN",
+        "OUT"
+      ],
+      "handles": [
+        [
+          197,
+          101,
+          4,
+          4
+        ],
+        [
+          197,
+          97,
+          4,
+          4
+        ],
+        [
+          197,
+          93,
+          4,
+          4
+        ]
+      ],
+      "handle_colour": "#D6D8DA",
+      "handle_shadow": "#5A5E60"
+    },
+    {
+      "name": "face_e",
+      "type": "switch",
+      "x": 208,
+      "y": 91,
+      "w": 8,
+      "h": 16,
+      "positions": [
+        "OFF",
+        "IN",
+        "OUT"
+      ],
+      "handles": [
+        [
+          210,
+          101,
+          4,
+          4
+        ],
+        [
+          210,
+          97,
+          4,
+          4
+        ],
+        [
+          210,
+          93,
+          4,
+          4
+        ]
+      ],
+      "handle_colour": "#D6D8DA",
+      "handle_shadow": "#5A5E60"
+    },
+    {
+      "name": "power_lamp",
+      "type": "lamp",
+      "x": 184,
+      "y": 9,
+      "w": 5,
+      "h": 5,
+      "colour": "#3CDC5A"
+    },
+    {
+      "name": "poll_lamp",
+      "type": "lamp",
+      "x": 218,
+      "y": 9,
+      "w": 5,
+      "h": 5,
+      "colour": "#3CDC5A"
+    },
+    {
+      "name": "fail_lamp",
+      "type": "lamp",
+      "x": 184,
+      "y": 21,
+      "w": 5,
+      "h": 5,
+      "colour": "#F03228"
+    },
+    {
+      "name": "tx_lamp",
+      "type": "lamp",
+      "x": 218,
+      "y": 21,
+      "w": 5,
+      "h": 5,
+      "colour": "#FFB028"
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 143,
+      "y": 7,
+      "w": 34,
+      "h": 20,
+      "pivot": [
+        160,
+        34
+      ],
+      "radius": 22,
+      "zero_deg": -45,
+      "full_deg": 45,
+      "needle_colour": "#202020"
+    }
+  ]
+}

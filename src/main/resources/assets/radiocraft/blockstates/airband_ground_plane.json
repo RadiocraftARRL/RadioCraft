@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "radiocraft:block/airband_ground_plane_lower"
+    },
+    "half=upper": {
+      "model": "radiocraft:block/airband_ground_plane_upper"
+    }
+  }
+}

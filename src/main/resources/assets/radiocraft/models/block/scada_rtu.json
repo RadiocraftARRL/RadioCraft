@@ -1,0 +1,52 @@
+{
+	"format_version": "26.3",
+	"credit": "Made with tools/scada_assets.py (after a data radio, made a decade older)",
+	"parent": "block/block",
+	"texture_size": [128, 128],
+	"textures": {
+		"0": "radiocraft:block/scada_rtu",
+		"particle": "radiocraft:block/scada_rtu"
+	},
+	"elements": [
+		{
+			"name": "case",
+			"from": [2, 0, 1],
+			"to": [14, 5, 15],
+			"faces": {
+				"north": {"uv": [0, 0, 6, 2.5], "texture": "#0"},
+				"east": {"uv": [6, 3, 13, 5.5], "texture": "#0"},
+				"south": {"uv": [6, 0, 12, 2.5], "texture": "#0"},
+				"west": {"uv": [6, 3, 13, 5.5], "texture": "#0"},
+				"up": {"uv": [0, 3, 6, 10], "texture": "#0"},
+				"down": {"uv": [6, 6, 12, 13], "texture": "#0"}
+			}
+		},
+		{
+			"name": "fin_west_7",
+			"from": [3.25, 4.5, 13.2],
+			"to": [4, 8.5, 13.7],
+			"rotation": {"angle": 0, "axis": "y", "origin": [2, 4, 0]},
+			"faces": {
+				"north": {"uv": [13, 0, 14, 1], "texture": "#0"},
+				"east": {"uv": [13, 0, 14, 1], "texture": "#0"},
+				"south": {"uv": [13, 0, 14, 1], "texture": "#0"},
+				"west": {"uv": [13, 0, 14, 1], "texture": "#0"},
+				"up": {"uv": [13, 0, 14, 1], "texture": "#0"},
+				"down": {"uv": [13, 0, 14, 1], "texture": "#0"}
+			}
+		},
+		{
+			"name": "n_connector",
+			"from": [2.75, 1.75, 0],
+			"to": [3.75, 2.75, 1],
+			"faces": {
+				"north": {"uv": [14, 0, 15, 1], "texture": "#0"},
+				"east": {"uv": [14, 0, 15, 1], "texture": "#0"},
+				"south": {"uv": [14, 0, 15, 1], "texture": "#0"},
+				"west": {"uv": [14, 0, 15, 1], "texture": "#0"},
+				"up": {"uv": [14, 0, 15, 1], "texture": "#0"},
+				"down": {"uv": [14, 0, 15, 1], "texture": "#0"}
+			}
+		}
+	]
+}

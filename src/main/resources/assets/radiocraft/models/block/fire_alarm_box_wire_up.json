@@ -1,0 +1,79 @@
+{
+  "credit": "Made with tools/fire_alarm_assets.py (data wire into a wall device)",
+  "parent": "block/block",
+  "textures": {
+    "c": "radiocraft:block/fire_alarm_cable",
+    "particle": "radiocraft:block/fire_alarm_cable"
+  },
+  "elements": [
+    {
+      "name": "up",
+      "from": [
+        7.5,
+        15.0,
+        15.5
+      ],
+      "to": [
+        8.5,
+        16.0,
+        16.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#c"
+        }
+      }
+    }
+  ]
+}

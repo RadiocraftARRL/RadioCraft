@@ -1,0 +1,409 @@
+{
+	"variants": {
+		"facing=north,finish=amber": {
+			"model": "radiocraft:block/iambic_keyer_amber"
+		},
+		"facing=north,finish=clear": {
+			"model": "radiocraft:block/iambic_keyer_clear"
+		},
+		"facing=north,finish=white": {
+			"model": "radiocraft:block/iambic_keyer_white"
+		},
+		"facing=north,finish=orange": {
+			"model": "radiocraft:block/iambic_keyer_orange"
+		},
+		"facing=north,finish=magenta": {
+			"model": "radiocraft:block/iambic_keyer_magenta"
+		},
+		"facing=north,finish=light_blue": {
+			"model": "radiocraft:block/iambic_keyer_light_blue"
+		},
+		"facing=north,finish=yellow": {
+			"model": "radiocraft:block/iambic_keyer_yellow"
+		},
+		"facing=north,finish=lime": {
+			"model": "radiocraft:block/iambic_keyer_lime"
+		},
+		"facing=north,finish=pink": {
+			"model": "radiocraft:block/iambic_keyer_pink"
+		},
+		"facing=north,finish=gray": {
+			"model": "radiocraft:block/iambic_keyer_gray"
+		},
+		"facing=north,finish=light_gray": {
+			"model": "radiocraft:block/iambic_keyer_light_gray"
+		},
+		"facing=north,finish=cyan": {
+			"model": "radiocraft:block/iambic_keyer_cyan"
+		},
+		"facing=north,finish=purple": {
+			"model": "radiocraft:block/iambic_keyer_purple"
+		},
+		"facing=north,finish=blue": {
+			"model": "radiocraft:block/iambic_keyer_blue"
+		},
+		"facing=north,finish=brown": {
+			"model": "radiocraft:block/iambic_keyer_brown"
+		},
+		"facing=north,finish=green": {
+			"model": "radiocraft:block/iambic_keyer_green"
+		},
+		"facing=north,finish=red": {
+			"model": "radiocraft:block/iambic_keyer_red"
+		},
+		"facing=north,finish=black": {
+			"model": "radiocraft:block/iambic_keyer_black"
+		},
+		"facing=north,finish=iron": {
+			"model": "radiocraft:block/iambic_keyer_iron"
+		},
+		"facing=north,finish=gold": {
+			"model": "radiocraft:block/iambic_keyer_gold"
+		},
+		"facing=north,finish=copper": {
+			"model": "radiocraft:block/iambic_keyer_copper"
+		},
+		"facing=north,finish=diamond": {
+			"model": "radiocraft:block/iambic_keyer_diamond"
+		},
+		"facing=north,finish=emerald": {
+			"model": "radiocraft:block/iambic_keyer_emerald"
+		},
+		"facing=north,finish=lapis": {
+			"model": "radiocraft:block/iambic_keyer_lapis"
+		},
+		"facing=north,finish=amethyst": {
+			"model": "radiocraft:block/iambic_keyer_amethyst"
+		},
+		"facing=north,finish=quartz": {
+			"model": "radiocraft:block/iambic_keyer_quartz"
+		},
+		"facing=north,finish=netherite": {
+			"model": "radiocraft:block/iambic_keyer_netherite"
+		},
+		"facing=east,finish=amber": {
+			"model": "radiocraft:block/iambic_keyer_amber",
+			"y": 90
+		},
+		"facing=east,finish=clear": {
+			"model": "radiocraft:block/iambic_keyer_clear",
+			"y": 90
+		},
+		"facing=east,finish=white": {
+			"model": "radiocraft:block/iambic_keyer_white",
+			"y": 90
+		},
+		"facing=east,finish=orange": {
+			"model": "radiocraft:block/iambic_keyer_orange",
+			"y": 90
+		},
+		"facing=east,finish=magenta": {
+			"model": "radiocraft:block/iambic_keyer_magenta",
+			"y": 90
+		},
+		"facing=east,finish=light_blue": {
+			"model": "radiocraft:block/iambic_keyer_light_blue",
+			"y": 90
+		},
+		"facing=east,finish=yellow": {
+			"model": "radiocraft:block/iambic_keyer_yellow",
+			"y": 90
+		},
+		"facing=east,finish=lime": {
+			"model": "radiocraft:block/iambic_keyer_lime",
+			"y": 90
+		},
+		"facing=east,finish=pink": {
+			"model": "radiocraft:block/iambic_keyer_pink",
+			"y": 90
+		},
+		"facing=east,finish=gray": {
+			"model": "radiocraft:block/iambic_keyer_gray",
+			"y": 90
+		},
+		"facing=east,finish=light_gray": {
+			"model": "radiocraft:block/iambic_keyer_light_gray",
+			"y": 90
+		},
+		"facing=east,finish=cyan": {
+			"model": "radiocraft:block/iambic_keyer_cyan",
+			"y": 90
+		},
+		"facing=east,finish=purple": {
+			"model": "radiocraft:block/iambic_keyer_purple",
+			"y": 90
+		},
+		"facing=east,finish=blue": {
+			"model": "radiocraft:block/iambic_keyer_blue",
+			"y": 90
+		},
+		"facing=east,finish=brown": {
+			"model": "radiocraft:block/iambic_keyer_brown",
+			"y": 90
+		},
+		"facing=east,finish=green": {
+			"model": "radiocraft:block/iambic_keyer_green",
+			"y": 90
+		},
+		"facing=east,finish=red": {
+			"model": "radiocraft:block/iambic_keyer_red",
+			"y": 90
+		},
+		"facing=east,finish=black": {
+			"model": "radiocraft:block/iambic_keyer_black",
+			"y": 90
+		},
+		"facing=east,finish=iron": {
+			"model": "radiocraft:block/iambic_keyer_iron",
+			"y": 90
+		},
+		"facing=east,finish=gold": {
+			"model": "radiocraft:block/iambic_keyer_gold",
+			"y": 90
+		},
+		"facing=east,finish=copper": {
+			"model": "radiocraft:block/iambic_keyer_copper",
+			"y": 90
+		},
+		"facing=east,finish=diamond": {
+			"model": "radiocraft:block/iambic_keyer_diamond",
+			"y": 90
+		},
+		"facing=east,finish=emerald": {
+			"model": "radiocraft:block/iambic_keyer_emerald",
+			"y": 90
+		},
+		"facing=east,finish=lapis": {
+			"model": "radiocraft:block/iambic_keyer_lapis",
+			"y": 90
+		},
+		"facing=east,finish=amethyst": {
+			"model": "radiocraft:block/iambic_keyer_amethyst",
+			"y": 90
+		},
+		"facing=east,finish=quartz": {
+			"model": "radiocraft:block/iambic_keyer_quartz",
+			"y": 90
+		},
+		"facing=east,finish=netherite": {
+			"model": "radiocraft:block/iambic_keyer_netherite",
+			"y": 90
+		},
+		"facing=south,finish=amber": {
+			"model": "radiocraft:block/iambic_keyer_amber",
+			"y": 180
+		},
+		"facing=south,finish=clear": {
+			"model": "radiocraft:block/iambic_keyer_clear",
+			"y": 180
+		},
+		"facing=south,finish=white": {
+			"model": "radiocraft:block/iambic_keyer_white",
+			"y": 180
+		},
+		"facing=south,finish=orange": {
+			"model": "radiocraft:block/iambic_keyer_orange",
+			"y": 180
+		},
+		"facing=south,finish=magenta": {
+			"model": "radiocraft:block/iambic_keyer_magenta",
+			"y": 180
+		},
+		"facing=south,finish=light_blue": {
+			"model": "radiocraft:block/iambic_keyer_light_blue",
+			"y": 180
+		},
+		"facing=south,finish=yellow": {
+			"model": "radiocraft:block/iambic_keyer_yellow",
+			"y": 180
+		},
+		"facing=south,finish=lime": {
+			"model": "radiocraft:block/iambic_keyer_lime",
+			"y": 180
+		},
+		"facing=south,finish=pink": {
+			"model": "radiocraft:block/iambic_keyer_pink",
+			"y": 180
+		},
+		"facing=south,finish=gray": {
+			"model": "radiocraft:block/iambic_keyer_gray",
+			"y": 180
+		},
+		"facing=south,finish=light_gray": {
+			"model": "radiocraft:block/iambic_keyer_light_gray",
+			"y": 180
+		},
+		"facing=south,finish=cyan": {
+			"model": "radiocraft:block/iambic_keyer_cyan",
+			"y": 180
+		},
+		"facing=south,finish=purple": {
+			"model": "radiocraft:block/iambic_keyer_purple",
+			"y": 180
+		},
+		"facing=south,finish=blue": {
+			"model": "radiocraft:block/iambic_keyer_blue",
+			"y": 180
+		},
+		"facing=south,finish=brown": {
+			"model": "radiocraft:block/iambic_keyer_brown",
+			"y": 180
+		},
+		"facing=south,finish=green": {
+			"model": "radiocraft:block/iambic_keyer_green",
+			"y": 180
+		},
+		"facing=south,finish=red": {
+			"model": "radiocraft:block/iambic_keyer_red",
+			"y": 180
+		},
+		"facing=south,finish=black": {
+			"model": "radiocraft:block/iambic_keyer_black",
+			"y": 180
+		},
+		"facing=south,finish=iron": {
+			"model": "radiocraft:block/iambic_keyer_iron",
+			"y": 180
+		},
+		"facing=south,finish=gold": {
+			"model": "radiocraft:block/iambic_keyer_gold",
+			"y": 180
+		},
+		"facing=south,finish=copper": {
+			"model": "radiocraft:block/iambic_keyer_copper",
+			"y": 180
+		},
+		"facing=south,finish=diamond": {
+			"model": "radiocraft:block/iambic_keyer_diamond",
+			"y": 180
+		},
+		"facing=south,finish=emerald": {
+			"model": "radiocraft:block/iambic_keyer_emerald",
+			"y": 180
+		},
+		"facing=south,finish=lapis": {
+			"model": "radiocraft:block/iambic_keyer_lapis",
+			"y": 180
+		},
+		"facing=south,finish=amethyst": {
+			"model": "radiocraft:block/iambic_keyer_amethyst",
+			"y": 180
+		},
+		"facing=south,finish=quartz": {
+			"model": "radiocraft:block/iambic_keyer_quartz",
+			"y": 180
+		},
+		"facing=south,finish=netherite": {
+			"model": "radiocraft:block/iambic_keyer_netherite",
+			"y": 180
+		},
+		"facing=west,finish=amber": {
+			"model": "radiocraft:block/iambic_keyer_amber",
+			"y": 270
+		},
+		"facing=west,finish=clear": {
+			"model": "radiocraft:block/iambic_keyer_clear",
+			"y": 270
+		},
+		"facing=west,finish=white": {
+			"model": "radiocraft:block/iambic_keyer_white",
+			"y": 270
+		},
+		"facing=west,finish=orange": {
+			"model": "radiocraft:block/iambic_keyer_orange",
+			"y": 270
+		},
+		"facing=west,finish=magenta": {
+			"model": "radiocraft:block/iambic_keyer_magenta",
+			"y": 270
+		},
+		"facing=west,finish=light_blue": {
+			"model": "radiocraft:block/iambic_keyer_light_blue",
+			"y": 270
+		},
+		"facing=west,finish=yellow": {
+			"model": "radiocraft:block/iambic_keyer_yellow",
+			"y": 270
+		},
+		"facing=west,finish=lime": {
+			"model": "radiocraft:block/iambic_keyer_lime",
+			"y": 270
+		},
+		"facing=west,finish=pink": {
+			"model": "radiocraft:block/iambic_keyer_pink",
+			"y": 270
+		},
+		"facing=west,finish=gray": {
+			"model": "radiocraft:block/iambic_keyer_gray",
+			"y": 270
+		},
+		"facing=west,finish=light_gray": {
+			"model": "radiocraft:block/iambic_keyer_light_gray",
+			"y": 270
+		},
+		"facing=west,finish=cyan": {
+			"model": "radiocraft:block/iambic_keyer_cyan",
+			"y": 270
+		},
+		"facing=west,finish=purple": {
+			"model": "radiocraft:block/iambic_keyer_purple",
+			"y": 270
+		},
+		"facing=west,finish=blue": {
+			"model": "radiocraft:block/iambic_keyer_blue",
+			"y": 270
+		},
+		"facing=west,finish=brown": {
+			"model": "radiocraft:block/iambic_keyer_brown",
+			"y": 270
+		},
+		"facing=west,finish=green": {
+			"model": "radiocraft:block/iambic_keyer_green",
+			"y": 270
+		},
+		"facing=west,finish=red": {
+			"model": "radiocraft:block/iambic_keyer_red",
+			"y": 270
+		},
+		"facing=west,finish=black": {
+			"model": "radiocraft:block/iambic_keyer_black",
+			"y": 270
+		},
+		"facing=west,finish=iron": {
+			"model": "radiocraft:block/iambic_keyer_iron",
+			"y": 270
+		},
+		"facing=west,finish=gold": {
+			"model": "radiocraft:block/iambic_keyer_gold",
+			"y": 270
+		},
+		"facing=west,finish=copper": {
+			"model": "radiocraft:block/iambic_keyer_copper",
+			"y": 270
+		},
+		"facing=west,finish=diamond": {
+			"model": "radiocraft:block/iambic_keyer_diamond",
+			"y": 270
+		},
+		"facing=west,finish=emerald": {
+			"model": "radiocraft:block/iambic_keyer_emerald",
+			"y": 270
+		},
+		"facing=west,finish=lapis": {
+			"model": "radiocraft:block/iambic_keyer_lapis",
+			"y": 270
+		},
+		"facing=west,finish=amethyst": {
+			"model": "radiocraft:block/iambic_keyer_amethyst",
+			"y": 270
+		},
+		"facing=west,finish=quartz": {
+			"model": "radiocraft:block/iambic_keyer_quartz",
+			"y": 270
+		},
+		"facing=west,finish=netherite": {
+			"model": "radiocraft:block/iambic_keyer_netherite",
+			"y": 270
+		}
+	}
+}

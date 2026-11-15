@@ -1,0 +1,82 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "part": "panel",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master"
+      }
+    },
+    {
+      "when": {
+        "part": "panel",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "part": "panel",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "part": "panel",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "part": "screen",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master_screen"
+      }
+    },
+    {
+      "when": {
+        "part": "screen",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master_screen",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "part": "screen",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master_screen",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "part": "screen",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/scada_master_screen",
+        "y": 270
+      }
+    }
+  ]
+}

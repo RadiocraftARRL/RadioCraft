@@ -1,0 +1,73 @@
+{
+  "texture": "radiocraft:textures/gui/fire_alarm/fire_alarm_box_program.png",
+  "width": 176,
+  "height": 176,
+  "controls": [
+    {
+      "name": "lcd",
+      "type": "display",
+      "x": 41,
+      "y": 101,
+      "w": 98,
+      "h": 22,
+      "ink": "#1E281A"
+    },
+    {
+      "name": "meter",
+      "type": "meter",
+      "x": 126,
+      "y": 22,
+      "w": 30,
+      "h": 18,
+      "pivot": [
+        141,
+        40
+      ],
+      "radius": 14,
+      "zero_deg": -50,
+      "full_deg": 50,
+      "s9_fraction": 0.6,
+      "needle_colour": "#1A1A1A"
+    },
+    {
+      "name": "left",
+      "type": "button",
+      "x": 38,
+      "y": 133,
+      "w": 14,
+      "h": 12
+    },
+    {
+      "name": "up",
+      "type": "button",
+      "x": 56,
+      "y": 133,
+      "w": 14,
+      "h": 12
+    },
+    {
+      "name": "down",
+      "type": "button",
+      "x": 74,
+      "y": 133,
+      "w": 14,
+      "h": 12
+    },
+    {
+      "name": "right",
+      "type": "button",
+      "x": 92,
+      "y": 133,
+      "w": 14,
+      "h": 12
+    },
+    {
+      "name": "enter",
+      "type": "button",
+      "x": 112,
+      "y": 133,
+      "w": 30,
+      "h": 12
+    }
+  ]
+}

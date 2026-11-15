@@ -1,0 +1,82 @@
+{
+  "multipart": [
+    {
+      "when": {
+        "alarm": "false",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller"
+      }
+    },
+    {
+      "when": {
+        "alarm": "false",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "alarm": "false",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "alarm": "false",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "alarm": "true",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller_alarm"
+      }
+    },
+    {
+      "when": {
+        "alarm": "true",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller_alarm",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "alarm": "true",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller_alarm",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "alarm": "true",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/fire_alarm_controller_alarm",
+        "y": 270
+      }
+    }
+  ]
+}

@@ -1,33 +1,71 @@
 {
   "variants": {
-    "facing=north,right=false": {
+    "face=floor,facing=north,right=false": {
       "model": "radiocraft:block/power_switch_left_right"
     },
-    "facing=north,right=true": {
+    "face=floor,facing=north,right=true": {
       "model": "radiocraft:block/power_switch_left_right_right"
     },
-    "facing=east,right=false": {
+    "face=floor,facing=east,right=false": {
       "model": "radiocraft:block/power_switch_left_right",
       "y": 90
     },
-    "facing=east,right=true": {
+    "face=floor,facing=east,right=true": {
       "model": "radiocraft:block/power_switch_left_right_right",
       "y": 90
     },
-    "facing=south,right=false": {
+    "face=floor,facing=south,right=false": {
       "model": "radiocraft:block/power_switch_left_right",
       "y": 180
     },
-    "facing=south,right=true": {
+    "face=floor,facing=south,right=true": {
       "model": "radiocraft:block/power_switch_left_right_right",
       "y": 180
     },
-    "facing=west,right=false": {
+    "face=floor,facing=west,right=false": {
       "model": "radiocraft:block/power_switch_left_right",
       "y": 270
     },
-    "facing=west,right=true": {
+    "face=floor,facing=west,right=true": {
       "model": "radiocraft:block/power_switch_left_right_right",
+      "y": 270
+    },
+    "face=wall,facing=north,right=false": {
+      "model": "radiocraft:block/power_switch_left_right",
+      "x": 90
+    },
+    "face=wall,facing=north,right=true": {
+      "model": "radiocraft:block/power_switch_left_right_right",
+      "x": 90
+    },
+    "face=wall,facing=east,right=false": {
+      "model": "radiocraft:block/power_switch_left_right",
+      "x": 90,
+      "y": 90
+    },
+    "face=wall,facing=east,right=true": {
+      "model": "radiocraft:block/power_switch_left_right_right",
+      "x": 90,
+      "y": 90
+    },
+    "face=wall,facing=south,right=false": {
+      "model": "radiocraft:block/power_switch_left_right",
+      "x": 90,
+      "y": 180
+    },
+    "face=wall,facing=south,right=true": {
+      "model": "radiocraft:block/power_switch_left_right_right",
+      "x": 90,
+      "y": 180
+    },
+    "face=wall,facing=west,right=false": {
+      "model": "radiocraft:block/power_switch_left_right",
+      "x": 90,
+      "y": 270
+    },
+    "face=wall,facing=west,right=true": {
+      "model": "radiocraft:block/power_switch_left_right_right",
+      "x": 90,
       "y": 270
     }
   }

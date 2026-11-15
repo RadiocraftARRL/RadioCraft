@@ -1,0 +1,815 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "zinc": "radiocraft:block/airband_ground_plane_zinc",
+    "radome": "radiocraft:block/airband_ground_plane_radome",
+    "clamp": "radiocraft:block/airband_antenna_whip",
+    "coax": "radiocraft:block/airband_radio_case",
+    "particle": "radiocraft:block/airband_ground_plane_zinc"
+  },
+  "elements": [
+    {
+      "name": "mast",
+      "from": [
+        7.25,
+        0,
+        7.25
+      ],
+      "to": [
+        8.75,
+        16,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#zinc"
+        }
+      }
+    },
+    {
+      "name": "coax",
+      "from": [
+        7.5,
+        0,
+        8.75
+      ],
+      "to": [
+        8.5,
+        1,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#coax"
+        }
+      }
+    },
+    {
+      "name": "mast",
+      "from": [
+        7.25,
+        16,
+        7.25
+      ],
+      "to": [
+        8.75,
+        20.5,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            2,
+            0,
+            4,
+            5
+          ],
+          "texture": "#zinc"
+        }
+      }
+    },
+    {
+      "name": "clamp",
+      "from": [
+        6.5,
+        18.75,
+        6.5
+      ],
+      "to": [
+        9.5,
+        20.75,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#clamp"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#clamp"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#clamp"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#clamp"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#clamp"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#clamp"
+        }
+      }
+    },
+    {
+      "name": "radial_east",
+      "from": [
+        8,
+        19.5,
+        7.75
+      ],
+      "to": [
+        24,
+        20,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          19.75,
+          8
+        ]
+      }
+    },
+    {
+      "name": "radial_west",
+      "from": [
+        -8,
+        19.5,
+        7.75
+      ],
+      "to": [
+        8,
+        20,
+        8.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "z",
+        "origin": [
+          8,
+          19.75,
+          8
+        ]
+      }
+    },
+    {
+      "name": "radial_south",
+      "from": [
+        7.75,
+        19.5,
+        8
+      ],
+      "to": [
+        8.25,
+        20,
+        24
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        }
+      },
+      "rotation": {
+        "angle": 22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          19.75,
+          8
+        ]
+      }
+    },
+    {
+      "name": "radial_north",
+      "from": [
+        7.75,
+        19.5,
+        -8
+      ],
+      "to": [
+        8.25,
+        20,
+        8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            1
+          ],
+          "texture": "#zinc"
+        }
+      },
+      "rotation": {
+        "angle": -22.5,
+        "axis": "x",
+        "origin": [
+          8,
+          19.75,
+          8
+        ]
+      }
+    },
+    {
+      "name": "whip",
+      "from": [
+        7.0,
+        20.75,
+        7.0
+      ],
+      "to": [
+        9.0,
+        31.5,
+        9.0
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            8,
+            11
+          ],
+          "texture": "#radome"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            8,
+            11
+          ],
+          "texture": "#radome"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            8,
+            11
+          ],
+          "texture": "#radome"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            8,
+            11
+          ],
+          "texture": "#radome"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            8,
+            11
+          ],
+          "texture": "#radome"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            8,
+            11
+          ],
+          "texture": "#radome"
+        }
+      }
+    },
+    {
+      "name": "whip_cap",
+      "from": [
+        7.25,
+        31.5,
+        7.25
+      ],
+      "to": [
+        8.75,
+        32,
+        8.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            6,
+            1
+          ],
+          "texture": "#radome"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            6,
+            1
+          ],
+          "texture": "#radome"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            6,
+            1
+          ],
+          "texture": "#radome"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            6,
+            1
+          ],
+          "texture": "#radome"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            6,
+            1
+          ],
+          "texture": "#radome"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            6,
+            1
+          ],
+          "texture": "#radome"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -4,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "ground": {
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.25,
+        0.25,
+        0.25
+      ]
+    },
+    "fixed": {
+      "translation": [
+        0,
+        -4,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        -2,
+        0
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    }
+  }
+}

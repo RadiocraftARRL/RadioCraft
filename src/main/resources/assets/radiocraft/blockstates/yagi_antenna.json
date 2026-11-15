@@ -1,36 +1,106 @@
 {
   "variants": {
-    "half=lower,facing=north": {
+    "facing=north,half=lower,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=north,half=lower,turn=1": {
       "model": "radiocraft:block/yagi_antenna_lower",
       "y": 90
     },
-    "half=lower,facing=south": {
+    "facing=north,half=lower,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=north,half=lower,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=south,half=lower,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=south,half=lower,turn=1": {
       "model": "radiocraft:block/yagi_antenna_lower",
       "y": 270
     },
-    "half=lower,facing=east": {
+    "facing=south,half=lower,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=south,half=lower,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=east,half=lower,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=east,half=lower,turn=1": {
       "model": "radiocraft:block/yagi_antenna_lower",
       "y": 180
     },
-    "half=lower,facing=west": {
-      "model": "radiocraft:block/yagi_antenna_lower",
-      "y": 0
+    "facing=east,half=lower,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
     },
-    "half=upper,facing=north": {
+    "facing=east,half=lower,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=west,half=lower,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=west,half=lower,turn=1": {
+      "model": "radiocraft:block/yagi_antenna_lower"
+    },
+    "facing=west,half=lower,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=west,half=lower,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=north,half=upper,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=north,half=upper,turn=1": {
       "model": "radiocraft:block/yagi_antenna_upper",
       "y": 90
     },
-    "half=upper,facing=south": {
+    "facing=north,half=upper,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=north,half=upper,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=south,half=upper,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=south,half=upper,turn=1": {
       "model": "radiocraft:block/yagi_antenna_upper",
       "y": 270
     },
-    "half=upper,facing=east": {
+    "facing=south,half=upper,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=south,half=upper,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=east,half=upper,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=east,half=upper,turn=1": {
       "model": "radiocraft:block/yagi_antenna_upper",
       "y": 180
     },
-    "half=upper,facing=west": {
-      "model": "radiocraft:block/yagi_antenna_upper",
-      "y": 0
+    "facing=east,half=upper,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=east,half=upper,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=west,half=upper,turn=0": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=west,half=upper,turn=1": {
+      "model": "radiocraft:block/yagi_antenna_upper"
+    },
+    "facing=west,half=upper,turn=2": {
+      "model": "radiocraft:block/yagi_antenna_turned"
+    },
+    "facing=west,half=upper,turn=3": {
+      "model": "radiocraft:block/yagi_antenna_turned"
     }
   }
 }

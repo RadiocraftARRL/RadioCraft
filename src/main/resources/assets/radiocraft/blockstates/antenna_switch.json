@@ -2,6 +2,7 @@
   "multipart": [
     {
       "when": {
+        "face": "floor",
         "facing": "north"
       },
       "apply": {
@@ -10,6 +11,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "north",
         "output": "1"
       },
@@ -20,6 +22,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "north",
         "output": "2"
       },
@@ -30,6 +33,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "north",
         "output": "3"
       },
@@ -40,6 +44,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "east"
       },
       "apply": {
@@ -49,6 +54,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "east",
         "output": "1"
       },
@@ -59,6 +65,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "east",
         "output": "2"
       },
@@ -69,6 +76,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "east",
         "output": "3"
       },
@@ -78,6 +86,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "south"
       },
       "apply": {
@@ -87,6 +96,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "south",
         "output": "1"
       },
@@ -97,6 +107,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "south",
         "output": "2"
       },
@@ -106,6 +117,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "south",
         "output": "3"
       },
@@ -116,6 +128,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "west"
       },
       "apply": {
@@ -125,6 +138,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "west",
         "output": "1"
       },
@@ -134,6 +148,7 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "west",
         "output": "2"
       },
@@ -144,12 +159,197 @@
     },
     {
       "when": {
+        "face": "floor",
         "facing": "west",
         "output": "3"
       },
       "apply": {
         "model": "radiocraft:block/antenna_switch_pointer",
         "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "output": "1"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r90",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "output": "2"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r180",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "north",
+        "output": "3"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r270",
+        "x": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "output": "1"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r90",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "output": "2"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r180",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "east",
+        "output": "3"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r270",
+        "x": 90,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "output": "1"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r90",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "output": "2"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r180",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "south",
+        "output": "3"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r270",
+        "x": 90,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "output": "1"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r90",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "output": "2"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r180",
+        "x": 90,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "face": "wall",
+        "facing": "west",
+        "output": "3"
+      },
+      "apply": {
+        "model": "radiocraft:block/antenna_switch_pointer_r270",
+        "x": 90,
+        "y": 270
       }
     }
   ]
