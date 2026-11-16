@@ -113,12 +113,6 @@ public final class SatTrackApp extends DosApp {
 		refresh();
 	}
 
-	/** Left open, it keeps tracking with the screen closed while its monitor is in sight (2026-11-15). */
-	@Override
-	public boolean runsWhileClosed() {
-		return true;
-	}
-
 	@Override
 	public void tick() {
 		if(!hasDialog() && System.currentTimeMillis() - lastStatus > STATUS_MS)

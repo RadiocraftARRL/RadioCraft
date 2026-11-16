@@ -157,15 +157,23 @@ public abstract class DosApp {
 	 * while one is open, every key. Build the items with {@link #item} so a click does just what the key does.
 	 */
 	protected void setMenuBar(DosMenuBar bar) {
-		menuBar = this instanceof ShellApp ? bar : bar.withItemBeforeExit(new DosMenuBar.Item(Dos.tr("menu.to_shell"), "Shift+Esc", () -> session.toShell(this)));
+		menuBar = bar.withItemBeforeExit(new DosMenuBar.Item(Dos.tr("menu.leave"), "Shift+Esc", DosApp::leaveScreen));
+	}
+
+	/** Closes the computer's screen, leaving the programs running on it (Shift+Esc). */
+	static void leaveScreen() {
+		if(net.minecraft.client.Minecraft.getInstance().screen instanceof RadioComputerScreen screen)
+			screen.onClose();
 	}
 
 	/**
-	 * True if this program keeps working while the computer's screen is closed and its monitor is in sight (2026-11-15):
-	 * it is ticked then ({@link ComputerSession#tickClosed}) and its server side still answers it, read only.
+	 * True if this program keeps running when the player is not at it (2026-11-15, the maintainer: "all the apps should
+	 * keep running"): with the computer's screen closed (Shift+Esc or the close button) while its monitor is in sight
+	 * ({@link ComputerSession#tickClosed}; its server side then answers its read-only requests), or behind another
+	 * program. Games say no: they pause.
 	 */
-	public boolean runsWhileClosed() {
-		return false;
+	public boolean runsUnattended() {
+		return true;
 	}
 
 	/** True while one of this program's menus is pulled down (a program drawing pictures over its text leaves them out then). */
@@ -217,9 +225,12 @@ public abstract class DosApp {
 	}
 
 	final boolean key(int key, int scanCode, int modifiers) {
-		// Shift+Esc, in every program but the shell (2026-11-15): back to the shell, this one left running behind it.
-		if(key == GLFW.GLFW_KEY_ESCAPE && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0 && !(this instanceof ShellApp) && session.toShell(this))
+		// Shift+Esc, in every program (2026-11-15, the maintainer): step away from the computer, the program left running
+		// on its screen (as the screen's close button does; Esc alone leaves the program).
+		if(key == GLFW.GLFW_KEY_ESCAPE && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
+			leaveScreen();
 			return true;
+		}
 		if(dialog != null) {
 			if(key == GLFW.GLFW_KEY_ESCAPE)
 				dialog.cancel();

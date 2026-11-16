@@ -60,6 +60,12 @@ public final class SnakeApp extends DosApp {
 		place = -1;
 	}
 
+	/** A game pauses while it is not in front (2026-11-15). */
+	@Override
+	public boolean runsUnattended() {
+		return false;
+	}
+
 	@Override
 	public void tick() {
 		if(state != State.PLAYING || game == null)

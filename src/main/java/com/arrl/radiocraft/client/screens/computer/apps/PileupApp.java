@@ -63,6 +63,12 @@ public final class PileupApp extends DosApp {
 		flash = 0;
 	}
 
+	/** A game pauses while it is not in front (2026-11-15). */
+	@Override
+	public boolean runsUnattended() {
+		return false;
+	}
+
 	@Override
 	public void tick() {
 		if(flash > 0)

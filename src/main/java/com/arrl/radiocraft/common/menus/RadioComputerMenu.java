@@ -117,7 +117,7 @@ public final class RadioComputerMenu extends AbstractContainerMenu implements St
 			return;
 		}
 		if(!computer.isPowered()) {
-			new ComputerReply(player, data.getInt("rid")).error("no_power");
+			new ComputerReply(player, data.getInt("rid"), computer.getBlockPos()).error("no_power");
 			return;
 		}
 		ComputerServer.handle(computer, player, action, data);

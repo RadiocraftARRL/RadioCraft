@@ -157,6 +157,14 @@ public class RadioComputerGameTests {
 		set.putString("action", "set");
 		helper.assertTrue(RadioComputerBlockEntity.answersClosed(status), "SATTRACK's status is not answered closed");
 		helper.assertFalse(RadioComputerBlockEntity.answersClosed(set), "a SATTRACK change is answered closed");
+		CompoundTag live = status.copy(); // Every program keeps running closed (2026-11-15): WXSAT's live picture too.
+		live.putString("app", ComputerApps.WXSAT.id());
+		live.putString("action", "live");
+		helper.assertTrue(RadioComputerBlockEntity.answersClosed(live), "WXSAT's live picture is not answered closed");
+		CompoundTag send = status.copy();
+		send.putString("app", ComputerApps.EMAIL.id());
+		send.putString("action", "send");
+		helper.assertFalse(RadioComputerBlockEntity.answersClosed(send), "an email is sent from a closed screen");
 		helper.startSequence()
 				.thenIdle(15)
 				.thenExecute(() -> {

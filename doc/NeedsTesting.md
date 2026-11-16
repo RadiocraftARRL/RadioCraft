@@ -178,7 +178,7 @@ keeps the history).
 
 ## Radio computer
 
-- [ ] Test the radio computer, monitor and scanner (Shift+Esc back to DOS with the program kept running, and starting it again brings it back; SATTRACK left open keeps moving on the monitor with the screen closed; models, boot, text mode, keys, live monitor in the world, power (2026-11-15: the monitor is dark with no power, and goes dark a second or two after the battery runs flat), two players at once, break and replace keeps files)
+- [ ] Test the radio computer, monitor and scanner (Shift+Esc (or Leave in any menu) steps away with the program still on the screen; every program left on it keeps running on the monitor while you are within 18 blocks, SATTRACK and WXSAT included, games paused; models, boot, text mode, keys, live monitor in the world, power (2026-11-15: the monitor is dark with no power, and goes dark a second or two after the battery runs flat), two players at once, break and replace keeps files)
 - [ ] Test the shell and SETUP (launcher views, Program Manager icons, prompt commands, colour schemes, password, name and clock, Services page, ABOUT, launcher search)
 - [ ] Test menu bars in every program (click items, greyed items, keyboard still works, no icons through menus)
 - [ ] Test data floppies, File Manager and prompt copying (labels, DIR/COPY, A: and C:)

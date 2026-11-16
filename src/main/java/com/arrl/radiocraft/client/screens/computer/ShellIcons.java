@@ -143,7 +143,7 @@ final class ShellIcons {
 
 	private void run(int index) {
 		if(index >= 0 && index < programs().size())
-			shell.session().show(programs().get(index)); // The one left running (Shift+Esc), or a new one.
+			shell.session().launch(programs().get(index));
 	}
 
 	boolean click(int col, int row) {

@@ -124,8 +124,12 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	public static final long WATCH_TICKS = 60L;
 	/** How far from the computer a player may be and still be answered with their screen closed: the monitor's live range. */
 	public static final double WATCH_RANGE = 18.0D;
-	/** Program requests answered with the screen closed (read only), as "app/action". */
-	private static final Set<String> CLOSED_REQUESTS = Set.of("sattrack/status");
+	/**
+	 * Program requests answered with the screen closed (2026-11-15, every program keeps running): each one's "status",
+	 * and these read-only ones its own ticking asks for, as "app/action". Nothing that sends, saves or changes anything.
+	 */
+	private static final Set<String> CLOSED_REQUESTS = Set.of("wxsat/live", "wxsat/view", "aprs/map", "df/map", "distress/map",
+			"fire_alarm/map", "scada/trend", "rigctl/scope", "propagation/targets");
 	/** Players at the screen whose screensaver shows (computer batch 3A, server). */
 	private final Set<UUID> saving = new HashSet<>();
 	/** The game time someone last used the computer (a request from its screen, or opening or closing it). */
@@ -317,11 +321,11 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	/** True if {@code data} (an "app" request) is one a program may make with the screen closed ({@link #CLOSED_REQUESTS}). */
 	public static boolean answersClosed(CompoundTag data) {
-		return CLOSED_REQUESTS.contains(data.getString("app") + "/" + data.getString("action"));
+		return "status".equals(data.getString("action")) || CLOSED_REQUESTS.contains(data.getString("app") + "/" + data.getString("action"));
 	}
 
 	/**
-	 * A program on {@code player}'s closed screen (SATTRACK left open, 2026-11-15) asks for news from near its monitor:
+	 * A program on {@code player}'s closed screen (SATTRACK or WXSAT left open, 2026-11-15) asks for news from near its monitor:
 	 * the computer is in use a while longer (drawing power) and, running, answers as the open screen would.
 	 */
 	public void watched(ServerPlayer player, CompoundTag data) {
@@ -781,17 +785,32 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	/** Sends program {@code app} an event ({@code kind} with {@code data}) on {@code player}'s screen. */
 	public static void push(ServerPlayer player, ComputerApp app, String kind, CompoundTag data) {
+		push(player, null, app, kind, data);
+	}
+
+	/** {@link #push(ServerPlayer, ComputerApp, String, CompoundTag)} for the session of the computer at {@code computer}. */
+	private static void push(ServerPlayer player, @Nullable BlockPos computer, ComputerApp app, String kind, CompoundTag data) {
 		CompoundTag tag = new CompoundTag();
+		if(computer != null)
+			tag.putLong("pos", computer.asLong());
 		tag.putString("app", app.id());
 		tag.putString("kind", kind);
 		tag.put("data", data);
 		CComputerPacket.send(player, "event", tag);
 	}
 
-	/** Sends program {@code app} an event on the screen of everyone at this computer. */
+	/** Sends program {@code app} an event on the screen of everyone at this computer, or watching its monitor nearby. */
 	public void push(ComputerApp app, String kind, CompoundTag data) {
-		for(ServerPlayer player : viewers())
-			push(player, app, kind, data);
+		List<ServerPlayer> to = new ArrayList<>(viewers());
+		if(!watchers.isEmpty() && level instanceof ServerLevel server) // And those whose program runs on with the screen closed (2026-11-15).
+			for(UUID id : watchers.keySet()) {
+				ServerPlayer player = server.getServer().getPlayerList().getPlayer(id);
+				if(player != null && !to.contains(player) && player.level() == level
+						&& player.position().distanceToSqr(worldPosition.getCenter()) <= WATCH_RANGE * WATCH_RANGE)
+					to.add(player);
+			}
+		for(ServerPlayer player : to)
+			push(player, worldPosition, app, kind, data);
 	}
 
 	/**

@@ -25,7 +25,7 @@ public final class MenuBarLang {
 		s.accept("game", "Game");
 		// Shared items.
 		s.accept("exit", "Exit");
-		s.accept("to_shell", "Back to DOS (keep running)"); // Shift+Esc in every program (2026-11-15).
+		s.accept("leave", "Leave (keep running)"); // Shift+Esc in every program: step away, the screen left on (2026-11-15).
 		s.accept("open", "Open...");
 		s.accept("save", "Save");
 		s.accept("new", "New");

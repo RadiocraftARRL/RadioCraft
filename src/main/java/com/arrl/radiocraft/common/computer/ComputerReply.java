@@ -24,6 +24,17 @@ public final class ComputerReply {
 		this(player, rid, tag -> CComputerPacket.send(player, "reply", tag));
 	}
 
+	/**
+	 * An answer sent to {@code player}'s session for the computer at {@code computer} (2026-11-15): it carries the
+	 * computer's position, so with several computers' programs running on their monitors each answer finds its own.
+	 */
+	public ComputerReply(ServerPlayer player, int rid, net.minecraft.core.BlockPos computer) {
+		this(player, rid, tag -> {
+			tag.putLong("pos", computer.asLong());
+			CComputerPacket.send(player, "reply", tag);
+		});
+	}
+
 	/** An answer handed to {@code out} as the packet's tag would hold it (GameTests read it there). */
 	public ComputerReply(ServerPlayer player, int rid, Consumer<CompoundTag> out) {
 		this.player = player;

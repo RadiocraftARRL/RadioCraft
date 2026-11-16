@@ -293,7 +293,7 @@ final class ShellPrompt {
 		ComputerApp app = commands.get(found);
 		String file = line.names().isEmpty() ? "" : line.names().getFirst();
 		if(file.isEmpty())
-			session().show(app); // The one left running (Shift+Esc), or a new one.
+			session().launch(app);
 		else
 			session().launch(app, file.toUpperCase(Locale.ROOT));
 	}

@@ -59,7 +59,7 @@ public final class ComputerSession {
 	BlockPos monitorPos;
 	private final ClientLevel level;
 	private final Deque<DosApp> stack = new ArrayDeque<>();
-	/** The shell: never exits; Shift+Esc brings it in front of the programs left running (2026-11-15). */
+	/** The shell: never exits. */
 	private DosApp shell;
 	private final Map<Integer, Consumer<ComputerResponse>> pending = new LinkedHashMap<>();
 	private final ComputerFiles files = new ComputerFiles(this, com.arrl.radiocraft.common.computer.DrivePath.COMPUTER);
@@ -270,7 +270,8 @@ public final class ComputerSession {
 
 	/** An answer or event from the server (a {@code CComputerPacket}). */
 	static void receive(String kind, CompoundTag data) {
-		ComputerSession session = active;
+		// The computer it is for, when it says (2026-11-15: programs run on with the screen closed, several at once).
+		ComputerSession session = data.contains("pos") ? SESSIONS.get(BlockPos.of(data.getLong("pos"))) : active;
 		if(session == null)
 			return;
 		if("reply".equals(kind)) {
@@ -448,36 +449,13 @@ public final class ComputerSession {
 	}
 
 	/**
-	 * Brings the shell in front of {@code app} (Shift+Esc, 2026-11-15), which keeps running behind it; starting it again from
-	 * the shell brings it back ({@link #show}). False if the shell is in front already.
-	 */
-	public boolean toShell(DosApp app) {
-		if(shell == null || stack.peek() == shell)
-			return false;
-		stack.remove(shell);
-		stack.push(shell);
-		app.covered();
-		shell.resumed();
-		return true;
-	}
-
-	/** Programs left running behind the one in front, but the shell, newest first (2026-11-15). */
-	public List<DosApp> running() {
-		List<DosApp> out = new ArrayList<>();
-		for(DosApp app : stack)
-			if(app != shell && app != stack.peek())
-				out.add(app);
-		return out;
-	}
-
-	/**
-	 * Ticks the program in front while the screen is closed and the monitor in sight, if it runs then
-	 * ({@link DosApp#runsWhileClosed}, 2026-11-15: SATTRACK left open kept still).
+	 * Ticks every running program that runs unattended ({@link DosApp#runsUnattended}) while the screen is closed and
+	 * the monitor in sight (2026-11-15: SATTRACK and WXSAT left open kept still).
 	 */
 	void tickClosed() {
-		DosApp front = current();
-		if(front != null && front.runsWhileClosed())
-			front.tick();
+		for(DosApp app : List.copyOf(stack))
+			if(app.runsUnattended())
+				app.tick();
 	}
 
 	/** Ends {@code app} (never the shell); the one behind it comes to the front. */
@@ -490,10 +468,12 @@ public final class ComputerSession {
 			stack.peek().resumed();
 	}
 
+	/** The program in front ticks; those left running behind it too, but games (2026-11-15). */
 	void tick() {
 		DosApp front = current();
-		if(front != null)
-			front.tick();
+		for(DosApp app : List.copyOf(stack))
+			if(app == front || app.runsUnattended())
+				app.tick();
 	}
 
 	// -------------------- STATUS LINE --------------------
