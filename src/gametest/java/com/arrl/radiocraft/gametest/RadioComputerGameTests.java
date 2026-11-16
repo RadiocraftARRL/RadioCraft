@@ -141,6 +141,34 @@ public class RadioComputerGameTests {
 				.thenSucceed();
 	}
 
+	/**
+	 * SATTRACK left open on a closed screen (2026-11-15): its status ask from near the monitor keeps an idle computer in
+	 * use (on, with power free) for a few seconds, then it goes off; asks that change things are not answered closed.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200)
+	public static void closedScreenSatTrackKeepsItOn(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper);
+		FakePlayer player = player(helper, "watcher");
+		CompoundTag status = new CompoundTag();
+		status.putString("app", ComputerApps.SATTRACK.id());
+		status.putString("action", "status");
+		status.put("data", new CompoundTag());
+		CompoundTag set = status.copy();
+		set.putString("action", "set");
+		helper.assertTrue(RadioComputerBlockEntity.answersClosed(status), "SATTRACK's status is not answered closed");
+		helper.assertFalse(RadioComputerBlockEntity.answersClosed(set), "a SATTRACK change is answered closed");
+		helper.startSequence()
+				.thenIdle(15)
+				.thenExecute(() -> {
+					helper.assertFalse(computer.isPowered(), "an unused computer is on");
+					computer.watched(player, status);
+					helper.assertTrue(computer.isPowered(), "the closed screen's ask did not keep it on");
+				})
+				.thenIdle((int)RadioComputerBlockEntity.WATCH_TICKS + 20)
+				.thenExecute(() -> helper.assertFalse(computer.isPowered(), "it stayed on with nobody asking"))
+				.thenSucceed();
+	}
+
 	private static FakePlayer player(GameTestHelper helper, String name) {
 		FakePlayer player = FakePlayerFactory.get(helper.getLevel(), new GameProfile(UUID.nameUUIDFromBytes(("computer-" + name).getBytes()), name));
 		player.getInventory().clearContent();

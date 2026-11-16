@@ -67,7 +67,7 @@ final class ShellApp extends DosApp {
 		super(session, null);
 		programs.onActivate(index -> {
 			if(index >= 0 && index < programList.size())
-				session.launch(programList.get(index));
+				session.show(programList.get(index)); // The one left running (Shift+Esc), or a new one.
 		});
 		files.onActivate(index -> {
 			if(index >= 0 && index < fileList.size())
@@ -348,7 +348,7 @@ final class ShellApp extends DosApp {
 	private void runHit(Hit hit) {
 		search = null;
 		if(hit.app() != null)
-			session.launch(hit.app());
+			session.show(hit.app());
 		else if(hit.file() != null)
 			openFile(hit.file());
 	}

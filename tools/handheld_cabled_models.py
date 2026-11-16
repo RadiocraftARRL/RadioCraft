@@ -20,6 +20,8 @@ ROOT = Path(__file__).resolve().parent.parent / "src/main/resources/assets/radio
 ITEMS = ROOT / "models/item"
 HANDHELDS = ["vhf_handheld_3d", "basic_commercial_handheld", "upgraded_commercial_handheld", "marine_handheld"]
 DROPPED = {"antenna", "antenna_tip"}
+# Cabled models the maintainer has since edited by hand: the script no longer writes these.
+HAND_EDITED = {"vhf_handheld_3d"}
 CABLE_TEXTURE = "radiocraft:item/handheld_yagi"
 # Regions on the Yagi's 32 px texture, in model UV units (0-16): its coax and its clamp (the plug's metal).
 COAX = [13, 2, 14, 3]
@@ -49,6 +51,9 @@ def cable(collar, key):
 
 def main():
     for name in HANDHELDS:
+        if name in HAND_EDITED:
+            print(f"kept {name}_cabled.json (edited by hand)")
+            continue
         model = json.loads((ITEMS / f"{name}.json").read_text(encoding="utf-8"))
         out = copy.deepcopy(model)
         out.pop("overrides", None)

@@ -59,6 +59,8 @@ public final class ComputerSession {
 	BlockPos monitorPos;
 	private final ClientLevel level;
 	private final Deque<DosApp> stack = new ArrayDeque<>();
+	/** The shell: never exits; Shift+Esc brings it in front of the programs left running (2026-11-15). */
+	private DosApp shell;
 	private final Map<Integer, Consumer<ComputerResponse>> pending = new LinkedHashMap<>();
 	private final ComputerFiles files = new ComputerFiles(this, com.arrl.radiocraft.common.computer.DrivePath.COMPUTER);
 	private final ComputerFiles floppyFiles = new ComputerFiles(this, com.arrl.radiocraft.common.computer.DrivePath.FLOPPY);
@@ -120,7 +122,8 @@ public final class ComputerSession {
 		this.level = level;
 		for(ComputerApp app : ComputerApps.builtIn())
 			apps.add(app.id());
-		stack.push(new ShellApp(this));
+		shell = new ShellApp(this);
+		stack.push(shell);
 	}
 
 	/** The session for the computer at {@code pos}, shown on the monitor at {@code monitor}: the kept one, or a new one. */
@@ -444,9 +447,42 @@ public final class ComputerSession {
 		launch(app);
 	}
 
+	/**
+	 * Brings the shell in front of {@code app} (Shift+Esc, 2026-11-15), which keeps running behind it; starting it again from
+	 * the shell brings it back ({@link #show}). False if the shell is in front already.
+	 */
+	public boolean toShell(DosApp app) {
+		if(shell == null || stack.peek() == shell)
+			return false;
+		stack.remove(shell);
+		stack.push(shell);
+		app.covered();
+		shell.resumed();
+		return true;
+	}
+
+	/** Programs left running behind the one in front, but the shell, newest first (2026-11-15). */
+	public List<DosApp> running() {
+		List<DosApp> out = new ArrayList<>();
+		for(DosApp app : stack)
+			if(app != shell && app != stack.peek())
+				out.add(app);
+		return out;
+	}
+
+	/**
+	 * Ticks the program in front while the screen is closed and the monitor in sight, if it runs then
+	 * ({@link DosApp#runsWhileClosed}, 2026-11-15: SATTRACK left open kept still).
+	 */
+	void tickClosed() {
+		DosApp front = current();
+		if(front != null && front.runsWhileClosed())
+			front.tick();
+	}
+
 	/** Ends {@code app} (never the shell); the one behind it comes to the front. */
 	public void exit(DosApp app) {
-		if(stack.size() <= 1 || app == stack.peekLast())
+		if(stack.size() <= 1 || app == shell)
 			return;
 		boolean front = app == stack.peek();
 		stack.remove(app);

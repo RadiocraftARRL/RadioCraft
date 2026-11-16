@@ -115,6 +115,17 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	public static final double MUSIC_RANGE = 24.0D;
 	/** Players listening to its MUSIC with the screen closed (server); it stays in use, drawing power, for them. */
 	private final Set<UUID> listeners = new HashSet<>();
+	/**
+	 * Players whose closed screen's program asked for news from near its monitor, and when (server, 2026-11-15): the
+	 * computer stays in use for {@link #WATCH_TICKS} after each ask ({@link #watched}).
+	 */
+	private final Map<UUID, Long> watchers = new HashMap<>();
+	/** How long one ask from a closed screen keeps the computer in use, ticks. */
+	public static final long WATCH_TICKS = 60L;
+	/** How far from the computer a player may be and still be answered with their screen closed: the monitor's live range. */
+	public static final double WATCH_RANGE = 18.0D;
+	/** Program requests answered with the screen closed (read only), as "app/action". */
+	private static final Set<String> CLOSED_REQUESTS = Set.of("sattrack/status");
 	/** Players at the screen whose screensaver shows (computer batch 3A, server). */
 	private final Set<UUID> saving = new HashSet<>();
 	/** The game time someone last used the computer (a request from its screen, or opening or closing it). */
@@ -304,6 +315,24 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 			updatePower(false);
 	}
 
+	/** True if {@code data} (an "app" request) is one a program may make with the screen closed ({@link #CLOSED_REQUESTS}). */
+	public static boolean answersClosed(CompoundTag data) {
+		return CLOSED_REQUESTS.contains(data.getString("app") + "/" + data.getString("action"));
+	}
+
+	/**
+	 * A program on {@code player}'s closed screen (SATTRACK left open, 2026-11-15) asks for news from near its monitor:
+	 * the computer is in use a while longer (drawing power) and, running, answers as the open screen would.
+	 */
+	public void watched(ServerPlayer player, CompoundTag data) {
+		if(level == null)
+			return;
+		watchers.put(player.getUUID(), level.getGameTime());
+		updatePower(false);
+		if(powered)
+			com.arrl.radiocraft.common.computer.ComputerServer.handle(this, player, "app", data);
+	}
+
 	// -------------------- PROGRAM RADIOS MODE --------------------
 
 	/** How long the "Program radios" mode stays on unused, ticks (5 minutes). */
@@ -450,7 +479,11 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 		if(object != null)
 			object.saving = saverOn;
 		boolean keptOn = tickersKeepOn();
-		boolean inUse = hasViewers || !listeners.isEmpty() || !handSessions.isEmpty() || keptOn;
+		if(!watchers.isEmpty() && level != null) {
+			long now = level.getGameTime();
+			watchers.values().removeIf(at -> now - at > WATCH_TICKS || at > now);
+		}
+		boolean inUse = hasViewers || !listeners.isEmpty() || !handSessions.isEmpty() || !watchers.isEmpty() || keptOn;
 		if(object == null)
 			powered = inUse && !RadiocraftServerConfig.RADIO_POWER_REQUIRED.get();
 		else {

@@ -51,6 +51,22 @@ public final class MonitorMirror {
 		return frame;
 	}
 
+	/**
+	 * While a closed computer's monitor is in sight, a program in front that runs while closed (SATTRACK) keeps ticking,
+	 * asking its server side for news as it does with the screen open (2026-11-15).
+	 */
+	@SubscribeEvent
+	public static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
+		if(Minecraft.getInstance().level == null || Minecraft.getInstance().isPaused())
+			return;
+		for(ComputerSession session : ComputerSession.all())
+			if(!session.isOpen() && session.hasMirror() && frame - session.seenFrame <= SEEN_FRAMES)
+				session.tickClosed();
+	}
+
+	/** A monitor drawn within this many frames counts as in sight. */
+	private static final int SEEN_FRAMES = 30;
+
 	@SubscribeEvent
 	public static void onFrameStart(RenderFrameEvent.Pre event) {
 		int last = frame++;

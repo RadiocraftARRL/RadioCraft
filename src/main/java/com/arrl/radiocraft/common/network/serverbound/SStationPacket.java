@@ -44,6 +44,15 @@ public record SStationPacket(long pos, String action, CompoundTag data) implemen
                     && player.level().isLoaded(BlockPos.of(pos))
                     && player.level().getBlockEntity(BlockPos.of(pos)) instanceof com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity computer)
                 computer.listen(player, false);
+            // A program left open on a closed radio computer screen (SATTRACK) asks for news from near its monitor:
+            // read-only requests only, within the monitor's live range, not a spectator (2026-11-15).
+            else if(context.player() instanceof ServerPlayer player && action.equals("app") && !player.isSpectator()
+                    && com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity.answersClosed(data)
+                    && player.level().isLoaded(BlockPos.of(pos))
+                    && player.position().distanceToSqr(BlockPos.of(pos).getCenter()) <= com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity.WATCH_RANGE
+                            * com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity.WATCH_RANGE
+                    && player.level().getBlockEntity(BlockPos.of(pos)) instanceof com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity computer)
+                computer.watched(player, data);
         });
     }
 

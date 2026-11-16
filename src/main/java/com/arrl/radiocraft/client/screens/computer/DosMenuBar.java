@@ -53,6 +53,30 @@ public final class DosMenuBar {
 		return this;
 	}
 
+	/**
+	 * A copy with {@code item} added just above the Exit item (the one done by Esc), or at the end of the first menu
+	 * when there is none: the shell switch every program has (2026-11-15).
+	 */
+	public DosMenuBar withItemBeforeExit(Item item) {
+		List<Menu> out = new java.util.ArrayList<>(menus);
+		int menu = 0, at = -1;
+		for(int m = 0; m < out.size() && at < 0; m++)
+			for(int i = 0; i < out.get(m).items().size(); i++)
+				if(out.get(m).items().get(i).key().equals("Esc")) {
+					menu = m;
+					at = i;
+					break;
+				}
+		if(out.isEmpty())
+			return this;
+		List<Item> items = new java.util.ArrayList<>(out.get(menu).items());
+		items.add(at < 0 ? items.size() : at, item);
+		out.set(menu, new Menu(out.get(menu).name(), List.copyOf(items)));
+		DosMenuBar copy = new DosMenuBar(List.copyOf(out));
+		copy.f10Opens = f10Opens;
+		return copy;
+	}
+
 	public boolean isOpen() {
 		return open >= 0;
 	}
