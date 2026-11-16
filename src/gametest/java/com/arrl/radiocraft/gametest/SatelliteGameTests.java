@@ -125,6 +125,12 @@ public class SatelliteGameTests {
 					&& p.getFrequency() == satellite.downlinkHz).count();
 		}
 
+		/** Frames of sound {@code satellite} sent on its telemetry frequency. */
+		synchronized long telemetrySound(Satellite satellite) {
+			return voice.stream().filter(p -> p.getSource() instanceof SatelliteRadio.SatelliteAntenna s && s.satellite() == satellite
+					&& p.getFrequency() == satellite.telemetryHz()).count();
+		}
+
 		/** Packets of {@code kind} from any satellite. */
 		synchronized List<AntennaDataPacket> data(TncPacket.Kind kind) {
 			return data.stream().filter(p -> p.getPayload().kind() == kind).toList();
@@ -760,6 +766,28 @@ public class SatelliteGameTests {
 					helper.assertTrue(!frames.isEmpty() && frames.getFirst().getFrequency() == satellite.telemetryHz(), "the far antenna: " + frames.size());
 					helper.assertTrue(SatelliteTelemetry.decode(frames.getFirst().getPayload().text()) != null, "not a telemetry frame: " + frames.getFirst().getPayload().text());
 					far.remove();
+				})
+				.thenSucceed();
+	}
+
+	/**
+	 * The telemetry channel's carrier never drops while someone is under the satellite (2026-11-15): between the
+	 * telemetry bursts and the Morse name, beeps over a quiet carrier, every 20 ms frame of a five second stretch.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 300, batch = MODES)
+	public static void telemetryCarrierNeverDrops(GameTestHelper helper) {
+		Satellite satellite = overhead(helper, 214L);
+		Probe far = new Probe(helper, FAR);
+		long[] before = new long[1];
+		StringBuilder trace = new StringBuilder();
+		helper.startSequence()
+				.thenIdle(40)
+				.thenExecute(() -> before[0] = far.telemetrySound(satellite))
+				.thenExecuteFor(100, () -> trace.append(far.telemetrySound(satellite)).append(' '))
+				.thenExecute(() -> {
+					long sent = far.telemetrySound(satellite) - before[0];
+					far.remove();
+					helper.assertTrue(sent >= 245, "only " + sent + " frames on the telemetry channel in 5 seconds, not 250: " + trace);
 				})
 				.thenSucceed();
 	}

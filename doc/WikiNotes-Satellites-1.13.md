@@ -188,3 +188,10 @@ Everything here is **Added in 1.13**.
   degrees up, loses low passes, and its null overhead comes sooner.
 - Aim with the sky (satellites flash at night) or SATTRACK's azimuth and elevation by day.
 - Patchouli: a page in **Repeaters > Satellites** ("Working a pass by hand"), spotlight on the item. Recipe: not yet.
+
+## Telemetry beacon sound (2026-11-15)
+
+- The telemetry channel now carries a constant carrier while anyone is under the satellite: a short 1 kHz beep every
+  second over a quiet carrier, the satellite's name in Morse every minute, and each telemetry frame (every 10 s) as a
+  harsh pager-like (POCSAG, 2400 baud) digital buzz instead of APRS's whistling tones. Eclipsed, only the rare
+  power-saving frame, no carrier. Patchouli: the Satellites "Frequencies" page should describe what you hear there.

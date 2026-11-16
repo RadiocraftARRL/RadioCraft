@@ -62,8 +62,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * {@link #SSTV_GAP_TICKS} or so while anyone is under it, the way the radio computer's SSTV program sends one (a file
  * header, the tones, the file), so the SSTV program receives and keeps it.</li>
  * <li><b>Telemetry beacon</b> (every satellite, on or off, every mode): a telemetry frame ({@link SatelliteTelemetry})
- * every {@link #TELEMETRY_TICKS} on its telemetry frequency, and its name in Morse every {@link #CW_NAME_TICKS}; eclipsed,
- * only a power-saving frame every {@link #ECLIPSE_TELEMETRY_TICKS}.</li>
+ * every {@link #TELEMETRY_TICKS} on its telemetry frequency, sounding like a pager's fast digital burst
+ * ({@link com.arrl.radiocraft.common.radio.voice.PagerAudio}), and its name in Morse every {@link #CW_NAME_TICKS}. In
+ * between (2026-11-15, the maintainer) the carrier never drops while anyone is under it: a short beep every
+ * {@link #BEEP_SECONDS} second over a quiet carrier. Eclipsed, only a power-saving frame every
+ * {@link #ECLIPSE_TELEMETRY_TICKS}, and no carrier.</li>
  * <li><b>Imaging</b> ({@link SatelliteMode#IMAGING}, commercial satellites only, 2026-11-12): a weather imager like
  * NOAA's APT satellites. While anyone is under it, it scans a line across its ground track every
  * {@link AptSwath#BLOCKS_PER_PIXEL} blocks it moves ({@link AptPainter}: radar over the ground) and sends it on its
@@ -99,6 +102,10 @@ public final class SatelliteRadio {
 	public static final int TELEMETRY_TICKS = 200;
 	/** Ticks between telemetry frames while it is eclipsed on a flat battery (power saving). */
 	public static final int ECLIPSE_TELEMETRY_TICKS = 1200;
+	/** The beacon's beep between telemetry frames: one every this many seconds, this long, at this pitch and level. */
+	public static final double BEEP_SECONDS = 1.0D, BEEP_LENGTH = 0.1D, BEEP_HZ = 1000.0D, BEEP_LEVEL = 0.25D;
+	/** Ticks between looks at whether anyone is under a satellite (its beacon's carrier is sent only then). */
+	private static final int UNDER_CHECK_TICKS = 20;
 	/** Ticks between its name in Morse on the telemetry frequency. */
 	public static final int CW_NAME_TICKS = 1200;
 	/** Ticks of quiet after an SSTV picture before the next. */
@@ -142,6 +149,9 @@ public final class SatelliteRadio {
 		/** The voice ids its telemetry bursts and SSTV tones go out under (data: receivers that mute packet noise may). */
 		final UUID beaconVoice, sstvVoice;
 		long lastTelemetry = -1L, lastCwName = -1L;
+		/** Whether anyone was under it at the last look, and when that was (for the beacon's carrier). */
+		boolean someoneUnder = false;
+		long underCheckedAt = -1L;
 		int seq = 0;
 		final Queue<Frame> beaconFrames = new ArrayDeque<>();
 		@Nullable
@@ -489,6 +499,15 @@ public final class SatelliteRadio {
 		return look.up() && uplinks(level, satellite, look.elevation(), antenna, where);
 	}
 
+	/** True if anyone was under {@code satellite} at the last look, looking again every {@link #UNDER_CHECK_TICKS}. */
+	private static boolean someoneUnder(ServerLevel level, Satellite satellite, State state, long now) {
+		if(state.underCheckedAt < 0L || now - state.underCheckedAt >= UNDER_CHECK_TICKS || now < state.underCheckedAt) {
+			state.someoneUnder = anyoneUnder(level, satellite, now);
+			state.underCheckedAt = now;
+		}
+		return state.someoneUnder;
+	}
+
 	/** True if any station could hear {@code satellite} now. */
 	private static boolean anyoneUnder(ServerLevel level, Satellite satellite, long now) {
 		for(IAntenna other : listeners())
@@ -736,7 +755,7 @@ public final class SatelliteRadio {
 		if(state.beaconFrames.isEmpty() && state.beaconPacket == null) {
 			if(state.lastTelemetry < 0 || now - state.lastTelemetry >= (eclipsed ? ECLIPSE_TELEMETRY_TICKS : TELEMETRY_TICKS)) {
 				TncPacket frame = TncPacket.telemetry(newId(level), satellite.name, telemetry(satellite, state.seq++, level, now, eclipsed).encode());
-				for(short[] pcm : Afsk.burst(frame.airBytes(), frame.id()))
+				for(short[] pcm : com.arrl.radiocraft.common.radio.voice.PagerAudio.burst(frame.airBytes(), frame.id()))
 					state.beaconFrames.add(new Frame(pcm, state.beaconVoice));
 				state.beaconPacket = frame;
 				state.lastTelemetry = now;
@@ -745,6 +764,12 @@ public final class SatelliteRadio {
 				for(short[] pcm : RepeaterAudio.morse(morseName(satellite)))
 					state.beaconFrames.add(new Frame(pcm, satellite.voiceId));
 				state.lastCwName = now;
+			}
+			else if(!eclipsed && someoneUnder(level, satellite, state, now)) { // The carrier between: a beep, then quiet.
+				List<short[]> beep = RepeaterAudio.tone(BEEP_HZ, BEEP_LENGTH, BEEP_LEVEL);
+				int frames = (int)Math.round(BEEP_SECONDS * 50.0D);
+				for(int i = 0; i < frames; i++)
+					state.beaconFrames.add(new Frame(i < beep.size() ? beep.get(i) : RepeaterAudio.silence(), satellite.voiceId));
 			}
 		}
 		for(int f = 0, n = framesThisTick(now); f < n; f++) {
