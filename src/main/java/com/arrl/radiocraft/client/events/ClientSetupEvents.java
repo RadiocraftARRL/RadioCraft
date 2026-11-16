@@ -207,6 +207,7 @@ public class ClientSetupEvents {
 		event.register(com.arrl.radiocraft.client.render.TapePlayerRenderer.REEL);
 		event.register(com.arrl.radiocraft.client.render.HandheldItemRenderer.RX_LED);
 		event.register(com.arrl.radiocraft.client.render.HandheldItemRenderer.CABLED);
+		com.arrl.radiocraft.client.render.HandheldItemRenderer.cabledModels().forEach(event::register); // Each variant's own (2026-11-15).
 	}
 
 	/** The VHF handheld's item models hand their drawing to {@link com.arrl.radiocraft.client.render.HandheldItemRenderer} (its live LCD). */

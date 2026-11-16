@@ -45,6 +45,16 @@ public class HandheldItemRenderer extends BlockEntityWithoutLevelRenderer {
 	public static final ModelResourceLocation CABLED = ModelResourceLocation.standalone(Radiocraft.id("item/vhf_handheld_3d_cabled"));
 
 	/**
+	 * Each handheld variant's cabled model, {@code item/<item>_cabled} (2026-11-15): today each is the shared
+	 * {@link #CABLED} as its parent; a variant given its own look gets its own cabled model there, and nothing else
+	 * changes. Registered with the additional models.
+	 */
+	public static java.util.List<ModelResourceLocation> cabledModels() {
+		return RadiocraftItems.VHF_HANDHELD_VARIANTS.values()
+				.map(item -> ModelResourceLocation.standalone(Radiocraft.id("item/" + BuiltInRegistries.ITEM.getKey(item).getPath() + "_cabled"))).toList();
+	}
+
+	/**
 	 * True when the item renderer last resolved a handheld's model for someone with the handheld Yagi in their offhand.
 	 * The item renderer resolves a model's overrides (with the holder) just before drawing it, and draws it straight
 	 * after, on the render thread; {@link #renderByItem} reads it and clears it.
@@ -143,7 +153,10 @@ public class HandheldItemRenderer extends BlockEntityWithoutLevelRenderer {
 			return;
 		if(cabled) {
 			cabled = false;
-			BakedModel withCable = Minecraft.getInstance().getModelManager().getModel(CABLED);
+			BakedModel withCable = Minecraft.getInstance().getModelManager().getModel(
+					ModelResourceLocation.standalone(Radiocraft.id("item/" + BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath() + "_cabled")));
+			if(withCable == Minecraft.getInstance().getModelManager().getMissingModel())
+				withCable = Minecraft.getInstance().getModelManager().getModel(CABLED);
 			if(withCable != Minecraft.getInstance().getModelManager().getMissingModel())
 				original = withCable;
 		}
