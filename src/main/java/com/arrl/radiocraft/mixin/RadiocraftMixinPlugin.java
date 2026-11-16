@@ -26,6 +26,9 @@ public class RadiocraftMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+		// FerriteCore shares every block's state neighbour tables already (and changes the same method).
+		if(mixinClassName.endsWith(".MixinStateHolder"))
+			return !isLoaded("ferritecore");
 		return true;
 	}
 

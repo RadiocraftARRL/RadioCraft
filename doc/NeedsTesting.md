@@ -110,6 +110,7 @@ keeps the history).
 
 ## Wires, cables and bundles
 
+- [ ] Test wires after the shared state tables (2026-11-16, 1.14 memory work: the game starts, Demo World's house cables, dyed coax and bundles look and connect as before; placing, dyeing and breaking wire)
 - [ ] Test plain, coloured, waterproof and ground wire (look, dye, separate networks, Jade names)
 - [ ] Test dyed coax and dyed data wire (16 colours each, stay separate, through one passthrough)
 - [ ] Test data wire (look, joins devices only at its ends, teletype/fax/speaker over it, through unloaded chunks)

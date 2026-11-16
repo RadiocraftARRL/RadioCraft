@@ -4,7 +4,7 @@
 optimized as possible." No new features unless they fall out of the work. Every step is measured before and after,
 and a player's world from 1.12/1.13 must load and look the same afterwards.
 
-Status: **draft, for the maintainer's review.** Nothing here is started.
+Status: **in progress.** Step 2a done 2026-11-16 (the maintainer: "Both, mixin first"); step 2 next.
 
 ## Baseline (2026-11-15)
 
@@ -45,7 +45,18 @@ Each step records its numbers in this file (a "Measured" line under the step).
 - spark as a `-Pwithspark` dev runtime mod (like `-PwithCreate`), never shipped.
 - A note in doc/Testing.md on taking a heap histogram.
 
-### 2. Dyed wire colours as data, not 48 extra blocks (the big one: ~155-310 MB)
+### 2a. Shared neighbour tables for the wire states (done 2026-11-16)
+Every block state keeps a table of the states one property away (vanilla `StateHolder#populateNeighbours`: a Guava
+`ArrayTable` with two maps of its own and a 2-D array, ~1 KB a state). `mixin/MixinStateHolder` gives `WireBlock`
+states a 24-byte `SharedStateNeighbours$Neighbours` instead: the state's index among its block's states, looked up in
+one array per block by arithmetic. No gameplay or world change. Off when FerriteCore is installed (it does the same
+for every block). `WireStateGameTests` checks every wire state's neighbours and that the shared table is in use.
+
+**Measured** (GameTest server, `jcmd GC.class_histogram` after start, same tests, with and without the mixin): live
+heap 610 MB -> 323 MB (-287 MB); ArrayTable 242,662 -> 42,918 (the rest are other blocks); ImmutableMapEntry
+2.97 M -> 0.58 M; Object[] 173 MB -> 57 MB. 199,744 wire states now hold 4.8 MB of tables.
+
+### 2. Dyed wire colours as data, not 48 extra blocks (after 2a: the states themselves, ~60-80 MB, and FerriteCore users)
 Today every dyed power wire, data wire and coax colour is its own registered `WireBlock` (`COLOURED_WIRE`,
 `COLOURED_DATA_WIRE`, `COLOURED_COAX`: 48 blocks), each with all 3,840 states. Keep the four base wire blocks (power,
 data, coax, ground) and store a wire's colour as data: wire states 199,680 -> 15,360 (-92%).
