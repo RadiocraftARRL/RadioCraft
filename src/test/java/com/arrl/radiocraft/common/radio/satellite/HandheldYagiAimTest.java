@@ -66,4 +66,12 @@ class HandheldYagiAimTest {
 		assertTrue(SatellitePattern.VERTICAL.strength(6.0D) * SatellitePattern.handheld(64.0D) < SatellitePattern.UPLINK_FLOOR);
 		assertTrue(SatellitePattern.VERTICAL.uplinks(6.0D));
 	}
+
+	@Test
+	void tenDegreesGoodAndNinetyOffUnderSquelchOne() {
+		assertEquals(HandheldYagiAim.ON_TARGET, HandheldYagiAim.strength(60.0D, 10.0D), 1.0E-9D);
+		assertTrue(HandheldYagiAim.strength(60.0D, 15.0D) < HandheldYagiAim.ON_TARGET, "still full 5 degrees past the good cone");
+		assertTrue(HandheldYagiAim.strength(60.0D, 90.0D) < 0.025D, "squelch 1 opens 90 degrees off");
+		assertTrue(HandheldYagiAim.strength(60.0D, 60.0D) > HandheldYagiAim.strength(60.0D, 80.0D), "no more noise further off");
+	}
 }

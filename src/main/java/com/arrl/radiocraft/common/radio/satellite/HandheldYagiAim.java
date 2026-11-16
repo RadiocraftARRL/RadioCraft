@@ -6,21 +6,23 @@ package com.arrl.radiocraft.common.radio.satellite;
  * <p>
  * On target (within {@link #FULL_DEGREES} of the satellite) it hears and is heard at {@link #ON_TARGET} whatever the
  * elevation (a pointed beam has no null overhead), but for the fade at the horizon ({@link SatellitePattern#rise}).
- * Further off it fades to {@link #OFF_TARGET} at {@link #LOST_DEGREES}: the uplink
- * ({@link SatellitePattern#UPLINK_FLOOR}) goes at about {@value #UPLINK_LOST_ABOUT} degrees off.
+ * Further off it falls evenly in decibels to {@link #OFF_TARGET} at {@link #LOST_DEGREES} (maintainer, 2026-11-15: 10
+ * degrees good, and from 90 off not even squelch 1 opens): the hiss comes up as the aim wanders, the uplink
+ * ({@link SatellitePattern#UPLINK_FLOOR}) goes at about {@value #UPLINK_LOST_ABOUT} degrees off, the voice breaks up
+ * past about 50 and is gone in static past about 75.
  */
 public final class HandheldYagiAim {
 
 	/** Strength on target, before the horizon fade and space weather. */
 	public static final double ON_TARGET = 0.95D;
-	/** What is left well off target (the beam's back and sides). */
-	public static final double OFF_TARGET = 0.05D;
+	/** What is left from {@link #LOST_DEGREES} off and beyond: under an FM radio's first squelch step (0.025). */
+	public static final double OFF_TARGET = 0.02D;
 	/** Degrees off the satellite still on target. */
-	public static final double FULL_DEGREES = 20.0D;
+	public static final double FULL_DEGREES = 10.0D;
 	/** Degrees off the satellite from which only {@link #OFF_TARGET} is left. */
-	public static final double LOST_DEGREES = 45.0D;
+	public static final double LOST_DEGREES = 90.0D;
 	/** About where the uplink is lost, degrees off (for the docs). */
-	public static final int UPLINK_LOST_ABOUT = 36;
+	public static final int UPLINK_LOST_ABOUT = 34;
 
 	private HandheldYagiAim() {}
 
@@ -34,15 +36,15 @@ public final class HandheldYagiAim {
 		return Math.toDegrees(Math.acos(Math.max(-1.0D, Math.min(1.0D, dot))));
 	}
 
-	/** How much of the beam is on the satellite {@code off} degrees away: 1 on target, falling to {@link #OFF_TARGET}. */
+	/**
+	 * How much of the beam is on the satellite {@code off} degrees away: 1 on target, falling evenly in decibels to
+	 * {@link #OFF_TARGET} (as a share of {@link #ON_TARGET}) at {@link #LOST_DEGREES}, and that beyond.
+	 */
 	public static double aim(double off) {
 		if(off <= FULL_DEGREES)
 			return 1.0D;
-		if(off >= LOST_DEGREES)
-			return OFF_TARGET / ON_TARGET;
-		double t = (off - FULL_DEGREES) / (LOST_DEGREES - FULL_DEGREES);
-		double smooth = t * t * (3.0D - 2.0D * t);
-		return 1.0D - smooth * (1.0D - OFF_TARGET / ON_TARGET);
+		double t = Math.min(1.0D, (off - FULL_DEGREES) / (LOST_DEGREES - FULL_DEGREES));
+		return Math.exp(t * Math.log(OFF_TARGET / ON_TARGET));
 	}
 
 	/** The strength at which the beam hears a satellite {@code elevation} degrees up and {@code off} degrees off its aim. */

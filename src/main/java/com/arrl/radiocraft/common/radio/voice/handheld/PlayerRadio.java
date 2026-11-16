@@ -191,6 +191,8 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         //used for calculating average amplitude for power meter
         volatile long runningSampleSum=0; //stores the sum of the square of every sample since last tick
         volatile long runningSampleCount=0; //number of samples since last tick
+        /** The strongest carrier heard since the last tick, 0 to 1: the RX lamp and meter read it, not the audio (FM, 2026-11-15). */
+        volatile float carrier = 0.0F;
 
         public SynchronousRadioState(ItemStack item, boolean canReceive, boolean canTransmit, float frequency, HandheldLocation itemLocation, float gain, float micGain){
             this(item, canReceive, canTransmit, frequency, itemLocation, gain, micGain, 0.0f, 0, 0.0f);
@@ -822,6 +824,7 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
                 if(state.canReceive && !(dataBurst && state.aprsMuted()) && hears(state, packetFrequency) && Ctcss.opens(state.rxTone, antennaPacket.getCtcssTone())) {
                     state.runningSampleCount += rawAudio.length;
                     state.runningSampleSum += runningTotal;
+                    state.carrier = Math.max(state.carrier, (float)Math.max(0.001D, Math.min(1.0D, packetStrength)));
                 }
             }
 
@@ -928,7 +931,8 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         for(SynchronousRadioState state : lastTickRadios) if(state.item != null){
             IVHFHandheldCapability cap = state.item.getCapability(RadiocraftCapabilities.VHF_HANDHELDS);
             if(cap != null) {
-                cap.setReceiveStrength(state.runningSampleCount == 0 ? 0f : (float)Math.sqrt((double) state.runningSampleSum / state.runningSampleCount));
+                // FM: the carrier, not how loud its audio is (a quiet carrier lights RX too; 2026-11-15).
+                cap.setReceiveStrength(state.runningSampleCount == 0 ? 0f : state.carrier);
             }
         }
     }

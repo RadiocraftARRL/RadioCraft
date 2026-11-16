@@ -873,7 +873,7 @@ public class VHFHandheldScreen extends Screen {
             if(cap.getReceiveStrength() <= 0f) {
                 POWER_METER.setValue(Math.random() / 10.0);
             } else {
-                POWER_METER.setValue(Math.log10(cap.getReceiveStrength() / 5f));
+                POWER_METER.setValue(cap.getReceiveStrength()); // The carrier's strength, 0 to 1 (2026-11-15).
             }
         } else {
             POWER_METER.setValue(0.0);
