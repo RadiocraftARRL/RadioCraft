@@ -172,6 +172,24 @@ public final class WeatherReports {
 	}
 
 	/**
+	 * The tropical advisories at {@code pos} for the forecast sheet (2026-11-15): a heading and one line each, or nothing
+	 * when there are none. "TROPICAL OUTLOOK", "DIST 70% TO DEVELOP, CONE 38 MIN", "H3 WATCH, CONE 25 MIN".
+	 */
+	public static List<String> tropicalLines(ServerLevel level, WeatherSource source, BlockPos pos) {
+		List<com.arrl.radiocraft.api.weather.TropicalReport> tropical = source.tropical(level, pos);
+		if(tropical.isEmpty())
+			return List.of();
+		long now = level.getGameTime();
+		List<String> out = new ArrayList<>();
+		out.add("TROPICAL OUTLOOK");
+		for(com.arrl.radiocraft.api.weather.TropicalReport t : tropical) {
+			String line = com.arrl.radiocraft.common.radio.wefax.WefaxChart.tropicalLine(t, now);
+			out.add(t.formed() ? line : line.replaceFirst("%", "% TO DEVELOP,"));
+		}
+		return out;
+	}
+
+	/**
 	 * One line per storm within {@code range} of {@code pos}, nearest first: its chart number and plain name, how far
 	 * and which way it is, where it is heading, and when it gets here (or that it misses). The forecast sheet's list.
 	 */

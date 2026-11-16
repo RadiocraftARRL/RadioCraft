@@ -31,6 +31,16 @@ public final class AlertAnnouncement {
 		out.add(WeatherVoiceClip.INTRO);
 		out.add(alert.event().clip());
 		out.add(WeatherVoiceClip.FOR_THE_AREA);
+		if(alert.event() == WeatherAlert.Event.HLS) { // "A tropical disturbance ... may become a hurricane. Seventy percent chance. It could reach the area within two days."
+			out.add(WeatherVoiceClip.A_TROPICAL_DISTURBANCE);
+			if(alert.category() >= 0) {
+				out.addAll(WeatherVoiceClip.number(alert.category()));
+				out.add(WeatherVoiceClip.PERCENT_CHANCE);
+			}
+			out.add(WeatherVoiceClip.COULD_REACH_THE_AREA);
+			out.add(WeatherVoiceClip.END_OF_MESSAGE);
+			return out;
+		}
 		if(alert.hasStorm()) {
 			out.add(WeatherVoiceClip.THE_STORM_IS);
 			if(overhead(alert, rx, rz))
@@ -46,7 +56,7 @@ public final class AlertAnnouncement {
 				out.add(WeatherVoiceClip.compass(alert.heading()));
 			}
 		}
-		if(alert.event() == WeatherAlert.Event.HUW && alert.category() > 0) {
+		if(hurricane(alert) && alert.category() > 0) {
 			out.add(WeatherVoiceClip.CATEGORY);
 			out.addAll(WeatherVoiceClip.number(alert.category()));
 		}
@@ -56,10 +66,18 @@ public final class AlertAnnouncement {
 		return out;
 	}
 
+	/** Whether the alert is about a hurricane, whose category is given (a warning or a watch). */
+	private static boolean hurricane(WeatherAlert alert) {
+		return alert.event() == WeatherAlert.Event.HUW || alert.event() == WeatherAlert.Event.HUA;
+	}
+
 	/** The same as a line of text: "TORNADO WARNING: STORM 320 BLOCKS NW, MOVING E. TAKE SHELTER NOW." */
 	public static String text(WeatherAlert alert, double rx, double rz) {
+		if(alert.event() == WeatherAlert.Event.HLS)
+			return alert.event().words() + ": A TROPICAL DISTURBANCE MAY BECOME A HURRICANE"
+					+ (alert.category() >= 0 ? ", " + alert.category() + "% CHANCE" : "") + ". IT COULD REACH THE AREA WITHIN 2 DAYS.";
 		StringBuilder out = new StringBuilder(alert.event().words());
-		if(alert.event() == WeatherAlert.Event.HUW && alert.category() > 0)
+		if(hurricane(alert) && alert.category() > 0)
 			out.append(" (CATEGORY ").append(alert.category()).append(')');
 		if(alert.hasStorm()) {
 			if(overhead(alert, rx, rz))

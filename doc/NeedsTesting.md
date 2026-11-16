@@ -256,6 +256,7 @@ keeps the history).
 - [ ] Test the weather alert generator and receiver (models, status, `/awm approach tornado 2`, redstone pulse, silence, battery, antenna)
 - [ ] Test storm damage to a station (wire antennas snap in a cat 3 hurricane, mounted ones stand to cat 4; `/awm hazard hurricane`)
 - [ ] Test WEFAX weather charts with AWM storms (`/awm spawn supercell`, `/rcdebug wefax radar`, `/rcdebug wx`)
+- [ ] Test the tropical advisories (2026-11-15; near the sea, waiting for a hurricane season or `/rcdebug wefax tropical`): the weather radio says a tropical weather statement with the chance a disturbance becomes a hurricane, then a hurricane or tropical storm watch with its category ("prepare now", new voice clips), then the warning; WX REPT prints a third sheet, the tropical outlook (tracks, dashed cones, X with % for a disturbance, H3/TS for a storm), and the forecast sheet lists them
 
 ## Moderation and admin
 

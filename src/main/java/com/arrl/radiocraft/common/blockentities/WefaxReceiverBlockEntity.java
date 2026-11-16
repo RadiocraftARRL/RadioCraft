@@ -78,7 +78,8 @@ public class WefaxReceiverBlockEntity extends BlockEntity implements MenuProvide
 	public static final int FORECAST_RANGE = 1500;
 	/** The sheet to print once the one in hand is out (WX REPT prints two). */
 	@Nullable
-	private WefaxPrints.Print queuedPrint = null;
+	/** Sheets of a WX REPT still to print, in order: the forecast, then the tropical outlook when there is one. */
+	private final java.util.ArrayDeque<WefaxPrints.Print> queuedPrints = new java.util.ArrayDeque<>();
 	/** A printed sheet waiting in the tray (shown on the screen and the model) until someone takes it. */
 	private ItemStack ready = ItemStack.EMPTY;
 	/**
@@ -229,7 +230,15 @@ public class WefaxReceiverBlockEntity extends BlockEntity implements MenuProvide
 		List<String> lines = new ArrayList<>(WeatherReports.lines(serverLevel, source, here, ""));
 		lines.add("");
 		lines.addAll(WeatherReports.stormList(serverLevel, source, here, FORECAST_RANGE));
-		queuedPrint = WefaxPrints.printText(serverLevel, here, Component.translatable("item.radiocraft.wefax_chart.forecast"), "FORECAST", lines);
+		List<String> tropical = WeatherReports.tropicalLines(serverLevel, source, here);
+		if(!tropical.isEmpty()) {
+			lines.add("");
+			lines.addAll(tropical);
+		}
+		queuedPrints.clear();
+		queuedPrints.add(WefaxPrints.printText(serverLevel, here, Component.translatable("item.radiocraft.wefax_chart.forecast"), "FORECAST", lines));
+		if(!tropical.isEmpty()) // A hurricane or a disturbance about: its chart too (2026-11-15).
+			queuedPrints.add(WefaxPrints.printChart(serverLevel, source, here, WefaxChart.Type.TROPICAL, ""));
 		queuedSource = Source.BROADCAST;
 		start(WefaxPrints.printChart(serverLevel, source, here, WefaxChart.Type.RADAR, ""), alertLevel(serverLevel, source, here), Source.BROADCAST);
 	}
@@ -569,12 +578,12 @@ public class WefaxReceiverBlockEntity extends BlockEntity implements MenuProvide
 			start(WefaxPrints.printText(level, worldPosition, Component.translatable("item.radiocraft.wefax_chart.solar"), "SOLAR ALERT", sheet));
 			return;
 		}
-		if(queuedPrint != null) {
+		if(!queuedPrints.isEmpty()) {
 			if(getPaper() > 0) {
-				WefaxPrints.Print next = queuedPrint;
-				queuedPrint = null;
+				WefaxPrints.Print next = queuedPrints.poll();
 				start(next, 1, queuedSource);
-				queuedSource = Source.LOCAL;
+				if(queuedPrints.isEmpty())
+					queuedSource = Source.LOCAL;
 			}
 			return;
 		}

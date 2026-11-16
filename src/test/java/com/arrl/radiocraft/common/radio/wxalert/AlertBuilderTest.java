@@ -56,4 +56,27 @@ class AlertBuilderTest {
 		assertEquals(AlertBuilder.key(WeatherAlert.Event.TOR, 5), AlertBuilder.key(WeatherAlert.Event.TOR, 5));
 		assertNotEquals(AlertBuilder.key(WeatherAlert.Event.TOR, 5), AlertBuilder.key(WeatherAlert.Event.SVR, 5));
 	}
+
+	/**
+	 * Tropical advisories (2026-11-15): a disturbance gives a tropical weather statement with its chance, a storm a day or
+	 * two off a watch (hurricane or tropical storm), a near one the warning, unless a storm's warning is already out.
+	 */
+	@Test
+	void tropicalAdvisoriesGiveStatementsWatchesAndWarnings() {
+		AlertArea area = AlertArea.around(List.of(new double[] {0, 0}, new double[] {100, 0}), 50);
+		List<com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint> track = List.of(new com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint(0, 3000, 0, 800));
+		var disturbance = new com.arrl.radiocraft.api.weather.TropicalReport(9, com.arrl.radiocraft.api.weather.TropicalReport.Stage.DISTURBANCE, false, -1, 65, 500, 30000, 3200, track);
+		WeatherAlert statement = AlertBuilder.forTropical(disturbance, area, 0, List.of());
+		assertEquals(WeatherAlert.Event.HLS, statement.event());
+		assertEquals(65, statement.category());
+		assertTrue(statement.affects(50, 0));
+		var watch = new com.arrl.radiocraft.api.weather.TropicalReport(9, com.arrl.radiocraft.api.weather.TropicalReport.Stage.WATCH, true, 3, 100, 0, 15000, 3200, track);
+		assertEquals(WeatherAlert.Event.HUA, AlertBuilder.forTropical(watch, area, 0, List.of()).event());
+		var stormWatch = new com.arrl.radiocraft.api.weather.TropicalReport(9, com.arrl.radiocraft.api.weather.TropicalReport.Stage.OUTLOOK, false, 0, 0, 0, 30000, 3200, track);
+		assertEquals(WeatherAlert.Event.TRA, AlertBuilder.forTropical(stormWatch, area, 0, List.of()).event());
+		var warning = new com.arrl.radiocraft.api.weather.TropicalReport(9, com.arrl.radiocraft.api.weather.TropicalReport.Stage.WARNING, true, 3, 100, 0, 5000, 3200, track);
+		assertEquals(WeatherAlert.Event.HUW, AlertBuilder.forTropical(warning, area, 0, List.of()).event());
+		WeatherAlert already = new WeatherAlert(WeatherAlert.Event.HUW, 1, 3000, 0, 900, 800, 6000, 3, 90);
+		assertNull(AlertBuilder.forTropical(warning, area, 0, List.of(already)), "two hurricane warnings for one storm");
+	}
 }

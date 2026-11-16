@@ -24,6 +24,8 @@ import java.util.Set;
  * excessive heat and extreme cold;</li>
  * <li>a tornadic or severe storm forecast to reach the area within {@link #WATCH_TICKS} gives a watch for the whole
  * area (tornado watch, severe thunderstorm watch), as does a tornado-watch day there;</li>
+ * <li>a tropical disturbance, storm or hurricane forecast to reach the area within two days ({@link #forTropical}):
+ * a tropical weather statement, then a watch, then a warning (2026-11-15);</li>
  * <li>a station reporting {@link #FLOOD_RAIN_HUNDREDTHS} of rain in the last hour gives a flash flood warning round it,
  * and one reporting high wind ({@link #HIGH_WIND_MPH} sustained or {@link #HIGH_GUST_MPH} gusts) a high wind
  * warning.</li>
@@ -62,6 +64,11 @@ public final class AlertBuilder {
 				if(alert != null)
 					out.add(alert);
 			}
+			for(com.arrl.radiocraft.api.weather.TropicalReport tropical : source.tropical(level, centre)) {
+				WeatherAlert alert = forTropical(tropical, area, now, out);
+				if(alert != null)
+					out.add(alert);
+			}
 			if(source.tornadoWatch(level, centre) && out.stream().noneMatch(a -> a.event() == WeatherAlert.Event.TOA))
 				out.add(areaAlert(WeatherAlert.Event.TOA, key(WeatherAlert.Event.TOA, now / 24000L), area, now + WATCH_LIFE));
 		}
@@ -94,6 +101,30 @@ public final class AlertBuilder {
 			if(point.tick() >= now && point.tick() <= now + WATCH_TICKS && area.touches(point.x(), point.z(), point.radius()))
 				return areaAlert(watch, key(watch, storm.id()), area, now + WATCH_LIFE);
 		return null;
+	}
+
+	/**
+	 * The alert a tropical advisory for the area gives (2026-11-15): a disturbance a tropical weather statement with its
+	 * chance of developing, a storm a day or two off a hurricane or tropical storm watch (with its category), one within
+	 * half a day the warning, unless a warning for a storm is already out ({@link #forStorm} gives those as it nears).
+	 */
+	@Nullable
+	static WeatherAlert forTropical(com.arrl.radiocraft.api.weather.TropicalReport tropical, AlertArea area, long now, List<WeatherAlert> already) {
+		int x = (int)Math.round(area.centreX()), z = (int)Math.round(area.centreZ()), radius = (int)Math.ceil(area.radius());
+		return switch(tropical.stage()) {
+			case DISTURBANCE -> new WeatherAlert(WeatherAlert.Event.HLS, key(WeatherAlert.Event.HLS, tropical.id()), x, z, radius, 0,
+					now + WATCH_LIFE, tropical.chancePercent(), -1);
+			case OUTLOOK, WATCH -> {
+				WeatherAlert.Event event = tropical.hurricane() ? WeatherAlert.Event.HUA : WeatherAlert.Event.TRA;
+				yield new WeatherAlert(event, key(event, tropical.id()), x, z, radius, 0, now + WATCH_LIFE, tropical.category(), -1);
+			}
+			case WARNING -> {
+				if(already.stream().anyMatch(a -> a.event() == WeatherAlert.Event.HUW || a.event() == WeatherAlert.Event.TRW))
+					yield null;
+				WeatherAlert.Event event = tropical.hurricane() ? WeatherAlert.Event.HUW : WeatherAlert.Event.TRW;
+				yield new WeatherAlert(event, key(event, tropical.id()), x, z, radius, 0, now + WARNING_LIFE, tropical.category(), -1);
+			}
+		};
 	}
 
 	/** The warning a storm of {@code kind} over the area gives, or null for none (rain, plain thunderstorms). */

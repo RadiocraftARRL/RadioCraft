@@ -72,7 +72,15 @@ public enum WeatherVoiceClip {
 	EIGHTY(439),
 	NINETY(489),
 	HUNDRED(514),
-	THOUSAND(631);
+	THOUSAND(631),
+	// Tropical advisories (2026-11-15).
+	HURRICANE_WATCH(1129),
+	TROPICAL_STORM_WATCH(1513),
+	TROPICAL_WEATHER_STATEMENT(1456),
+	A_TROPICAL_DISTURBANCE(3313),
+	PERCENT_CHANCE(1044),
+	COULD_REACH_THE_AREA(2339),
+	PREPARE_NOW(3364);
 
 	/** The attention tone before an announcement (1050 Hz), milliseconds. */
 	public static final int TONE_MS = 5000;

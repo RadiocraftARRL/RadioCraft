@@ -18,6 +18,9 @@ Needs Python 3.10+ with numpy, soundfile (libsndfile with Ogg Vorbis) and piper-
 --tone-only makes the tone without Piper. The script prints the clips' lengths as Java enum entries for
 WeatherVoiceClip; paste them in if the words change.
 
+--new (2026-11-15) renders only the weather radio's words that have no clip yet (the tropical advisories'), leaving the
+others exactly as they are, and prints their WeatherVoiceClip entries.
+
 --station (2026-11-14) renders the FM broadcast station's extra words (STATION_WORDS: forecasts, station IDs, letters
 for callsigns), only those whose clip does not exist yet, so the weather radio's clips are never touched. The station
 reads them on the server (common/radio/station/StationVoice; its VOCABULARY lists the same ids). A local venv:
@@ -78,6 +81,14 @@ WORDS = [
     ('twenty', 'twenty'), ('thirty', 'thirty'), ('forty', 'forty'), ('fifty', 'fifty'), ('sixty', 'sixty'),
     ('seventy', 'seventy'), ('eighty', 'eighty'), ('ninety', 'ninety'), ('hundred', 'hundred'),
     ('thousand', 'thousand'),
+    # Tropical advisories (2026-11-15).
+    ('hurricane_watch', 'Hurricane watch'),
+    ('tropical_storm_watch', 'Tropical storm watch'),
+    ('tropical_weather_statement', 'Tropical weather statement'),
+    ('a_tropical_disturbance', 'A tropical disturbance over the sea may become a hurricane.'),
+    ('percent_chance', 'percent chance.'),
+    ('could_reach_the_area', 'It could reach the area within two days.'),
+    ('prepare_now', 'Prepare now. Secure your home and board up windows.'),
 ]
 
 # The FM broadcast station's words (2026-11-14): forecasts, station IDs, letters for callsigns, and single words so a
@@ -160,6 +171,23 @@ def words(model):
     print('\n'.join(lines))
 
 
+def new_words(model):
+    """The weather radio's words whose clips do not exist yet (existing clips are left exactly as they are), printed as
+    WeatherVoiceClip entries to add."""
+    from piper import PiperVoice
+    voice = PiperVoice.load(model)
+    lines = []
+    for word, text in WORDS:
+        if os.path.exists(os.path.join(ROOT, 'word_' + word + '.ogg')):
+            continue
+        samples, rate = speak(voice, text)
+        peak = float(np.max(np.abs(samples))) or 1.0
+        samples = samples * (0.85 / peak)
+        write_ogg('word_' + word, samples, rate)
+        lines.append('\t%s(%d),' % (word.upper(), round(len(samples) * 1000 / rate)))
+    print('\n'.join(lines))
+
+
 def station_words(model):
     """The station's words whose clips do not exist yet (existing clips are left exactly as they are)."""
     from piper import PiperVoice
@@ -180,10 +208,13 @@ if __name__ == '__main__':
     parser.add_argument('--model', help='the Piper voice, en_US-ljspeech-high.onnx')
     parser.add_argument('--tone-only', action='store_true')
     parser.add_argument('--station', action='store_true', help="only the FM station's new words")
+    parser.add_argument('--new', action='store_true', help="only the weather radio's words with no clip yet")
     args = parser.parse_args()
     os.makedirs(ROOT, exist_ok=True)
     if args.station:
         station_words(args.model)
+    elif args.new:
+        new_words(args.model)
     else:
         tone()
         if not args.tone_only:

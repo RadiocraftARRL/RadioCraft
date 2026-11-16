@@ -156,6 +156,8 @@ public final class WefaxHandler extends PictureHandler {
 				}
 				wefax.queue.add(new Queued(WefaxChart.Type.RADAR.title(), WefaxChart.paint(level, source, here, WefaxChart.Type.RADAR, "")));
 				wefax.queue.add(new Queued("FORECAST", WefaxChart.paintText("FORECAST", forecast(level, source, here))));
+				if(!source.tropical(level, here).isEmpty()) // A hurricane or a disturbance about: its chart too (2026-11-15).
+					wefax.queue.add(new Queued(WefaxChart.Type.TROPICAL.title(), WefaxChart.paint(level, source, here, WefaxChart.Type.TROPICAL, "")));
 				reply.ok();
 			}
 			case "chart" -> {
@@ -185,6 +187,11 @@ public final class WefaxHandler extends PictureHandler {
 		List<String> lines = new ArrayList<>(WeatherReports.lines(level, source, here, ""));
 		lines.add("");
 		lines.addAll(WeatherReports.stormList(level, source, here, WefaxReceiverBlockEntity.FORECAST_RANGE));
+		List<String> tropical = WeatherReports.tropicalLines(level, source, here);
+		if(!tropical.isEmpty()) {
+			lines.add("");
+			lines.addAll(tropical);
+		}
 		return lines;
 	}
 

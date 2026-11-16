@@ -1,5 +1,8 @@
 package com.arrl.radiocraft.gametest;
 
+import com.arrl.radiocraft.common.radio.wxalert.AlertArea;
+import com.arrl.radiocraft.common.radio.wxalert.AlertBuilder;
+import com.arrl.radiocraft.common.radio.wxalert.WeatherAlert;
 import com.arrl.radiocraft.Radiocraft;
 import com.arrl.radiocraft.api.weather.StormReport;
 import com.arrl.radiocraft.api.weather.WeatherReport;
@@ -58,6 +61,54 @@ public class WeatherAlertGameTests {
 			return List.of(new StormReport(77L, StormReport.Kind.TORNADO, false, 0L,
 					List.of(new StormReport.TrackPoint(0L, at.getX(), at.getZ(), 40.0D, 1.0F)), 2));
 		}
+	}
+
+	/** No storms near, but a tropical disturbance and a hurricane forecast to come (2026-11-15). */
+	private record Tropical(BlockPos at) implements WeatherSource {
+		@Override public String name() { return "test"; }
+		@Override public boolean handles(Level level) { return true; }
+		@Override public boolean isLocal() { return true; }
+		@Override public WeatherReport reportAt(ServerLevel level, BlockPos pos, long gameTime) {
+			return new WeatherReport(WeatherReport.Precipitation.NONE, 0.0F, 0.0F, 25.0D, 90.0D, 5.0D, 1012.0D, 70.0D, Set.of());
+		}
+		@Override public double rainAt(ServerLevel level, double x, double z, long gameTime) { return 0.0D; }
+		@Override public double thunderAt(ServerLevel level, double x, double z, long gameTime) { return 0.0D; }
+		@Override public Optional<Arrival> nextArrival(ServerLevel level, BlockPos pos, long horizon) { return Optional.empty(); }
+		@Override public long forecastHorizon(ServerLevel level) { return 0L; }
+		@Override public List<StormReport> storms(ServerLevel level, BlockPos center, double radius, boolean forecast) { return List.of(); }
+		@Override public List<com.arrl.radiocraft.api.weather.TropicalReport> tropical(ServerLevel level, BlockPos pos) {
+			long now = level.getGameTime();
+			List<com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint> track = new java.util.ArrayList<>();
+			for(int i = 0; i < 8; i++)
+				track.add(new com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint(now + i * 3000L, at.getX() + 6000 - i * 700, at.getZ() + 2000, 900));
+			return List.of(
+					new com.arrl.radiocraft.api.weather.TropicalReport(5L, com.arrl.radiocraft.api.weather.TropicalReport.Stage.DISTURBANCE, false, -1, 70, now + 4000, now + 30000, 3600, track),
+					new com.arrl.radiocraft.api.weather.TropicalReport(6L, com.arrl.radiocraft.api.weather.TropicalReport.Stage.WATCH, true, 4, 100, now - 4000, now + 15000, 3600, track));
+		}
+	}
+
+	/**
+	 * Tropical advisories reach the air (2026-11-15): with a disturbance and a hurricane forecast to come, an area's alerts
+	 * hold a tropical weather statement (its chance) and a hurricane watch (its category), and the WEFAX tropical outlook
+	 * charts them; with none, it says so.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void tropicalAdvisoriesGiveAlertsAndAChart(GameTestHelper helper) {
+		BlockPos here = helper.absolutePos(new BlockPos(2, 1, 2));
+		Tropical source = new Tropical(here);
+		AlertArea area = AlertArea.around(List.of(new double[] {here.getX() - 200, here.getZ()}, new double[] {here.getX() + 200, here.getZ()}), 100);
+		List<WeatherAlert> alerts = AlertBuilder.build(helper.getLevel(), source, List.of(), area, helper.getLevel().getGameTime());
+		helper.assertTrue(alerts.stream().anyMatch(a -> a.event() == WeatherAlert.Event.HLS && a.category() == 70), "no tropical statement: " + alerts);
+		helper.assertTrue(alerts.stream().anyMatch(a -> a.event() == WeatherAlert.Event.HUA && a.category() == 4), "no hurricane watch: " + alerts);
+		byte[] chart = com.arrl.radiocraft.common.radio.wefax.WefaxChart.paint(helper.getLevel(), source, here, com.arrl.radiocraft.common.radio.wefax.WefaxChart.Type.TROPICAL, "");
+		byte[] empty = com.arrl.radiocraft.common.radio.wefax.WefaxChart.paint(helper.getLevel(), new Tornado(here), here, com.arrl.radiocraft.common.radio.wefax.WefaxChart.Type.TROPICAL, "");
+		int ink = 0;
+		for(int i = 0; i < chart.length; i++)
+			if(chart[i] != empty[i])
+				ink++;
+		helper.assertTrue(ink > 100, "the tropical chart draws little more than an empty one: " + ink + " pixels");
+		helper.assertTrue(com.arrl.radiocraft.common.radio.weather.WeatherReports.tropicalLines(helper.getLevel(), source, here).size() == 3, "the forecast sheet's tropical lines");
+		helper.succeed();
 	}
 
 	private static void beacon(GameTestHelper helper, AprsTerminalBlockEntity h19, String call, int dx, int dz) {

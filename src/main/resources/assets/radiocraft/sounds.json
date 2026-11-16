@@ -492,6 +492,48 @@
       "radiocraft:weather_alert/word_thousand"
     ]
   },
+  "weather_alert.word_hurricane_watch": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_hurricane_watch"
+    ]
+  },
+  "weather_alert.word_tropical_storm_watch": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_tropical_storm_watch"
+    ]
+  },
+  "weather_alert.word_tropical_weather_statement": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_tropical_weather_statement"
+    ]
+  },
+  "weather_alert.word_a_tropical_disturbance": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_a_tropical_disturbance"
+    ]
+  },
+  "weather_alert.word_percent_chance": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_percent_chance"
+    ]
+  },
+  "weather_alert.word_could_reach_the_area": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_could_reach_the_area"
+    ]
+  },
+  "weather_alert.word_prepare_now": {
+    "subtitle": "subtitles.radiocraft.weather_alert.voice",
+    "sounds": [
+      "radiocraft:weather_alert/word_prepare_now"
+    ]
+  },
   "static_cw": {
     "sounds": [
       "radiocraft:static_cw"

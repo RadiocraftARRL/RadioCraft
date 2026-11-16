@@ -352,6 +352,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("item.radiocraft.wefax_chart.radar", "WEFAX Radar Chart");
 			provider.add("item.radiocraft.wefax_chart.forecast", "WEFAX Forecast Chart");
 			provider.add("item.radiocraft.wefax_chart.surface", "WEFAX Surface Analysis");
+			provider.add("item.radiocraft.wefax_chart.tropical", "WEFAX Tropical Outlook");
 			provider.add("item.radiocraft.wefax_chart.solar", "WEFAX Solar Weather Report");
 			provider.add("screen.radiocraft.wefax.take", "Click to take the sheet");
 			provider.add("tooltip.radiocraft.wefax_receiver", "Put a radio with an antenna beside it and paper in it: prints weather charts and the solar report.");

@@ -55,6 +55,7 @@ public final class WefaxPrints {
 					case RADAR -> "WEFAX Radar Chart";
 					case FORECAST -> "WEFAX Forecast Chart";
 					case SURFACE -> "WEFAX Surface Analysis";
+					case TROPICAL -> "WEFAX Tropical Outlook";
 				});
 		return new Print(sheet(level, center, pixels, name, lore), pixels);
 	}

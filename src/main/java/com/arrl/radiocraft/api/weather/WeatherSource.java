@@ -63,6 +63,14 @@ public interface WeatherSource {
 		return false;
 	}
 
+	/**
+	 * Tropical advisories for {@code pos}, soonest first: disturbances, storms and hurricanes forecast to reach it
+	 * within about two days (2026-11-15). Empty for sources that cannot tell.
+	 */
+	default List<TropicalReport> tropical(ServerLevel level, BlockPos pos) {
+		return List.of();
+	}
+
 	/** The day {@code daysAhead} from today (0 today, 1 tomorrow) at {@code pos}; {@link DayOutlook#UNKNOWN} if the source cannot say. */
 	default DayOutlook outlook(ServerLevel level, BlockPos pos, int daysAhead) {
 		return DayOutlook.UNKNOWN;

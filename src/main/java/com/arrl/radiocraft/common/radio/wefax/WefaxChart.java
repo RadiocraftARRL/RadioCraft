@@ -27,6 +27,9 @@ import java.util.Optional;
  * <li>{@link Type#FORECAST}: each storm's track an hour ahead (or to the forecast's end), with its outline now and at
  * the end, storms forecast to form drawn dashed with the minutes until they do, and the next arrival at the station.</li>
  * <li>{@link Type#SURFACE}: isobars every 4 hectopascals, low and high pressure centres, and wind arrows.</li>
+ * <li>{@link Type#TROPICAL} (2026-11-15): the tropical advisories here ({@link WeatherSource#tropical}), zoomed out to
+ * fit: each track dotted with a tick every eighth of a day, its cone outlined dashed, a disturbance an X with its chance
+ * of developing, a storm its circle with TS or H and its category.</li>
  * </ul>
  * Everything comes from a {@link WeatherSource}, so it works with vanilla weather or a weather mod. The station is at
  * the centre.
@@ -35,7 +38,9 @@ public final class WefaxChart {
 
 	/** The charts a WEFAX station sends. */
 	public enum Type {
-		RADAR("RADAR"), FORECAST("FCST +60M"), SURFACE("SFC ANALYSIS");
+		RADAR("RADAR"), FORECAST("FCST +60M"), SURFACE("SFC ANALYSIS"),
+		/** Tropical disturbances, storms and hurricanes forecast to come within two days, with their cones (2026-11-15). */
+		TROPICAL("TROPICAL OUTLOOK");
 
 		private final String title;
 
@@ -119,6 +124,8 @@ public final class WefaxChart {
 	 * @param station the sending station's callsign, for the header (may be empty)
 	 */
 	public static byte[] paint(ServerLevel level, WeatherSource source, BlockPos center, Type type, String station) {
+		if(type == Type.TROPICAL)
+			return paintTropical(level, source, center, station);
 		long now = level.getGameTime();
 		List<StormReport> storms = source.storms(level, center, 1500, type == Type.FORECAST);
 		Frame frame = frame(center, storms);
@@ -135,6 +142,84 @@ public final class WefaxChart {
 		header(canvas, type, station, WeatherReports.timestamp(level.getDayTime()));
 		footer(level, source, canvas, frame, type, center, now);
 		return canvas.pixels;
+	}
+
+	// ---------------------------------------------------------------- Tropical outlook
+
+	/** Blocks a pixel of the tropical chart: the smallest power of two that fits every track and cone, 64 at least. */
+	static int tropicalScale(BlockPos center, List<com.arrl.radiocraft.api.weather.TropicalReport> tropical) {
+		double reach = 0;
+		for(com.arrl.radiocraft.api.weather.TropicalReport t : tropical)
+			for(com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint p : t.track())
+				reach = Math.max(reach, Math.max(Math.abs(p.x() - center.getX()), Math.abs(p.z() - center.getZ())) + t.coneRadius());
+		int scale = 64;
+		while(scale < 1024 && reach > scale * (CHART_BOTTOM - CHART_TOP) / 2.0)
+			scale *= 2;
+		return scale;
+	}
+
+	static byte[] paintTropical(ServerLevel level, WeatherSource source, BlockPos center, String station) {
+		long now = level.getGameTime();
+		List<com.arrl.radiocraft.api.weather.TropicalReport> tropical = source.tropical(level, center);
+		Frame frame = new Frame(center.getX(), center.getZ(), tropicalScale(center, tropical));
+		Canvas canvas = new Canvas();
+		canvas.fill(PAPER);
+		coast(level, canvas, frame);
+		grid(canvas, frame);
+		for(com.arrl.radiocraft.api.weather.TropicalReport t : tropical) {
+			List<com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint> track = t.track();
+			if(track.isEmpty())
+				continue;
+			int cone = Math.max(2, (int)Math.round(t.coneRadius() / frame.blocksPerPixel()));
+			int px = frame.pixelX(track.getFirst().x()), pz = frame.pixelZ(track.getFirst().z());
+			for(int i = 0; i < track.size(); i++) {
+				var p = track.get(i);
+				int x = frame.pixelX(p.x()), z = frame.pixelZ(p.z());
+				canvas.dotted(px, pz, x, z, INK);
+				canvas.square(x, z, 0, INK);
+				if(i % 4 == 0 || i == track.size() - 1)
+					canvas.dashedRing(x, z, cone, SMUDGE); // The cone, outlined every half day.
+				px = x;
+				pz = z;
+			}
+			int x = frame.pixelX(track.getFirst().x()), z = frame.pixelZ(track.getFirst().z());
+			String label;
+			if(!t.formed()) { // A disturbance: an X.
+				canvas.line(x - 2, z - 2, x + 2, z + 2, INK);
+				canvas.line(x - 2, z + 2, x + 2, z - 2, INK);
+				label = t.chancePercent() + "%";
+			}
+			else {
+				canvas.ring(x, z, Math.max(2, (int)Math.round(track.getFirst().radius() / frame.blocksPerPixel())), INK);
+				canvas.square(x, z, 1, INK);
+				label = t.hurricane() ? "H" + Math.max(1, t.category()) : "TS";
+			}
+			canvas.label(label, x + 4, z - 2);
+		}
+		stationMark(canvas, frame, center);
+		header(canvas, Type.TROPICAL, station, WeatherReports.timestamp(level.getDayTime()));
+		int top = SIZE - FOOTER;
+		for(int y = top; y < SIZE; y++)
+			for(int fx = 0; fx < SIZE; fx++)
+				canvas.set(fx, y, PAPER);
+		for(int fx = 0; fx < SIZE; fx++)
+			canvas.set(fx, top, INK);
+		String text = tropical.isEmpty() ? "NO TROPICAL WX  " + frame.blocksPerPixel() * 32 + "/SQ"
+				: tropicalLine(tropical.getFirst(), now);
+		canvas.text(text.length() > 31 ? text.substring(0, 31) : text, 2, top + 2, INK);
+		return canvas.pixels;
+	}
+
+	/** One advisory in a few words: "H3 WATCH CONE 25 MIN", "DIST 70% CONE 38 MIN". */
+	public static String tropicalLine(com.arrl.radiocraft.api.weather.TropicalReport t, long now) {
+		String what = !t.formed() ? "DIST " + t.chancePercent() + "%" : t.hurricane() ? "H" + Math.max(1, t.category()) : "TS";
+		String stage = switch(t.stage()) {
+			case DISTURBANCE, OUTLOOK -> "";
+			case WATCH -> " WATCH";
+			case WARNING -> " WARNING";
+		};
+		long ahead = t.arrivalTick() - now;
+		return what + stage + (ahead <= 0 ? " HERE" : " CONE " + WeatherReports.duration(ahead));
 	}
 
 	// ---------------------------------------------------------------- Base map
@@ -429,6 +514,7 @@ public final class WefaxChart {
 						.orElse("NO WX EXPECTED");
 			}
 			case SURFACE -> "ISOBARS " + ISOBAR + " HPA " + frame.blocksPerPixel() * 32 + "/DIV";
+			case TROPICAL -> ""; // Drawn by paintTropical.
 		};
 		canvas.text(text, type == Type.RADAR ? 36 : 2, top + 2, INK);
 	}

@@ -74,4 +74,23 @@ class AlertAnnouncementTest {
 		assertTrue(AlertAnnouncement.lengthTicks(clips, true) > starts[starts.length - 1]);
 		assertEquals(0, AlertAnnouncement.startTicks(clips, false)[0]);
 	}
+
+	/** A tropical disturbance (2026-11-15): its chance of becoming a hurricane and that it could come within two days. */
+	@Test
+	void aTropicalStatementGivesTheChance() {
+		WeatherAlert alert = new WeatherAlert(WeatherAlert.Event.HLS, 1, 0, 0, 400, 0, 1000, 70, -1);
+		assertEquals(List.of(INTRO, TROPICAL_WEATHER_STATEMENT, FOR_THE_AREA, A_TROPICAL_DISTURBANCE, SEVENTY, PERCENT_CHANCE,
+				COULD_REACH_THE_AREA, END_OF_MESSAGE), AlertAnnouncement.clips(alert, 10, 10));
+		assertEquals("TROPICAL WEATHER STATEMENT: A TROPICAL DISTURBANCE MAY BECOME A HURRICANE, 70% CHANCE. IT COULD REACH THE AREA WITHIN 2 DAYS.",
+				AlertAnnouncement.text(alert, 10, 10));
+	}
+
+	/** A hurricane watch names the category and says to get ready. */
+	@Test
+	void aHurricaneWatchGivesTheCategory() {
+		WeatherAlert alert = new WeatherAlert(WeatherAlert.Event.HUA, 1, 0, 0, 400, 0, 1000, 3, -1);
+		assertEquals(List.of(INTRO, HURRICANE_WATCH, FOR_THE_AREA, CATEGORY, THREE, PREPARE_NOW, END_OF_MESSAGE),
+				AlertAnnouncement.clips(alert, 10, 10));
+		assertEquals("HURRICANE WATCH (CATEGORY 3) FOR THE AREA. PREPARE NOW.", AlertAnnouncement.text(alert, 10, 10));
+	}
 }

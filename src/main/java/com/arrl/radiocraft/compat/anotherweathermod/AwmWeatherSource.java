@@ -158,6 +158,19 @@ final class AwmWeatherSource implements WeatherSource {
 	}
 
 	@Override
+	public List<com.arrl.radiocraft.api.weather.TropicalReport> tropical(ServerLevel level, BlockPos pos) {
+		List<com.arrl.radiocraft.api.weather.TropicalReport> out = new java.util.ArrayList<>();
+		for(com.itcmd.anotherweathermod.api.TropicalAdvisory a : api().tropicalAdvisories(level, pos)) {
+			List<com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint> track = new java.util.ArrayList<>();
+			for(com.itcmd.anotherweathermod.api.TropicalAdvisory.TrackPoint p : a.track())
+				track.add(new com.arrl.radiocraft.api.weather.TropicalReport.TrackPoint(p.tick(), p.x(), p.z(), p.radius()));
+			out.add(new com.arrl.radiocraft.api.weather.TropicalReport(a.id(), com.arrl.radiocraft.api.weather.TropicalReport.Stage.valueOf(a.stage().name()),
+					a.hurricane(), a.category(), a.chancePercent(), a.formsAt(), a.arrivalTick(), a.coneRadius(), List.copyOf(track)));
+		}
+		return out;
+	}
+
+	@Override
 	public long forecastHorizon(ServerLevel level) {
 		return api().forecastHorizonTicks(level);
 	}

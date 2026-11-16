@@ -18,7 +18,8 @@ import java.util.Locale;
  * @param radius  blocks: a receiver this close to the centre is in the alert
  * @param core    the storm's own radius, blocks; 0 for an area alert
  * @param expires game tick the alert ends unless it is sent again
- * @param category a hurricane's category, a tornado's EF rating, or -1
+ * @param category a hurricane's category, a tornado's EF rating, a tropical disturbance's chance of developing
+ *                 (percent, {@link Event#HLS}), or -1
  * @param heading compass degrees the storm moves toward (0 north, 90 east), or -1 if it is not moving
  */
 public record WeatherAlert(Event event, long key, int x, int z, int radius, int core, long expires, int category, int heading) {
@@ -41,9 +42,17 @@ public record WeatherAlert(Event event, long key, int x, int z, int radius, int 
 		DSW(true, WeatherVoiceClip.DUST_STORM_WARNING, WeatherVoiceClip.STAY_INDOORS, "DUST STORM WARNING"),
 		TOA(false, WeatherVoiceClip.TORNADO_WATCH, null, "TORNADO WATCH"),
 		SVA(false, WeatherVoiceClip.SEVERE_THUNDERSTORM_WATCH, null, "SEVERE THUNDERSTORM WATCH"),
+		/** A hurricane forecast to reach the area within a day or two (2026-11-15): get ready. */
+		HUA(false, WeatherVoiceClip.HURRICANE_WATCH, WeatherVoiceClip.PREPARE_NOW, "HURRICANE WATCH"),
+		TRA(false, WeatherVoiceClip.TROPICAL_STORM_WATCH, WeatherVoiceClip.PREPARE_NOW, "TROPICAL STORM WATCH"),
 		EHW(true, WeatherVoiceClip.EXCESSIVE_HEAT_WARNING, WeatherVoiceClip.STAY_INDOORS, "EXCESSIVE HEAT WARNING"),
 		ECW(true, WeatherVoiceClip.EXTREME_COLD_WARNING, WeatherVoiceClip.STAY_INDOORS, "EXTREME COLD WARNING"),
-		FGY(false, WeatherVoiceClip.DENSE_FOG_ADVISORY, null, "DENSE FOG ADVISORY");
+		FGY(false, WeatherVoiceClip.DENSE_FOG_ADVISORY, null, "DENSE FOG ADVISORY"),
+		/**
+		 * A tropical disturbance that may become a hurricane and reach the area within two days (2026-11-15). Its
+		 * {@code category} carries the chance it develops, percent.
+		 */
+		HLS(false, WeatherVoiceClip.TROPICAL_WEATHER_STATEMENT, null, "TROPICAL WEATHER STATEMENT");
 
 		private final boolean warning;
 		private final WeatherVoiceClip clip;
