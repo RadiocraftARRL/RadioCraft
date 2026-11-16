@@ -178,7 +178,7 @@ keeps the history).
 
 ## Radio computer
 
-- [ ] Test the radio computer, monitor and scanner (models, boot, text mode, keys, live monitor in the world, power, two players at once, break and replace keeps files)
+- [ ] Test the radio computer, monitor and scanner (models, boot, text mode, keys, live monitor in the world, power (2026-11-15: the monitor is dark with no power, and goes dark a second or two after the battery runs flat), two players at once, break and replace keeps files)
 - [ ] Test the shell and SETUP (launcher views, Program Manager icons, prompt commands, colour schemes, password, name and clock, Services page, ABOUT, launcher search)
 - [ ] Test menu bars in every program (click items, greyed items, keyboard still works, no icons through menus)
 - [ ] Test data floppies, File Manager and prompt copying (labels, DIR/COPY, A: and C:)

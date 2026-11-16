@@ -103,6 +103,13 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	/** Someone has its screen open (looked at every {@link #VIEWER_CHECK_TICKS}, and set at once when one opens it). */
 	private boolean hasViewers = false;
 	private boolean powered = false;
+	/**
+	 * True while it has the power to run, in use or not (2026-11-15): the power wire could pay a tick, or power is free.
+	 * Looked at every {@link #FED_CHECK_TICKS} and sent to clients, so its monitor goes dark without power (within two
+	 * looks of the power going: see {@link #updateFed}).
+	 */
+	private boolean fed = false;
+	private static final int FED_CHECK_TICKS = 20;
 	private static final int VIEWER_CHECK_TICKS = 10;
 	/** How far a player may go from the computer and still hear its MUSIC, blocks (the client stops it there too). */
 	public static final double MUSIC_RANGE = 24.0D;
@@ -247,6 +254,30 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	 */
 	public boolean isPowered() {
 		return powered;
+	}
+
+	/**
+	 * True while it has the power to run (in use or not), or runs: its monitor shows a picture only then
+	 * (2026-11-15, the maintainer: the screen lit with no power). Both sides; clients have it from the block's update.
+	 */
+	public boolean hasPower() {
+		return powered || fed;
+	}
+
+	/**
+	 * Works out {@link #fed} and tells clients when it changes. Server. Idle on a power wire, it draws 1 FE each time as
+	 * its standby: otherwise its buffer, never drawn on, would stay full after the power went, and it would look fed.
+	 */
+	private void updateFed() {
+		RadioComputerNetworkObject object = powerObject();
+		boolean now = object == null ? !RadiocraftServerConfig.RADIO_POWER_REQUIRED.get() : object.canRun();
+		if(object != null && !object.wantsOn && RadiocraftServerConfig.RADIO_POWER_REQUIRED.get())
+			object.getStorage().extractEnergy(1, false); // Standby; the wire tops it up by the next look.
+		if(now != fed) {
+			fed = now;
+			if(level != null && !level.isClientSide)
+				level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+		}
 	}
 
 	/**
@@ -510,6 +541,7 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 	public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
 		CompoundTag tag = new CompoundTag();
 		tag.putBoolean("powered", powered);
+		tag.putBoolean("fed", fed);
 		long[] positions = new long[speakers.size()];
 		int[] kinds = new int[speakers.size()];
 		for(int i = 0; i < speakers.size(); i++) {
@@ -523,6 +555,7 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 
 	private void readUpdate(CompoundTag tag) {
 		powered = tag.getBoolean("powered");
+		fed = tag.getBoolean("fed");
 		long[] positions = tag.getLongArray("speakers");
 		int[] kinds = tag.getIntArray("speakerKinds");
 		SpeakerKind[] all = SpeakerKind.values();
@@ -793,6 +826,8 @@ public class RadioComputerBlockEntity extends BlockEntity implements MenuProvide
 			tickerApps = apps.toArray(new ComputerApp[0]);
 		}
 		updatePower((gameTime + worldPosition.asLong()) % VIEWER_CHECK_TICKS == 0L);
+		if((gameTime + worldPosition.asLong()) % FED_CHECK_TICKS == 0L)
+			updateFed();
 		if((gameTime + worldPosition.asLong()) % 20L == 0L && level instanceof ServerLevel server) // Speakers come and go rarely.
 			refreshSpeakers(server);
 		if((powered || hasViewers) && (gameTime + worldPosition.asLong()) % com.arrl.radiocraft.common.computer.ComputerNetwork.CHECK_TICKS == 0L)

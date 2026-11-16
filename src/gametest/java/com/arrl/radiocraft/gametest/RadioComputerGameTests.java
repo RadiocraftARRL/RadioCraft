@@ -96,6 +96,29 @@ public class RadioComputerGameTests {
 	}
 
 	/**
+	 * Its monitor shows a picture only while it has power (2026-11-15): an idle computer (nobody at it) with no power
+	 * wire has none, has it with a charged battery on its wire, and loses it when the battery is flat.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = POWER_BATCH)
+	public static void monitorIsDarkWithoutPower(GameTestHelper helper) {
+		RadioComputerBlockEntity computer = computer(helper);
+		BlockPos battery = COMPUTER.west(2);
+		helper.startSequence()
+				.thenIdle(25)
+				.thenExecute(() -> {
+					helper.assertFalse(computer.hasPower(), "the computer has power with no power wire");
+					GameTestUtil.placeWire(helper, COMPUTER.west(), RadiocraftBlocks.WIRE.get());
+					helper.setBlock(battery, RadiocraftBlocks.LARGE_BATTERY.get());
+				})
+				.thenIdle(2)
+				.thenExecute(() -> GameTestUtil.networkObject(helper, battery, BatteryNetworkObject.class).getStorage().setEnergy(100_000))
+				.thenWaitUntil(() -> helper.assertTrue(computer.hasPower() && !computer.isPowered(), "an idle computer on a charged battery shows no power, or runs"))
+				.thenExecute(() -> GameTestUtil.networkObject(helper, battery, BatteryNetworkObject.class).getStorage().setEnergy(0))
+				.thenWaitUntil(() -> helper.assertFalse(computer.hasPower(), "the computer has power on a flat battery"))
+				.thenSucceed();
+	}
+
+	/**
 	 * MUSIC playing with the screen closed (1.12 playtest): a listener keeps the computer in use (on, so drawing power
 	 * when that is on) until they stop, and one who is not online any more (a fake player is never in the player list)
 	 * is forgotten at the next viewer check.

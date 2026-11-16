@@ -29,36 +29,47 @@ public class ComputerMonitorRenderer implements BlockEntityRenderer<ComputerMoni
 	/** A little in front of the glass, so it never fights the model's face. */
 	private static final float LIFT = 0.03F;
 	private static final float MARGIN = 0.15F;
+	/** Plain white, tinted to the dark glass of a monitor without power. */
+	private static final ResourceLocation DARK = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
 
 	public ComputerMonitorRenderer(BlockEntityRendererProvider.Context context) {
 	}
 
 	@Override
 	public void render(ComputerMonitorBlockEntity monitor, float partialTick, PoseStack poseStack, MultiBufferSource buffers, int light, int overlay) {
+		if(monitor.getLevel() != null && monitor.getLevel().getBlockEntity(monitor.getBlockPos().below()) instanceof com.arrl.radiocraft.common.blockentities.RadioComputerBlockEntity computer
+				&& !computer.hasPower()) { // No power: dark glass over the model's own screen (2026-11-15).
+			glass(monitor, poseStack, buffers.getBuffer(RenderType.text(DARK)), 0.0F, 18, 20, 18);
+			return;
+		}
 		// Near enough, the picture is kept live while the screen is closed (MonitorMirror redraws it every so often).
 		Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 		boolean near = camera.distanceToSqr(monitor.getBlockPos().getCenter()) <= MonitorMirror.RANGE * MonitorMirror.RANGE;
 		ResourceLocation picture = ComputerSession.monitorPicture(monitor.getBlockPos(), near);
 		if(picture == null)
 			return;
+		glass(monitor, poseStack, buffers.getBuffer(RenderType.text(picture)), MARGIN, 255, 255, 255);
+	}
+
+	/** Fills the glass, {@code margin} in from its edges, with {@code buffer}'s texture tinted {@code r, g, b}. */
+	private static void glass(ComputerMonitorBlockEntity monitor, PoseStack poseStack, VertexConsumer buffer, float margin, int r, int g, int b) {
 		// Facing north, the viewer's left is east (+x).
-		float left = (GLASS_X1 - MARGIN) / 16, right = (GLASS_X0 + MARGIN) / 16, bottom = (GLASS_Y0 + MARGIN) / 16, top = (GLASS_Y1 - MARGIN) / 16;
+		float left = (GLASS_X1 - margin) / 16, right = (GLASS_X0 + margin) / 16, bottom = (GLASS_Y0 + margin) / 16, top = (GLASS_Y1 - margin) / 16;
 		float z = (GLASS_Z - LIFT) / 16;
 		poseStack.pushPose();
 		poseStack.translate(0.5F, 0.0F, 0.5F); // Turned as the blockstate turns the model (north unturned).
 		poseStack.mulPose(Axis.YP.rotationDegrees(-(monitor.getBlockState().getValue(ComputerMonitorBlock.FACING).toYRot() + 180.0F)));
 		poseStack.translate(-0.5F, 0.0F, -0.5F);
 		Matrix4f pose = poseStack.last().pose();
-		VertexConsumer buffer = buffers.getBuffer(RenderType.text(picture));
 		// Counter-clockwise from the front; the picture's rows run bottom up, as GL keeps them.
-		vertex(buffer, pose, left, bottom, z, 0.0F, 0.0F);
-		vertex(buffer, pose, right, bottom, z, 1.0F, 0.0F);
-		vertex(buffer, pose, right, top, z, 1.0F, 1.0F);
-		vertex(buffer, pose, left, top, z, 0.0F, 1.0F);
+		vertex(buffer, pose, left, bottom, z, 0.0F, 0.0F, r, g, b);
+		vertex(buffer, pose, right, bottom, z, 1.0F, 0.0F, r, g, b);
+		vertex(buffer, pose, right, top, z, 1.0F, 1.0F, r, g, b);
+		vertex(buffer, pose, left, top, z, 0.0F, 1.0F, r, g, b);
 		poseStack.popPose();
 	}
 
-	private static void vertex(VertexConsumer buffer, Matrix4f pose, float x, float y, float z, float u, float v) {
-		buffer.addVertex(pose, x, y, z).setColor(255, 255, 255, 255).setUv(u, v).setLight(LightTexture.FULL_BRIGHT);
+	private static void vertex(VertexConsumer buffer, Matrix4f pose, float x, float y, float z, float u, float v, int r, int g, int b) {
+		buffer.addVertex(pose, x, y, z).setColor(r, g, b, 255).setUv(u, v).setLight(LightTexture.FULL_BRIGHT);
 	}
 }
