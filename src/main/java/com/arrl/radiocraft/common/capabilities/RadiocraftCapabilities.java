@@ -87,6 +87,7 @@ public class RadiocraftCapabilities {
 				RadiocraftBlocks.J_POLE_ANTENNA.get(),
 				RadiocraftBlocks.AIRBAND_ANTENNA.get(),
 				RadiocraftBlocks.AIRBAND_GROUND_PLANE.get(),
+				RadiocraftBlocks.FM_BROADCAST_ANTENNA.get(),
 				RadiocraftBlocks.EGGBEATER_ANTENNA.get(),
 				RadiocraftBlocks.SATELLITE_TRACKER.get(),
 				RadiocraftBlocks.RINGO_ANTENNA.get(),

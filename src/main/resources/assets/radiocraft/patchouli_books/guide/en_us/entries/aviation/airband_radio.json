@@ -15,10 +15,25 @@
       "text": "A panel-mount COM with two windows: $(thing)USE$(), the frequency you talk and listen on, and $(thing)STBY$(), the next one. The knobs (or the mouse wheel; shift for whole MHz) tune STBY, and the $(thing)flip-flop$() swaps the two. Hold PTT to talk, or use a desk microphone. It needs power and an antenna."
     },
     {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:airband_radio"
+    },
+    {
       "type": "patchouli:spotlight",
       "item": "radiocraft:airband_antenna",
       "title": "Aircraft VHF Antenna",
       "text": "A small swept whip cut for the airband: close to 1:1 in the middle of it and under 2:1 at the edges. A J-pole or other 2m antenna works, but at around 2.2:1. Place it on top of a block, or against the underside of one to hang it, as on an aircraft's belly; run coax into its block."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:airband_ground_plane",
+      "title": "Airband Ground Plane",
+      "text": "A ground station's antenna, two blocks tall: a mast, four drooping radials and a white whip. Matched like the aircraft antenna, and up on its mast it reaches a little further than a J-pole. Run coax into its lower half."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:airband_antenna",
+      "recipe2": "radiocraft:airband_ground_plane"
     }
   ]
 }

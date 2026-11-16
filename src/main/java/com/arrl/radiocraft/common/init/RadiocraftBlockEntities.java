@@ -122,6 +122,7 @@ public class RadiocraftBlockEntities {
 					RadiocraftBlocks.J_POLE_ANTENNA.get(),
 					RadiocraftBlocks.AIRBAND_ANTENNA.get(),
 					RadiocraftBlocks.AIRBAND_GROUND_PLANE.get(),
+					RadiocraftBlocks.FM_BROADCAST_ANTENNA.get(),
 					RadiocraftBlocks.EGGBEATER_ANTENNA.get(),
 					RadiocraftBlocks.RINGO_ANTENNA.get(),
 					RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get(),

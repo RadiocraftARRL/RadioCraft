@@ -74,6 +74,8 @@ keeps the history).
 - [ ] Test the aircraft VHF antenna and airband ground plane (top/underside placement, models)
 - [ ] Test the FM Broadcast Transmitter (two blocks, screen, quiet carrier, mic ducking, weather alerts, forecasts and IDs, stream program with `fm_internet_streams`, panel buttons; 2026-11-15: the stream only opens while a radio in range is tuned within 1 MHz, so tune towards it and it should be playing as you land; a structure's station becomes yours when you set it up)
 - [ ] Test the FM Broadcast Receiver (walnut model, screen, tunes while off, scroll to tune, BASS/TREBLE, battery, pointer on the block, POWER/MUTE toggles)
+- [ ] Test the FM Broadcast Antenna (2026-11-16: model against a mast or tower on each side, the arm points away and the tubes reach above and below; coax to the transmitter, its SWR near 1.1 in the middle of the band; JEI and guide pages)
+- [ ] Check the new recipes in JEI and the guide (2026-11-16): Handheld Yagi, Airband Radio, Aircraft VHF Antenna, Airband Ground Plane, FM Broadcast Transmitter, Receiver and Antenna
 - [ ] Test the tape player with the FM station (QUEUE mode from a hopper, no longer keys the transmitter)
 
 ## Repeaters and controllers

@@ -36,6 +36,7 @@
     "radiocraft:satellite_tracker",
     "radiocraft:airband_antenna",
     "radiocraft:airband_ground_plane",
+    "radiocraft:fm_broadcast_antenna",
     "radiocraft:ringo_antenna",
     "radiocraft:folded_dipole_antenna",
     "minecraft:lightning_rod",

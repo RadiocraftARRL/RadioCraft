@@ -25,6 +25,7 @@ public class RadiocraftAntennaTypes {
 	public static JPoleAntennaType J_POLE;
 	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType AIRBAND; // The aircraft antenna (2026-11-13).
 	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType AIRBAND_GROUND_PLANE; // Its ground station mast.
+	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.FmBroadcastAntennaType FM_BROADCAST; // The FM broadcast bay (2026-11-16).
 	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.EggbeaterAntennaType EGGBEATER;
 	public static com.arrl.radiocraft.common.radio.antenna.types.vhf.SatelliteTrackerAntennaType SATELLITE_TRACKER;
 	public static com.arrl.radiocraft.common.radio.antenna.types.DummyLoadAntennaType DUMMY_LOAD; // Every band.
@@ -66,6 +67,7 @@ public class RadiocraftAntennaTypes {
 		CB_GROUND_PLANE = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.CbGroundPlaneAntennaType());
 		AIRBAND = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType());
 		AIRBAND_GROUND_PLANE = AntennaTypes.registerType(com.arrl.radiocraft.common.radio.antenna.types.vhf.AirbandAntennaType.groundPlane());
+		FM_BROADCAST = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.vhf.FmBroadcastAntennaType());
 	}
 
 }

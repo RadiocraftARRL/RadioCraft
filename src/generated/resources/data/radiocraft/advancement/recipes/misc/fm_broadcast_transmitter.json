@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_good_vhf_crystal": {
+      "conditions": {
+        "items": [
+          {
+            "items": "radiocraft:encased_crystal_vhf_good"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "radiocraft:fm_broadcast_transmitter"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_good_vhf_crystal"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "radiocraft:fm_broadcast_transmitter"
+    ]
+  }
+}

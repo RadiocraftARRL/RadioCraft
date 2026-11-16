@@ -29,6 +29,7 @@
     "radiocraft:satellite_tracker",
     "radiocraft:airband_antenna",
     "radiocraft:airband_ground_plane",
+    "radiocraft:fm_broadcast_antenna",
     "radiocraft:ionosonde",
     "radiocraft:5btv_antenna",
     "radiocraft:cb_ground_plane_antenna",

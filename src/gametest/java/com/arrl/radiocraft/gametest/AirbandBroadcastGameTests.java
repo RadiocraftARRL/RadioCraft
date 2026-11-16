@@ -112,6 +112,31 @@ public class AirbandBroadcastGameTests {
 				.thenSucceed();
 	}
 
+	/**
+	 * The FM broadcast antenna (2026-11-16) is an FM broadcast antenna in its block, matched across the band and poor
+	 * on 2m.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200)
+	public static void fmBroadcastAntennaMatchesTheBand(GameTestHelper helper) {
+		BlockPos pos = new BlockPos(3, 2, 3);
+		helper.setBlock(pos, RadiocraftBlocks.FM_BROADCAST_ANTENNA.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.antennas.FmBroadcastAntennaBlock.FACING, net.minecraft.core.Direction.EAST));
+		helper.startSequence()
+				.thenWaitUntil(() -> {
+					AntennaNetworkObject antenna = GameTestUtil.networkObject(helper, pos, AntennaNetworkObject.class);
+					helper.assertTrue(antenna.getAntenna() != null && antenna.getAntenna().type == RadiocraftAntennaTypes.FM_BROADCAST,
+							"Not an FM broadcast antenna yet");
+				})
+				.thenExecute(() -> {
+					var type = RadiocraftAntennaTypes.FM_BROADCAST;
+					helper.assertTrue(type.getSWR(null, 98_000_000.0F) < 1.2D, "Not matched in the middle of the band");
+					helper.assertTrue(type.getSWR(null, 88_100_000.0F) < 1.6D && type.getSWR(null, 107_900_000.0F) < 1.6D, "Not matched at the band edges");
+					helper.assertTrue(type.getSWR(null, 146_000_000.0F) > 2.5D, "Matched on 2m");
+					helper.assertTrue(type.getSWR(null, 14_000_000.0F) >= 10.0D, "Works on HF");
+				})
+				.thenSucceed();
+	}
+
 	/** Two airband radios on the same frequency hear each other in AM; one 25 kHz off does not. */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 200, batch = BATCH)
 	public static void airbandRadiosTalk(GameTestHelper helper) {

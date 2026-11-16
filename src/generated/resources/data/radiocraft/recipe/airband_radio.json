@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "minecraft:buttons"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "M": {
+      "item": "radiocraft:hand_microphone"
+    },
+    "S": {
+      "item": "radiocraft:radio_speaker"
+    },
+    "X": [
+      {
+        "item": "radiocraft:encased_crystal_vhf_poor"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ]
+  },
+  "pattern": [
+    "IGI",
+    "MXS",
+    "IBI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:airband_radio"
+  }
+}

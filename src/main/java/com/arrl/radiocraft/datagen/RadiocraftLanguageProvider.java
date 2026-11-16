@@ -878,12 +878,14 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 		provider.addBlock(RadiocraftBlocks.AIRBAND_ANTENNA, "Aircraft VHF Antenna");
 		provider.addBlock(RadiocraftBlocks.AIRBAND_GROUND_PLANE, "Airband Ground Plane Antenna");
 		provider.add(Radiocraft.translationKey("tooltip", "airband_ground_plane"), "A ground station's antenna for the airband, two blocks tall: a mast, four drooping radials and a white whip. Matched like the aircraft antenna (under 2:1 across the airband) and reaching a little further than a J-pole. Coax goes to the lower half.");
+		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_ANTENNA, "FM Broadcast Antenna");
+		provider.add(Radiocraft.translationKey("tooltip", "fm_broadcast_antenna"), "A broadcast station's antenna: two dipole tubes joined by a ring, on an arm. Place it against the side of a mast or tower and it points away. Cut for the FM broadcast band (about 1.1:1 in the middle, 1.5:1 at the edges), poor on the airband and 2m. Coax goes to its block.");
 		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_TRANSMITTER, "FM Broadcast Transmitter");
 		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_TRANSMITTER_TOP, "FM Broadcast Transmitter");
 		provider.addBlock(RadiocraftBlocks.FM_BROADCAST_RECEIVER, "FM Broadcast Receiver");
 		provider.add(Radiocraft.translationKey("tooltip", "airband_radio"), "Aviation COM: AM voice on the airband (118-137 MHz), 25 kHz channels. The knobs tune STANDBY; the flip-flop swaps it with the frequency in USE. 121.5 is the emergency (guard) frequency. Needs an antenna and power: the aircraft antenna matches best.");
 		provider.add(Radiocraft.translationKey("tooltip", "airband_antenna"), "A small swept whip cut for the airband: about 1.1:1 in the middle, under 2:1 across it, worse on 2m and commercial VHF. Place it on top of a block, or under one to hang it. Coax goes to its block.");
-		provider.add(Radiocraft.translationKey("tooltip", "fm_broadcast_transmitter"), "A broadcast station, two blocks tall: hold ON AIR on its screen, or use a desk microphone beside it, and you go out on its FM broadcast channel (88.1-107.9 MHz) three times as strong as a radio. Draws a lot of power on the air. Needs a VHF antenna.");
+		provider.add(Radiocraft.translationKey("tooltip", "fm_broadcast_transmitter"), "A broadcast station, two blocks tall: hold ON AIR on its screen, or use a desk microphone beside it, and you go out on its FM broadcast channel (88.1-107.9 MHz) three times as strong as a radio. Draws a lot of power on the air. Needs an antenna: the FM broadcast antenna matches best.");
 		provider.add(Radiocraft.translationKey("tooltip", "fm_broadcast_receiver"), "A walnut table radio for the FM broadcast band (88.1-107.9 MHz). Receive only. Look at it and scroll to tune. Hears on its own wire antenna, or better on an antenna coaxed to it.");
 		provider.add("tooltip.radiocraft.fm_broadcast_receiver.cell", "Draws very little: runs from a power wire, or shift + right-click a Small Alkaline or NiCd Battery into it (a battery lasts about two game days).");
 		provider.add("screen.radiocraft.fm_receiver.dial", "The dial: click to tune there, scroll to step");

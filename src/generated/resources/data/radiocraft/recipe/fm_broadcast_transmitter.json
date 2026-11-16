@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:iron_block"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "P": {
+      "item": "minecraft:glass_pane"
+    },
+    "U": {
+      "item": "minecraft:gold_ingot"
+    },
+    "X": [
+      {
+        "item": "radiocraft:encased_crystal_vhf_good"
+      },
+      {
+        "item": "radiocraft:encased_crystal_vhf_pure"
+      }
+    ]
+  },
+  "pattern": [
+    "IPI",
+    "UXU",
+    "IBI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:fm_broadcast_transmitter"
+  }
+}

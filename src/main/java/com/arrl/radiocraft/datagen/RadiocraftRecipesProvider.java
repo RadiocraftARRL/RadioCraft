@@ -307,6 +307,7 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         buildVhfHandheldRecipe(recipeOutput);
         buildCommercialRadioRecipes(recipeOutput);
         buildMarineRadioRecipes(recipeOutput);
+        buildAirbandAndBroadcastRecipes(recipeOutput);
         buildCbRadioRecipes(recipeOutput);
         buildQrpRadioRecipes(recipeOutput);
 
@@ -1484,6 +1485,90 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('I', Items.IRON_INGOT)
                 .define('R', Items.REDSTONE)
                 .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+    }
+
+    /**
+     * The handheld Yagi, the airband radio and antennas, and the FM broadcast transmitter, receiver and antenna (approved
+     * by the maintainer 2026-11-16).
+     */
+    private void buildAirbandAndBroadcastRecipes(RecipeOutput recipeOutput) {
+        // Three elements split either side of a stick boom, fed with coax at the driven element.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.HANDHELD_YAGI.get())
+                .pattern("CSC")
+                .pattern("COC")
+                .pattern("CSC")
+                .define('C', Items.COPPER_INGOT)
+                .define('S', Items.STICK)
+                .define('O', RadiocraftItems.COAX_WIRE.get())
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
+        // The marine radio's layout with the two frequency windows and the flip-flop switch.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.AIRBAND_RADIO.get())
+                .pattern("IGI")
+                .pattern("MXS")
+                .pattern("IBI")
+                .define('I', Items.IRON_INGOT)
+                .define('G', Items.GLASS_PANE)
+                .define('M', RadiocraftItems.HAND_MICROPHONE.get())
+                .define('X', encasedCrystal(CrystalBand.VHF))
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('B', ItemTags.BUTTONS)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        // The bent whip on its mounting base.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.AIRBAND_ANTENNA.get())
+                .pattern("L")
+                .pattern("I")
+                .pattern("O")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('I', Items.IRON_INGOT)
+                .define('O', RadiocraftItems.COAX_WIRE.get())
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
+        // The CB ground plane with one rod fewer: the airband's quarter wave is much shorter.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.AIRBAND_GROUND_PLANE.get())
+                .pattern(" L ")
+                .pattern("RCR")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('R', RadiocraftItems.ANTENNA_WIRE.get())
+                .define('C', RadiocraftItems.COAX_WIRE.get())
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
+                .save(recipeOutput);
+        // The meter panel, two power tubes, an exciter on frequency (good or pure crystal) and an iron cabinet.
+        Item goodVhf = RadiocraftItems.ENCASED_CRYSTALS.get(CrystalBand.VHF).get(CrystalQuality.GOOD).get();
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FM_BROADCAST_TRANSMITTER.get())
+                .pattern("IPI")
+                .pattern("UXU")
+                .pattern("IBI")
+                .define('I', Items.IRON_INGOT)
+                .define('P', Items.GLASS_PANE)
+                .define('U', Items.GOLD_INGOT)
+                .define('X', Ingredient.of(goodVhf, RadiocraftItems.ENCASED_CRYSTALS.get(CrystalBand.VHF).get(CrystalQuality.PURE).get()))
+                .define('B', Items.IRON_BLOCK)
+                .unlockedBy("has_good_vhf_crystal", has(goodVhf))
+                .save(recipeOutput);
+        // A wooden table radio: stereo speakers, a tuning coil (no crystal: it tunes continuously).
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FM_BROADCAST_RECEIVER.get())
+                .pattern("PPP")
+                .pattern("SCS")
+                .pattern("PRP")
+                .define('P', ItemTags.PLANKS)
+                .define('S', RadiocraftItems.RADIO_SPEAKER.get())
+                .define('C', Items.COPPER_INGOT)
+                .define('R', Items.REDSTONE)
+                .unlockedBy("has_radio_speaker", has(RadiocraftItems.RADIO_SPEAKER.get()))
+                .save(recipeOutput);
+        // Laid out like the bay: the two tubes, the ring, the feed and the side arm to the mast.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.FM_BROADCAST_ANTENNA.get())
+                .pattern("LCC")
+                .pattern(" OI")
+                .pattern("LCC")
+                .define('L', Items.LIGHTNING_ROD)
+                .define('C', Items.COPPER_INGOT)
+                .define('O', RadiocraftItems.COAX_WIRE.get())
+                .define('I', Items.IRON_INGOT)
+                .unlockedBy("has_coax_wire", has(RadiocraftItems.COAX_WIRE.get()))
                 .save(recipeOutput);
     }
 

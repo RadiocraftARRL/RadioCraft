@@ -267,6 +267,7 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> J_POLE_ANTENNA = simpleBlockItem("j_pole_antenna", RadiocraftBlocks.J_POLE_ANTENNA);
 	public static final Supplier<BlockItem> AIRBAND_ANTENNA = simpleBlockItem("airband_antenna", RadiocraftBlocks.AIRBAND_ANTENNA);
 	public static final Supplier<BlockItem> AIRBAND_GROUND_PLANE = simpleBlockItem("airband_ground_plane", RadiocraftBlocks.AIRBAND_GROUND_PLANE);
+	public static final Supplier<BlockItem> FM_BROADCAST_ANTENNA = simpleBlockItem("fm_broadcast_antenna", RadiocraftBlocks.FM_BROADCAST_ANTENNA);
 	public static final Supplier<BlockItem> EGGBEATER_ANTENNA = simpleBlockItem("eggbeater_antenna", RadiocraftBlocks.EGGBEATER_ANTENNA);
 	public static final Supplier<BlockItem> IAMBIC_KEYER = simpleBlockItem("iambic_keyer", RadiocraftBlocks.IAMBIC_KEYER); // 2026-11-12.
 	public static final Supplier<BlockItem> COMPUTER_REDSTONE = simpleBlockItem("computer_redstone", RadiocraftBlocks.COMPUTER_REDSTONE); // 2026-11-13.

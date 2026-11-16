@@ -97,6 +97,9 @@ public class RadiocraftBlocks {
 	/** The aircraft VHF antenna (2026-11-13): on top of a block or under one. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.AirbandAntennaBlock> AIRBAND_ANTENNA = BLOCKS.register("airband_antenna",
 			() -> new com.arrl.radiocraft.common.blocks.antennas.AirbandAntennaBlock(PROPERTIES_STONE_SOLID_ANTENNA));
+	/** The FM broadcast antenna (2026-11-16): a side-mounted bay on a mast. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.FmBroadcastAntennaBlock> FM_BROADCAST_ANTENNA = BLOCKS.register("fm_broadcast_antenna",
+			() -> new com.arrl.radiocraft.common.blocks.antennas.FmBroadcastAntennaBlock(PROPERTIES_STONE_SOLID_ANTENNA));
 	/** The airband ground plane (2026-11-13): a ground station's antenna, two blocks tall. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.AirbandGroundPlaneAntennaBlock> AIRBAND_GROUND_PLANE = BLOCKS.register("airband_ground_plane",
 			() -> new com.arrl.radiocraft.common.blocks.antennas.AirbandGroundPlaneAntennaBlock(PROPERTIES_STONE_SOLID_ANTENNA));

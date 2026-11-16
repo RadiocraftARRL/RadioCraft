@@ -56,6 +56,7 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.J_POLE_ANTENNA.get());
         output.accept(RadiocraftItems.AIRBAND_ANTENNA.get());
         output.accept(RadiocraftItems.AIRBAND_GROUND_PLANE.get());
+        output.accept(RadiocraftItems.FM_BROADCAST_ANTENNA.get()); // The FM broadcast antenna (2026-11-16).
         output.accept(RadiocraftItems.EGGBEATER_ANTENNA.get());
         output.accept(RadiocraftItems.SATELLITE_TRACKER.get()); // The satellite tracking antenna (2026-11-12).
         output.accept(RadiocraftItems.HANDHELD_YAGI.get()); // Satellites from a handheld, held in the offhand (2026-11-15).
