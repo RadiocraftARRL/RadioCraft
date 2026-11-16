@@ -163,8 +163,19 @@ public final class CableRoutes {
 				out.add(p);
 		}
 		if(stubDone) // Up the step from the tread to the middle.
-			out.add(new WireLook.Placed(WireLook.Part.RISER, null).withHeight(-STEP, (int)Math.round(width * 16.0D)));
+			out.add(stepRiser(width));
 		return List.copyOf(out);
+	}
+
+	/**
+	 * The riser up a step: exactly from the tread to the underside of the cable on top (2026-11-15). The riser's model is
+	 * the run up the middle, which starts {@code width} pixels up (on top of the middle piece); squashed to go just to
+	 * the cable's top it ended inside the middle piece, face on face (z-fighting on coax up stairs), and started a pixel
+	 * short of the tread. Its foot now meets the tread and its head the middle's underside.
+	 */
+	static WireLook.Placed stepRiser(double width) {
+		double start = width / 16.0D; // Where the model's run begins, as a share of its height.
+		return new WireLook.Placed(WireLook.Part.RISER, null).withHeight((int)Math.floor(-STEP / (1.0D - start)), 0); // Down, not up: a hair into the stair, never a gap.
 	}
 
 	// -------------------- DROPS --------------------

@@ -14,6 +14,7 @@ import java.util.Set;
 import static net.minecraft.core.Direction.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** The cable pieces {@link WireLook#parts} picks for the layouts the maintainer checked by eye on 2026-10-21. */
 class WireLookTest {
@@ -288,5 +289,20 @@ class WireLookTest {
         assertEquals(new WireLook.Lateral(0.0D, 7.0D), WireLook.lie(true, true, false, false, SOUTH, 1.0D, 0, 0));
         assertEquals(new WireLook.Lateral(0.0D, -7.0D), WireLook.lie(true, true, false, false, NORTH, 1.0D, 0, 0));
         assertEquals(new WireLook.Lateral(7.0D, 0.0D), WireLook.lie(true, true, false, true, EAST, 1.0D, 0, 0));
+    }
+
+    /**
+     * A step's riser runs from the tread (half a block down) to the underside of the cable on the stair, never into the
+     * middle piece on top (z-fighting, 2026-11-15) nor short of the tread: the middle's run starts {@code width} px up.
+     */
+    @Test
+    void stepRiserMeetsTreadAndMiddleExactly() {
+        for(double width : new double[] {1.0D, 2.0D, 3.0D}) {
+            Placed riser = CableRoutes.stepRiser(width);
+            double start = width / 16.0D;
+            assertEquals(0.0D, riser.height(1.0D), 1.0E-9D, "the riser's head for width " + width);
+            double foot = riser.height(start);
+            assertTrue(foot <= -0.5D && foot > -0.5D - 1.0D / 64.0D, "the riser's foot for width " + width + ": " + foot);
+        }
     }
 }

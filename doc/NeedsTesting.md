@@ -118,7 +118,7 @@ keeps the history).
 - [ ] Test the cable outline (2026-11-15: it now follows the drawn cable, bridges, steps and stairs included; sneak + right click on the part you see takes that strand out)
 - [ ] Test the house's coax up the bunker wall (world -37 91-92 548: the lone coax on top of the bundle sits on the strand's line, no jog) and the wire into the computer at world -38 96 543 (no second riser by the wall run)
 - [ ] Test wires hugging walls (floor/wall corners, pillars, corridors, ceilings, passthrough at head height, jogging out to a device)
-- [ ] Test wires climbing (steps, trenches, posts, up stairs onto a landing, into the middle of a device's face, over a beam top)
+- [ ] Test wires climbing (steps, trenches, posts, up stairs onto a landing (2026-11-15: no z-fighting where coax rises up a step), into the middle of a device's face, over a beam top)
 - [ ] Test cables to desk radios (round to the back, drop from a ceiling to the connectors, hop over into a computer)
 - [ ] Test the cable fixes in Demo World's house (corner at -36 86 546/547, bundles round -33 86 547, battery top at -41 87 534; known open: -32 86 547)
 - [ ] Test the cable test world (`./gradlew runClientTests`, superflat creative, `/test runall CableMatrixGameTests 1 false 0 16`; walk the rows; optional `/test run bundlepastadevicebothstrandsfeed` is a known bug)
