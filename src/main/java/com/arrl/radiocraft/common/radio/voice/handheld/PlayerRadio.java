@@ -77,6 +77,11 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
         return wornPttHeld;
     }
     private volatile boolean indoors; // No sky above the player's head, updated each tick on the server thread.
+    /**
+     * Where the player aims the handheld Yagi in their offhand (2026-11-15): {compass bearing, degrees up}, or null
+     * without one. Updated each tick on the server thread, read by the satellites on any thread.
+     */
+    private volatile double[] yagiAim;
 
     public void setUseHeld(boolean useHeld) {
         this.isUseHeld = useHeld;
@@ -95,6 +100,17 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
     public PlayerRadio(Player player) {
         tnc = new HandheldTnc(new TncHost(), player == null ? "nobody" : player.getUUID().toString());
         setPlayer(player);
+    }
+
+    /** Where the player aims the handheld Yagi in their offhand, {compass bearing, degrees up}; null without one. */
+    @org.jetbrains.annotations.Nullable
+    public double[] yagiAim() {
+        return yagiAim;
+    }
+
+    /** Sets the aim as if the player held the handheld Yagi (for tests); null takes it away. */
+    public void setYagiAimForTesting(@org.jetbrains.annotations.Nullable double[] aim) {
+        this.yagiAim = aim;
     }
 
     @Override
@@ -896,11 +912,16 @@ public class PlayerRadio implements IVoiceTransmitter, IVoiceReceiver, IAntenna 
                 this.voicePosition = null;
                 this.voiceLevel = null;
                 this.antennaPos.set(null);
+                this.yagiAim = null;
             } else {
                 this.voicePosition = player.getEyePosition();
                 this.voiceLevel = player.level();
                 this.antennaPos.set(new AntennaPos(player.blockPosition(), player.level()));
                 this.indoors = com.arrl.radiocraft.common.radio.terrain.TerrainPropagation.isIndoors(player.level(), BlockPos.containing(player.getEyePosition()));
+                this.yagiAim = player.getOffhandItem().is(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_YAGI.get())
+                        ? new double[] { com.arrl.radiocraft.common.radio.satellite.HandheldYagiAim.bearingOfYaw(player.getYHeadRot()),
+                                com.arrl.radiocraft.common.radio.satellite.HandheldYagiAim.elevationOfPitch(player.getXRot()) }
+                        : null;
             }
         }
 

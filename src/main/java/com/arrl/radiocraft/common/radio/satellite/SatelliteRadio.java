@@ -234,6 +234,8 @@ public final class SatelliteRadio {
 
 	/** How {@code antenna} hears satellites: the eggbeater, a vertical, or anything else. */
 	public static SatellitePattern pattern(@Nullable Object antenna) {
+		if(antenna instanceof com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio radio && radio.yagiAim() != null)
+			return SatellitePattern.HANDHELD_YAGI;
 		if(!(antenna instanceof IAntenna a))
 			return SatellitePattern.OTHER;
 		IAntennaType<?> type = a.getType();
@@ -271,12 +273,28 @@ public final class SatelliteRadio {
 
 	/** The strength at which {@code antenna} at {@code pos} hears {@code satellite} {@code elevation} degrees up, space weather included. */
 	public static double strength(Level level, Satellite satellite, double elevation, @Nullable Object antenna, BlockPos pos) {
-		return pattern(antenna, satellite).strength(elevation, aurora(level, pos), storm(level));
+		SatellitePattern pattern = pattern(antenna, satellite);
+		double strength = pattern.strength(elevation, aurora(level, pos), storm(level));
+		if(pattern == SatellitePattern.HANDHELD_YAGI)
+			strength *= yagiAim(level, satellite, (com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio)antenna, pos);
+		return strength;
+	}
+
+	/**
+	 * How much of the handheld Yagi's beam is on {@code satellite} (2026-11-15, {@link HandheldYagiAim}): 1 while its
+	 * holder looks within {@link HandheldYagiAim#FULL_DEGREES} of it, less further off.
+	 */
+	private static double yagiAim(Level level, Satellite satellite, com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio radio, BlockPos pos) {
+		double[] aim = radio.yagiAim();
+		if(aim == null)
+			return 1.0D;
+		SatelliteOrbit.Look look = satellite.look(pos.getX(), pos.getZ(), level.getGameTime());
+		return HandheldYagiAim.aim(HandheldYagiAim.offDegrees(look.azimuth(), look.elevation(), aim[0], aim[1]));
 	}
 
 	/** True if {@code satellite} {@code elevation} degrees up hears {@code antenna} at {@code pos}, space weather included. */
 	public static boolean uplinks(Level level, Satellite satellite, double elevation, @Nullable Object antenna, BlockPos pos) {
-		return heardThrough(satellite, antenna) && pattern(antenna, satellite).uplinks(elevation, aurora(level, pos), storm(level));
+		return heardThrough(satellite, antenna) && strength(level, satellite, elevation, antenna, pos) >= SatellitePattern.UPLINK_FLOOR;
 	}
 
 	/**

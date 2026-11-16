@@ -223,6 +223,13 @@ public class ClientSetupEvents {
 				return com.arrl.radiocraft.client.render.HandheldItemRenderer.get();
 			}
 		}, com.arrl.radiocraft.common.init.RadiocraftItems.VHF_HANDHELD_VARIANTS.values().toArray(net.minecraft.world.item.Item[]::new));
+		event.registerItem(new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+			/** The handheld Yagi in the offhand is held out along the holder's look (vanilla's bow pose), aimed at the sky. */
+			@Override
+			public net.minecraft.client.model.HumanoidModel.ArmPose getArmPose(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.InteractionHand hand, net.minecraft.world.item.ItemStack stack) {
+				return hand == net.minecraft.world.InteractionHand.OFF_HAND ? net.minecraft.client.model.HumanoidModel.ArmPose.BOW_AND_ARROW : null;
+			}
+		}, com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_YAGI.get());
 		event.registerItem(com.arrl.radiocraft.client.render.FccJacketModel.extensions(), com.arrl.radiocraft.common.init.RadiocraftItems.FCC_JACKET.get()); // Cut close to the body (2026-11-09).
 	}
 

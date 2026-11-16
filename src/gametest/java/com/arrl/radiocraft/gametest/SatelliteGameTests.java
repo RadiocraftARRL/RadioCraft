@@ -41,6 +41,7 @@ import com.arrl.radiocraft.common.radio.distress.DistressPackets;
 import com.arrl.radiocraft.common.radio.morse.CWBuffer;
 import com.arrl.radiocraft.common.radio.satellite.Satellite;
 import com.arrl.radiocraft.common.radio.satellite.SatelliteDelay;
+import com.arrl.radiocraft.common.radio.satellite.SatelliteOrbit;
 import com.arrl.radiocraft.common.radio.satellite.SatelliteRadio;
 import com.arrl.radiocraft.common.radio.satellite.SatelliteMode;
 import com.arrl.radiocraft.common.radio.satellite.SatelliteRules;
@@ -301,6 +302,48 @@ public class SatelliteGameTests {
 							== com.arrl.radiocraft.common.radio.satellite.SatellitePattern.EGGBEATER, "the eggbeater is not one");
 					helper.assertTrue(SatelliteRadio.strength(up, null) > SatelliteRadio.strength(up, GameTestUtil.networkObject(helper, A, RadioNetworkObject.class).getAntennas().get(0).getAntenna()),
 							"a J-pole hears it as well as the plain curve overhead");
+				})
+				.thenSucceed();
+	}
+
+	/**
+	 * The handheld Yagi (2026-11-15): a player with a VHF handheld and the Yagi in their offhand is heard by a satellite
+	 * while they look towards it and not when they look away; the handheld alone, a vertical, loses a satellite
+	 * straight overhead that the Yagi aimed up still works. Without the Yagi the player is a vertical again.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = BATCH)
+	public static void handheldYagiWorksWhereItIsAimed(GameTestHelper helper) {
+		Satellite satellite = overhead(helper, 211L);
+		net.minecraft.world.entity.player.Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+		BlockPos at = helper.absolutePos(new BlockPos(8, 2, 8));
+		player.setPos(net.minecraft.world.phys.Vec3.atBottomCenterOf(at));
+		net.minecraft.world.item.ItemStack radio = new net.minecraft.world.item.ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.VHF_HANDHELD.get());
+		radio.getCapability(com.arrl.radiocraft.common.capabilities.RadiocraftCapabilities.VHF_HANDHELDS).setPowered(true);
+		player.getInventory().setItem(0, radio);
+		player.getInventory().selected = 0;
+		com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio handheld = new com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio(player);
+		helper.startSequence()
+				.thenExecute(() -> {
+					ServerLevel level = helper.getLevel();
+					SatelliteOrbit.Look look = satellite.look(at.getX(), at.getZ(), level.getGameTime());
+					helper.assertTrue(look.elevation() > 85.0D, "the satellite is only " + look.elevation() + " degrees up");
+					handheld.tick();
+					helper.assertTrue(handheld.yagiAim() == null, "aimed without a Yagi");
+					helper.assertFalse(SatelliteRadio.uplinks(level, satellite, look.elevation(), handheld, at), "a handheld's own vertical reached it overhead");
+
+					player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, new net.minecraft.world.item.ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_YAGI.get()));
+					player.setXRot(-90.0F); // Straight up.
+					handheld.tick();
+					helper.assertTrue(handheld.yagiAim() != null, "the Yagi in the offhand is not aimed");
+					helper.assertTrue(SatelliteRadio.pattern(handheld) == com.arrl.radiocraft.common.radio.satellite.SatellitePattern.HANDHELD_YAGI, "not the Yagi's pattern");
+					helper.assertTrue(SatelliteRadio.uplinks(level, satellite, look.elevation(), handheld, at), "the Yagi aimed at it was not heard");
+					double aimed = SatelliteRadio.strength(level, satellite, look.elevation(), handheld, at);
+
+					player.setXRot(0.0F); // At the horizon, 90 degrees off.
+					handheld.tick();
+					helper.assertFalse(SatelliteRadio.uplinks(level, satellite, look.elevation(), handheld, at), "heard looking at the horizon");
+					double away = SatelliteRadio.strength(level, satellite, look.elevation(), handheld, at);
+					helper.assertTrue(away < aimed / 4.0D, "looking away it is still " + away + " against " + aimed + " aimed");
 				})
 				.thenSucceed();
 	}

@@ -9,6 +9,8 @@ package com.arrl.radiocraft.common.radio.satellite;
  * <li>{@link #VERTICAL}: a J-pole, slim jim, ringo, whip or handheld. Fine low in the pass, but a vertical has a null
  * straight up: from about 40 degrees the satellite fades, and within a few degrees of overhead the uplink is lost.</li>
  * <li>{@link #OTHER}: anything else (yagis, the dish, wire antennas): the plain curve, stronger as it climbs.</li>
+ * <li>{@link #HANDHELD_YAGI}: the handheld Yagi in a player's offhand (2026-11-15). This is its strength on target; how far
+ * its holder looks off the satellite takes off more ({@link HandheldYagiAim}).</li>
  * <li>{@link #TRACKER}: the satellite tracking antenna while it is locked on this satellite ({@link SatelliteTracking}):
  * a dish following it, full strength all pass long (but for the fade at the horizon) and untouched by space weather.</li>
  * </ul>
@@ -17,7 +19,7 @@ package com.arrl.radiocraft.common.radio.satellite;
  * cost the uplink. Only a locked tracker shrugs it off.
  */
 public enum SatellitePattern {
-	EGGBEATER, VERTICAL, OTHER, TRACKER;
+	EGGBEATER, VERTICAL, OTHER, TRACKER, HANDHELD_YAGI;
 
 	/** The plain curve's strength at the coverage edge and straight overhead. */
 	public static final double LOW = 0.35D, HIGH = 0.9D;
@@ -56,6 +58,7 @@ public enum SatellitePattern {
 		double sin = Math.sin(Math.toRadians(e));
 		return switch(this) {
 			case TRACKER -> TRACK;
+			case HANDHELD_YAGI -> HandheldYagiAim.ON_TARGET;
 			case EGGBEATER -> EGG_LOW + (EGG_HIGH - EGG_LOW) * sin;
 			case OTHER -> plain(sin);
 			case VERTICAL -> {

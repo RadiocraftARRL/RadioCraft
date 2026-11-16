@@ -58,6 +58,7 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.AIRBAND_GROUND_PLANE.get());
         output.accept(RadiocraftItems.EGGBEATER_ANTENNA.get());
         output.accept(RadiocraftItems.SATELLITE_TRACKER.get()); // The satellite tracking antenna (2026-11-12).
+        output.accept(RadiocraftItems.HANDHELD_YAGI.get()); // Satellites from a handheld, held in the offhand (2026-11-15).
         output.accept(RadiocraftItems.IAMBIC_KEYER.get()); // The iambic keyer (2026-11-12).
         output.accept(RadiocraftItems.SLIM_JIM_ANTENNA.get());
         output.accept(RadiocraftItems.RINGO_ANTENNA.get());

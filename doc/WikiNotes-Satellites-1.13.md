@@ -173,3 +173,15 @@ decommissioning, burnout".
   their player or computer name is on its lists; the computer's owner (and ops) always.
 - **LAN RELAY** (built in): a chat room kept by a computer set as a relay server (needs a SETUP name and background
   services on); the LAN's rooms to pick from, who is in the room, 200 lines of history on the server.
+
+## Handheld Yagi (2026-11-15)
+
+Everything here is **Added in 1.13**.
+- Item `radiocraft:handheld_yagi` (stacks to 1): a three-element 2 m beam. Held in the offhand, it is the satellite
+  antenna of the player's VHF handhelds. While the player looks within 20 degrees of a satellite it hears and is heard
+  at full strength (0.95, at any elevation, so straight overhead works where a handheld's own whip loses it); further
+  off it fades, the uplink goes at about 36 degrees off, and from 45 degrees off only a trace is left. Space weather
+  and the fade near the horizon apply as for other antennas; stealth satellites still need a tracker.
+- In third person the player holds it out along their look (the bow pose).
+- Aim with the sky (satellites flash at night) or SATTRACK's azimuth and elevation by day.
+- Patchouli: a page in **Repeaters > Satellites** ("Working a pass by hand"), spotlight on the item. Recipe: not yet.

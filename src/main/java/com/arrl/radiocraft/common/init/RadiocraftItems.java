@@ -328,6 +328,9 @@ public class RadiocraftItems {
 	/** A floppy with the world on it: crafted into a direction finder it makes the map enabled one. Cartographers sell it. */
 	public static final DeferredHolder<Item, HandheldDirectionFinderItem> HANDHELD_DIRECTION_FINDER = ITEMS.register("handheld_direction_finder",
 			() -> new HandheldDirectionFinderItem(new Properties().stacksTo(1)));
+	/** A three-element 2 m beam for working satellites from a VHF handheld, held in the offhand (2026-11-15). */
+	public static final DeferredHolder<Item, com.arrl.radiocraft.common.items.HandheldYagiItem> HANDHELD_YAGI = ITEMS.register("handheld_yagi",
+			() -> new com.arrl.radiocraft.common.items.HandheldYagiItem(new Properties().stacksTo(1)));
 	public static final DeferredHolder<Item, HFManpackItem> HF_MANPACK = ITEMS.register("hf_manpack", () -> new HFManpackItem(new Properties()));
 	public static final DeferredHolder<Item, ManpackMicItem> MANPACK_MIC = ITEMS.register("manpack_mic", () -> new ManpackMicItem(new Properties()));
 	public static final Supplier<Item> WORLD_MAP_MODULE = simpleItem("world_map_module", Component.translatable("tooltip.radiocraft.world_map_module").withStyle(net.minecraft.ChatFormatting.GRAY));

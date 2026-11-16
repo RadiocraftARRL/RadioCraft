@@ -203,6 +203,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addBlock(RadiocraftBlocks.DIRECTION_FINDER_MODULE, "Direction Finder Module");
 			provider.addItem(RadiocraftItems.WORLD_MAP_MODULE, "World Map Module");
 			provider.addItem(RadiocraftItems.HANDHELD_DIRECTION_FINDER, "Handheld Direction Finder");
+			provider.addItem(RadiocraftItems.HANDHELD_YAGI, "Handheld Yagi");
 			provider.addBlock(RadiocraftBlocks.MICROWAVE_RADIO, "Microwave Radio");
 			provider.addItem(RadiocraftItems.HF_MANPACK, "HF Manpack Radio");
 			provider.addItem(RadiocraftItems.MANPACK_MIC, "Manpack Handset");
@@ -297,6 +298,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("tooltip.radiocraft.weather_station", "Put it up high in the open. Any H19 APRS terminal within 64 blocks sends its weather in its beacons.");
 			provider.add("screen.radiocraft.microwave.identity_taken", "Another microwave radio already has that callsign and ID");
 			provider.add("screen.radiocraft.telephone.extension_taken", "No PABX, or that extension is already in use");
+			provider.add("tooltip.radiocraft.handheld_yagi", "Hold it in your offhand to work satellites with a VHF handheld. Look towards the satellite: the further you look away, the weaker it gets.");
 			provider.add("tooltip.radiocraft.handheld_direction_finder", "Right click to set the frequency. Held, it beeps faster the more you face a station transmitting there.");
 			provider.add("container.radiocraft.direction_finder", "Direction Finder");
 			provider.add("container.radiocraft.map_direction_finder", "Map Enabled Direction Finder");

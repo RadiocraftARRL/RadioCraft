@@ -10,7 +10,7 @@ hams point at a pass. Mono band, so only three elements, flat (horizontal) acros
 - driven      split in the middle at a red feed block, with the coax running back under the boom into the grip
 - director    the shortest, at the front
 
-Element tips have small yellow safety caps. Display transforms are included (first guesses; tune them in game).
+Element tips have small yellow safety caps. Display transforms are included (see DISPLAY).
 """
 import argparse
 import sys
@@ -99,15 +99,17 @@ def elements(b):
     return els
 
 
+# With the item in the offhand the holder takes the bow pose (ClientSetupEvents), arm along their look: untransformed,
+# the item's north then runs down the arm, so the beam points where they look with its elements level. The grip sits
+# 21 units back from the model's middle; at 0.4 that is about 5 towards the shoulder, so it is moved 5 out to the hand.
 DISPLAY = {
-    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 1, -3], "scale": [0.4, 0.4, 0.4]},
-    "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 1, -3], "scale": [0.4, 0.4, 0.4]},
-    "firstperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 2, -2], "scale": [0.35, 0.35, 0.35]},
-    "firstperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 2, -2], "scale": [0.35, 0.35, 0.35]},
-    "gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.45, 0.45, 0.45]},
+    "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 0, -5], "scale": [0.4, 0.4, 0.4]},
+    "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 0, -5], "scale": [0.4, 0.4, 0.4]},
+    "firstperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, -4], "scale": [0.35, 0.35, 0.35]},
+    "firstperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 3, -4], "scale": [0.35, 0.35, 0.35]},
+    "gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.32, 0.32, 0.32]},
     "ground": {"translation": [0, 2, 0], "scale": [0.3, 0.3, 0.3]},
-    "fixed": {"rotation": [0, 180, 0], "scale": [0.45, 0.45, 0.45]},
-    "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [0.6, 0.6, 0.6]},
+    "fixed": {"rotation": [0, 180, 0], "scale": [0.42, 0.42, 0.42]},
 }
 
 

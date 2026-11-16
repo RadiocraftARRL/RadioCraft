@@ -57,8 +57,7 @@ someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
 - [ ] Loop antennas: play the horizontal/vertical quads (2:1 balun) and the delta loop, then settle the loop gains
   (maintainer, 2026-10-21)
 - [ ] VHF Moxon block: needs a model (two tall like the Yagi, SWR 1 on 2m; doc/DeltaLoopAndMoxonPlan.md)
-- [ ] Handheld Yagi (maintainer, 2026-11-15): held in the offhand with a VHF handheld, it lets you work a satellite,
-  but only while you look roughly toward it (like a real hand-held satellite Yagi); model drafted (`tools/handheld_yagi_model.py`, `models/item/handheld_yagi.json`), display transforms still to tune in game
+- [ ] Handheld Yagi recipe (built 2026-11-15, creative tab only until the maintainer approves one)
 - [ ] Antenna analyzer screen (a swept SWR graph) if chat turns out not to be enough
 - [ ] Index each network's antennas by area, if servers grow past a few hundred antennas per band
 
