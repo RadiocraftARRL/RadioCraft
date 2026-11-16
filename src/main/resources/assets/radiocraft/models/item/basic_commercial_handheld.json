@@ -738,5 +738,13 @@
         0.68
       ]
     }
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "radiocraft:yagi": 1
+      },
+      "model": "radiocraft:item/basic_commercial_handheld_cabled"
+    }
+  ]
 }

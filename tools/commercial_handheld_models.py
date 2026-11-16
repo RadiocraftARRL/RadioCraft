@@ -123,6 +123,7 @@ def basic():
         "elements": elements,
         "gui_light": "front",
         "display": old["display"],
+        "overrides": cabled("basic_commercial_handheld"),
     }
     write_json(os.path.join(MODELS, "basic_commercial_handheld.json"), model)
     return img
@@ -337,9 +338,15 @@ def upgraded():
         "elements": elements,
         "gui_light": "front",
         "display": display,
+        "overrides": cabled("upgraded_commercial_handheld"),
     }
     write_json(os.path.join(MODELS, "upgraded_commercial_handheld.json"), model)
     return s.img
+
+
+def cabled(name):
+    """With the handheld Yagi in the holder's offhand, the model with a cable to the Yagi (tools/handheld_cabled_models.py)."""
+    return [{"predicate": {"radiocraft:yagi": 1}, "model": f"radiocraft:item/{name}_cabled"}]
 
 
 def write_json(path, data):

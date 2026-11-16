@@ -675,6 +675,8 @@ def item_model():
         "textures": {"0": "radiocraft:item/marine_handheld", "particle": "radiocraft:item/marine_handheld"},
         "elements": elements,
         "display": display,
+        # With the handheld Yagi in the holder's offhand: a cable to it instead of the antenna (handheld_cabled_models.py).
+        "overrides": [{"predicate": {"radiocraft:yagi": 1}, "model": "radiocraft:item/marine_handheld_cabled"}],
     }
 
 

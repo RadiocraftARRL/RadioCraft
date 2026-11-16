@@ -309,7 +309,8 @@ public class SatelliteGameTests {
 	/**
 	 * The handheld Yagi (2026-11-15): a player with a VHF handheld and the Yagi in their offhand is heard by a satellite
 	 * while they look towards it and not when they look away; the handheld alone, a vertical, loses a satellite
-	 * straight overhead that the Yagi aimed up still works. Without the Yagi the player is a vertical again.
+	 * straight overhead that the Yagi aimed up still works, and is weaker low in the world than high up. Without the
+	 * Yagi the player is a vertical again.
 	 */
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = BATCH)
 	public static void handheldYagiWorksWhereItIsAimed(GameTestHelper helper) {
@@ -330,6 +331,8 @@ public class SatelliteGameTests {
 					handheld.tick();
 					helper.assertTrue(handheld.yagiAim() == null, "aimed without a Yagi");
 					helper.assertFalse(SatelliteRadio.uplinks(level, satellite, look.elevation(), handheld, at), "a handheld's own vertical reached it overhead");
+					double low = SatelliteRadio.strength(level, satellite, 30.0D, handheld, at), high = SatelliteRadio.strength(level, satellite, 30.0D, handheld, at.atY(250));
+					helper.assertTrue(low < high * 0.8D, "a handheld's own whip is " + low + " low in the world against " + high + " high up");
 
 					player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, new net.minecraft.world.item.ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_YAGI.get()));
 					player.setXRot(-90.0F); // Straight up.
@@ -344,6 +347,35 @@ public class SatelliteGameTests {
 					helper.assertFalse(SatelliteRadio.uplinks(level, satellite, look.elevation(), handheld, at), "heard looking at the horizon");
 					double away = SatelliteRadio.strength(level, satellite, look.elevation(), handheld, at);
 					helper.assertTrue(away < aimed / 4.0D, "looking away it is still " + away + " against " + aimed + " aimed");
+				})
+				.thenSucceed();
+	}
+
+	/** The handheld Yagi works with a commercial handheld and a marine handheld too (2026-11-15). */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100, batch = BATCH)
+	public static void handheldYagiWorksWithCommercialHandhelds(GameTestHelper helper) {
+		Satellite satellite = overhead(helper, 212L);
+		BlockPos at = helper.absolutePos(new BlockPos(8, 2, 8));
+		helper.startSequence()
+				.thenExecute(() -> {
+					ServerLevel level = helper.getLevel();
+					double up = satellite.look(at.getX(), at.getZ(), level.getGameTime()).elevation();
+					for(net.minecraft.world.item.Item item : new net.minecraft.world.item.Item[] { com.arrl.radiocraft.common.init.RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get(),
+							com.arrl.radiocraft.common.init.RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get(), com.arrl.radiocraft.common.init.RadiocraftItems.MARINE_HANDHELD.get() }) {
+						net.minecraft.world.entity.player.Player player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+						player.setPos(net.minecraft.world.phys.Vec3.atBottomCenterOf(at));
+						net.minecraft.world.item.ItemStack radio = new net.minecraft.world.item.ItemStack(item);
+						radio.getCapability(com.arrl.radiocraft.common.capabilities.RadiocraftCapabilities.VHF_HANDHELDS).setPowered(true);
+						player.getInventory().setItem(0, radio);
+						player.getInventory().selected = 0;
+						player.setItemInHand(net.minecraft.world.InteractionHand.OFF_HAND, new net.minecraft.world.item.ItemStack(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_YAGI.get()));
+						player.setXRot(-90.0F);
+						com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio handheld = new com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio(player);
+						handheld.tick();
+						String name = item.getDescriptionId();
+						helper.assertTrue(SatelliteRadio.pattern(handheld) == com.arrl.radiocraft.common.radio.satellite.SatellitePattern.HANDHELD_YAGI, name + " does not use the Yagi");
+						helper.assertTrue(SatelliteRadio.uplinks(level, satellite, up, handheld, at), name + " with the Yagi aimed up was not heard");
+					}
 				})
 				.thenSucceed();
 	}

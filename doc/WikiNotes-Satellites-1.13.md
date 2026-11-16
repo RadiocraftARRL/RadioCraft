@@ -183,5 +183,8 @@ Everything here is **Added in 1.13**.
   off it fades, the uplink goes at about 36 degrees off, and from 45 degrees off only a trace is left. Space weather
   and the fade near the horizon apply as for other antennas; stealth satellites still need a tracker.
 - In third person the player holds it out along their look (the bow pose).
+- A VHF handheld's own antenna (no Yagi) is now weaker for satellites: 0.7 of a vertical's signal up to y 128, rising
+  smoothly to a full vertical at y 224 (up a mountain or a tower). At sea level it still works a pass from about 9
+  degrees up, loses low passes, and its null overhead comes sooner.
 - Aim with the sky (satellites flash at night) or SATTRACK's azimuth and elevation by day.
 - Patchouli: a page in **Repeaters > Satellites** ("Working a pass by hand"), spotlight on the item. Recipe: not yet.

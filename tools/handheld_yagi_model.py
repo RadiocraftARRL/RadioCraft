@@ -105,8 +105,8 @@ def elements(b):
 DISPLAY = {
     "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 0, -5], "scale": [0.4, 0.4, 0.4]},
     "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 0, -5], "scale": [0.4, 0.4, 0.4]},
-    "firstperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, -4], "scale": [0.35, 0.35, 0.35]},
-    "firstperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 3, -4], "scale": [0.35, 0.35, 0.35]},
+    "firstperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 0.5, -1.5], "scale": [0.35, 0.35, 0.35]},
+    "firstperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 0.5, -1.5], "scale": [0.35, 0.35, 0.35]},
     "gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.32, 0.32, 0.32]},
     "ground": {"translation": [0, 2, 0], "scale": [0.3, 0.3, 0.3]},
     "fixed": {"rotation": [0, 180, 0], "scale": [0.42, 0.42, 0.42]},

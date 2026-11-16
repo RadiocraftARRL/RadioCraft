@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +38,32 @@ public class HandheldItemRenderer extends BlockEntityWithoutLevelRenderer {
 
 	/** The RX LED lit, drawn over the face's green LED. */
 	public static final ModelResourceLocation RX_LED = ModelResourceLocation.standalone(Radiocraft.id("item/vhf_handheld_rx_led"));
+	/**
+	 * The handheld with its antenna off and a cable to the handheld Yagi (2026-11-15, tools/handheld_cabled_models.py),
+	 * drawn while its holder has the Yagi in their offhand.
+	 */
+	public static final ModelResourceLocation CABLED = ModelResourceLocation.standalone(Radiocraft.id("item/vhf_handheld_3d_cabled"));
+
+	/**
+	 * True when the item renderer last resolved a handheld's model for someone with the handheld Yagi in their offhand.
+	 * The item renderer resolves a model's overrides (with the holder) just before drawing it, and draws it straight
+	 * after, on the render thread; {@link #renderByItem} reads it and clears it.
+	 */
+	private static boolean cabled = false;
+
+	/** Resolves no override, but notes whether the holder has the handheld Yagi in their offhand. */
+	private static final ItemOverrides NOTE_HOLDER = new ItemOverrides() {
+		@Override
+		public BakedModel resolve(@NotNull BakedModel model, @NotNull ItemStack stack, @Nullable net.minecraft.client.multiplayer.ClientLevel level, @Nullable net.minecraft.world.entity.LivingEntity entity, int seed) {
+			cabled = holdsYagi(entity);
+			return model;
+		}
+	};
+
+	/** True if {@code entity} has the handheld Yagi in their offhand (the handhelds' "radiocraft:yagi" property). */
+	public static boolean holdsYagi(@Nullable net.minecraft.world.entity.LivingEntity entity) {
+		return entity != null && entity.getOffhandItem().is(RadiocraftItems.HANDHELD_YAGI.get());
+	}
 
 	// The LCD's glass on the front of the model (model units; the front is the south face, z 9.25).
 	private static final float LCD_X0 = 7.6F, LCD_X1 = 10.15F, LCD_Y0 = 8.4F, LCD_Y1 = 9.6F, LCD_Z = 9.25F + 0.02F;
@@ -80,6 +107,11 @@ public class HandheldItemRenderer extends BlockEntityWithoutLevelRenderer {
 					return true;
 				}
 
+				@Override
+				public @NotNull ItemOverrides getOverrides() {
+					return NOTE_HOLDER;
+				}
+
 				/** The original's display transform, but still this model: the item renderer draws what this returns. */
 				@Override
 				public @NotNull BakedModel applyTransform(@NotNull ItemDisplayContext context, @NotNull PoseStack poseStack, boolean leftHand) {
@@ -109,6 +141,12 @@ public class HandheldItemRenderer extends BlockEntityWithoutLevelRenderer {
 		BakedModel original = ORIGINALS.get(stack.getItem());
 		if(original == null)
 			return;
+		if(cabled) {
+			cabled = false;
+			BakedModel withCable = Minecraft.getInstance().getModelManager().getModel(CABLED);
+			if(withCable != Minecraft.getInstance().getModelManager().getMissingModel())
+				original = withCable;
+		}
 		// The item renderer has applied the display transform and moved to the model's corner; drawing the original
 		// as a plain item (no transform) moves there again, so go back to its centre first.
 		poseStack.pushPose();

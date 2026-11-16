@@ -277,6 +277,8 @@ public final class SatelliteRadio {
 		double strength = pattern.strength(elevation, aurora(level, pos), storm(level));
 		if(pattern == SatellitePattern.HANDHELD_YAGI)
 			strength *= yagiAim(level, satellite, (com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio)antenna, pos);
+		else if(antenna instanceof com.arrl.radiocraft.common.radio.voice.handheld.PlayerRadio)
+			strength *= SatellitePattern.handheld(pos.getY()); // The handheld's own whip, weaker but high up (2026-11-15).
 		return strength;
 	}
 

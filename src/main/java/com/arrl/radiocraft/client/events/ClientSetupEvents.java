@@ -159,6 +159,12 @@ public class ClientSetupEvents {
 				}));
 		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.HANDHELD_DIRECTION_FINDER.get(),
 				Radiocraft.id("lit"), (stack, level, entity, seed) -> entity == net.minecraft.client.Minecraft.getInstance().player && com.arrl.radiocraft.client.HandheldDfClient.isLit() ? 1.0F : 0.0F));
+		// With the handheld Yagi in the holder's offhand, a cable to it in place of the antenna (2026-11-15). The VHF
+		// handheld, drawn by HandheldItemRenderer, swaps its model there.
+		for(net.minecraft.world.item.Item handheld : new net.minecraft.world.item.Item[] { com.arrl.radiocraft.common.init.RadiocraftItems.BASIC_COMMERCIAL_HANDHELD.get(),
+				com.arrl.radiocraft.common.init.RadiocraftItems.UPGRADED_COMMERCIAL_HANDHELD.get(), com.arrl.radiocraft.common.init.RadiocraftItems.MARINE_HANDHELD.get() })
+			event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(handheld, Radiocraft.id("yagi"),
+					(stack, level, entity, seed) -> com.arrl.radiocraft.client.render.HandheldItemRenderer.holdsYagi(entity) ? 1.0F : 0.0F));
 		// The CB portable's whip is pulled out while it is on.
 		event.enqueueWork(() -> net.minecraft.client.renderer.item.ItemProperties.register(com.arrl.radiocraft.common.init.RadiocraftItems.CB_PORTABLE.get(),
 				Radiocraft.id("extended"), (stack, level, entity, seed) -> com.arrl.radiocraft.common.items.CbPortableItem.isOn(stack) ? 1.0F : 0.0F));
@@ -200,6 +206,7 @@ public class ClientSetupEvents {
 		event.register(com.arrl.radiocraft.client.render.WeatherStationRenderer.CUPS);
 		event.register(com.arrl.radiocraft.client.render.TapePlayerRenderer.REEL);
 		event.register(com.arrl.radiocraft.client.render.HandheldItemRenderer.RX_LED);
+		event.register(com.arrl.radiocraft.client.render.HandheldItemRenderer.CABLED);
 	}
 
 	/** The VHF handheld's item models hand their drawing to {@link com.arrl.radiocraft.client.render.HandheldItemRenderer} (its live LCD). */

@@ -222,7 +222,7 @@ keeps the history).
 - [ ] Test voice through a satellite (downlink with -600 offset and tone, transit delay echo, Morse ID after the voice; `/radiocraft satellite overhead <name>`)
 - [ ] Test satellite modes (APRS, MAILBOX, SSTV, IMAGING, telemetry, Doppler with `satellite_doppler`, eclipse, decay warning)
 - [ ] Test the Satellite Tracking Antenna (turns with power, stops without, no flicker, weaker in aurora/storm)
-- [ ] Test the Handheld Yagi (model in hand, GUI, item frame and on the ground; held out along your look in third person; with a VHF handheld, a pass works while you look at the satellite and fades as you look away; `/radiocraft satellite overhead <name>`)
+- [ ] Test the Handheld Yagi (model in hand, GUI, item frame and on the ground; held out along your look in third person; with a VHF handheld, a pass works while you look at the satellite and fades as you look away; the handheld in your hand (VHF, commercial, marine) shows a cable to the Yagi instead of its antenna; without the Yagi a handheld is weaker, but fine high up; `/radiocraft satellite overhead <name>`)
 - [ ] Test moonbounce (MOON in SATTRACK, CW echo on 2m with the tracker at night)
 - [ ] Test the iambic keyer (model, dye/material variants, screen, keying)
 

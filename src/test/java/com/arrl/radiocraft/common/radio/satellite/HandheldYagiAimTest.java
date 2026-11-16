@@ -53,4 +53,17 @@ class HandheldYagiAimTest {
 		assertTrue(!SatellitePattern.VERTICAL.uplinks(90.0D));
 		assertEquals(0.0D, HandheldYagiAim.strength(0.0D, 0.0D), 1.0E-9D); // Still fades at the horizon.
 	}
+
+	@Test
+	void aHandheldsOwnWhipIsWeakerButForHighUp() {
+		assertEquals(SatellitePattern.HANDHELD_WHIP, SatellitePattern.handheld(64.0D), 1.0E-9D);
+		assertEquals(SatellitePattern.HANDHELD_WHIP, SatellitePattern.handheld(SatellitePattern.HANDHELD_FROM_Y), 1.0E-9D);
+		assertEquals(1.0D, SatellitePattern.handheld(SatellitePattern.HANDHELD_FULL_Y), 1.0E-9D);
+		assertEquals(1.0D, SatellitePattern.handheld(300.0D), 1.0E-9D);
+		assertTrue(SatellitePattern.handheld(176.0D) > SatellitePattern.HANDHELD_WHIP && SatellitePattern.handheld(176.0D) < 1.0D);
+		// At sea level a mid pass still works, a low one does not (a full vertical's does).
+		assertTrue(SatellitePattern.VERTICAL.strength(30.0D) * SatellitePattern.handheld(64.0D) >= SatellitePattern.UPLINK_FLOOR);
+		assertTrue(SatellitePattern.VERTICAL.strength(6.0D) * SatellitePattern.handheld(64.0D) < SatellitePattern.UPLINK_FLOOR);
+		assertTrue(SatellitePattern.VERTICAL.uplinks(6.0D));
+	}
 }

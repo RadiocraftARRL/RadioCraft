@@ -86,6 +86,21 @@ public enum SatellitePattern {
 		return strength(elevation, aurora, storm) >= UPLINK_FLOOR;
 	}
 
+	/** What a handheld's own little whip gets of a vertical's signal low in the world (2026-11-15). */
+	public static final double HANDHELD_WHIP = 0.7D;
+	/** Heights between which a handheld's whip comes up to a full vertical: up a mountain or a tower, clear of everything. */
+	public static final double HANDHELD_FROM_Y = 128.0D, HANDHELD_FULL_Y = 224.0D;
+
+	/**
+	 * What is left of a vertical's signal on a handheld's own antenna held at height {@code y} (maintainer, 2026-11-15):
+	 * {@link #HANDHELD_WHIP} up to {@link #HANDHELD_FROM_Y}, rising smoothly to all of it at {@link #HANDHELD_FULL_Y}.
+	 * Low passes are lost, and the null overhead comes sooner; the handheld Yagi or climbing high makes up for it.
+	 */
+	public static double handheld(double y) {
+		double t = Math.max(0.0D, Math.min(1.0D, (y - HANDHELD_FROM_Y) / (HANDHELD_FULL_Y - HANDHELD_FROM_Y)));
+		return HANDHELD_WHIP + (1.0D - HANDHELD_WHIP) * t * t * (3.0D - 2.0D * t);
+	}
+
 	/** What the space weather leaves of a satellite's signal: 1 on a quiet day. */
 	public static double weather(boolean aurora, boolean storm) {
 		return (aurora ? AURORA_FADE : 1.0D) * (storm ? STORM_FADE : 1.0D);

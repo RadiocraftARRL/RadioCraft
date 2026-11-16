@@ -621,5 +621,13 @@
         0.68
       ]
     }
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "radiocraft:yagi": 1
+      },
+      "model": "radiocraft:item/marine_handheld_cabled"
+    }
+  ]
 }
