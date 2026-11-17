@@ -112,6 +112,7 @@ keeps the history).
 
 ## Wires, cables and bundles
 
+- [ ] Test the upstairs coax bundles in Demo World (2026-11-16): the corner at -40 106 536 / -39 106 536 has no gap or flicker where the red strand turns east, and the bundle by the window at -40 99 545 steps into the passthrough without the strands running through each other. The 0.75 px kink in the lone red coax at -39 106 535 is still there (left as it is)
 - [ ] Test wires after the shared state tables (2026-11-16, 1.14 memory work: the game starts, Demo World's house cables, dyed coax and bundles look and connect as before; placing, dyeing and breaking wire)
 - [ ] Test plain, coloured, waterproof and ground wire (look, dye, separate networks, Jade names)
 - [ ] Test dyed coax and dyed data wire (16 colours each, stay separate, through one passthrough)

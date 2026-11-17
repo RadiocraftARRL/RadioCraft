@@ -721,6 +721,11 @@ public final class CableRoutes {
 			boolean positive = d.getAxisDirection() == Direction.AxisDirection.POSITIVE;
 			double middle = 8.0D + own.along(d), face = positive ? 16.0D + p.head() : -p.head();
 			double step = middle + (face - middle) * (stepRank(lanes, index, d, meet - mine) + 1.0D) / (lanes.length + 1.0D);
+			// Clear of the middle cube and short of the face, where there is room (2026-11-16): a step past the face pokes
+			// into the next block and flickers against its cable.
+			double near = middle + (positive ? width : -width), far = face - (positive ? width : -width) / 2.0D;
+			if((far - near) * (positive ? 1.0D : -1.0D) >= 0.0D)
+				step = positive ? Math.clamp(step, near, far) : Math.clamp(step, far, near);
 			// Less than a cable's width over: a step would be two cubes on top of each other, a fold. Straight at the meeting
 			// place instead, from the middle cube, which covers the little offset.
 			List<Point> path = Math.abs(meet - mine) < width ? List.of(Point.of(d.getAxis(), middle, 8.0D + meet), Point.of(d.getAxis(), face, 8.0D + meet))

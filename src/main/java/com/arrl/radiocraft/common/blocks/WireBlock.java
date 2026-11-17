@@ -1249,15 +1249,51 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 				// A device (or a passthrough): a cable kept to a wall jogs back out to the middle of its face
 				// (maintainer, 2026-11-11); a bundle's strands still spread as before, halfway to their place.
 				WireLook.Lateral shift = Strand.shiftAt(level, pos);
-				at[dir.ordinal()] = new WireLook.Lateral((offset.x() - shift.x()) / 2.0D, (offset.z() - shift.z()) / 2.0D);
+				at[dir.ordinal()] = dir.getAxis().isHorizontal() && bundleCrowded(level, pos, dir) ? offset // No room to step over: straight in.
+						: new WireLook.Lateral((offset.x() - shift.x()) / 2.0D, (offset.z() - shift.z()) / 2.0D);
 			}
 			else if(dir.getAxis().isHorizontal() && runsUpFace(level, pos.relative(dir), dir.getOpposite()))
 				at[dir.ordinal()] = theirs;
+			else if(dir.getAxis().isHorizontal() && room(offset, dir) < stepRoom() && room(theirs, dir.getOpposite()) >= stepRoom())
+				at[dir.ordinal()] = offset; // No room to step over on our side of the face: the next block steps all the way.
+			else if(dir.getAxis().isHorizontal() && room(theirs, dir.getOpposite()) < stepRoom() && room(offset, dir) >= stepRoom())
+				at[dir.ordinal()] = theirs; // None on theirs: we step all the way.
 			else
 				at[dir.ordinal()] = offset.halfwayTo(theirs);
 		}
 		return new WireLook.Faces(at[Direction.DOWN.ordinal()], at[Direction.UP.ordinal()], at[Direction.NORTH.ordinal()],
 				at[Direction.SOUTH.ordinal()], at[Direction.WEST.ordinal()], at[Direction.EAST.ordinal()]);
+	}
+
+	/**
+	 * Pixels from a strand at {@code at} to the {@code dir} face of its block, along the way it leaves (2026-11-16, the
+	 * maintainer's house: a bundle kept in a corner put a strand a pixel from the face, with no room to step over to
+	 * where it met the next block, and the step poked through into it).
+	 */
+	static double room(WireLook.Lateral at, Direction dir) {
+		double along = at.along(dir);
+		return 8.0D - (dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? along : -along);
+	}
+
+	/** Room a square step across ({@code CableRoutes#squared}) needs between the middle and the face: a cable and a half. */
+	double stepRoom() {
+		return width() * 1.5D;
+	}
+
+	/**
+	 * True if some strand of the bundle at {@code pos} lies too near its {@code dir} face to step over: then every
+	 * strand goes straight in through that face at its own line (into a device), keeping their order, instead of some
+	 * stepping across the others.
+	 */
+	private static boolean bundleCrowded(BlockGetter level, BlockPos pos, Direction dir) {
+		List<BlockState> strands = Strand.statesAt(level, pos);
+		if(strands.size() < 2 || !(level.getBlockState(pos).getBlock() instanceof WireBundleBlock))
+			return false;
+		WireLook.Lateral[] laterals = Strand.laterals(level, pos, strands);
+		for(int i = 0; i < laterals.length; i++)
+			if(strands.get(i).getValue(PROPERTY_BY_DIRECTION.get(dir)) && room(laterals[i], dir) < ((WireBlock)strands.get(i).getBlock()).stepRoom())
+				return true;
+		return false;
 	}
 
 	/**

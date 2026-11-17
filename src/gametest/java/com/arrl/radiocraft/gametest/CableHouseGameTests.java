@@ -52,6 +52,25 @@ public class CableHouseGameTests {
 	 * the grey power strand's step across goes over the plain one, a bridge (CableRoutes#bridges), instead of running
 	 * through it, and the bundle solver still sees the crossing it could not avoid.
 	 */
+	/**
+	 * Upstairs in the maintainer's house (2026-11-16, Demo World -42 98 533 to -37 107 546, saved as {@code house_upstairs}):
+	 * a bundle kept in a corner put its red strand a pixel from the face it leaves by, with no room to step over to
+	 * where it met the next bundle, so the step poked into that block and flickered against its cable (a gap at the
+	 * face); and by the window a bundle whose strands step into a passthrough ran them through each other. Each is
+	 * now drawn straight through the face on the cramped side, and the room side steps.
+	 */
+	@GameTest(template = "house_upstairs", timeoutTicks = 100)
+	public static void crampedStrandsStepOnTheRoomySide(GameTestHelper helper) {
+		helper.startSequence().thenIdle(5).thenExecute(() -> {
+			java.util.List<String> problems = new java.util.ArrayList<>();
+			for(BlockPos at : java.util.List.of(new BlockPos(2, 2, 12), new BlockPos(2, 9, 3), new BlockPos(3, 9, 3), new BlockPos(3, 9, 2))) {
+				BlockPos abs = helper.absolutePos(at);
+				problems.addAll(WireGeometry.check(helper.getLevel(), abs, abs));
+			}
+			helper.assertTrue(problems.isEmpty(), problems.size() + " problems: " + String.join("; ", problems.subList(0, Math.min(4, problems.size()))));
+		}).thenSucceed();
+	}
+
 	@GameTest(template = "house_cables", timeoutTicks = 200, batch = "cablehouse")
 	public static void houseCrossingIsBridged(GameTestHelper helper) {
 		helper.startSequence().thenIdle(5).thenExecute(() -> {
