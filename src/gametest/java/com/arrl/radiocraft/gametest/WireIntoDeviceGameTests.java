@@ -64,4 +64,30 @@ public class WireIntoDeviceGameTests {
 				})
 				.thenSucceed();
 	}
+	/**
+	 * Coax on the floor beside a J-pole's foot (2026-11-16, the maintainer: it flickered): the J-pole draws its own run in
+	 * to the mast from that side, so the wire's stub stops at the face instead of reaching in on top of it.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100)
+	public static void coaxStopsAtAJPoleThatDrawsItsOwnRun(GameTestHelper helper) {
+		BlockPos foot = new BlockPos(5, 2, 4), wire = foot.south();
+		helper.setBlock(foot, RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.antennas.DoubleVHFAntennaBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER));
+		helper.setBlock(foot.above(), RadiocraftBlocks.J_POLE_ANTENNA.get().defaultBlockState()
+				.setValue(com.arrl.radiocraft.common.blocks.antennas.DoubleVHFAntennaBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER));
+		helper.startSequence()
+				.thenIdle(2)
+				.thenExecute(() -> {
+					GameTestUtil.placeWire(helper, wire.south(), RadiocraftBlocks.COAX_WIRE.get());
+					GameTestUtil.placeWire(helper, wire, RadiocraftBlocks.COAX_WIRE.get());
+				})
+				.thenWaitUntil(() -> {
+					helper.assertTrue(helper.getBlockState(foot).getValue(com.arrl.radiocraft.common.blocks.antennas.CoaxStubs.SOUTH), "the J-pole does not draw its run to the coax");
+					BlockPos at = helper.absolutePos(wire);
+					for(WireGeometry.Segment s : WireGeometry.at(helper.getLevel(), at))
+						for(Vec3 p : new Vec3[] {s.from(), s.to()})
+							helper.assertTrue(p.z >= at.getZ() - 1.0E-4D, "the coax reaches into the J-pole's block, to z " + (p.z - at.getZ()) * 16.0D + " px");
+				})
+				.thenSucceed();
+	}
 }

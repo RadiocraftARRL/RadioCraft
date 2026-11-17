@@ -112,6 +112,7 @@ keeps the history).
 
 ## Wires, cables and bundles
 
+- [ ] Test coax beside a J-pole, eggbeater, 5-BTV, CB ground plane or ionosonde foot (2026-11-16): one run in to the mast, no flicker where the coax meets the antenna (Demo World -37 106 536)
 - [ ] Test the upstairs coax bundles in Demo World (2026-11-16): the corner at -40 106 536 / -39 106 536 has no gap or flicker where the red strand turns east, and the bundle by the window at -40 99 545 steps into the passthrough without the strands running through each other. The 0.75 px kink in the lone red coax at -39 106 535 is still there (left as it is)
 - [ ] Test wires after the shared state tables (2026-11-16, 1.14 memory work: the game starts, Demo World's house cables, dyed coax and bundles look and connect as before; placing, dyeing and breaking wire)
 - [ ] Test plain, coloured, waterproof and ground wire (look, dye, separate networks, Jade names)
@@ -221,6 +222,7 @@ keeps the history).
 
 ## Satellites and moonbounce
 
+- [ ] Test a satellite pass on a handheld's own antenna below y 128 (2026-11-16, whip share 0.7 -> 0.45): hissy and dropping out most of the pass, clean and able to get in only around 35-60 degrees up; the handheld Yagi on target is clean
 - [ ] Test satellite contracts (cartographer trade, launch, amateur/commercial/geostationary, licenses show three frequencies)
 - [ ] Test satellites in the night sky (dot size, flash, grey dot, geostationary stays put, decommissioned glint, decay)
 - [ ] Test voice through a satellite (downlink with -600 offset and tone, transit delay echo, Morse ID after the voice; `/radiocraft satellite overhead <name>`)

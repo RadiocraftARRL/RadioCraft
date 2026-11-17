@@ -62,8 +62,8 @@ class HandheldYagiAimTest {
 		assertEquals(1.0D, SatellitePattern.handheld(300.0D), 1.0E-9D);
 		assertTrue(SatellitePattern.handheld(176.0D) > SatellitePattern.HANDHELD_WHIP && SatellitePattern.handheld(176.0D) < 1.0D);
 		// At sea level a mid pass still works, a low one does not (a full vertical's does).
-		assertTrue(SatellitePattern.VERTICAL.strength(30.0D) * SatellitePattern.handheld(64.0D) >= SatellitePattern.UPLINK_FLOOR);
-		assertTrue(SatellitePattern.VERTICAL.strength(6.0D) * SatellitePattern.handheld(64.0D) < SatellitePattern.UPLINK_FLOOR);
+		assertTrue(SatellitePattern.VERTICAL.strength(45.0D) * SatellitePattern.handheld(64.0D) >= SatellitePattern.UPLINK_FLOOR);
+		assertTrue(SatellitePattern.VERTICAL.strength(25.0D) * SatellitePattern.handheld(64.0D) < SatellitePattern.UPLINK_FLOOR);
 		assertTrue(SatellitePattern.VERTICAL.uplinks(6.0D));
 	}
 

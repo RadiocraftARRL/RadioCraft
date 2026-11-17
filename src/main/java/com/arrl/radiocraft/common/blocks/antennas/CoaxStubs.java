@@ -50,6 +50,17 @@ public final class CoaxStubs {
 		return direction.getAxis().isHorizontal() ? state.setValue(side(direction), isCoax(level, neighbourPos)) : state;
 	}
 
+	/**
+	 * True if the antenna in {@code state} draws its own run of coax in from its {@code face} side (2026-11-16, the
+	 * maintainer: a J-pole's coax flickered, the wire's stub reaching in to the mast drawn on top of the J-pole's own).
+	 */
+	public static boolean drawsRun(BlockState state, Direction face) {
+		net.minecraft.world.level.block.Block block = state.getBlock();
+		boolean uses = block instanceof JPoleAntennaBlock || block instanceof EggbeaterAntennaBlock || block instanceof FiveBtvAntennaBlock
+				|| block instanceof IonosondeBlock || block instanceof CbGroundPlaneAntennaBlock;
+		return uses && face.getAxis().isHorizontal() && state.hasProperty(side(face)) && state.getValue(side(face));
+	}
+
 	/** True for coax of any colour at {@code pos}, on its own or in a bundle. */
 	public static boolean isCoax(BlockGetter level, BlockPos pos) {
 		return com.arrl.radiocraft.common.be_networks.WireUtils.hasCoax(level, pos);

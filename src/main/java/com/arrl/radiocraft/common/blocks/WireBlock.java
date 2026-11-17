@@ -1368,7 +1368,8 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	 */
 	private static int deviceInset(BlockGetter level, BlockPos pos, Direction face) {
 		BlockState state = level.getBlockState(pos);
-		if(state.getBlock() instanceof WireBlock || state.getBlock() instanceof WireBundleBlock || state.isAir())
+		if(state.getBlock() instanceof WireBlock || state.getBlock() instanceof WireBundleBlock || state.isAir()
+				|| com.arrl.radiocraft.common.blocks.antennas.CoaxStubs.drawsRun(state, face)) // It draws the run in itself.
 			return 0;
 		net.minecraft.world.phys.shapes.VoxelShape shape = state.getShape(level, pos);
 		if(shape.isEmpty() || shape.min(Direction.Axis.Y) > 2.0D / 16.0D)

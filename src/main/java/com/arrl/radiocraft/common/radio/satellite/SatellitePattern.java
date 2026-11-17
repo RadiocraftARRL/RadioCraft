@@ -86,8 +86,11 @@ public enum SatellitePattern {
 		return strength(elevation, aurora, storm) >= UPLINK_FLOOR;
 	}
 
-	/** What a handheld's own little whip gets of a vertical's signal low in the world (2026-11-15). */
-	public static final double HANDHELD_WHIP = 0.7D;
+	/** What a handheld's own little whip gets of a vertical's signal low in the world (2026-11-15; 0.7 to 0.45 on
+	 * 2026-11-16, the maintainer: a pass on the stock antenna at y 100 came in clean; it should be rough and short). FM is
+	 * clean from 0.3 ({@code ReceiverMix#FM_QUIETING}), the same as the uplink floor: now only the best of a pass, about 35
+	 * to 60 degrees up, gets there; the rest hisses and drops out, and a low pass is not heard up there at all. */
+	public static final double HANDHELD_WHIP = 0.45D;
 	/** Heights between which a handheld's whip comes up to a full vertical: up a mountain or a tower, clear of everything. */
 	public static final double HANDHELD_FROM_Y = 128.0D, HANDHELD_FULL_Y = 224.0D;
 
