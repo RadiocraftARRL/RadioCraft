@@ -86,22 +86,37 @@ public enum SatellitePattern {
 		return strength(elevation, aurora, storm) >= UPLINK_FLOOR;
 	}
 
-	/** What a handheld's own little whip gets of a vertical's signal low in the world (2026-11-15; 0.7 to 0.45 on
-	 * 2026-11-16, the maintainer: a pass on the stock antenna at y 100 came in clean; it should be rough and short). FM is
-	 * clean from 0.3 ({@code ReceiverMix#FM_QUIETING}), the same as the uplink floor: now only the best of a pass, about 35
-	 * to 60 degrees up, gets there; the rest hisses and drops out, and a low pass is not heard up there at all. */
+	/**
+	 * A handheld's own little whip at its best, low in the world (2026-11-15; 0.45 and the shape below on 2026-11-16, the
+	 * maintainer's sketch: a pass on the stock antenna at y 100 came in clean all the way over). A vertical whip radiates
+	 * to the sides, not off its tip: {@link #handheldWhip} is this times cos squared of the elevation. FM is clean from
+	 * 0.3 ({@code ReceiverMix#FM_QUIETING}), the same as the uplink floor, so a pass is clean from just over the horizon to
+	 * about 35 degrees up, hissy and dropping out above that, and gone overhead.
+	 */
 	public static final double HANDHELD_WHIP = 0.45D;
 	/** Heights between which a handheld's whip comes up to a full vertical: up a mountain or a tower, clear of everything. */
 	public static final double HANDHELD_FROM_Y = 128.0D, HANDHELD_FULL_Y = 224.0D;
 
 	/**
-	 * What is left of a vertical's signal on a handheld's own antenna held at height {@code y} (maintainer, 2026-11-15):
+	 * How strong a handheld's own antenna held at height {@code y} is at its best (maintainer, 2026-11-15; see {@link #handheldWhip}):
 	 * {@link #HANDHELD_WHIP} up to {@link #HANDHELD_FROM_Y}, rising smoothly to all of it at {@link #HANDHELD_FULL_Y}.
 	 * Low passes are lost, and the null overhead comes sooner; the handheld Yagi or climbing high makes up for it.
 	 */
 	public static double handheld(double y) {
 		double t = Math.max(0.0D, Math.min(1.0D, (y - HANDHELD_FROM_Y) / (HANDHELD_FULL_Y - HANDHELD_FROM_Y)));
 		return HANDHELD_WHIP + (1.0D - HANDHELD_WHIP) * t * t * (3.0D - 2.0D * t);
+	}
+
+	/**
+	 * How a handheld's own whip held at height {@code y} hears a satellite {@code elevation} degrees up, before the space
+	 * weather: faded in over the horizon ({@link #rise}), strongest low down, nothing straight overhead (the tip of the
+	 * whip points at it), and the whole of it scaled by {@link #handheld} (stronger high up, all of it at
+	 * {@link #HANDHELD_FULL_Y}).
+	 */
+	public static double handheldWhip(double elevation, double y) {
+		double e = Math.max(0.0D, Math.min(90.0D, elevation));
+		double cos = Math.cos(Math.toRadians(e));
+		return rise(e) * cos * cos * handheld(y);
 	}
 
 	/** What the space weather leaves of a satellite's signal: 1 on a quiet day. */

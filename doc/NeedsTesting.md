@@ -226,7 +226,8 @@ keeps the history).
 - [ ] Test the WXSAT ground (2026-11-16): new passes over loaded chunks look like the ground round them (biome colours with water and hill shading, not every leaf); out past them, hills and mountains no longer show cave-biome colours. Older passes keep their old look until flown over again
 - [ ] Test WXSAT map (2026-11-16): a scale bar with "N blocks" in the bottom left changes with zoom; dragging slides the picture with black where nothing is painted yet, and "Painting the mosaic..." shows only after letting go, until the new picture comes
 - [ ] Test the CRT monitor wall's mosaic (2026-11-16): a small red + where the WXSAT computer is
-- [ ] Test a satellite pass on a handheld's own antenna below y 128 (2026-11-16, whip share 0.7 -> 0.45): hissy and dropping out most of the pass, clean and able to get in only around 35-60 degrees up; the handheld Yagi on target is clean
+- [ ] Test a satellite pass on a handheld's own antenna below y 128 (2026-11-16, the maintainer's sketch): clean from just over the horizon to about 35 degrees up, hissy and dropping out above that, silent overhead; above y 128 clean higher up; the handheld Yagi on target is clean
+- [ ] Test the WXSAT live pass (2026-11-16): the static on lines already shown stays put as new lines come in (it used to crawl)
 - [ ] Test satellite contracts (cartographer trade, launch, amateur/commercial/geostationary, licenses show three frequencies)
 - [ ] Test satellites in the night sky (dot size, flash, grey dot, geostationary stays put, decommissioned glint, decay)
 - [ ] Test voice through a satellite (downlink with -600 offset and tone, transit delay echo, Morse ID after the voice; `/radiocraft satellite overhead <name>`)

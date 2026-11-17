@@ -89,6 +89,8 @@ public final class WxSatHandler implements ComputerAppHandler {
 		int lastSeq = -1, lost = 0;
 		double quality = 0.0D;
 		final List<byte[]> lines = new ArrayList<>(); // null for a lost line.
+		/** Lines of this pass dropped off the front of {@link #lines}: where the first one kept is in the pass. */
+		int dropped;
 		long version = 0L;
 		/** A geostationary frame coming in (2026-11-14): its number, the last row, the rows in all; -1 for a pass. */
 		int frame = -1, row = -1, rows = 0;
@@ -201,6 +203,7 @@ public final class WxSatHandler implements ComputerAppHandler {
 			state.satellite = packet.from();
 			state.started = now;
 			state.lines.clear();
+			state.dropped = 0;
 			state.lost = 0;
 			state.frame = geometry.frame();
 			state.frameDone = false;
@@ -213,8 +216,10 @@ public final class WxSatHandler implements ComputerAppHandler {
 		state.lines.add(line);
 		if(line == null)
 			state.lost++;
-		while(state.lines.size() > LIVE_KEEP)
+		while(state.lines.size() > LIVE_KEEP) {
 			state.lines.removeFirst();
+			state.dropped++;
+		}
 		state.lastSeq = geometry.seq();
 		state.row = geometry.row();
 		state.rows = geometry.rows();
@@ -381,11 +386,16 @@ public final class WxSatHandler implements ComputerAppHandler {
 			return out;
 		}
 		// Every other line, newest last, and every other pixel of each: the strip at half scale (the same ground as the
-		// mosaic's second zoom), so the live view keeps its size and what it sends.
-		int rows = Math.min(LIVE_ROWS, (state.lines.size() + 1) / 2);
+		// mosaic's second zoom), so the live view keeps its size and what it sends. The even lines of the pass, counted from
+		// its start (2026-11-16, the maintainer: counted from the newest, each new line swapped which half showed and the
+		// static crawled): a line once shown stays as it was.
+		int last = state.lines.size() - 1;
+		if(last >= 0 && (last + state.dropped) % 2 != 0)
+			last--;
+		int rows = Math.min(LIVE_ROWS, last < 0 ? 0 : last / 2 + 1);
 		byte[] pixels = new byte[rows * LIVE_W];
 		for(int r = 0; r < rows; r++) {
-			byte[] line = state.lines.get(state.lines.size() - 1 - 2 * (rows - 1 - r));
+			byte[] line = state.lines.get(last - 2 * (rows - 1 - r));
 			if(line != null)
 				for(int c = 0; c < LIVE_W && 2 * c < line.length; c++)
 					pixels[r * LIVE_W + c] = line[2 * c];

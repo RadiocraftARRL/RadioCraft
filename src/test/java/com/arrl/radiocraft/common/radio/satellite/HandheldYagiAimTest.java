@@ -61,9 +61,13 @@ class HandheldYagiAimTest {
 		assertEquals(1.0D, SatellitePattern.handheld(SatellitePattern.HANDHELD_FULL_Y), 1.0E-9D);
 		assertEquals(1.0D, SatellitePattern.handheld(300.0D), 1.0E-9D);
 		assertTrue(SatellitePattern.handheld(176.0D) > SatellitePattern.HANDHELD_WHIP && SatellitePattern.handheld(176.0D) < 1.0D);
-		// At sea level a mid pass still works, a low one does not (a full vertical's does).
-		assertTrue(SatellitePattern.VERTICAL.strength(45.0D) * SatellitePattern.handheld(64.0D) >= SatellitePattern.UPLINK_FLOOR);
-		assertTrue(SatellitePattern.VERTICAL.strength(25.0D) * SatellitePattern.handheld(64.0D) < SatellitePattern.UPLINK_FLOOR);
+		// Low in the world (2026-11-16, the maintainer's sketch): clean low in a pass, hissy higher up, nothing overhead.
+		assertTrue(SatellitePattern.handheldWhip(20.0D, 64.0D) >= SatellitePattern.UPLINK_FLOOR, "20 degrees up");
+		assertTrue(SatellitePattern.handheldWhip(50.0D, 64.0D) < SatellitePattern.UPLINK_FLOOR, "50 degrees up");
+		assertTrue(SatellitePattern.handheldWhip(90.0D, 64.0D) < 0.01D, "overhead");
+		assertTrue(SatellitePattern.handheldWhip(1.0D, 64.0D) < 0.05D, "at the horizon");
+		// Up high it is a full whip: clean higher in the pass.
+		assertTrue(SatellitePattern.handheldWhip(50.0D, 300.0D) >= SatellitePattern.UPLINK_FLOOR, "50 degrees up, high");
 		assertTrue(SatellitePattern.VERTICAL.uplinks(6.0D));
 	}
 
