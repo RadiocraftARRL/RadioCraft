@@ -37,6 +37,16 @@
       "text": "The $(item)Satellite Tracking Antenna$() is a dish on a motor mount. Coax it to the radio and run a $(item)power wire$() to it: it turns and tilts after the satellite its radio is tuned to (or the highest one up), drawing power as it goes.$(br2)Locked on, it hears the satellite at full strength all pass long, even under an $(thing)aurora$() or in a storm, which fade every other antenna."
     },
     {
+        "type": "patchouli:spotlight",
+        "title": "Handheld Yagi",
+        "item": "radiocraft:handheld_yagi",
+        "text": "No mast? Hold a $(item)Handheld Yagi$() in your offhand with a VHF handheld in your main hand and point it at the satellite yourself. On target it hears almost as well as the tracking antenna; the further you look away from the satellite, the weaker it gets, so follow it across the sky."
+    },
+    {
+        "type": "patchouli:crafting",
+        "recipe": "radiocraft:handheld_yagi"
+    },
+    {
       "type": "patchouli:text",
       "title": "Stealth mode",
       "text": "A $(thing)commercial$() satellite's owner can put it in $(thing)stealth mode$() (S in SATTRACK, while a tracking antenna on their station is locked on it). It then whispers: only a tracker locked on it hears it, and only a tracker is heard by it, for private repeaters and mailboxes.$(br2)Others see only its name and where it is. Distress relays still go to everyone."
