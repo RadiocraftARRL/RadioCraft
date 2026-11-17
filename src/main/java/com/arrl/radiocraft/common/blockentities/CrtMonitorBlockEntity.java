@@ -489,6 +489,7 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 					frames.add(mosaic.view(centre[0], centre[1], w, h, WORLD_PER_BLOCK / PIXELS_PER_BLOCK, f));
 			else
 				frames.add(mosaic.view(centre[0], centre[1], w, h, WORLD_PER_BLOCK / PIXELS_PER_BLOCK, -1));
+			frames = loopFrames(frames);
 			if(station != null)
 				for(byte[] frame : frames)
 					cross(frame, w, h, (station.getX() - centre[0]) / (double)(WORLD_PER_BLOCK / PIXELS_PER_BLOCK) + w / 2.0D,
@@ -499,6 +500,39 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 
 	public static final byte CROSS = net.minecraft.world.level.material.MapColor.COLOR_RED.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.HIGH),
 			CROSS_EDGE = net.minecraft.world.level.material.MapColor.COLOR_BLACK.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.LOWEST);
+
+	/**
+	 * The loop's frames (2026-11-16, the maintainer: "WAITING FOR SATELLITE PASS" came round as one of them): only passes
+	 * that showed this ground something, and none the same as the one before; with nothing seen yet, one blank frame (the
+	 * client says it is waiting).
+	 */
+	public static List<byte[]> loopFrames(List<byte[]> frames) {
+		if(frames.size() <= 1)
+			return frames;
+		List<byte[]> kept = new ArrayList<>();
+		for(byte[] frame : frames)
+			if(!blank(frame) && (kept.isEmpty() || !java.util.Arrays.equals(kept.getLast(), frame)))
+				kept.add(frame);
+		if(kept.isEmpty())
+			kept.add(frames.getLast());
+		return kept;
+	}
+
+	/** True if nothing has been seen in {@code frame} (every pixel 0). */
+	private static boolean blank(byte[] frame) {
+		for(byte b : frame)
+			if(b != 0)
+				return false;
+		return true;
+	}
+
+	/** True if a monitor's picture shows nothing but the station's cross: nothing received over it yet (the client says so). */
+	public static boolean onlyCross(byte[] frame) {
+		for(byte b : frame)
+			if(b != 0 && b != CROSS && b != CROSS_EDGE)
+				return false;
+		return true;
+	}
 
 	/** A small red + at picture pixel {@code fu, fv}, edged in black so it shows on any ground; nothing if it is off the picture. */
 	public static void cross(byte[] pixels, int w, int h, double fu, double fv) {

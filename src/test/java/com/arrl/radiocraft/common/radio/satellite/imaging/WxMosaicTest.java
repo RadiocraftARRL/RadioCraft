@@ -86,6 +86,21 @@ class WxMosaicTest {
 		assertFalse(mosaic.near(WxMosaic.RADIUS_TILES + 1, 0));
 	}
 
+	/**
+	 * A pass pushed out by newer ones leaves what only it saw (2026-11-16): the first pass, far east, is folded into the
+	 * next; its ground is still in the picture, under the newer passes over the station.
+	 */
+	@Test
+	void aPassPushedOutLeavesItsGround() {
+		WxMosaic mosaic = new WxMosaic(0, 0);
+		pass(mosaic, "CS-1", 100L, 2.5D * T, 0.0D, 0.0D, -1.0D, 10, (byte)9); // Only this one covers x 2.5 tiles out.
+		for(int i = 1; i <= WxMosaic.MAX_PASSES; i++)
+			pass(mosaic, "CS-1", 100L + i * 1000L, 0.0D, 0.0D, 0.0D, -1.0D, 10, (byte)(20 + i));
+		assertEquals(WxMosaic.MAX_PASSES, mosaic.passCount());
+		assertEquals(9, mosaic.pixel((int)(2.5D * T / B), 0, -1), "the first pass's ground went black");
+		assertEquals(20 + WxMosaic.MAX_PASSES, mosaic.pixel(0, 0, -1), "the newest pass is on top");
+	}
+
 	@Test
 	void oldPassesAgeOut() {
 		WxMosaic mosaic = new WxMosaic(0, 0);

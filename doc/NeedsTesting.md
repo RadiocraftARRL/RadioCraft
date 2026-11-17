@@ -222,6 +222,7 @@ keeps the history).
 
 ## Satellites and moonbounce
 
+- [ ] Test WXSAT as a new pass replaces old ones (2026-11-16): no ground going black or layers vanishing as it comes in (the oldest pass is folded into the next, not dropped); the CRT monitors' LOOP never shows a "WAITING FOR SATELLITE PASS" frame once anything has been seen there, and skips passes that did not cross that screen's ground
 - [ ] Test the WXSAT ground (2026-11-16): new passes over loaded chunks look like the ground round them (biome colours with water and hill shading, not every leaf); out past them, hills and mountains no longer show cave-biome colours. Older passes keep their old look until flown over again
 - [ ] Test WXSAT map (2026-11-16): a scale bar with "N blocks" in the bottom left changes with zoom; dragging slides the picture with black where nothing is painted yet, and "Painting the mosaic..." shows only after letting go, until the new picture comes
 - [ ] Test the CRT monitor wall's mosaic (2026-11-16): a small red + where the WXSAT computer is

@@ -173,4 +173,17 @@ public class CrtMonitorGameTests {
 			helper.assertTrue(b == 0, "a cross for a station off the picture");
 		helper.succeed();
 	}
+	/** The loop leaves out passes that showed the screen's ground nothing, and repeats; all blank, one blank frame. */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void theLoopSkipsBlankAndRepeatedPasses(GameTestHelper helper) {
+		byte[] blank = new byte[16], a = new byte[16], b = new byte[16];
+		a[3] = 5;
+		b[3] = 5;
+		b[7] = 9;
+		java.util.List<byte[]> kept = CrtMonitorBlockEntity.loopFrames(java.util.List.of(blank, a, a.clone(), b));
+		helper.assertTrue(kept.size() == 2 && kept.get(0)[3] == 5 && kept.get(1)[7] == 9, "kept " + kept.size() + " frames");
+		java.util.List<byte[]> none = CrtMonitorBlockEntity.loopFrames(java.util.List.of(blank, blank.clone()));
+		helper.assertTrue(none.size() == 1, "all blank: " + none.size() + " frames");
+		helper.succeed();
+	}
 }

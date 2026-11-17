@@ -165,7 +165,7 @@ public final class WxMosaic {
 	public Pass begin(String satellite, long time) {
 		age(time);
 		while(passes.size() >= MAX_PASSES)
-			passes.removeFirst();
+			foldOldest();
 		Pass pass = new Pass(satellite, time);
 		passes.add(pass);
 		version++;
@@ -187,6 +187,30 @@ public final class WxMosaic {
 		Pass pass = begin(satellite, time);
 		pass.frame = frame;
 		return pass;
+	}
+
+	/**
+	 * Lets the oldest layer go without losing what only it saw (2026-11-16, the maintainer: as a new pass came in and
+	 * pushed an old one out, ground went black and layers vanished): its pixels fill the gaps in the next layer up, which
+	 * becomes the oldest. With one layer left it simply goes.
+	 */
+	private void foldOldest() {
+		Pass oldest = passes.removeFirst();
+		version++;
+		if(passes.isEmpty())
+			return;
+		Pass next = passes.getFirst();
+		for(Map.Entry<Long, byte[]> e : oldest.tiles.entrySet()) {
+			byte[] above = next.tiles.get(e.getKey());
+			if(above == null) {
+				next.tiles.put(e.getKey(), e.getValue());
+				continue;
+			}
+			byte[] below = e.getValue();
+			for(int i = 0; i < above.length && i < below.length; i++)
+				if(above[i] == 0)
+					above[i] = below[i];
+		}
 	}
 
 	/** Drops passes whose last line is older than {@link #MAX_AGE_TICKS} at {@code now}. */
@@ -229,7 +253,7 @@ public final class WxMosaic {
 		pass.lines++;
 		pass.last = Math.max(pass.last, time);
 		while(tileCount() > MAX_TILES && passes.size() > 1)
-			passes.removeFirst();
+			foldOldest();
 		version++;
 	}
 
@@ -368,7 +392,7 @@ public final class WxMosaic {
 			mosaic.passes.add(pass);
 		}
 		while(mosaic.tileCount() > MAX_TILES && mosaic.passes.size() > 1)
-			mosaic.passes.removeFirst();
+			mosaic.foldOldest();
 		return mosaic;
 	}
 

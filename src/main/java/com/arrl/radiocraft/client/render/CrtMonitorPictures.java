@@ -151,12 +151,10 @@ public final class CrtMonitorPictures {
 		if(image == null)
 			return;
 		PhotoPalette palette = MapPalettes.vanilla();
-		boolean empty = true;
+		boolean empty = com.arrl.radiocraft.common.blockentities.CrtMonitorBlockEntity.onlyCross(pixels); // The station's cross alone is nothing seen.
 		for(int y = 0; y < height; y++)
 			for(int x = 0; x < width; x++) {
 				byte id = pixels[y * width + x];
-				if(id != 0)
-					empty = false;
 				int rgb = id == 0 ? -1 : palette.rgbOf(id);
 				image.setPixelRGBA(x, y, rgb < 0 ? DARK : 0xFF000000 | (rgb & 0xFF) << 16 | rgb & 0xFF00 | rgb >> 16 & 0xFF);
 			}
