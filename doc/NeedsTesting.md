@@ -112,9 +112,9 @@ keeps the history).
 
 ## Wires, cables and bundles
 
-- [ ] Test coax beside a J-pole, eggbeater, 5-BTV, CB ground plane or ionosonde foot (2026-11-16): one run in to the mast, no flicker where the coax meets the antenna (Demo World -37 106 536)
-- [ ] Test the upstairs coax bundles in Demo World (2026-11-16): the corner at -40 106 536 / -39 106 536 has no gap or flicker where the red strand turns east, and the bundle by the window at -40 99 545 steps into the passthrough without the strands running through each other. The 0.75 px kink in the lone red coax at -39 106 535 is still there (left as it is)
-- [ ] Test wires after the shared state tables (2026-11-16, 1.14 memory work: the game starts, Demo World's house cables, dyed coax and bundles look and connect as before; placing, dyeing and breaking wire)
+- [x] Test coax beside a J-pole, eggbeater, 5-BTV, CB ground plane or ionosonde foot (2026-11-16): one run in to the mast, no flicker where the coax meets the antenna (Demo World -37 106 536)
+- [x] Test the upstairs coax bundles in Demo World (2026-11-16): the corner at -40 106 536 / -39 106 536 has no gap or flicker where the red strand turns east, and the bundle by the window at -40 99 545 steps into the passthrough without the strands running through each other. The 0.75 px kink in the lone red coax at -39 106 535 is still there (left as it is)
+- [x] Test wires after the shared state tables (2026-11-16, 1.14 memory work: the game starts, Demo World's house cables, dyed coax and bundles look and connect as before; placing, dyeing and breaking wire)
 - [ ] Test plain, coloured, waterproof and ground wire (look, dye, separate networks, Jade names)
 - [ ] Test dyed coax and dyed data wire (16 colours each, stay separate, through one passthrough)
 - [ ] Test data wire (look, joins devices only at its ends, teletype/fax/speaker over it, through unloaded chunks)
@@ -222,18 +222,18 @@ keeps the history).
 
 ## Satellites and moonbounce
 
-- [ ] Test WXSAT as a new pass replaces old ones (2026-11-16): no ground going black or layers vanishing as it comes in (the oldest pass is folded into the next, not dropped); the CRT monitors' LOOP never shows a "WAITING FOR SATELLITE PASS" frame once anything has been seen there, and skips passes that did not cross that screen's ground
-- [ ] Test the WXSAT ground (2026-11-16): new passes over loaded chunks look like the ground round them (biome colours with water and hill shading, not every leaf); out past them, hills and mountains no longer show cave-biome colours. Older passes keep their old look until flown over again
-- [ ] Test WXSAT map (2026-11-16): a scale bar with "N blocks" in the bottom left changes with zoom; dragging slides the picture with black where nothing is painted yet, and "Painting the mosaic..." shows only after letting go, until the new picture comes
-- [ ] Test the CRT monitor wall's mosaic (2026-11-16): a small red + where the WXSAT computer is
-- [ ] Test a satellite pass on a handheld's own antenna below y 128 (2026-11-16, the maintainer's sketch): clean from just over the horizon to about 35 degrees up, hissy and dropping out above that, silent overhead; above y 128 clean higher up; the handheld Yagi on target is clean
+- [x] Test WXSAT as a new pass replaces old ones (2026-11-16): no ground going black or layers vanishing as it comes in (the oldest pass is folded into the next, not dropped); the CRT monitors' LOOP never shows a "WAITING FOR SATELLITE PASS" frame once anything has been seen there, and skips passes that did not cross that screen's ground
+- [x] Test the WXSAT ground (2026-11-16): new passes over loaded chunks look like the ground round them (biome colours with water and hill shading, not every leaf); out past them, hills and mountains no longer show cave-biome colours. Older passes keep their old look until flown over again
+- [x] Test WXSAT map (2026-11-16): a scale bar with "N blocks" in the bottom left changes with zoom; dragging slides the picture with black where nothing is painted yet, and "Painting the mosaic..." shows only after letting go, until the new picture comes
+- [x] Test the CRT monitor wall's mosaic (2026-11-16): a small red + where the WXSAT computer is
+- [x] Test a satellite pass on a handheld's own antenna below y 128 (2026-11-16, the maintainer's sketch): clean from just over the horizon to about 35 degrees up, hissy and dropping out above that, silent overhead; above y 128 clean higher up; the handheld Yagi on target is clean
 - [ ] Test the WXSAT live pass (2026-11-16): the static on lines already shown stays put as new lines come in (it used to crawl)
 - [ ] Test satellite contracts (cartographer trade, launch, amateur/commercial/geostationary, licenses show three frequencies)
 - [ ] Test satellites in the night sky (dot size, flash, grey dot, geostationary stays put, decommissioned glint, decay)
 - [ ] Test voice through a satellite (downlink with -600 offset and tone, transit delay echo, Morse ID after the voice; `/radiocraft satellite overhead <name>`)
 - [ ] Test satellite modes (APRS, MAILBOX, SSTV, IMAGING, telemetry (2026-11-15: a steady carrier with a beep a second, the Morse name, and a pager-like digital buzz for each frame), Doppler with `satellite_doppler`, eclipse, decay warning)
 - [ ] Test the Satellite Tracking Antenna (turns with power, stops without, no flicker, weaker in aurora/storm)
-- [ ] Test the Handheld Yagi (model in hand, GUI, item frame and on the ground; held out along your look in third person; with a VHF handheld, a pass works while you look at the satellite and fades as you look away; the handheld in your hand (VHF, commercial, marine) shows a cable to the Yagi instead of its antenna; without the Yagi a handheld is weaker, but fine high up; `/radiocraft satellite overhead <name>`)
+- [x] Test the Handheld Yagi (model in hand, GUI, item frame and on the ground; held out along your look in third person; with a VHF handheld, a pass works while you look at the satellite and fades as you look away; the handheld in your hand (VHF, commercial, marine) shows a cable to the Yagi instead of its antenna; without the Yagi a handheld is weaker, but fine high up; `/radiocraft satellite overhead <name>`)
 - [ ] Test moonbounce (MOON in SATTRACK, CW echo on 2m with the tracker at night)
 - [ ] Test the iambic keyer (model, dye/material variants, screen, keying)
 
