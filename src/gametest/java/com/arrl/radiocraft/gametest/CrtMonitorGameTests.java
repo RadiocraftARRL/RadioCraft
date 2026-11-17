@@ -157,4 +157,20 @@ public class CrtMonitorGameTests {
 			radio.toggle();
 		helper.assertTrue(networkObject.isPowered, "the radio at " + at.toShortString() + " did not power on");
 	}
+	/** The station's cross on a monitor's mosaic (2026-11-16): red at the station, arms two pixels out, nothing off the picture. */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void theStationIsCrossedOnTheMosaic(GameTestHelper helper) {
+		int w = 128, h = 128;
+		byte[] pixels = new byte[w * h];
+		CrtMonitorBlockEntity.cross(pixels, w, h, 40.5D, 60.5D);
+		for(int[] p : new int[][] { { 40, 60 }, { 42, 60 }, { 38, 60 }, { 40, 62 }, { 40, 58 } })
+			helper.assertTrue(pixels[p[0] + p[1] * w] == CrtMonitorBlockEntity.CROSS, "no red at " + p[0] + "," + p[1]);
+		helper.assertTrue(pixels[41 + 61 * w] != CrtMonitorBlockEntity.CROSS, "red off the arms");
+		helper.assertTrue(pixels[50 + 70 * w] == 0, "painted far from the cross");
+		byte[] off = new byte[w * h];
+		CrtMonitorBlockEntity.cross(off, w, h, -20.0D, 60.0D);
+		for(byte b : off)
+			helper.assertTrue(b == 0, "a cross for a station off the picture");
+		helper.succeed();
+	}
 }

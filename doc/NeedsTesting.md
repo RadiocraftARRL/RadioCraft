@@ -222,6 +222,8 @@ keeps the history).
 
 ## Satellites and moonbounce
 
+- [ ] Test WXSAT map (2026-11-16): a scale bar with "N blocks" in the bottom left changes with zoom; dragging slides the picture with black where nothing is painted yet, and "Painting the mosaic..." shows only after letting go, until the new picture comes
+- [ ] Test the CRT monitor wall's mosaic (2026-11-16): a small red + where the WXSAT computer is
 - [ ] Test a satellite pass on a handheld's own antenna below y 128 (2026-11-16, whip share 0.7 -> 0.45): hissy and dropping out most of the pass, clean and able to get in only around 35-60 degrees up; the handheld Yagi on target is clean
 - [ ] Test satellite contracts (cartographer trade, launch, amateur/commercial/geostationary, licenses show three frequencies)
 - [ ] Test satellites in the night sky (dot size, flash, grey dot, geostationary stays put, decommissioned glint, decay)

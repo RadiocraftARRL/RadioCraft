@@ -3726,6 +3726,7 @@
   "screen.radiocraft.computer.wx.save_prompt": "Save the view (128 x 128) as:",
   "screen.radiocraft.computer.wx.save_title": "Save picture",
   "screen.radiocraft.computer.wx.saved": "Saved %s",
+  "screen.radiocraft.computer.wx.scale": "%s blocks",
   "screen.radiocraft.computer.wx.signal": "Signal",
   "screen.radiocraft.computer.wx.station": "Station",
   "screen.radiocraft.computer.wx.stored": "Mosaic: %s passes, %s tiles",

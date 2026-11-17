@@ -72,6 +72,11 @@ public final class WxSatApp extends DosApp {
 	/** Each frame's picture and the mosaic version it was painted from (kept on screen until a newer one comes). */
 	private final Map<Integer, byte[]> frames = new HashMap<>();
 	private final Map<Integer, Long> frameVersions = new HashMap<>();
+	/** Where each frame's picture was painted: {centre x, centre z} (2026-11-16, so a drag slides it until it is painted again). */
+	private final Map<Integer, int[]> frameCentres = new HashMap<>();
+	/** What is on screen: a frame's picture slid by a drag, with the scale bar on it; remade only when that changes. */
+	private byte[] shown, shownFrom;
+	private int shownDu, shownDv;
 	private ListTag frameList = new ListTag();
 	private int loopFrame = 0;
 	private boolean playing = true, viewPending = false;
@@ -138,7 +143,7 @@ public final class WxSatApp extends DosApp {
 			refresh();
 		if(view == View.LIVE && now - lastLive > LIVE_MS)
 			fetchLive();
-		if(view != View.LIVE && stale(shownFrame()) && !viewPending && now - lastView > 300L)
+		if(view != View.LIVE && stale(shownFrame()) && !viewPending && now - lastView > 300L && Double.isNaN(dragX)) // Painted once the drag lets go.
 			fetchView(shownFrame());
 		if(view == View.LOOP && playing && now - loopStepAt > LOOP_FRAME_MS && frameList.size() > 0) {
 			loopStepAt = now;
@@ -202,6 +207,7 @@ public final class WxSatApp extends DosApp {
 		lastView = System.currentTimeMillis();
 		viewPending = true;
 		int askedX = centreX, askedZ = centreZ, askedZoom = zoom;
+		int[] centre = { askedX, askedZ };
 		session.app(app, "view", viewData(which), response -> {
 			viewPending = false;
 			if(!response.ok() || askedX != centreX || askedZ != centreZ || askedZoom != zoom)
@@ -209,6 +215,7 @@ public final class WxSatApp extends DosApp {
 			CompoundTag d = response.data();
 			frameList = d.getList("frames", Tag.TAG_COMPOUND);
 			frames.put(which, marked(d.getByteArray("pixels")));
+			frameCentres.put(which, centre);
 			frameVersions.put(which, d.getLong("v"));
 		});
 	}
@@ -258,9 +265,15 @@ public final class WxSatApp extends DosApp {
 			pixels[u + v * VIEW_W] = colour;
 	}
 
-	/** The view moved or zoomed: every frame is painted again. */
+	/** The view zoomed: every frame is painted again. */
 	private void moved() {
 		frames.clear();
+		frameCentres.clear();
+		frameVersions.clear();
+	}
+
+	/** The view slid along (a drag, a pan, home): every frame is painted again, the old pictures slid along meanwhile. */
+	private void slid() {
 		frameVersions.clear();
 	}
 
@@ -296,7 +309,7 @@ public final class WxSatApp extends DosApp {
 		if(status != null) {
 			centreX = status.getInt("sx");
 			centreZ = status.getInt("sz");
-			moved();
+			slid();
 		}
 	}
 
@@ -306,7 +319,7 @@ public final class WxSatApp extends DosApp {
 		int step = ZOOMS[zoom] * VIEW_W / 4;
 		centreX += dx * step;
 		centreZ += dz * step;
-		moved();
+		slid();
 	}
 
 	private void save() {
@@ -414,7 +427,7 @@ public final class WxSatApp extends DosApp {
 		if(nx != centreX || nz != centreZ) {
 			centreX = nx;
 			centreZ = nz;
-			moved();
+			slid();
 		}
 		return true;
 	}
@@ -481,7 +494,9 @@ public final class WxSatApp extends DosApp {
 			g.put(4, 7, Dos.fit(Dos.tr("wx.mosaic_none2"), 40), DosColours.DIM, DosColours.BLACK);
 			return;
 		}
-		g.image(PIC_X, PIC_Y, VIEW_W, VIEW_H, "wxsat_view_" + shownFrame(), pixels, VIEW_W, VIEW_H);
+		int[] at = frameCentres.getOrDefault(frames.get(shownFrame()) != null ? shownFrame() : -1, new int[] { centreX, centreZ });
+		int du = (int)Math.round((centreX - at[0]) / (double)ZOOMS[zoom]), dv = (int)Math.round((centreZ - at[1]) / (double)ZOOMS[zoom]);
+		g.image(PIC_X, PIC_Y, VIEW_W, VIEW_H, "wxsat_view_" + shownFrame(), onScreen(pixels, du, dv), VIEW_W, VIEW_H);
 		int which = view == View.LOOP ? shownFrame() : frameList.size() - 1;
 		if(which >= 0 && which < frameList.size()) {
 			CompoundTag f = frameList.getCompound(which);
@@ -492,6 +507,56 @@ public final class WxSatApp extends DosApp {
 		}
 		g.put(2, 2, Dos.fit(String.format(Locale.ROOT, "X%d Z%d", centreX, centreZ), 20), DosColours.LIGHT_CYAN, DosColours.BLACK);
 		g.put(23, 2, Dos.fit(Dos.tr("wx.you_are"), 22), DosColours.LIGHT_RED, DosColours.BLACK); // The ring's legend.
+		g.put(3, 19, Dos.fit(Dos.tr("wx.scale", scaleBlocks()), 20), DosColours.WHITE, DosColours.BLACK); // Under the scale bar.
+		if((du != 0 || dv != 0) && Double.isNaN(dragX)) // Let go: the new ground is being painted.
+			g.put(4, 6, Dos.fit(Dos.tr("wx.loading"), 40), DosColours.DIM, DosColours.BLACK);
+	}
+
+	/** The scale bar's length, blocks: about a quarter of the view, rounded to 1, 2 or 5 times a power of ten. */
+	private int scaleBlocks() {
+		double target = VIEW_W / 4.0D * ZOOMS[zoom];
+		int pow = 1;
+		while(pow * 10 <= target)
+			pow *= 10;
+		return target >= 5 * pow ? 5 * pow : target >= 2 * pow ? 2 * pow : pow;
+	}
+
+	private static final byte BAR = MapColor.SNOW.getPackedId(MapColor.Brightness.HIGH);
+
+	/**
+	 * {@code pixels} as the screen shows them (2026-11-16, the maintainer): slid {@code du, dv} picture pixels by a drag
+	 * since they were painted, black where nothing is painted yet, with the scale bar in the bottom left. Made again only
+	 * when the picture or the slide changes, so its texture is not uploaded every frame.
+	 */
+	private byte[] onScreen(byte[] pixels, int du, int dv) {
+		if(shown != null && shownFrom == pixels && shownDu == du && shownDv == dv)
+			return shown;
+		byte[] out = new byte[VIEW_W * VIEW_H];
+		for(int v = 0; v < VIEW_H; v++) {
+			int sv = v + dv;
+			if(sv < 0 || sv >= VIEW_H)
+				continue;
+			int u0 = Math.max(0, -du), u1 = Math.min(VIEW_W, VIEW_W - du);
+			if(u1 > u0)
+				System.arraycopy(pixels, sv * VIEW_W + u0 + du, out, v * VIEW_W + u0, u1 - u0);
+		}
+		// The scale bar: a white bar with end ticks, edged in black, just above its label.
+		int len = (int)Math.round(scaleBlocks() / (double)ZOOMS[zoom]), u0 = 8, v0 = VIEW_H - 22;
+		for(int u = u0 - 1; u <= u0 + len + 1; u++)
+			for(int v = v0 - 5; v <= v0 + 2; v++) {
+				boolean tick = (u == u0 || u == u0 + len) && v >= v0 - 4;
+				boolean bar = u >= u0 && u <= u0 + len && v >= v0 && v <= v0 + 1;
+				boolean edge = !tick && !bar && (v >= v0 - 1 || u <= u0 + 1 && u >= u0 - 1 || u >= u0 + len - 1 && u <= u0 + len + 1);
+				if(tick || bar)
+					put(out, u, v, BAR);
+				else if(edge)
+					put(out, u, v, EDGE);
+			}
+		shown = out;
+		shownFrom = pixels;
+		shownDu = du;
+		shownDv = dv;
+		return out;
 	}
 
 	private void panel(TextGrid g, CompoundTag st, int bg, long now) {

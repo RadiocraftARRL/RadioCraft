@@ -388,7 +388,7 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 		linkRadio(null);
 		boolean on = computer != null && computer.isPowered() && mode != Mode.OFF;
 		WxSatStore store = on ? WxSatStore.of(level.getServer(), computer.getComputerId()) : null;
-		String key = mode + "|" + on + "|" + groupW + "x" + groupH + "|" + (store == null ? 0L : store.version());
+		String key = mode + "|" + on + "|" + groupW + "x" + groupH + "|" + (store == null ? 0L : store.version()) + "|" + (computer == null ? 0L : computer.getBlockPos().asLong());
 		List<ServerPlayer> near = level.getChunkSource().chunkMap.getPlayers(new ChunkPos(worldPosition), false);
 		boolean changed = !key.equals(sentKey);
 		if(changed && now - sentAt < REFRESH_TICKS && store != null && sentKey.startsWith(mode + "|" + on + "|" + groupW + "x" + groupH + "|"))
@@ -399,7 +399,7 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 				to.add(player);
 		if(to.isEmpty())
 			return;
-		CCrtMonitorPacket packet = picture(store, on);
+		CCrtMonitorPacket packet = picture(store, on, computer == null ? null : computer.getBlockPos());
 		for(ServerPlayer player : to)
 			PacketDistributor.sendToPlayer(player, packet);
 		if(changed) {
@@ -474,8 +474,11 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 		return new CCrtWaterfallPacket(worldPosition, on, span.ordinal(), lo, hi, dial, now, false, row);
 	}
 
-	/** The screen's picture: the mosaic centred on the screen, the latest or (LOOP) the last few passes. */
-	CCrtMonitorPacket picture(@Nullable WxSatStore store, boolean on) {
+	/**
+	 * The screen's picture: the mosaic centred on the screen, the latest or (LOOP) the last few passes, with a little red
+	 * cross where the station ({@code station}, the WXSAT computer) is, as the app marks it (2026-11-16, the maintainer).
+	 */
+	CCrtMonitorPacket picture(@Nullable WxSatStore store, boolean on, @Nullable BlockPos station) {
 		int w = groupW * PIXELS_PER_BLOCK, h = groupH * PIXELS_PER_BLOCK;
 		List<byte[]> frames = new ArrayList<>();
 		if(on && store != null) {
@@ -486,8 +489,32 @@ public class CrtMonitorBlockEntity extends BlockEntity {
 					frames.add(mosaic.view(centre[0], centre[1], w, h, WORLD_PER_BLOCK / PIXELS_PER_BLOCK, f));
 			else
 				frames.add(mosaic.view(centre[0], centre[1], w, h, WORLD_PER_BLOCK / PIXELS_PER_BLOCK, -1));
+			if(station != null)
+				for(byte[] frame : frames)
+					cross(frame, w, h, (station.getX() - centre[0]) / (double)(WORLD_PER_BLOCK / PIXELS_PER_BLOCK) + w / 2.0D,
+							(station.getZ() - centre[1]) / (double)(WORLD_PER_BLOCK / PIXELS_PER_BLOCK) + h / 2.0D);
 		}
 		return CCrtMonitorPacket.of(worldPosition, on, mode.ordinal(), w, h, frames);
+	}
+
+	public static final byte CROSS = net.minecraft.world.level.material.MapColor.COLOR_RED.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.HIGH),
+			CROSS_EDGE = net.minecraft.world.level.material.MapColor.COLOR_BLACK.getPackedId(net.minecraft.world.level.material.MapColor.Brightness.LOWEST);
+
+	/** A small red + at picture pixel {@code fu, fv}, edged in black so it shows on any ground; nothing if it is off the picture. */
+	public static void cross(byte[] pixels, int w, int h, double fu, double fv) {
+		int u = (int)Math.floor(fu), v = (int)Math.floor(fv);
+		if(u < 0 || u >= w || v < 0 || v >= h)
+			return;
+		for(int pass = 0; pass < 2; pass++)
+			for(int d = -3; d <= 3; d++)
+				for(int s = -1; s <= 1; s++) {
+					boolean arm = s == 0 && Math.abs(d) <= 2;
+					if(pass == 0 ? arm : !arm)
+						continue; // The black edge first, then the red over it.
+					for(int[] p : new int[][] { { u + d, v + s }, { u + s, v + d } })
+						if(p[0] >= 0 && p[0] < w && p[1] >= 0 && p[1] < h)
+							pixels[p[0] + p[1] * w] = pass == 0 ? CROSS_EDGE : CROSS;
+				}
 	}
 
 	/** The block the screen's picture is centred on: the middle of its face, in x and z. */

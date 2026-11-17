@@ -75,6 +75,7 @@ public final class WxSatLang {
 		s.accept("wx.hint_live", "Newest line at the bottom");
 		s.accept("wx.hint_mosaic", "Drag or arrows pan, wheel zooms");
 		s.accept("wx.you_are", "Red ring: this station");
+		s.accept("wx.scale", "%s blocks"); // The scale bar's label (2026-11-16).
 		s.accept("wx.why.no_radio", "%s up: link a radio");
 		s.accept("wx.why.wrong_freq", "%s sends on %s");
 		s.accept("wx.why.wrong_freq2", "Radio is on %3$s MHz");
