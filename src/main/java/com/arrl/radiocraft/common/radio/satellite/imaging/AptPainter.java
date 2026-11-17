@@ -22,8 +22,9 @@ import java.util.Map;
 /**
  * What a weather satellite sees along one scan line (2026-11-12): full-colour radar over the ground, in map colours.
  * <ul>
- * <li><b>Ground</b>: where the chunk is loaded, the top block's map colour shaded by the slope to the north, as a vanilla
- * map (and as {@code AprsMapTexture} paints it); elsewhere the biome's colour from the biome source, as WEFAX charts find
+ * <li><b>Ground</b>: the biome's colour: where the chunk is loaded, its biome at the top block with real water, ice and snow, shaded
+ * by the slope to the north as a map is (2026-11-16: not every block's colour, which looked busy beside the rest);
+ * elsewhere from the biome source high over the ground, as WEFAX charts find
  * coastlines (no chunk is loaded or generated): seas and rivers blue, sand, snow, forests and jungles green, badlands
  * orange, peaks grey. Always a step darker than a map ({@link MapColor.Brightness#HIGH} is never used), so the weather
  * stands out and can be read back ({@link RadarScale#levelOf}).</li>
@@ -215,29 +216,48 @@ public final class AptPainter {
 		return value;
 	}
 
-	/** A loaded column: its top block's colour, shaded by the slope to the north as a map is, a step darker. */
+	/**
+	 * A loaded column, coloured as unloaded ground is (2026-11-16, the maintainer: every leaf and grass block of the
+	 * loaded chunks looked silly beside the plain ground round them): its biome's colour, but real water, ice and snow
+	 * where they are on top, and shaded by the slope to the north as a map is.
+	 */
 	private static int loaded(ServerLevel level, int x, int z) {
 		int top = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
 		BlockPos pos = new BlockPos(x, top, z);
 		Holder<Biome> biome = level.getBiome(pos);
 		int flags = flags(biome, pos);
 		BlockState state = level.getBlockState(pos);
-		MapColor colour = level.getFluidState(pos).is(FluidTags.WATER) ? MapColor.WATER : state.getMapColor(level, pos);
-		if(colour == MapColor.NONE)
-			colour = MapColor.STONE;
-		MapColor.Brightness shade = MapColor.Brightness.LOW;
-		if(colour != MapColor.WATER && level.hasChunk(x >> 4, (z - AptSwath.BLOCKS_PER_PIXEL) >> 4)) {
+		MapColor block = level.getFluidState(pos).is(FluidTags.WATER) ? MapColor.WATER : state.getMapColor(level, pos);
+		int packed;
+		if(block == MapColor.WATER || block == MapColor.ICE || block == MapColor.SNOW)
+			packed = block.getPackedId(MapColor.Brightness.LOW) & 0xFF;
+		else
+			packed = biomeColour(biome, (flags & COLD) != 0) & 0xFF;
+		boolean plain = (packed & 3) == MapColor.Brightness.LOW.id; // Biomes drawn darker or lighter keep their own shade.
+		if(block != MapColor.WATER && plain && level.hasChunk(x >> 4, (z - AptSwath.BLOCKS_PER_PIXEL) >> 4)) {
 			int north = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z - AptSwath.BLOCKS_PER_PIXEL) - 1;
-			shade = top > north + 1 ? MapColor.Brightness.NORMAL : top < north - 1 ? MapColor.Brightness.LOWEST : MapColor.Brightness.LOW;
+			MapColor.Brightness shade = top > north + 1 ? MapColor.Brightness.NORMAL : top < north - 1 ? MapColor.Brightness.LOWEST : MapColor.Brightness.LOW;
+			packed = packed & ~3 | shade.id;
 		}
-		return colour.getPackedId(shade) & 0xFF | flags;
+		return packed | flags;
+	}
+
+	/**
+	 * Where the biome source is asked for unloaded ground, block y: high over any land (2026-11-16). At sea level, under
+	 * hills and mountains it gave cave biomes (lush and dripstone caves), not what is on top.
+	 */
+	static final int BIOME_Y = 256;
+
+	/** The ground's map colour id at {@code x, z} as a scan line paints it, no weather and not kept (for tests). */
+	public static int groundColour(ServerLevel level, int x, int z) {
+		return (level.hasChunk(x >> 4, z >> 4) ? loaded(level, x, z) : fromBiome(level, x, z)) & 0xFF;
 	}
 
 	/** Unloaded ground: the colour of its biome from the biome source (cheap; nothing is generated). */
 	private static int fromBiome(ServerLevel level, int x, int z) {
 		var sampler = level.getChunkSource().randomState().sampler();
 		Holder<Biome> biome = level.getChunkSource().getGenerator().getBiomeSource()
-				.getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(level.getSeaLevel()), QuartPos.fromBlock(z), sampler);
+				.getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(Math.min(BIOME_Y, level.getMaxBuildHeight() - 1)), QuartPos.fromBlock(z), sampler);
 		BlockPos pos = new BlockPos(x, level.getSeaLevel(), z);
 		int flags = flags(biome, pos);
 		return biomeColour(biome, (flags & COLD) != 0) & 0xFF | flags;

@@ -401,4 +401,24 @@ public class WxSatGameTests {
 				})
 				.thenSucceed();
 	}
+	/**
+	 * Loaded ground is painted by its biome, as unloaded ground is (2026-11-16, the maintainer: the loaded chunks' every
+	 * leaf and grass block looked busy beside the rest): leaves on top give the biome's colour, not the leaves'; water on top
+	 * stays water.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20, batch = BATCH)
+	public static void loadedGroundIsPaintedByItsBiome(GameTestHelper helper) {
+		BlockPos leaves = new BlockPos(3, 2, 3), water = new BlockPos(10, 2, 10);
+		helper.setBlock(leaves, net.minecraft.world.level.block.Blocks.OAK_LEAVES.defaultBlockState().setValue(net.minecraft.world.level.block.LeavesBlock.PERSISTENT, true));
+		helper.setBlock(water, net.minecraft.world.level.block.Blocks.WATER);
+		BlockPos l = helper.absolutePos(leaves), w = helper.absolutePos(water);
+		for(BlockPos column : new BlockPos[] { l, w }) // Open to the sky: the plot has a barrier roof.
+			for(int y = column.getY() + 1; y <= column.getY() + 20; y++)
+				helper.getLevel().setBlock(new BlockPos(column.getX(), y, column.getZ()), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 3);
+		int onLeaves = com.arrl.radiocraft.common.radio.satellite.imaging.AptPainter.groundColour(helper.getLevel(), l.getX(), l.getZ());
+		int onWater = com.arrl.radiocraft.common.radio.satellite.imaging.AptPainter.groundColour(helper.getLevel(), w.getX(), w.getZ());
+		helper.assertTrue(onLeaves >> 2 != net.minecraft.world.level.material.MapColor.PLANT.id, "leaves painted as leaves: colour " + (onLeaves >> 2));
+		helper.assertTrue(onWater >> 2 == net.minecraft.world.level.material.MapColor.WATER.id, "water not painted as water: colour " + (onWater >> 2));
+		helper.succeed();
+	}
 }
