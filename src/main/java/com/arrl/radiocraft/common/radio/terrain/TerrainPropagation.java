@@ -6,6 +6,7 @@ import com.arrl.radiocraft.api.antenna.IAntenna;
 import com.arrl.radiocraft.api.antenna.IAntennaPacket;
 import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.BandUtils;
+import com.arrl.radiocraft.common.radio.SkipPath;
 import com.arrl.radiocraft.compat.sable.Sublevels;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -43,6 +44,8 @@ public final class TerrainPropagation {
     private static final Map<ResourceKey<Level>, TerrainAtlas> ATLASES = new ConcurrentHashMap<>();
     private static final ExpiringCache<PathKey, PathLoss> PATHS = new ExpiringCache<>(MAX_CACHE);
     private static final ExpiringCache<SpotKey, float[]> HORIZONS = new ExpiringCache<>(MAX_CACHE);
+    /** The average terrain around a spot ({@link TerrainMath#meanSurface}), NaN where none is known. */
+    private static final ExpiringCache<SpotKey, Double> GROUNDS = new ExpiringCache<>(MAX_CACHE);
 
     /** Running cost counters, for /rcdebug terrain and the benchmark. */
     public static final LongAdder CALLS = new LongAdder();
@@ -83,6 +86,11 @@ public final class TerrainPropagation {
      * off.
      */
     public static double factor(IAntennaPacket packet, BlockPos destination, boolean skip) {
+        return factor(packet, destination, skip, 1);
+    }
+
+    /** As above, for skip in {@code hops} hops: the angle each leaves at comes from its length ({@link SkipPath#takeoffRadians}). */
+    public static double factor(IAntennaPacket packet, BlockPos destination, boolean skip, int hops) {
         IAntenna source = packet.getSource();
         if(source == null || source.getAntennaPos() == null || !enabled())
             return 1.0D;
@@ -93,7 +101,7 @@ public final class TerrainPropagation {
                 && !Sublevels.onSublevel(packet.getLevel(), source.getAntennaPos().position())
                 && (target.getAntennaPos() == null || !Sublevels.onSublevel(packet.getLevel(), target.getAntennaPos().position()));
         double factor = factor(packet.getLevel(), packet.getBand(), source.getAntennaPos().world(), source.isIndoors(),
-                destination, target != null && target.isIndoors(), skip, fixed);
+                destination, target != null && target.isIndoors(), skip, fixed, hops);
         CALLS.increment();
         CALL_NANOS.add(System.nanoTime() - start);
         return factor;
@@ -105,6 +113,11 @@ public final class TerrainPropagation {
 
     /** As above; {@code fixed} for two stations that never move, whose path is kept until terrain on it changes. */
     public static double factor(Level level, Band band, BlockPos from, boolean fromIndoors, BlockPos to, boolean toIndoors, boolean skip, boolean fixed) {
+        return factor(level, band, from, fromIndoors, to, toIndoors, skip, fixed, 1);
+    }
+
+    /** As above, skip taking {@code hops} hops. */
+    public static double factor(Level level, Band band, BlockPos from, boolean fromIndoors, BlockPos to, boolean toIndoors, boolean skip, boolean fixed, int hops) {
         TerrainAtlas atlas = atlas(level);
         if(atlas == null || band == null)
             return 1.0D;
@@ -114,7 +127,7 @@ public final class TerrainPropagation {
         if(skip) {
             double factor = TerrainMath.dbToFactor(indoors * indoorDb * 2.0D);
             if(RadiocraftServerConfig.TERRAIN_SKY_VIEW.get() && !vhf) {
-                double takeoff = Math.toRadians(takeoffDegrees(band));
+                double takeoff = takeoffRadians(from, to, hops);
                 double fade = Math.toRadians(RadiocraftServerConfig.TERRAIN_SKY_FADE.get());
                 factor *= TerrainMath.skipClearance(horizon(level, atlas, from), TerrainMath.bearing(from.getX(), from.getZ(), to.getX(), to.getZ()), takeoff, fade);
                 factor *= TerrainMath.skipClearance(horizon(level, atlas, to), TerrainMath.bearing(to.getX(), to.getZ(), from.getX(), from.getZ()), takeoff, fade);
@@ -199,14 +212,41 @@ public final class TerrainPropagation {
         return (long)(RadiocraftServerConfig.TERRAIN_RECALCULATE_SECONDS.get() * 1e9D);
     }
 
-    /** Takeoff angle of a band's skip signal, in degrees. */
-    public static double takeoffDegrees(Band band) {
-        return switch(band.name()) {
-            case "10m", com.arrl.radiocraft.common.radio.Band.LOW_BAND, com.arrl.radiocraft.common.radio.Band.CB -> RadiocraftServerConfig.TERRAIN_TAKEOFF_10M.get(); // Low band skips at a low angle like 10m.
-            case "20m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_20M.get();
-            case "40m" -> RadiocraftServerConfig.TERRAIN_TAKEOFF_40M.get();
-            default -> RadiocraftServerConfig.TERRAIN_TAKEOFF_80M.get();
-        };
+    /**
+     * The angle a skip signal between {@code from} and {@code to} in {@code hops} hops leaves at, in radians (2026-11-18:
+     * it was one angle a band; now each hop goes up to the layer half way along it, {@link SkipPath#takeoffRadians}).
+     */
+    public static double takeoffRadians(BlockPos from, BlockPos to, int hops) {
+        double distance = Math.sqrt(Math.pow(to.getX() - from.getX(), 2) + Math.pow(to.getZ() - from.getZ(), 2));
+        return SkipPath.takeoffRadians(distance / Math.max(1, hops), RadiocraftServerConfig.SKIP_LAYER_HEIGHT_KM.get());
+    }
+
+    /**
+     * How far line of sight reaches between the packet's source and {@code destination} for their height above the
+     * terrain around them ({@link TerrainMath#horizonScale}, 2026-11-18): 1 when terrain or the radio horizon is off.
+     */
+    public static double horizonScale(IAntennaPacket packet, BlockPos destination) {
+        IAntenna source = packet.getSource();
+        if(source == null || source.getAntennaPos() == null || !enabled() || !RadiocraftServerConfig.TERRAIN_RADIO_HORIZON.get())
+            return 1.0D;
+        return horizonScale(packet.getLevel(), source.getAntennaPos().world(), destination);
+    }
+
+    /** As above, between two positions. */
+    public static double horizonScale(Level level, BlockPos from, BlockPos to) {
+        TerrainAtlas atlas = atlas(level);
+        if(atlas == null || !RadiocraftServerConfig.TERRAIN_RADIO_HORIZON.get())
+            return 1.0D;
+        double reference = RadiocraftServerConfig.TERRAIN_REFERENCE_HEIGHT.get();
+        return TerrainMath.horizonScale(heightAboveTerrain(level, atlas, from, reference), heightAboveTerrain(level, atlas, to, reference),
+                reference, RadiocraftServerConfig.TERRAIN_HORIZON_MAX_SCALE.get());
+    }
+
+    /** How high an antenna at {@code pos} is above the terrain around it, blocks; {@code unknown} where the map has none of it. */
+    public static double heightAboveTerrain(Level level, TerrainAtlas atlas, BlockPos pos, double unknown) {
+        double ground = GROUNDS.get(new SpotKey(level.dimension(), cell(pos)), ttl(),
+                key -> TerrainMath.meanSurface(atlas, pos.getX() + 0.5D, pos.getZ() + 0.5D, TerrainMath.GROUND_RADIUS));
+        return Double.isNaN(ground) ? unknown : pos.getY() + ANTENNA_HEIGHT - ground;
     }
 
     /** The 4 x 4 x 4 block cell a position is in, packed like a BlockPos. */
@@ -218,6 +258,7 @@ public final class TerrainPropagation {
     public static void clearCaches() {
         PATHS.clear();
         HORIZONS.clear();
+        GROUNDS.clear();
     }
 
     public static void resetCounters() {

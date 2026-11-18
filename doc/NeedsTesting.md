@@ -11,6 +11,9 @@ keeps the history).
 
 ## HF radios
 
+- [ ] Radio horizon (2026-11-18): a 2m station on a hilltop or tall tower reaches well past 500 blocks to another high one; two handhelds on flat ground reach about half as far as two masts; /rcdebug terrain shows the "radio horizon" factor
+- [ ] Multi-hop skip (2026-11-18): on 20m by day with good weather, a station 9,000-14,000 blocks away is heard faintly (two hops); PREDICT shows 20m open to it; in average weather 10m does not hop
+- [ ] Skip takeoff (2026-11-18): a station in a deep valley loses long 10m/20m hops towards the valley walls but still works 80m nearby (steep hops)
 - [x] Test the new HF panels: 10m, 20m, 40m, 80m, all-band (knobs, dial, mode keys, S/PO/SWR meter, AGC, 10X, QUICK, gain and mic gain)
 - [x] Test the all-band radio (band knob 3-144, FM on 2m, MEMORY and VFO/MEM, lamps, power button)
 - [x] Test the premium HF rigs: the Swan, TS-520R, RC-K2, RTX-100 (models, frequency on the block, panels, RIT, NB, RF gain; the Swan's dial window)

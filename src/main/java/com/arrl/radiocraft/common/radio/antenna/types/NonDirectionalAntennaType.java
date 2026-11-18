@@ -5,6 +5,7 @@ import com.arrl.radiocraft.api.antenna.IAntennaPacket;
 import com.arrl.radiocraft.api.antenna.IAntennaType;
 import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.BandUtils;
+import com.arrl.radiocraft.common.radio.SkipPath;
 import com.arrl.radiocraft.common.radio.antenna.data.AntennaData;
 import com.arrl.radiocraft.common.radio.solar.Aurora;
 import com.arrl.radiocraft.common.radio.solar.SporadicE;
@@ -87,12 +88,29 @@ public abstract class NonDirectionalAntennaType<T extends AntennaData> implement
         destination = Sublevels.world(level, destination);
         // Solar weather only touches the sky wave: a poor or closed band weakens skip, line of sight is unchanged. An
         // aurora over either end costs HF a condition step, and lets VHF skip between two stations under it.
-        double skip = getSkipEfficiency() * SolarEventManager.getCondition(level, packet.getBand(), source, destination).getSkipMultiplier();
-        double strength = BandUtils.getBaseStrength(packet.getBand(), effectiveDistance, getLosEfficiency(), skip, level.isDay(),
-                getLosRangeScale(packet.getBand()), getMaxSkipScale(packet.getBand()), SolarEventManager.getReach(level, packet.getBand()));
-        // Terrain: hills in the way of line of sight, or the horizon around either station for skip.
-        if(strength > 0.0D && packet.getBand() != null)
-            strength *= TerrainPropagation.factor(packet, destination, effectiveDistance >= packet.getBand().losRange() * getLosRangeScale(packet.getBand()));
+        Band band = packet.getBand();
+        double condition = SolarEventManager.getCondition(level, band, source, destination).getSkipMultiplier();
+        double skip = getSkipEfficiency() * condition;
+        double reach = SolarEventManager.getReach(level, band);
+        // Skip can hop more than once while the band is open (2026-11-18), each hop costing signal.
+        int maxHops = SkipPath.maxHops(band, condition, reach);
+        double hopLoss = SkipPath.hopLoss();
+        // Line of sight reaches further from high ground (the radio horizon, 2026-11-18).
+        double losScale = getLosRangeScale(band) * TerrainPropagation.horizonScale(packet, destination);
+        double skipScale = getMaxSkipScale(band);
+        boolean day = level.isDay();
+        double strength = BandUtils.getBaseStrength(band, effectiveDistance, getLosEfficiency(), skip, day, losScale, skipScale, reach, maxHops, hopLoss);
+        // Terrain: hills in the way of line of sight, or for skip the horizon around either station at the angle each hop leaves at.
+        if(strength > 0.0D && band != null) {
+            boolean isSkip = effectiveDistance >= band.losRange() * losScale;
+            int hops = 1;
+            if(isSkip) {
+                double[] window = BandUtils.skipWindow(band, day, skipScale, reach);
+                if(window != null)
+                    hops = Math.max(1, SkipPath.best(effectiveDistance, window[0], window[1], maxHops, hopLoss).count());
+            }
+            strength *= TerrainPropagation.factor(packet, destination, isSkip, hops);
+        }
         return Math.max(strength, Math.max(Aurora.vhfStrength(level, packet.getBand(), source, destination, effectiveDistance),
                 SporadicE.vhfStrength(level, packet.getBand(), effectiveDistance)));
     }

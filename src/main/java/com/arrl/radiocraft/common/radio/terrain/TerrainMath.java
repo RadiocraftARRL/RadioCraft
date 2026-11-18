@@ -23,7 +23,14 @@ public final class TerrainMath {
     /** Directions in a horizon profile. */
     public static final int AZIMUTHS = 16;
     /** How far out a horizon profile looks, in blocks. */
-    public static final int HORIZON_RADIUS = 64;
+    public static final int HORIZON_RADIUS = 256;
+    /**
+     * Past this a horizon profile samples every other cell (2026-11-18: it looked only 64 blocks out, but a low skip
+     * angle is blocked by a ridge a few hundred blocks away).
+     */
+    static final int HORIZON_NEAR = 64;
+    /** How far around a station the terrain is averaged for its height above it ({@link #meanSurface}). */
+    public static final int GROUND_RADIUS = 48;
 
     private static final double GRAZING_DB = knifeEdgeDb(0.0D);
 
@@ -106,7 +113,7 @@ public final class TerrainMath {
             double bearing = a * 2.0D * Math.PI / AZIMUTHS;
             double sx = Math.sin(bearing), sz = Math.cos(bearing);
             double best = 0.0D;
-            for(int r = END_CLEARANCE; r <= radius; r += CELL) {
+            for(int r = END_CLEARANCE; r <= radius; r += r < HORIZON_NEAR ? CELL : 2 * CELL) {
                 int h = heights.surface((int)Math.floor(x + sx * r), (int)Math.floor(z + sz * r));
                 if(h != UNKNOWN)
                     best = Math.max(best, Math.atan2(h - y, r));
@@ -114,6 +121,38 @@ public final class TerrainMath {
             angles[a] = (float)best;
         }
         return angles;
+    }
+
+    /**
+     * The average surface around {@code x, z}, from {@link #END_CLEARANCE} out to {@code radius} blocks (the station's
+     * own roof and yard left out): what its antenna's height counts from, as a real radio's height above average
+     * terrain. NaN if none of it is known.
+     */
+    public static double meanSurface(HeightSource heights, double x, double z, int radius) {
+        double sum = 0.0D;
+        int n = 0;
+        for(int a = 0; a < AZIMUTHS; a++) {
+            double bearing = a * 2.0D * Math.PI / AZIMUTHS;
+            double sx = Math.sin(bearing), sz = Math.cos(bearing);
+            for(int r = END_CLEARANCE; r <= radius; r += 2 * CELL) {
+                int h = heights.surface((int)Math.floor(x + sx * r), (int)Math.floor(z + sz * r));
+                if(h != UNKNOWN) {
+                    sum += h;
+                    n++;
+                }
+            }
+        }
+        return n == 0 ? Double.NaN : sum / n;
+    }
+
+    /**
+     * How far line of sight reaches between antennas {@code a} and {@code b} blocks above the terrain around them, as a
+     * share of a band's range: the radio horizon grows with the square root of each height, and both at
+     * {@code reference} give 1. From half to {@code max}.
+     */
+    public static double horizonScale(double a, double b, double reference, double max) {
+        double scale = (Math.sqrt(Math.max(1.0D, a)) + Math.sqrt(Math.max(1.0D, b))) / (2.0D * Math.sqrt(reference));
+        return Math.max(0.5D, Math.min(max, scale));
     }
 
     /** Bearing from one point to another in the horizontal plane, in the convention {@link #horizon} uses. */

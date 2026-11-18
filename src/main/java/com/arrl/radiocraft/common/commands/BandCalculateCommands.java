@@ -86,13 +86,15 @@ public class BandCalculateCommands {
 				continue;
 			}
 			boolean day = level.isDay();
-			int min = day ? band.minSkipDay() : band.minSkipNight(), max = day ? band.maxSkipDay() : band.maxSkipNight();
-			double reach = SolarEventManager.getReach(level, band);
-			if(reach < 1.0D && max > min)
-				max = (int)Math.round(min + (max - min) * reach); // A light opening (2026-11-18).
+			double reach = SolarEventManager.getReach(level, band); // A light opening (2026-11-18).
 			BandCondition condition = SolarEventManager.getCondition(level, band, a, b);
-			if(max > 0 && distance >= min && distance <= max && condition != BandCondition.CLOSED)
-				results.add(new Result(band, Path.SKIP, condition, condition.getSkipMultiplier()).through(TerrainPropagation.factor(level, band, a, false, b, false, true)));
+			double[] window = com.arrl.radiocraft.common.radio.BandUtils.skipWindow(band, day, 1.0D, reach);
+			com.arrl.radiocraft.common.radio.SkipPath.Hops hops = window == null ? com.arrl.radiocraft.common.radio.SkipPath.Hops.NONE
+					: com.arrl.radiocraft.common.radio.SkipPath.best(distance, window[0], window[1],
+							com.arrl.radiocraft.common.radio.SkipPath.maxHops(band, condition.getSkipMultiplier(), reach), com.arrl.radiocraft.common.radio.SkipPath.hopLoss());
+			if(hops.count() > 0 && condition != BandCondition.CLOSED)
+				results.add(new Result(band, Path.SKIP, condition, condition.getSkipMultiplier() * Math.pow(com.arrl.radiocraft.common.radio.SkipPath.hopLoss(), hops.count() - 1))
+						.through(TerrainPropagation.factor(level, band, a, false, b, false, true, false, hops.count())));
 			else
 				results.add(new Result(band, Path.NONE, condition, 0.0D));
 		}

@@ -232,6 +232,16 @@ public final class PropagationHandler implements ComputerAppHandler {
 			}
 
 			@Override
+			public int maxHops(Band band, int h) {
+				return com.arrl.radiocraft.common.radio.SkipPath.maxHops(band, skipMultiplier(band, h), skipReach(band, h));
+			}
+
+			@Override
+			public double hopLoss() {
+				return com.arrl.radiocraft.common.radio.SkipPath.hopLoss();
+			}
+
+			@Override
 			public double skipReach(Band band, int h) {
 				boolean day = hours.get(h).day();
 				return SolarSources.condition(level, band, day) != null ? 1.0D

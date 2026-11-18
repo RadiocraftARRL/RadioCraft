@@ -2,6 +2,7 @@ package com.arrl.radiocraft.common.computer;
 
 import com.arrl.radiocraft.common.radio.Band;
 import com.arrl.radiocraft.common.radio.BandUtils;
+import com.arrl.radiocraft.common.radio.SkipPath;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,6 +100,16 @@ public final class PropagationForecast {
 		default double skipReach(Band band, int hour) {
 			return 1.0D;
 		}
+
+		/** Most hops {@code band}'s skip takes at hour {@code hour} ({@code SkipPath#maxHops}). */
+		default int maxHops(Band band, int hour) {
+			return 1;
+		}
+
+		/** What each hop past the first leaves ({@code SkipPath#hopLoss}). */
+		default double hopLoss() {
+			return 0.5D;
+		}
 	}
 
 	/**
@@ -142,17 +153,18 @@ public final class PropagationForecast {
 
 	/** How a signal on {@code band} covers {@code distance} blocks, by day or night (as {@link BandUtils#getBaseStrength} decides). */
 	public static Path path(Band band, double distance, boolean day) {
-		return path(band, distance, day, 1.0D);
+		return path(band, distance, day, 1.0D, 1);
 	}
 
-	/** {@link #path(Band, double, boolean)} with skip reaching {@code reach} of its window. */
-	public static Path path(Band band, double distance, boolean day, double reach) {
+	/** {@link #path(Band, double, boolean)} with skip reaching {@code reach} of its window in up to {@code maxHops} hops. */
+	public static Path path(Band band, double distance, boolean day, double reach, int maxHops) {
 		if(distance < band.losRange())
 			return Path.LOS;
-		double minSkip = day ? band.minSkipDay() : band.minSkipNight();
-		double maxSkip = day ? band.maxSkipDay() : band.maxSkipNight();
-		if(reach < 1.0D && maxSkip > minSkip)
-			maxSkip = minSkip + (maxSkip - minSkip) * reach;
+		double[] window = BandUtils.skipWindow(band, day, 1.0D, reach);
+		if(window != null && SkipPath.best(distance, window[0], window[1], maxHops, 0.5D).count() > 0)
+			return Path.SKIP;
+		double minSkip = window == null ? 0.0D : window[0];
+		double maxSkip = minSkip;
 		if(distance > minSkip && distance < maxSkip)
 			return Path.SKIP;
 		return distance <= minSkip ? Path.SKIP_ZONE : Path.BEYOND;
@@ -164,17 +176,18 @@ public final class PropagationForecast {
 	 * signal the whole noise floor, a line of sight one only {@link Settings#losNoiseShare} of the solar part.
 	 */
 	public static Cell cell(Band band, double distance, boolean day, double skipMultiplier, double solarNoise, double extraNoise, Settings settings) {
-		return cell(band, distance, day, skipMultiplier, 1.0D, solarNoise, extraNoise, settings);
+		return cell(band, distance, day, skipMultiplier, 1.0D, 1, 0.5D, solarNoise, extraNoise, settings);
 	}
 
 	/** {@link #cell(Band, double, boolean, double, double, double, Settings)} with skip reaching {@code reach} of its window. */
-	public static Cell cell(Band band, double distance, boolean day, double skipMultiplier, double reach, double solarNoise, double extraNoise, Settings settings) {
-		Path path = path(band, distance, day, reach);
-		double strength = BandUtils.getBaseStrength(band, distance, 1.0D, skipMultiplier, day, 1.0D, 1.0D, reach);
+	public static Cell cell(Band band, double distance, boolean day, double skipMultiplier, double reach, int maxHops, double hopLoss,
+			double solarNoise, double extraNoise, Settings settings) {
+		Path path = path(band, distance, day, reach, maxHops);
+		double strength = BandUtils.getBaseStrength(band, distance, 1.0D, skipMultiplier, day, 1.0D, 1.0D, reach, maxHops, hopLoss);
 		double quality = strength / settings.threshold(noise(path, solarNoise, extraNoise, settings));
 		double cwDistance = distance / CW_RANGE_MULTIPLIER;
-		double cwStrength = BandUtils.getBaseStrength(band, cwDistance, 1.0D, skipMultiplier, day, 1.0D, 1.0D, reach);
-		double cwQuality = cwStrength / settings.threshold(noise(path(band, cwDistance, day, reach), solarNoise, extraNoise, settings));
+		double cwStrength = BandUtils.getBaseStrength(band, cwDistance, 1.0D, skipMultiplier, day, 1.0D, 1.0D, reach, maxHops, hopLoss);
+		double cwQuality = cwStrength / settings.threshold(noise(path(band, cwDistance, day, reach, maxHops), solarNoise, extraNoise, settings));
 		Grade grade = grade(quality);
 		Grade cw = grade(cwQuality);
 		return new Cell(grade, path, strength, quality, cw.ordinal() < grade.ordinal() ? cw : grade);
@@ -194,7 +207,8 @@ public final class PropagationForecast {
 			double bestQuality = 0.0D;
 			for(int h = 0; h < hours.size(); h++) {
 				Hour hour = hours.get(h);
-				Cell cell = cell(band, distance, hour.day(), conditions.skipMultiplier(band, h), conditions.skipReach(band, h), hour.solarNoise(), hour.extraNoise(), settings);
+				Cell cell = cell(band, distance, hour.day(), conditions.skipMultiplier(band, h), conditions.skipReach(band, h),
+						conditions.maxHops(band, h), conditions.hopLoss(), hour.solarNoise(), hour.extraNoise(), settings);
 				cells.add(cell);
 				if(cell.grade() != Grade.CLOSED && cell.quality() > bestQuality) {
 					bestQuality = cell.quality();

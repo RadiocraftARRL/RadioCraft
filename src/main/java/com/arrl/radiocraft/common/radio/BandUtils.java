@@ -25,6 +25,17 @@ public class BandUtils {
 	 */
 	public static double getBaseStrength(Band band, double distance, double losEfficiency, double skipEfficiency, boolean isDay,
 	                                     double losScale, double maxSkipScale, double skipReach) {
+		return getBaseStrength(band, distance, losEfficiency, skipEfficiency, isDay, losScale, maxSkipScale, skipReach, 1, 0.0D);
+	}
+
+	/**
+	 * The full form (2026-11-18): line of sight to {@code band}'s range times {@code losScale}, fading linearly to 0
+	 * there; past it skip in its window ({@link #skipWindow}: both edges times {@code skipScale}, so a longer-reaching
+	 * antenna moves the whole window out, skip zone and all), in up to {@code maxHops} hops each losing
+	 * {@code hopLoss} more ({@link SkipPath#best}).
+	 */
+	public static double getBaseStrength(Band band, double distance, double losEfficiency, double skipEfficiency, boolean isDay,
+	                                     double losScale, double skipScale, double skipReach, int maxHops, double hopLoss) {
 		if(band == null)
 			return 0.0D;
 
@@ -32,20 +43,22 @@ public class BandUtils {
 		if(distance < los)
 			return (1 - (distance / los)) * losEfficiency; // If within LoS scale the strength linearly to 0 as it reaches LoS
 
-		double minSkip = isDay ? band.minSkipDay() : band.minSkipNight();
-		double maxSkip = (isDay ? band.maxSkipDay() : band.maxSkipNight()) * maxSkipScale;
-		if(skipReach < 1.0D && maxSkip > minSkip)
-			maxSkip = minSkip + (maxSkip - minSkip) * skipReach;
+		double[] window = skipWindow(band, isDay, skipScale, skipReach);
+		return window == null ? 0.0D : SkipPath.best(distance, window[0], window[1], maxHops, hopLoss).share() * skipEfficiency;
+	}
 
-		if(distance > minSkip && distance < maxSkip) { // If within skip range
-			double skipRadius = (maxSkip - minSkip) / 2;
-			double skipMid = minSkip + skipRadius;
-			double distFromMid = Math.abs(distance - skipMid);
-
-			return (1 - (distFromMid / skipRadius)) * skipEfficiency; // If in skip range, scale strength linearly to 0 as it reaches radius.
-		}
-
-		return 0.0D;
+	/**
+	 * {@code band}'s skip window by day or night, {min, max} blocks: both edges times {@code skipScale} (the gap after
+	 * line of sight scales with it), the far edge pulled in to {@code skipReach} of the window. Null if it has none.
+	 */
+	public static double[] skipWindow(Band band, boolean isDay, double skipScale, double skipReach) {
+		double min = (isDay ? band.minSkipDay() : band.minSkipNight()) * skipScale;
+		double max = (isDay ? band.maxSkipDay() : band.maxSkipNight()) * skipScale;
+		if(max <= min)
+			return null;
+		if(skipReach < 1.0D)
+			max = min + (max - min) * skipReach;
+		return new double[] { min, max };
 	}
 
 	/**
@@ -74,7 +87,9 @@ public class BandUtils {
     public static double maxReach(Band band) {
         if(band == null)
             return 0.0D;
-        double reach = Math.max(band.losRange(), Math.max(band.maxSkipDay(), band.maxSkipNight()));
+        // The radio horizon can stretch line of sight, and skip can hop several times (2026-11-18).
+        double reach = Math.max(band.losRange() * com.arrl.radiocraft.RadiocraftServerConfig.TERRAIN_HORIZON_MAX_SCALE.get(),
+                Math.max(band.maxSkipDay(), band.maxSkipNight()) * (double)com.arrl.radiocraft.RadiocraftServerConfig.SKIP_MAX_HOPS.get());
         if(band.isVhf())
             reach = Math.max(reach, Math.max(com.arrl.radiocraft.RadiocraftServerConfig.AURORA_VHF_MAX_RANGE.get(),
                     com.arrl.radiocraft.RadiocraftServerConfig.SPORADIC_E_MAX_RANGE.get()));

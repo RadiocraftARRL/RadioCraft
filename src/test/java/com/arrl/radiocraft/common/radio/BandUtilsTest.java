@@ -40,13 +40,17 @@ class BandUtilsTest {
         assertEquals(0.0, BandUtils.getBaseStrength(TWENTY_M, 4000, 1.0, 1.0, false), EPS);
     }
 
-    /** A low-angle antenna (the 5-BTV on HF): line of sight half as far, skip reaching a quarter further. */
+    /**
+     * A low-angle antenna (the 5-BTV on HF): line of sight half as far, skip reaching a quarter further. The whole skip
+     * window moves out, skip zone and all (2026-11-18: only its far edge moved before).
+     */
     @Test
-    void rangeScalesMoveLosAndTheFarEdgeOfSkip() {
+    void rangeScalesMoveLosAndTheWholeSkipWindow() {
         assertEquals(0.0, BandUtils.getBaseStrength(TWENTY_M, 150, 1.0, 1.0, true, 0.5, 1.25), EPS);
         assertEquals(0.5, BandUtils.getBaseStrength(TWENTY_M, 75, 1.0, 1.0, true, 0.5, 1.25), EPS);
         assertEquals(0.0, BandUtils.getBaseStrength(TWENTY_M, 7000, 1.0, 1.0, true), EPS);
-        assertEquals(1.0, BandUtils.getBaseStrength(TWENTY_M, 4750, 1.0, 1.0, true, 0.5, 1.25), EPS); // Window 2000 to 7500.
+        assertEquals(1.0, BandUtils.getBaseStrength(TWENTY_M, 5000, 1.0, 1.0, true, 0.5, 1.25), EPS); // Window 2500 to 7500.
+        assertEquals(0.0, BandUtils.getBaseStrength(TWENTY_M, 2200, 1.0, 1.0, true, 0.5, 1.25), EPS, "the skip zone did not move out");
         assertTrue(BandUtils.getBaseStrength(TWENTY_M, 7000, 1.0, 1.0, true, 0.5, 1.25) > 0.0, "Skip does not reach further");
     }
 

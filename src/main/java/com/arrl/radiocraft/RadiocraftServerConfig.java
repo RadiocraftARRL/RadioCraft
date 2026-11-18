@@ -210,10 +210,13 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<Integer> TERRAIN_CLIFF_RISE;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_CLIFF_LOSS_DB;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_CLIFF_MAX_LOSS_DB;
-	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_TAKEOFF_10M;
-	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_TAKEOFF_20M;
-	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_TAKEOFF_40M;
-	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_TAKEOFF_80M;
+	public static final ModConfigSpec.ConfigValue<Double> SKIP_LAYER_HEIGHT_KM;
+	public static final ModConfigSpec.ConfigValue<Boolean> TERRAIN_RADIO_HORIZON;
+	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_REFERENCE_HEIGHT;
+	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_HORIZON_MAX_SCALE;
+	public static final ModConfigSpec.ConfigValue<Integer> SKIP_MAX_HOPS;
+	public static final ModConfigSpec.ConfigValue<Double> SKIP_HOP_LOSS;
+	public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> SKIP_MULTI_HOP_BANDS;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_SKY_FADE;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_INDOOR_VHF_LOSS_DB;
 	public static final ModConfigSpec.ConfigValue<Double> TERRAIN_INDOOR_HF_LOSS_DB;
@@ -744,13 +747,25 @@ public class RadiocraftServerConfig {
 		TERRAIN_CLIFF_RISE = BUILDER.comment(" Height change over 4 blocks along a path that counts as a cliff for HF ground wave").defineInRange("terrain_cliff_rise", 8, 1, 512);
 		TERRAIN_CLIFF_LOSS_DB = BUILDER.comment(" Loss in dB per cliff on 10m; longer bands lose less (80m about a third)").defineInRange("terrain_cliff_loss_db", 6.0, 0.0, 100.0);
 		TERRAIN_CLIFF_MAX_LOSS_DB = BUILDER.comment(" Most the cliffs on one path can cost together, in dB").defineInRange("terrain_cliff_max_loss_db", 18.0, 0.0, 100.0);
-		TERRAIN_TAKEOFF_10M = BUILDER.comment(" Angle in degrees above the horizon a 10m skip signal leaves at").defineInRange("terrain_takeoff_10m", 5.0, 0.0, 90.0);
-		TERRAIN_TAKEOFF_20M = BUILDER.comment(" Angle in degrees above the horizon a 20m skip signal leaves at").defineInRange("terrain_takeoff_20m", 10.0, 0.0, 90.0);
-		TERRAIN_TAKEOFF_40M = BUILDER.comment(" Angle in degrees above the horizon a 40m skip signal leaves at").defineInRange("terrain_takeoff_40m", 30.0, 0.0, 90.0);
-		TERRAIN_TAKEOFF_80M = BUILDER.comment(" Angle in degrees above the horizon an 80m skip signal leaves at (nearly straight up: NVIS)").defineInRange("terrain_takeoff_80m", 60.0, 0.0, 90.0);
+		SKIP_LAYER_HEIGHT_KM = BUILDER.comment(" Height of the layer skip bounces off, in real km (the skip ranges are 2 blocks a km). Each hop leaves at the angle",
+				" that reaches it half way along: a short hop nearly straight up, the longest at the horizon. The terrain around",
+				" each station must not block that angle").defineInRange("skip_layer_height_km", 300.0, 50.0, 1000.0);
+		TERRAIN_RADIO_HORIZON = BUILDER.comment(" Line of sight reaches further from high ground: its range grows with the square root of each antenna's",
+				" height above the terrain around it, as a real radio horizon does").define("terrain_radio_horizon", true);
+		TERRAIN_REFERENCE_HEIGHT = BUILDER.comment(" Height above the surrounding terrain, in blocks, at which both antennas get exactly a band's line of sight range").defineInRange("terrain_reference_height", 6.0, 0.5, 256.0);
+		TERRAIN_HORIZON_MAX_SCALE = BUILDER.comment(" Most the radio horizon can stretch line of sight (and least is half)").defineInRange("terrain_horizon_max_scale", 8.0, 1.0, 64.0);
 		TERRAIN_SKY_FADE = BUILDER.comment(" Degrees the horizon must rise above the takeoff angle to cut skip completely").defineInRange("terrain_sky_fade", 10.0, 0.1, 90.0);
 		TERRAIN_INDOOR_VHF_LOSS_DB = BUILDER.comment(" Loss in dB for a handheld with no sky above it (a roof, a cave), on VHF").defineInRange("terrain_indoor_vhf_loss_db", 10.0, 0.0, 100.0);
 		TERRAIN_INDOOR_HF_LOSS_DB = BUILDER.comment(" The same on HF line of sight; skip loses twice this").defineInRange("terrain_indoor_hf_loss_db", 3.0, 0.0, 100.0);
+		BUILDER.pop();
+
+		BUILDER.push("Skip");
+		SKIP_MAX_HOPS = BUILDER.comment(" Most hops a skip signal takes, bouncing off the ground between, on the bands below while they are fair or",
+				" better (1 turns multi-hop off)").defineInRange("skip_max_hops", 3, 1, 8);
+		SKIP_HOP_LOSS = BUILDER.comment(" What each hop past the first leaves of the signal (a ground bounce and two more trips through the absorbing",
+				" lower layer: real paths lose about 6-10 dB a hop)").defineInRange("skip_hop_loss", 0.5, 0.0, 1.0);
+		SKIP_MULTI_HOP_BANDS = BUILDER.comment(" Bands whose skip can take more than one hop (and the bands that follow them, as CB follows 10m)")
+				.defineListAllowEmpty("skip_multi_hop_bands", java.util.List.of("10m", "20m", "40m"), () -> "20m", o -> o instanceof String);
 		BUILDER.pop();
 
 		BUILDER.push("Crystals");

@@ -107,6 +107,7 @@ public class TerrainGameTests {
         SolarEventInstance previous = SolarEventManager.getEvent(helper.getLevel());
         SolarEventManager.setEvent(helper.getLevel(), RadiocraftData.SOLAR_EVENTS.getValue(Radiocraft.id("average")).getInstance()); // 20m open.
         RadiocraftServerConfig.TERRAIN_ENABLED.set(true);
+        RadiocraftServerConfig.TERRAIN_RADIO_HORIZON.set(false); // Walls only: the antennas' height would help with terrain on.
         helper.setBlock(BALUN, RadiocraftBlocks.BALUN_ONE_TO_ONE.get());
         GameTestUtil.wire(helper, BALUN, BALUN.west(5));
         GameTestUtil.wire(helper, BALUN, BALUN.east(5));
@@ -146,7 +147,36 @@ public class TerrainGameTests {
                 })
                 .thenExecute(() -> {
                     RadiocraftServerConfig.TERRAIN_ENABLED.set(false);
+                    RadiocraftServerConfig.TERRAIN_RADIO_HORIZON.set(true);
                     SolarEventManager.setEvent(helper.getLevel(), previous);
+                    cleanUp(helper);
+                })
+                .thenSucceed();
+    }
+
+    /** The radio horizon (2026-11-18): a station high above the terrain around it hears 2m from further away. */
+    @GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 300, batch = "terrain_horizon")
+    public static void highGroundReachesFurther(GameTestHelper helper) {
+        RadiocraftServerConfig.TERRAIN_ENABLED.set(true);
+        GameTestUtil.radioWithJPole(helper, VHF_RADIO);
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(GameTestUtil.networkObject(helper, J_POLE, AntennaNetworkObject.class).getAntenna() != null, "J-pole not recognized yet"))
+                .thenExecute(() -> {
+                    TerrainPropagation.refresh(helper.getLevel(), helper.absolutePos(J_POLE).offset(-64, 0, -64), helper.absolutePos(J_POLE).offset(64, 0, 64));
+                    BlockPos low = south(helper, J_POLE, LOS_DISTANCE);
+                    TerrainPropagation.refresh(helper.getLevel(), low.offset(-64, 0, -64), low.offset(64, 0, 64));
+                    TerrainPropagation.clearCaches();
+                    BlockPos from = helper.absolutePos(J_POLE);
+                    double onTheGround = TerrainPropagation.horizonScale(helper.getLevel(), from, low);
+                    double up = TerrainPropagation.horizonScale(helper.getLevel(), from, low.above(60));
+                    double both = TerrainPropagation.horizonScale(helper.getLevel(), from.above(60), low.above(60));
+                    double strengthUp = strength(helper, J_POLE, "2m", low.above(60));
+                    helper.assertTrue(onTheGround > 1.0D && up > onTheGround && both > up, String.format(Locale.ROOT,
+                            "Line of sight reach: x%.2f on the ground, x%.2f with one end 60 up, x%.2f with both (heights %.1f at %s, %.1f at %s)", onTheGround, up, both,
+                            TerrainPropagation.heightAboveTerrain(helper.getLevel(), TerrainPropagation.atlas(helper.getLevel()), from, -1), from.toShortString(),
+                            TerrainPropagation.heightAboveTerrain(helper.getLevel(), TerrainPropagation.atlas(helper.getLevel()), low, -1), low.toShortString()));
+                    RadiocraftServerConfig.TERRAIN_ENABLED.set(false);
+                    helper.assertTrue(strengthUp > 0.0D, "Nothing heard 60 blocks up");
                     cleanUp(helper);
                 })
                 .thenSucceed();

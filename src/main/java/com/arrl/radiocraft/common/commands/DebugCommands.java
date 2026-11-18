@@ -816,7 +816,8 @@ public class DebugCommands {
 		List<String> out = new ArrayList<>();
 		out.add(String.format(Locale.ROOT, "%s %s -> %s, %.0f blocks: line of sight loses %.1f dB (x%.3f)", band.name(),
 				from.toShortString(), to.toShortString(), Math.sqrt(from.distSqr(to)), db, TerrainMath.dbToFactor(db)));
-		out.add(String.format(Locale.ROOT, "skip (takeoff %.0f deg): x%.3f", TerrainPropagation.takeoffDegrees(band),
+		out.add(String.format(Locale.ROOT, "one hop's takeoff %.0f deg, radio horizon x%.2f; skip: x%.3f",
+				Math.toDegrees(TerrainPropagation.takeoffRadians(from, to, 1)), TerrainPropagation.horizonScale(level, from, to),
 				TerrainPropagation.factor(level, band, from, false, to, false, true)));
 		float[] horizon = TerrainPropagation.horizon(level, atlas, from);
 		StringBuilder line = new StringBuilder("horizon at from (deg, from +Z clockwise to +X):");
