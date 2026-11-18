@@ -551,3 +551,6 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
 - **Computer Redstone Block** (built 2026-11-13, placeholder from `tools/computer_redstone_model.py`): an interface box
   for the radio computer with a red lamp, lit while it gives out (models `computer_redstone`, `_on`).
 - **Program icons** `relay` and `redstone` (2026-11-13, `tools/computer_icons.py`).
+- **Band Plan on a wall** (built 2026-11-18, placeholder `models/block/band_plan_wall.json`, a 12 x 14 px sheet with
+  the item texture): a band plan chart pinned or framed on the wall, half a pixel thick, facing out (block state:
+  facing). A readable-looking chart texture of coloured band bars would suit it.

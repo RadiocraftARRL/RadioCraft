@@ -480,7 +480,8 @@ public class QrpPanelScreen<T extends RadioMenu<?>> extends HFRadioScreen<T> {
 		Band band = menu.getBand();
 		float freq = menu.getFrequency();
 		float min = band == null ? 0 : band.minFrequency(), max = band == null ? 1 : band.maxFrequency();
-		float pos = Math.max(0.0F, Math.min(1.0F, (freq - min) / Math.max(1.0F, max - min)));
+		// Not clamped: tuning carries on past the band edges, so the knob and skirt keep turning with it.
+		float pos = (freq - min) / Math.max(1.0F, max - min);
 		float cx = x0 + SKIRT[0], cy = y0 + SKIRT[1];
 		disc(g, cx + 1, cy + 2, SKIRT[2], 0x60000000);
 		disc(g, cx, cy, SKIRT[2], SILVER_DARK);

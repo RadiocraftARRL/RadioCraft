@@ -75,6 +75,8 @@ public class RadiocraftBlockLootProvider extends BlockLootSubProvider {
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block)
                                 .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(TowerFootholdBlock.BROKEN, false)))))));
+            else if(block == RadiocraftBlocks.BAND_PLAN_WALL.get()) // A hung Band Plan drops the sheet (2026-11-18).
+                add(block, createSingleItemTable(com.arrl.radiocraft.common.init.RadiocraftItems.BAND_PLAN.get()));
             else if(block == RadiocraftBlocks.IAMBIC_KEYER.get()) // Keeps its finger pieces' finish (2026-11-12).
                 add(block, LootTable.lootTable().withPool(applyExplosionCondition(block, LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(block).apply(net.minecraft.world.level.storage.loot.functions.CopyBlockState.copyState(block)

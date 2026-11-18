@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "radiocraft:block/band_plan_wall"
+    },
+    "facing=east": {
+      "model": "radiocraft:block/band_plan_wall",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "radiocraft:block/band_plan_wall",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "radiocraft:block/band_plan_wall",
+      "y": 270
+    }
+  }
+}

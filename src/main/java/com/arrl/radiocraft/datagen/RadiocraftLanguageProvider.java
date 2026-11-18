@@ -65,6 +65,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.addItem(RadiocraftItems.MARS_MOD, "MARS Mod");
 			provider.addItem(RadiocraftItems.RADIO_CLONER, "Radio Cloner");
 			provider.addItem(RadiocraftItems.BAND_PLAN, "Band Plan Sheet");
+			provider.addBlock(RadiocraftBlocks.BAND_PLAN_WALL, "Band Plan Sheet");
 			provider.addItem(RadiocraftItems.FERRITE_CORE, "Ferrite Core");
 			provider.addItem(RadiocraftItems.COAXIAL_CORE, "Coaxial Core");
 			provider.addItem(RadiocraftItems.INSULATION, "Insulation");
@@ -711,7 +712,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add(Radiocraft.translationKey("message", "cloner.no_radio"), "Hold a radio in your other hand, or use the cloner on a radio block");
 			provider.add(Radiocraft.translationKey("message", "cloner.cleared"), "Cloner cleared");
 			provider.add(Radiocraft.translationKey("message", "cloner.empty"), "The cloner is already empty");
-			provider.add(Radiocraft.translationKey("tooltip", "band_plan"), "Right click to read what each part of each band is for, ham and commercial");
+			provider.add(Radiocraft.translationKey("tooltip", "band_plan"), "Right click to read what each part of each band is for, ham and commercial. Use it on a wall to hang it up");
 			provider.add(Radiocraft.translationKey("screen", "band_plan.title"), "Band Plan");
 			provider.add(Radiocraft.translationKey("screen", "band_plan.hint"), "Scroll to read on; hover a band for its use");
 			provider.add(Radiocraft.translationKey("screen", "band_plan.legend"), "Legend");

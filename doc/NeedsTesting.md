@@ -14,8 +14,9 @@ keeps the history).
 - [x] Test the new HF panels: 10m, 20m, 40m, 80m, all-band (knobs, dial, mode keys, S/PO/SWR meter, AGC, 10X, QUICK, gain and mic gain)
 - [x] Test the all-band radio (band knob 3-144, FM on 2m, MEMORY and VFO/MEM, lamps, power button)
 - [x] Test the premium HF rigs: the Swan, TS-520R, RC-K2, RTX-100 (models, frequency on the block, panels, RIT, NB, RF gain; the Swan's dial window)
-- [!] Test the QRP radios' home-built panel (tuning knob and skirt, band-edge lamps, OFF/RECEIVE/TRANSMIT, KEY, toggles; the outline now fits the case, 2026-11-15)
+- [ ] Test the QRP radios' home-built panel (tuning knob and skirt, band-edge lamps, OFF/RECEIVE/TRANSMIT, KEY, toggles; the outline now fits the case, 2026-11-15)
   - Note (2026-11-17): the knob stops at the band edge but tuning carries on out of band; that is fine, but the knob should keep turning with it
+  - Note (2026-11-18): fixed, the knob and skirt are no longer clamped to the band; tune past an edge and check they keep turning
 - [x] Test the HF receiver and plain/Cheap radios (old panels still open, squelch knob)
 - [x] Test squelch on every radio (opens on the S-meter reading, tails, hiss at or under band noise)
 - [ ] Test CW (sidetone, no static while keying, Space/PTT keying, Left Alt, `cw_keying = CHAT_MORSE`)
@@ -181,6 +182,7 @@ keeps the history).
 - [x] Test the commercial radio module (sealed cabinet, creative setup screen, SSB/AM, dead air hiss)
 - [ ] Test speakers (desk, wall, large/premium; passband, static, music from a computer)
 - [x] Test the camera and photo paper (viewfinder, zoom, color/B&W, cooldown, item frame, fax PHOTO slot, `camera_photo_cap`, `camera_enabled`)
+- [ ] Test the Band Plan on a wall (use the sheet on a block's side to hang it, all four ways round; right click to read; break it or the wall and the sheet drops; floor/ceiling still reads it; placeholder model, 2026-11-18)
 
 ## Radio computer
 

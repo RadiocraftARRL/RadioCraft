@@ -49,6 +49,10 @@ public class BlockDropGameTests {
                 if(drops.size() != 1 || drops.get(0).is(block.asItem()))
                     problems.add(name + " drops " + drops + ", not one rare part");
             }
+            else if(block == RadiocraftBlocks.BAND_PLAN_WALL.get()) { // A hung Band Plan is the sheet: it drops the item.
+                if(drops.size() != 1 || !drops.get(0).is(com.arrl.radiocraft.common.init.RadiocraftItems.BAND_PLAN.get()))
+                    problems.add(name + " drops " + drops + ", not the Band Plan sheet");
+            }
             else if(drops.size() != 1 || !drops.get(0).is(block.asItem()) || drops.get(0).getCount() != 1)
                 problems.add(name + " drops " + drops);
             if(state.hasProperty(com.arrl.radiocraft.common.blocks.StackedBlocks.PART)

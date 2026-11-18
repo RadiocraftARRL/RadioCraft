@@ -257,6 +257,10 @@ public class RadiocraftBlocks {
 	public static final DeferredHolder<Block, SlimJimAntennaBlock> SLIM_JIM_ANTENNA = BLOCKS.register("slim_jim_antenna", () -> new SlimJimAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, YagiAntennaBlock> YAGI_ANTENNA = BLOCKS.register("yagi_antenna", () -> new YagiAntennaBlock(PROPERTIES_STONE_NO_OCCLUDE));
 	public static final DeferredHolder<Block, SatelliteDishBlock> SATELLITE_DISH = BLOCKS.register("satellite_dish", () -> new SatelliteDishBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	/** A Band Plan sheet hung on a wall (2026-11-18): placed by the Band Plan item, drops it. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.BandPlanWallBlock> BAND_PLAN_WALL = BLOCKS.register("band_plan_wall",
+			() -> new com.arrl.radiocraft.common.blocks.BandPlanWallBlock(Properties.ofFullCopy(Blocks.WHITE_WOOL).noOcclusion().noCollission()
+					.instabreak().sound(net.minecraft.world.level.block.SoundType.WOOL).pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)));
 	/** The iambic keyer (2026-11-12): beside an HF radio, it keys its CW from two paddles. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.IambicKeyerBlock> IAMBIC_KEYER = BLOCKS.register("iambic_keyer",
 			() -> new com.arrl.radiocraft.common.blocks.IambicKeyerBlock(Properties.ofFullCopy(Blocks.STONE).noOcclusion()));

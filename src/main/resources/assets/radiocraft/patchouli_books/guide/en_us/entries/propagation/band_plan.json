@@ -8,7 +8,7 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:band_plan",
       "title": "Band Plan Sheet",
-      "text": "Paper and an ink sac make a $(item)Band Plan Sheet$(). Right click it: every band is a bar coloured by what each part is for, with a legend at the bottom. Hover a bar to read the frequency and its use."
+      "text": "Paper and an ink sac make a $(item)Band Plan Sheet$(). Right click it: every band is a bar coloured by what each part is for, with a legend at the bottom. Hover a bar to read the frequency and its use. Use it on the side of a block to hang it on the wall, and right click it there to read it."
     },
     {
       "type": "patchouli:text",
