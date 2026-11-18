@@ -12,7 +12,7 @@
     },
     "night": {
       "10m": "closed",
-      "20m": "poor",
+      "20m": "closed",
       "40m": "fair",
       "80m": "fair"
     }

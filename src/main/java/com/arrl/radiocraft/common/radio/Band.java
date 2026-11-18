@@ -229,12 +229,19 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
     /** The default amateur bands (the ones every HF/VHF ham radio uses). Used to init the defaults in RadiocraftServerConfig. */
     public static Collection<Band> getDefaults(){
         return List.of(
+                // Each band has its own job (2026-11-18). Skip is at 2 blocks a real kilometre, typical for the middle of the
+                // solar cycle; line of sight is the ground wave, longer on the lower bands, but 10m is a little better
+                // locally than 40m (it doubles as a local FM band).
                 new Band("2m",500,0,0,0,0,144_000_000,148_000_000),
-                // 10m skips far (one long hop) but only while the sun is lively: the solar events close it otherwise.
-                new Band("10m",800,2500,8000,2500,6000,28_000_000,29_700_000),
-                new Band("20m",300,2000,6000,800,1000,14_000_000,14_350_000),
-                new Band("40m",900,1000,1100,100,3000,7_000_000,7_300_000),
-                new Band("80m",600,700,800,600,2000,3_500_000,4_000_000)
+                // The reward when the sun is lively: the longest single hop, by day; the solar events close it otherwise,
+                // and at night in all but great weather.
+                new Band("10m",700,2500,8000,2500,6000,28_000_000,29_700_000),
+                // Daytime long distance with a dead zone close in (800-4000 km); weak at night (poor in average weather).
+                new Band("20m",500,1600,8000,3000,8000,14_000_000,14_350_000),
+                // The daytime workhorse (0-1000 km); at night it goes long (1000-3500 km) and loses the middle distances.
+                new Band("40m",650,100,2000,2000,7000,7_000_000,7_300_000),
+                // Regional, never a dead zone: 0-500 km by day, out to 2000 km at night.
+                new Band("80m",800,100,1000,100,4000,3_500_000,4_000_000)
         );
     }
 
@@ -244,9 +251,9 @@ public record Band(String name, int losRange, int minSkipDay, int maxSkipDay, in
      */
     public static Collection<Band> getCommercialDefaults() {
         return List.of(
-                new Band(LOW_BAND, 650, 3000, 7000, 0, 0, 30_000_000, 50_000_000),
+                new Band(LOW_BAND, 600, 3000, 7000, 0, 0, 30_000_000, 50_000_000),
                 new Band(VHF_COMMERCIAL, 500, 0, 0, 0, 0, 150_000_000, 174_000_000),
-                new Band(CB, 600, 1750, 5600, 1750, 4200, 26_960_000, 27_410_000), // 10m's reach, toned down for 5 W.
+                new Band(CB, 525, 1750, 5600, 0, 0, 26_960_000, 27_410_000), // 10m's reach, toned down for 5 W; no skip at night.
                 new Band(AIRBAND, 600, 0, 0, 0, 0, 118_000_000, 137_000_000), // Line of sight, a little further than 2m.
                 new Band(FM_BROADCAST, 800, 0, 0, 0, 0, 88_000_000, 108_000_000) // A broadcast station carries far.
         );
