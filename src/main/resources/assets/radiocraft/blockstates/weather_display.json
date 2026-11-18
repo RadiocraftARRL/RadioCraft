@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "radiocraft:block/weather_display"
+    },
+    "facing=east": {
+      "model": "radiocraft:block/weather_display",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "radiocraft:block/weather_display",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "radiocraft:block/weather_display",
+      "y": 270
+    }
+  }
+}

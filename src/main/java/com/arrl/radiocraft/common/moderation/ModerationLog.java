@@ -659,6 +659,8 @@ public final class ModerationLog {
 			case HOMING -> "homing tone";
 			case TELEMETRY -> packet.from() + " telemetry: " + packet.text();
 			case APT -> packet.from() + " weather picture line"; // 2026-11-12.
+			case WX_OBS -> packet.from() + " weather observer" + (packet.position() == null ? "" : " at " + packet.position().getX() + ", " + packet.position().getZ())
+					+ ": " + packet.text(); // 2026-11-18.
 		};
 		if(!packet.item().isEmpty())
 			text += " [" + packet.item().getCount() + "x " + packet.item().getHoverName().getString() + "]";

@@ -604,6 +604,8 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
                         com.arrl.radiocraft.common.radio.wefax.WefaxChart.SIZE, RadiocraftServerConfig.WEFAX_BULLETIN_SECONDS.get() * 20);
                 dataHeaderAt = (int)(dataFrames.size() * com.arrl.radiocraft.common.radio.voice.WefaxAudio.START_SHARE);
             }
+            else if(sendingData.kind() == TncPacket.Kind.WX_OBS) // A Weather Observer's report: its own slower warble (2026-11-18).
+                dataFrames = com.arrl.radiocraft.common.radio.voice.WeatherObserverAudio.frames(sendingData.airBytes(), sendingData.id());
             else
                 dataFrames = Afsk.burst(sendingData.airBytes(), sendingData.id());
             dataFrame = 0;
@@ -726,6 +728,8 @@ public abstract class RadioBlockEntity extends BlockEntity implements ITogglable
                 fax.receive(payload);
             else if(level.getBlockEntity(at) instanceof com.arrl.radiocraft.common.blockentities.WefaxReceiverBlockEntity wefax && fed.add(wefax))
                 wefax.receiveOverAir(payload); // Solar bulletins from an Ionospheric Processor.
+            else if(level.getBlockEntity(at) instanceof com.arrl.radiocraft.common.blockentities.WeatherAlertGeneratorBlockEntity generator && fed.add(generator))
+                generator.receive(payload); // Weather Observers' reports (2026-11-18).
             else {
                 com.arrl.radiocraft.common.blockentities.IonosphericProcessorBlockEntity processor = com.arrl.radiocraft.common.blockentities.IonosphericProcessorBlockEntity.at(level, at);
                 if(processor != null && fed.add(processor))

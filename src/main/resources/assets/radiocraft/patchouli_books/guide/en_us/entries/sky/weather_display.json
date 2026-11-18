@@ -1,0 +1,18 @@
+{
+  "name": "Local Weather Station Display",
+  "icon": "radiocraft:weather_display",
+  "category": "radiocraft:sky",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:weather_display",
+      "title": "Weather Display",
+      "text": "A desk display in a wood case. Within 64 blocks of a $(l:radiocraft:sky/weather_station)Local Weather Station$() its red LCD steps through the temperature (°F), humidity, pressure (inHg), wind direction and speed, gusts and rain in the last hour."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "It needs no power. With no station in range it shows dashes and NO STATION.$(br2)Right click it for every reading at once."
+    }
+  ]
+}

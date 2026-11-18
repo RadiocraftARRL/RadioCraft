@@ -6,6 +6,8 @@ import com.arrl.radiocraft.api.weather.WeatherSource;
 import com.arrl.radiocraft.api.weather.WeatherSources;
 import com.arrl.radiocraft.common.be_networks.network_objects.AntennaNetworkObject;
 import com.arrl.radiocraft.common.be_networks.network_objects.RadioNetworkObject;
+import com.arrl.radiocraft.common.be_networks.DataWire;
+import com.arrl.radiocraft.common.blockentities.radio.RadioBlockEntity;
 import com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock;
 import com.arrl.radiocraft.common.computer.ComputerApps;
 import com.arrl.radiocraft.common.computer.apps.AprsHandler;
@@ -38,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,7 +60,7 @@ import java.util.UUID;
  *
  * <p>Power: {@link #IDLE_USE} FE a tick, {@link #TRANSMIT_USE} while sending.
  */
-public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INetworkObjectProvider {
+public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INetworkObjectProvider, StationTerminal {
 
 	public static final int IDLE_USE = 1;
 	public static final int TRANSMIT_USE = 12;
@@ -75,12 +78,48 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 	public static final int AIR_TONE_TICKS = 60;
 
 	/** Why it is or is not on the air. */
-	public enum State { NO_POWER, NO_APRS, TOO_FEW, TOO_CLOSE, NO_ANTENNA, TWO_ANTENNAS, READY }
+	/** Why it is or is not on the air. NO_SOURCE: nothing on its bus to hear weather stations with (no APRS station, radio interface or radio). */
+	public enum State { NO_POWER, NO_SOURCE, TOO_FEW, NO_ANTENNA, TWO_ANTENNAS, READY }
+
+	/** Whether a station heard counts towards the tier, and if not why (2026-11-18). */
+	public enum Standing {
+		/** In the spread-out group: it counts. */
+		COUNTS,
+		/** Heard, but within {@link WeatherNetwork#MIN_SPACING} of one that counts: it adds no reach (its reports still give flood and wind warnings). */
+		TOO_CLOSE,
+		/** Not heard for {@link #STATION_MAX_AGE}. */
+		STALE,
+		/** One APRS callsign heard from two places: only one counts until each has its own SSID. */
+		SAME_CALL
+	}
+
+	/**
+	 * A station on the status list: its key (an APRS callsign, or an observer's place), its callsign, whether it is a
+	 * Weather Observer, where, how long ago and whether it counts.
+	 */
+	public record HeardStation(String key, String call, boolean observer, double x, double z, long ageTicks, Standing standing) {
+
+		HeardStation with(Standing standing) {
+			return new HeardStation(key, call, observer, x, z, ageTicks, standing);
+		}
+	}
+
+	/** A Weather Observer's report as it came in. */
+	private record Observation(TncPacket packet, long gameTime) {}
+
+	/** Blocks an APRS station can move between beacons and still be the same station. */
+	public static final double SAME_PLACE = 16.0D;
 
 	// Server only.
-	private State state = State.NO_APRS;
-	private int heard = 0, spread = 0;
+	private State state = State.NO_SOURCE;
+	private int heard = 0, spread = 0, tier = 0;
 	private List<WeatherNetwork.Station> stations = List.of();
+	private List<HeardStation> heardList = List.of();
+	/** Where each APRS callsign was last heard from, and until when it counts as heard from two places. */
+	private final Map<String, double[]> lastPlace = new HashMap<>();
+	private final Map<String, Long> sameCallUntil = new HashMap<>();
+	/** Weather Observers heard through a radio on its bus, by where they are (2026-11-18). */
+	private final Map<Long, Observation> observations = new HashMap<>();
 	@Nullable
 	private AlertArea area;
 	private List<WeatherAlert> alerts = List.of();
@@ -169,20 +208,28 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 	/** Checks power, the APRS station and its weather beacons, and the antenna; the result is {@link #getState}. */
 	private void refresh(ServerLevel serverLevel, @Nullable RadioNetworkObject radio, long now) {
 		List<WeatherNetwork.Station> found = new ArrayList<>();
-		boolean aprs = heardStations(serverLevel, now, found);
+		List<HeardStation> listed = new ArrayList<>();
+		boolean source = heardStations(serverLevel, now, found, listed);
 		WeatherNetwork.Check check = WeatherNetwork.check(found);
+		int tierBefore = tier;
 		heard = check.heard();
 		spread = check.spread();
+		tier = check.tier();
 		stations = List.copyOf(found);
+		List<WeatherNetwork.Station> group = WeatherNetwork.spreadGroup(found, WeatherNetwork.MIN_SPACING);
+		for(int i = 0; i < listed.size(); i++) {
+			HeardStation h = listed.get(i);
+			if(h.standing() == Standing.COUNTS && group.stream().noneMatch(member -> member.call().equals(h.key())))
+				listed.set(i, h.with(Standing.TOO_CLOSE));
+		}
+		heardList = List.copyOf(listed);
 		State before = state;
 		if(radio == null || !radio.isPowered)
 			state = State.NO_POWER;
-		else if(!aprs)
-			state = State.NO_APRS;
+		else if(!source)
+			state = State.NO_SOURCE;
 		else if(check.status() == WeatherNetwork.Status.TOO_FEW)
 			state = State.TOO_FEW;
-		else if(check.status() == WeatherNetwork.Status.TOO_CLOSE)
-			state = State.TOO_CLOSE;
 		else {
 			List<AntennaNetworkObject> antennas = radio.getAntennas();
 			state = antennas.isEmpty() ? State.NO_ANTENNA : antennas.size() > 1 ? State.TWO_ANTENNAS : State.READY;
@@ -191,8 +238,8 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 			List<double[]> points = new ArrayList<>();
 			for(WeatherNetwork.Station station : stations)
 				points.add(new double[] { station.x(), station.z() });
-			area = AlertArea.around(points, AlertArea.DEFAULT_MARGIN);
-			if(before != State.READY)
+			area = AlertArea.around(points, AlertArea.marginFor(tier));
+			if(before != State.READY || tierBefore != tier)
 				build(serverLevel, now);
 		}
 		else {
@@ -202,40 +249,89 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 	}
 
 	/**
-	 * Fills {@code out} with the weather beacons the APRS stations on this generator's bus have heard in the last
-	 * {@link #STATION_MAX_AGE} ticks, one per callsign. False if there is no APRS station on the bus.
+	 * Fills {@code out} with the weather stations heard in the last {@link #STATION_MAX_AGE} ticks: the weather beacons
+	 * the APRS stations on this generator's bus have heard, one per callsign, and the Weather Observers its radios have
+	 * heard, one per place. {@code listed} gets every one for the status (stale ones and callsigns heard from two places
+	 * included). False if there is nothing on the bus to hear them with.
 	 */
-	private boolean heardStations(ServerLevel serverLevel, long now, List<WeatherNetwork.Station> out) {
+	private boolean heardStations(ServerLevel serverLevel, long now, List<WeatherNetwork.Station> out, List<HeardStation> listed) {
 		StationBus bus = StationBus.find(serverLevel, worldPosition);
-		boolean any = false;
-		Map<String, WeatherNetwork.Station> byCall = new LinkedHashMap<>();
-		for(StationTerminal terminal : bus.terminals()) {
-			List<AprsTerminalBlockEntity.Heard> heardList;
-			if(terminal instanceof AprsTerminalBlockEntity h19)
-				heardList = h19.getBeacons();
+		boolean any = bus.hasInterface() || !DataWire.linked(serverLevel, worldPosition, RadioBlockEntity.class).isEmpty();
+		Map<String, WeatherNetwork.Station> byKey = new LinkedHashMap<>();
+		Map<String, HeardStation> listedByKey = new LinkedHashMap<>();
+		List<Object> aprsStations = new ArrayList<>(bus.terminals());
+		aprsStations.addAll(bus.interfaces()); // A Headless TNC keeps the beacons it hears too (2026-11-18).
+		for(Object terminal : aprsStations) {
+			List<AprsTerminalBlockEntity.Heard> beacons;
+			if(terminal instanceof HeadlessTncBlockEntity tnc)
+				beacons = tnc.getBeacons();
+			else if(terminal instanceof AprsTerminalBlockEntity h19)
+				beacons = h19.getBeacons();
 			else if(terminal instanceof RadioComputerBlockEntity computer && computer.isInstalled(ComputerApps.APRS))
-				heardList = AprsHandler.state(computer).stations();
+				beacons = AprsHandler.state(computer).stations();
 			else
 				continue;
 			any = true;
-			for(AprsTerminalBlockEntity.Heard heardBeacon : heardList) {
+			for(AprsTerminalBlockEntity.Heard heardBeacon : beacons) {
 				TncPacket packet = heardBeacon.packet();
-				if(now - heardBeacon.gameTime() > STATION_MAX_AGE || packet.position() == null)
+				if(packet.position() == null)
 					continue;
 				AprsWeather weather = AprsWeather.parse(packet.text());
-				if(weather != null)
-					byCall.putIfAbsent(packet.from(), new WeatherNetwork.Station(packet.from(), packet.position().getX(), packet.position().getZ(), weather));
+				if(weather == null)
+					continue;
+				String call = packet.from();
+				double x = packet.position().getX(), z = packet.position().getZ();
+				long age = now - heardBeacon.gameTime();
+				if(age > STATION_MAX_AGE) {
+					listedByKey.putIfAbsent(call, new HeardStation(call, call, false, x, z, age, Standing.STALE));
+					continue;
+				}
+				double[] last = lastPlace.get(call);
+				if(last != null && Math.hypot(last[0] - x, last[1] - z) > SAME_PLACE)
+					sameCallUntil.put(call, now + STATION_MAX_AGE); // The same callsign from somewhere else: two stations.
+				lastPlace.put(call, new double[] { x, z });
+				boolean twoPlaces = sameCallUntil.getOrDefault(call, Long.MIN_VALUE) > now;
+				if(byKey.putIfAbsent(call, new WeatherNetwork.Station(call, x, z, weather)) == null) // The first fresh one heard.
+					listedByKey.put(call, new HeardStation(call, call, false, x, z, age, twoPlaces ? Standing.SAME_CALL : Standing.COUNTS));
 			}
 		}
-		out.addAll(byCall.values());
+		observations.values().removeIf(o -> now - o.gameTime() > STATION_MAX_AGE * 2L); // Long gone: off the list.
+		for(Observation observation : observations.values()) {
+			TncPacket packet = observation.packet();
+			AprsWeather weather = AprsWeather.parse(packet.text());
+			if(weather == null || packet.position() == null)
+				continue;
+			String key = "OBS@" + packet.position().asLong();
+			double x = packet.position().getX(), z = packet.position().getZ();
+			long age = now - observation.gameTime();
+			if(age > STATION_MAX_AGE)
+				listedByKey.put(key, new HeardStation(key, packet.from(), true, x, z, age, Standing.STALE));
+			else {
+				byKey.put(key, new WeatherNetwork.Station(key, x, z, weather));
+				listedByKey.put(key, new HeardStation(key, packet.from(), true, x, z, age, Standing.COUNTS));
+			}
+		}
+		out.addAll(byKey.values());
+		listed.addAll(listedByKey.values());
 		return any;
+	}
+
+	/**
+	 * A packet from a radio on its bus (through a radio interface, or a radio touching it or on its data wire): a
+	 * Weather Observer's report is kept, by where the observer is. Anything else is not for it.
+	 */
+	@Override
+	public void receive(TncPacket packet) {
+		if(level == null || packet.kind() != TncPacket.Kind.WX_OBS || packet.position() == null)
+			return;
+		observations.put(packet.position().asLong(), new Observation(packet, level.getGameTime()));
 	}
 
 	private void build(ServerLevel serverLevel, long now) {
 		if(area == null)
 			return;
 		WeatherSource source = weatherOverride != null ? weatherOverride : WeatherSources.get(serverLevel);
-		alerts = AlertBuilder.build(serverLevel, source, stations, area, now);
+		alerts = AlertBuilder.build(serverLevel, source, stations, area, now, tier);
 		for(WeatherAlert alert : alerts)
 			if(!sentKeys.contains(alert.key()))
 				sendPending = true; // Something new: on the air at once.
@@ -329,6 +425,16 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 		return spread;
 	}
 
+	/** What its stations let it do: 0 nothing, 1 what is at them now, 2 storms heading in, 3 watches too. */
+	public int getTier() {
+		return tier;
+	}
+
+	/** Every weather station it has heard, counting or not, for the status. */
+	public List<HeardStation> getHeardStations() {
+		return heardList;
+	}
+
 	public List<WeatherAlert> getAlerts() {
 		return alerts;
 	}
@@ -337,19 +443,25 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 		return frames != null;
 	}
 
-	/** What it says when right-clicked (and in Jade): why it is not on the air, or what it is sending. */
+	/** Most stations listed in the status. */
+	public static final int STATUS_STATIONS = 8;
+
+	/**
+	 * What it says when right-clicked (and in Jade): why it is not on the air or what it is sending, its tier and what
+	 * the next one needs, and each station heard with whether it counts.
+	 */
 	public List<Component> statusLines() {
 		List<Component> out = new ArrayList<>();
 		String base = "message.radiocraft.weather_alert_generator.";
 		switch(state) {
 			case NO_POWER -> out.add(Component.translatable(base + "no_power").withStyle(ChatFormatting.RED));
-			case NO_APRS -> out.add(Component.translatable(base + "no_aprs").withStyle(ChatFormatting.RED));
-			case TOO_FEW -> out.add(Component.translatable(base + "too_few", heard, WeatherNetwork.MIN_STATIONS, (int)WeatherNetwork.MIN_SPACING).withStyle(ChatFormatting.YELLOW));
-			case TOO_CLOSE -> out.add(Component.translatable(base + "too_close", heard, spread, WeatherNetwork.MIN_STATIONS, (int)WeatherNetwork.MIN_SPACING).withStyle(ChatFormatting.YELLOW));
+			case NO_SOURCE -> out.add(Component.translatable(base + "no_source").withStyle(ChatFormatting.RED));
+			case TOO_FEW -> out.add(Component.translatable(base + "too_few", (int)WeatherNetwork.MIN_SPACING).withStyle(ChatFormatting.YELLOW));
 			case NO_ANTENNA -> out.add(Component.translatable(base + "no_antenna").withStyle(ChatFormatting.RED));
 			case TWO_ANTENNAS -> out.add(Component.translatable(base + "two_antennas").withStyle(ChatFormatting.RED));
 			case READY -> {
-				out.add(Component.translatable(base + "ready", heard, area == null ? 0 : (int)Math.round(area.radius() * 2)).withStyle(ChatFormatting.GREEN));
+				out.add(Component.translatable(base + "ready", Component.translatable(base + "tier." + tier),
+						area == null ? 0 : (int)Math.round(area.radius() * 2)).withStyle(ChatFormatting.GREEN));
 				if(alerts.isEmpty())
 					out.add(Component.translatable(base + "no_alerts"));
 				else
@@ -359,7 +471,39 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 					}
 			}
 		}
+		if(state != State.NO_SOURCE && tier < WeatherNetwork.MAX_TIER)
+			out.add(Component.translatable(base + "next." + (tier + 1), (int)WeatherNetwork.MIN_SPACING).withStyle(ChatFormatting.GRAY));
+		int shown = 0;
+		for(HeardStation station : heardList) {
+			if(shown++ >= STATUS_STATIONS) {
+				out.add(Component.translatable(base + "more", heardList.size() - STATUS_STATIONS).withStyle(ChatFormatting.DARK_GRAY));
+				break;
+			}
+			out.add(stationLine(base, station));
+		}
 		return out;
+	}
+
+	private Component stationLine(String base, HeardStation station) {
+		double dx = station.x() - worldPosition.getX(), dz = station.z() - worldPosition.getZ();
+		int distance = (int)Math.round(Math.hypot(dx, dz));
+		String where = distance < 8 ? "" : " " + compass(dx, dz);
+		long minutes = station.ageTicks() / 1200L;
+		Component who = station.observer() ? Component.translatable(base + "observer", station.call()) : Component.literal(station.call());
+		MutableComponent line = Component.literal("  ").append(Component.translatable(base + "station", who, distance, where, minutes));
+		return switch(station.standing()) {
+			case COUNTS -> line.withStyle(ChatFormatting.GRAY);
+			case TOO_CLOSE -> line.append(Component.translatable(base + "station.too_close", (int)WeatherNetwork.MIN_SPACING)).withStyle(ChatFormatting.DARK_GRAY);
+			case STALE -> line.append(Component.translatable(base + "station.stale", STATION_MAX_AGE / 1200L)).withStyle(ChatFormatting.DARK_GRAY);
+			case SAME_CALL -> line.append(Component.translatable(base + "station.same_call")).withStyle(ChatFormatting.YELLOW);
+		};
+	}
+
+	/** N, NE, E... for a direction {@code dx}, {@code dz} (north is -z). */
+	static String compass(double dx, double dz) {
+		String[] points = {"N", "NE", "E", "SE", "S", "SW", "W", "NW"};
+		double bearing = (Math.toDegrees(Math.atan2(dx, -dz)) + 360.0D) % 360.0D;
+		return points[(int)Math.round(bearing / 45.0D) % 8];
 	}
 
 	@Override

@@ -554,3 +554,9 @@ RadioCraft. Each is a plain JSON block model like the parrot controller, unless 
 - **Band Plan on a wall** (built 2026-11-18, placeholder `models/block/band_plan_wall.json`, a 12 x 14 px sheet with
   the item texture): a band plan chart pinned or framed on the wall, half a pixel thick, facing out (block state:
   facing). A readable-looking chart texture of coloured band bars would suit it.
+- **Weather Observer** (built 2026-11-18, placeholder from `tools/weather_observer_model.py`): a small grey data box
+  that sends a weather station's readings through a radio; a green SEND lamp (models `weather_observer`, `_sending`),
+  a label strip and a cable gland. Block states: facing, sending.
+- **Local Weather Station Display** (built 2026-11-18, placeholder from `tools/weather_display_model.py`): a desk
+  weather display in a wood case with a red LCD; the renderer draws seven-segment readings on the element named
+  `DISPLAY` (keep that name and its size if redrawn). Block state: facing.

@@ -51,6 +51,7 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.HF_RECEIVER.get(), HFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.DESK_CHARGER.get(), DeskChargerScreen::new);
 		event.register(RadiocraftMenuTypes.RADIO_INTERFACE.get(), RadioInterfaceScreen::new);
+		event.register(RadiocraftMenuTypes.HEADLESS_TNC.get(), com.arrl.radiocraft.client.screens.HeadlessTncScreen::new);
 		event.register(RadiocraftMenuTypes.DTMF_DECODER.get(), DtmfDecoderScreen::new);
 		event.register(RadiocraftMenuTypes.DTMF_ENCODER.get(), DtmfEncoderScreen::new);
 		event.register(RadiocraftMenuTypes.TELETYPE.get(), TeletypeScreen::new);
@@ -106,6 +107,7 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.SATELLITE_TRACKER.get(), com.arrl.radiocraft.client.render.SatelliteTrackerRenderer::new);
 		// The frequency, mode and S-meter on each radio's screen; a radio whose model has no DISPLAY draws nothing.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.AUTO_TUNER.get(), com.arrl.radiocraft.client.render.AutoTunerDisplayRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.WEATHER_DISPLAY.get(), com.arrl.radiocraft.client.render.WeatherDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.BATTERY_METER.get(), com.arrl.radiocraft.client.render.BatteryMeterRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.FIRE_ALARM_CONTROLLER.get(), com.arrl.radiocraft.client.render.MeshScreenRenderer::new); // Green screens on the blocks (2026-11-11).
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.SCADA_MASTER.get(), com.arrl.radiocraft.client.render.MeshScreenRenderer::new);

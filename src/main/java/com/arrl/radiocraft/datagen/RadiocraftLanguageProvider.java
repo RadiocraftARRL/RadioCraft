@@ -287,7 +287,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("screen.radiocraft.pabx.all_call_taken", "A phone already has extension %s");
 			provider.add("screen.radiocraft.pabx.ext_in_use", "EXT IN USE: %s");
 			provider.add("screen.radiocraft.pabx.bad_extension", "The first extension is a number from 0 to 99999");
-			provider.addBlock(RadiocraftBlocks.WEATHER_STATION, "Weather Station");
+			provider.addBlock(RadiocraftBlocks.WEATHER_STATION, "Local Weather Station");
 			// The alternator only exists with Create (compat/create), so it is named by key.
 			provider.add("block.radiocraft.alternator", "Alternator");
 			provider.add("radiocraft.goggles.alternator.production", "Energy Production:");
@@ -296,7 +296,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("tooltip.radiocraft.microwave_radio", "A digital point to multipoint link over microwave dishes on its coax. Carries APRS between H19s, bearings between direction finders, and telephone calls.");
 			provider.add("tooltip.radiocraft.microwave_dish", "One end of a microwave link: coax it to a microwave radio and point it at the other end's dish.");
 			provider.add("tooltip.radiocraft.telephone", "Put it on a powered Phone PABX (touching, or on its data wire) and dial another phone's extension, or another PABX's master number and an extension. Sneak and right click to pick up the handset; place it on the side of a block to hang it on the wall.");
-			provider.add("tooltip.radiocraft.weather_station", "Put it up high in the open. Any H19 APRS terminal within 64 blocks sends its weather in its beacons.");
+			provider.add("tooltip.radiocraft.weather_station", "Put it up high in the open. Everything within 64 blocks that wants weather reads it: H19s and Headless TNCs beacon it, Weather Observers send it, displays show it.");
 			provider.add("screen.radiocraft.microwave.identity_taken", "Another microwave radio already has that callsign and ID");
 			provider.add("screen.radiocraft.telephone.extension_taken", "No PABX, or that extension is already in use");
 			provider.add("tooltip.radiocraft.handheld_yagi", "Hold it in your offhand to work satellites with a VHF handheld. Look towards the satellite: the further you look away, the weaker it gets.");

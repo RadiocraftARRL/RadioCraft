@@ -173,6 +173,12 @@ public class RadiocraftBlockEntities {
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WeatherAlertGeneratorBlockEntity::new, RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.WeatherAlertReceiverBlockEntity>> WEATHER_ALERT_RECEIVER = BLOCK_ENTITY_TYPES.register("weather_alert_receiver",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WeatherAlertReceiverBlockEntity::new, RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.HeadlessTncBlockEntity>> HEADLESS_TNC = BLOCK_ENTITY_TYPES.register("headless_tnc",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.HeadlessTncBlockEntity::new, RadiocraftBlocks.HEADLESS_TNC.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.WeatherDisplayBlockEntity>> WEATHER_DISPLAY = BLOCK_ENTITY_TYPES.register("weather_display",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WeatherDisplayBlockEntity::new, RadiocraftBlocks.WEATHER_DISPLAY.get()).build(null));
+	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.WeatherObserverBlockEntity>> WEATHER_OBSERVER = BLOCK_ENTITY_TYPES.register("weather_observer",
+			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.WeatherObserverBlockEntity::new, RadiocraftBlocks.WEATHER_OBSERVER.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.radio.RealWorldInterfaceBlockEntity>> REAL_WORLD_INTERFACE = BLOCK_ENTITY_TYPES.register("real_world_interface",
 			() -> BlockEntityType.Builder.of(com.arrl.radiocraft.common.blockentities.radio.RealWorldInterfaceBlockEntity::new, RadiocraftBlocks.REAL_WORLD_INTERFACE.get()).build(null));
 	public static final Supplier<BlockEntityType<com.arrl.radiocraft.common.blockentities.RepeaterAutopatchBlockEntity>> REPEATER_AUTOPATCH = BLOCK_ENTITY_TYPES.register("repeater_autopatch",

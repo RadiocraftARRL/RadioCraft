@@ -272,6 +272,10 @@ keeps the history).
 - [x] Test storm damage to a station (wire antennas snap in a cat 3 hurricane, mounted ones stand to cat 4; `/awm hazard hurricane`)
 - [x] Test WEFAX weather charts with AWM storms (`/awm spawn supercell`, `/rcdebug wefax radar`, `/rcdebug wx`)
 - [ ] Test the tropical advisories (2026-11-15; near the sea, waiting for a hurricane season or `/rcdebug wefax tropical`): the weather radio says a tropical weather statement with the chance a disturbance becomes a hurricane, then a hurricane or tropical storm watch with its category ("prepare now", new voice clips), then the warning; WX REPT prints a third sheet, the tropical outlook (tracks, dashed cones, X with % for a disturbance, H3/TS for a storm), and the forecast sheet lists them
+- [ ] Test the weather alert generator's tiers (2026-11-18): with 1 weather station it goes on the air (warnings for what is at it), with 2 150+ apart it warns of storms heading in, with 3 it adds watches; right click lists every station (distance, direction, minutes ago, too close / too old / same callsign from two places: give it an SSID) and says what the next tier needs
+- [ ] Test the Weather Observer (2026-11-18): placeholder model and its green lamp, the burst sounds unlike APRS (two pips and a slow warble) on a radio tuned there, right click says what is missing, a generator touching a radio on that frequency lists it as "W1ABC observer"
+- [ ] Test the Headless APRS TNC (2026-11-18): model matches the screen; front lamps live (DCD on a packet, PTT while sending, STA, CON with an H19 beside it, PWR) and the ON/OFF rocker; Turn around for the callsign box, SSID wheel (click top/bottom, scroll), DIGI and BEACON switches; an H19 works through it with no Radio Interface, a radio computer next to it does not
+- [ ] Test the Local Weather Station Display (2026-11-18): placeholder model, the red LCD steps TEMP / HUMIDITY / BARO / WIND FROM / WIND / GUST / RAIN every 2.5 s with the unlit segments faint, reads right all four ways round, NO STATION and dashes out of range, right click lists them all; the weather station now reads "Local Weather Station"
 
 ## Moderation and admin
 

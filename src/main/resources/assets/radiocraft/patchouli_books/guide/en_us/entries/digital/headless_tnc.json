@@ -1,0 +1,24 @@
+{
+  "name": "Headless APRS TNC",
+  "icon": "radiocraft:headless_tnc",
+  "category": "radiocraft:digital",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:headless_tnc",
+      "title": "Headless APRS TNC",
+      "text": "A packet modem with no screen, cheaper than an $(l:radiocraft:digital/aprs)H19$(). Touch it to a radio (or cable it with data wire). It beacons its position, with a $(l:radiocraft:sky/weather_station)Local Weather Station$()'s weather when one is within 64 blocks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What it does",
+      "text": "With $(thing)DIGI$() on it is a digipeater. A $(l:radiocraft:sky/weather_alert_generator)Weather Alert Generator$() touching it counts the weather beacons it hears.$(br2)Next to an H19 it stands in for the Radio Interface: the H19 sends and hears through it. It does nothing for a radio computer, a fax or anything else; they need a real Radio Interface. It cannot send messages or show a map."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Front and back",
+      "text": "Right click it for its front panel: DCD (a packet decoded), PTT (sending), STA (a repeat waiting or a beacon just sent), CON (an H19 connected) and PWR, and the ON/OFF rocker.$(br2)$(thing)Turn it around$() for the back: the callsign, the SSID wheel (each APRS station needs its own), and the DIGI and BEACON switches."
+    }
+  ]
+}

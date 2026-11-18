@@ -49,7 +49,13 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 		 * A weather satellite's scan line (2026-11-12): where it lies ({@code satellite.imaging.AptLine.Geometry#encode}),
 		 * from the satellite's name; its pixels are kept on the server ({@code AptLines}) under the packet's id.
 		 */
-		APT }
+		APT,
+		/**
+		 * A Weather Observer's report (2026-11-18): the APRS weather data of its Local Weather Station (as a weather
+		 * beacon's, {@link AprsWeather}), from where the observer is. Not APRS: its own slower burst, heard by weather
+		 * alert generators on the frequency; observers are told apart by where they are, not their callsign.
+		 */
+		WX_OBS }
 
 	/** A message to this callsign is for every station that hears it, as a bulletin. */
 	public static final String EVERYONE = "ALL";
@@ -71,6 +77,12 @@ public record TncPacket(long id, Kind kind, String from, String to, String text,
 	 * A beacon from a station with a weather station: the APRS weather data {@code weather} (see {@link AprsWeather}),
 	 * then the station's comment after a space.
 	 */
+	/** A Weather Observer's report of {@code weather} (APRS weather data) from {@code position} (2026-11-18). */
+	public static TncPacket weatherObservation(long id, String from, BlockPos position, String weather) {
+		return new TncPacket(id, Kind.WX_OBS, sanitizeCallsign(from), "", sanitizeText(weather, WEATHER_TEXT_MAX).replace(' ', '.'),
+				position.immutable(), AprsIcon.WX.name(), 0, ItemStack.EMPTY);
+	}
+
 	public static TncPacket weatherBeacon(long id, String from, BlockPos position, String weather, String comment) {
 		String clean = sanitizeText(comment, BEACON_TEXT_MAX);
 		String text = sanitizeText(weather, WEATHER_TEXT_MAX).replace(' ', '.') + (clean.isEmpty() ? "" : " " + clean);

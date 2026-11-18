@@ -385,6 +385,8 @@ public final class RadioModeration {
 			case ALERT -> "[SOLAR ALERT " + mhz + "] " + packet.from() + ": " + String.join(" / ", packet.solarLines());
 			case QUERY -> "[QUERY " + mhz + "] " + packet.from() + ": " + packet.text();
 			case WX_ALERT -> "[WX ALERT " + mhz + "] " + packet.from() + ": " + String.join(" / ", packet.solarLines());
+			case WX_OBS -> "[WX OBS " + mhz + "] " + packet.from() + (packet.position() == null ? "" : " at " + packet.position().getX() + ", " + packet.position().getZ())
+					+ ": " + packet.text(); // A Weather Observer (2026-11-18).
 			case FT8 -> "[FT8 " + mhz + "] " + packet.from() + ": " + packet.ft8Message(); // Computer batch 3B.
 			case DISTRESS -> { // 2026-11-09: a DSC call or beacon alert.
 				com.arrl.radiocraft.common.radio.distress.DistressAlert alert = com.arrl.radiocraft.common.radio.distress.DistressPackets.alert(packet);

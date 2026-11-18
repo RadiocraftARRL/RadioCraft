@@ -36,8 +36,16 @@ public final class Afsk {
 
 	/** Frames of the burst for a packet of {@code bytes} bytes, its bits seeded from {@code seed}. */
 	public static List<short[]> burst(int bytes, long seed) {
-		int totalBytes = PREAMBLE_FLAGS + Math.max(0, bytes) + TAIL_FLAGS;
-		double samplesPerBit = RadioVoiceProcessor.SAMPLE_RATE / BAUD;
+		return RepeaterAudio.frames(samples(bytes, seed, BAUD, MARK_HZ, SPACE_HZ, PREAMBLE_FLAGS));
+	}
+
+	/**
+	 * The samples of an FSK burst of {@code bytes} bytes at {@code baud}, mark and space at {@code markHz} and
+	 * {@code spaceHz}, led in by {@code preambleFlags} flags: APRS's Bell 202 ({@link #burst}) or another modem's.
+	 */
+	public static double[] samples(int bytes, long seed, double baud, double markHz, double spaceHz, int preambleFlags) {
+		int totalBytes = preambleFlags + Math.max(0, bytes) + TAIL_FLAGS;
+		double samplesPerBit = RadioVoiceProcessor.SAMPLE_RATE / baud;
 		double[] samples = new double[(int)Math.ceil(totalBytes * 8 * samplesPerBit)];
 		long x = seed | 1L;
 		boolean mark = true;
@@ -45,7 +53,7 @@ public final class Afsk {
 		int sample = 0;
 		for(int b = 0; b < totalBytes; b++) {
 			int value;
-			if(b < PREAMBLE_FLAGS || b >= totalBytes - TAIL_FLAGS)
+			if(b < preambleFlags || b >= totalBytes - TAIL_FLAGS)
 				value = FLAG;
 			else {
 				x ^= x << 13;
@@ -56,7 +64,7 @@ public final class Afsk {
 			for(int bit = 0; bit < 8; bit++) { // Least significant bit first, as AX.25 sends it.
 				if(((value >> bit) & 1) == 0)
 					mark = !mark;
-				double step = 2.0D * Math.PI * (mark ? MARK_HZ : SPACE_HZ) / RadioVoiceProcessor.SAMPLE_RATE;
+				double step = 2.0D * Math.PI * (mark ? markHz : spaceHz) / RadioVoiceProcessor.SAMPLE_RATE;
 				int end = (int)Math.round((b * 8 + bit + 1) * samplesPerBit);
 				for(; sample < end && sample < samples.length; sample++) { // Phase carries on across bits: no clicks.
 					samples[sample] = Math.sin(phase) * LEVEL;
@@ -64,7 +72,7 @@ public final class Afsk {
 				}
 			}
 		}
-		return RepeaterAudio.frames(samples);
+		return samples;
 	}
 
 	/** How long the burst for a packet of {@code bytes} bytes lasts, in 20 ms frames. */

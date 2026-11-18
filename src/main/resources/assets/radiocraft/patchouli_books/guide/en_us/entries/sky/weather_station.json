@@ -1,12 +1,17 @@
 {
-  "name": "Weather Station",
+  "name": "Local Weather Station",
   "icon": "radiocraft:weather_station",
   "category": "radiocraft:sky",
   "sortnum": 3,
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Put a $(item)weather station$() up high in the open. Right click it for the wind and gusts, temperature, humidity, pressure and the rain in the last hour (it only catches rain with open sky above it).$(br2)Any $(l:radiocraft:digital/aprs)H19 terminal$(/l) within $(thing)64 blocks$() sends that weather in its beacons, and other H19s show it with the WX symbol."
+      "text": "Put a $(item)Local Weather Station$() up high in the open. Right click it for the wind and gusts, temperature, humidity, pressure and the rain in the last hour (it only catches rain with open sky above it).$(br2)It has no radio of its own: anything that wants weather takes the nearest one within $(thing)64 blocks$(), as many devices at once as you like."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "What reads it",
+      "text": "An $(l:radiocraft:digital/aprs)H19$() or $(l:radiocraft:digital/headless_tnc)Headless APRS TNC$() sends its weather in its beacons (the WX symbol). A $(l:radiocraft:sky/weather_observer)Weather Observer$() sends it through any radio. A $(l:radiocraft:sky/weather_display)Local Weather Station Display$() shows it on a red LCD, and an FM broadcast transmitter on its data wire reads it out."
     },
     {
       "type": "patchouli:text",

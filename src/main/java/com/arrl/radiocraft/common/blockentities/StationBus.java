@@ -28,6 +28,10 @@ public record StationBus(List<RadioInterfaceBlockEntity> interfaces, List<Statio
 
 	/** Everything on the bus {@code start} is part of, nearest first; empty if nothing is there. */
 	public static StationBus find(Level level, BlockPos start) {
+		// A Headless APRS TNC stands in for a radio interface for an H19 and serves a weather alert generator, nothing
+		// else (2026-11-18): for anything else asking it is not on the bus.
+		BlockEntity asking = level.isLoaded(start) ? level.getBlockEntity(start) : null;
+		boolean tncs = asking instanceof AprsTerminalBlockEntity || asking instanceof WeatherAlertGeneratorBlockEntity || asking instanceof HeadlessTncBlockEntity;
 		List<RadioInterfaceBlockEntity> interfaces = new ArrayList<>();
 		List<StationTerminal> terminals = new ArrayList<>();
 		Set<BlockPos> visited = new HashSet<>();
@@ -38,6 +42,8 @@ public record StationBus(List<RadioInterfaceBlockEntity> interfaces, List<Statio
 		while(!queue.isEmpty() && visited.size() <= MAX_BLOCKS) {
 			BlockPos at = queue.poll();
 			BlockEntity be = level.isLoaded(at) ? level.getBlockEntity(at) : null;
+			if(be instanceof HeadlessTncBlockEntity && !tncs && !at.equals(start))
+				continue;
 			if(be instanceof RadioInterfaceBlockEntity radioInterface)
 				interfaces.add(radioInterface);
 			else if(be instanceof StationTerminal terminal)

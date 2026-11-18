@@ -16,19 +16,20 @@ import java.util.Set;
 
 /**
  * Builds a weather alert generator's alerts from what its weather stations report and from the storms of the weather
- * source (Another Weather Mod's, through RadioCraft's {@link WeatherSource}) in the area they cover:
+ * source (Another Weather Mod's, through RadioCraft's {@link WeatherSource}) in the area they cover. What it gives grows
+ * with the generator's tier ({@link WeatherNetwork.Check#tier()}, 2026-11-18):
  * <ul>
- * <li>a storm over the area now gives a warning for a circle round it and where it will be in
+ * <li>tier 1 and up: a storm over the area now gives a warning for a circle round it and where it will be in
  * {@link #LOOKAHEAD_TICKS}: tornado (once one is down), severe thunderstorm (a tornadic storm before it touches down
  * too), blizzard and dust storm (a supercell over snow or desert), hurricane or tropical storm, high wind, dense fog,
- * excessive heat and extreme cold;</li>
- * <li>a tornadic or severe storm forecast to reach the area within {@link #WATCH_TICKS} gives a watch for the whole
- * area (tornado watch, severe thunderstorm watch), as does a tornado-watch day there;</li>
- * <li>a tropical disturbance, storm or hurricane forecast to reach the area within two days ({@link #forTropical}):
- * a tropical weather statement, then a watch, then a warning (2026-11-15);</li>
- * <li>a station reporting {@link #FLOOD_RAIN_HUNDREDTHS} of rain in the last hour gives a flash flood warning round it,
- * and one reporting high wind ({@link #HIGH_WIND_MPH} sustained or {@link #HIGH_GUST_MPH} gusts) a high wind
- * warning.</li>
+ * excessive heat and extreme cold; a station reporting {@link #FLOOD_RAIN_HUNDREDTHS} of rain in the last hour gives
+ * a flash flood warning round it, and one reporting high wind ({@link #HIGH_WIND_MPH} sustained or
+ * {@link #HIGH_GUST_MPH} gusts) a high wind warning;</li>
+ * <li>tier 2 and up: a storm that will be over the area within {@link #LOOKAHEAD_TICKS} gives its warning already;</li>
+ * <li>tier 3: a tornadic or severe storm forecast to reach the area within {@link #WATCH_TICKS} gives a watch for the
+ * whole area (tornado watch, severe thunderstorm watch), as does a tornado-watch day there; a tropical disturbance,
+ * storm or hurricane forecast to reach the area within two days ({@link #forTropical}) gives a tropical weather
+ * statement, then a watch, then a warning (2026-11-15).</li>
  * </ul>
  */
 public final class AlertBuilder {
@@ -52,25 +53,32 @@ public final class AlertBuilder {
 
 	private AlertBuilder() {}
 
-	/** The alerts for {@code area} (round {@code stations}) at {@code now}, worst first. */
+	/** The alerts for {@code area} (round {@code stations}) at {@code now} with every kind of alert (tier 3), worst first. */
 	public static List<WeatherAlert> build(ServerLevel level, WeatherSource source, List<WeatherNetwork.Station> stations, AlertArea area, long now) {
+		return build(level, source, stations, area, now, WeatherNetwork.MAX_TIER);
+	}
+
+	/** The alerts for {@code area} (round {@code stations}) at {@code now} for a generator at {@code tier}, worst first. */
+	public static List<WeatherAlert> build(ServerLevel level, WeatherSource source, List<WeatherNetwork.Station> stations, AlertArea area, long now, int tier) {
 		List<WeatherAlert> out = new ArrayList<>();
 		BlockPos centre = BlockPos.containing(area.centreX(), level.getSeaLevel(), area.centreZ());
 		if(source.isLocal()) {
 			for(StormReport storm : source.storms(level, centre, area.radius(), true)) {
 				if(storm.worldWide() || storm.track().isEmpty())
 					continue;
-				WeatherAlert alert = forStorm(level, source, storm, area, now);
+				WeatherAlert alert = forStorm(level, source, storm, area, now, tier);
 				if(alert != null)
 					out.add(alert);
 			}
-			for(com.arrl.radiocraft.api.weather.TropicalReport tropical : source.tropical(level, centre)) {
-				WeatherAlert alert = forTropical(tropical, area, now, out);
-				if(alert != null)
-					out.add(alert);
+			if(tier >= WeatherNetwork.MAX_TIER) { // Tropical statements and watch days need the full network.
+				for(com.arrl.radiocraft.api.weather.TropicalReport tropical : source.tropical(level, centre)) {
+					WeatherAlert alert = forTropical(tropical, area, now, out);
+					if(alert != null)
+						out.add(alert);
+				}
+				if(source.tornadoWatch(level, centre) && out.stream().noneMatch(a -> a.event() == WeatherAlert.Event.TOA))
+					out.add(areaAlert(WeatherAlert.Event.TOA, key(WeatherAlert.Event.TOA, now / 24000L), area, now + WATCH_LIFE));
 			}
-			if(source.tornadoWatch(level, centre) && out.stream().noneMatch(a -> a.event() == WeatherAlert.Event.TOA))
-				out.add(areaAlert(WeatherAlert.Event.TOA, key(WeatherAlert.Event.TOA, now / 24000L), area, now + WATCH_LIFE));
 		}
 		for(WeatherNetwork.Station station : stations)
 			out.addAll(forStation(station, now));
@@ -79,10 +87,10 @@ public final class AlertBuilder {
 	}
 
 	@Nullable
-	private static WeatherAlert forStorm(ServerLevel level, WeatherSource source, StormReport storm, AlertArea area, long now) {
+	private static WeatherAlert forStorm(ServerLevel level, WeatherSource source, StormReport storm, AlertArea area, long now, int tier) {
 		StormReport.TrackPoint here = storm.at(now);
 		boolean formed = storm.formed(now);
-		if(formed && area.touches(here.x(), here.z(), here.radius())) {
+		if(formed && (area.touches(here.x(), here.z(), here.radius()) || tier >= 2 && headingIn(storm, area, now))) {
 			Set<WeatherReport.Hazard> hazards = source.report(level, BlockPos.containing(here.x(), level.getSeaLevel(), here.z())).hazards();
 			WeatherAlert.Event event = warningFor(storm.kind(), WeatherReports.tornadoDown(level, source, storm, now), hazards, storm.category());
 			if(event == null)
@@ -94,6 +102,8 @@ public final class AlertBuilder {
 			return new WeatherAlert(event, key(event, storm.id()), (int)Math.round(here.x()), (int)Math.round(here.z()), radius,
 					Math.max(1, (int)Math.round(here.radius())), now + WARNING_LIFE, storm.category(), heading);
 		}
+		if(tier < WeatherNetwork.MAX_TIER)
+			return null;
 		WeatherAlert.Event watch = watchFor(storm.kind(), storm.category());
 		if(watch == null)
 			return null;
@@ -101,6 +111,17 @@ public final class AlertBuilder {
 			if(point.tick() >= now && point.tick() <= now + WATCH_TICKS && area.touches(point.x(), point.z(), point.radius()))
 				return areaAlert(watch, key(watch, storm.id()), area, now + WATCH_LIFE);
 		return null;
+	}
+
+	/** Whether {@code storm}'s track reaches the area within {@link #LOOKAHEAD_TICKS} of {@code now}. */
+	static boolean headingIn(StormReport storm, AlertArea area, long now) {
+		StormReport.TrackPoint later = storm.at(now + LOOKAHEAD_TICKS);
+		if(area.touches(later.x(), later.z(), later.radius()))
+			return true;
+		for(StormReport.TrackPoint point : storm.track())
+			if(point.tick() > now && point.tick() <= now + LOOKAHEAD_TICKS && area.touches(point.x(), point.z(), point.radius()))
+				return true;
+		return false;
 	}
 
 	/**

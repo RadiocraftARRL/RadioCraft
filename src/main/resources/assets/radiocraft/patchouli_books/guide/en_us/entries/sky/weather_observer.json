@@ -1,0 +1,24 @@
+{
+  "name": "Weather Observer",
+  "icon": "radiocraft:weather_observer",
+  "category": "radiocraft:sky",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:weather_observer",
+      "title": "Weather Observer",
+      "text": "A small box that sends a $(l:radiocraft:sky/weather_station)Local Weather Station$()'s readings over the air. Touch it to a radio (or cable it with data wire) within 64 blocks of a station."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "How it works",
+      "text": "Every 5 minutes, and on a redstone pulse, it sends a short burst on its radio's frequency: two pips and a slow warble, not APRS. Its green lamp lights as it goes.$(br2)A $(l:radiocraft:sky/weather_alert_generator)Weather Alert Generator$() with a radio on the same frequency counts it as a station. One callsign does for all your observers: they are told apart by where they are."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "An outpost",
+      "text": "Local Weather Station, Weather Observer, a radio and an antenna: that is a weather outpost. Right click the observer to see what it is missing (a callsign, a station, a radio switched on) or when it last sent."
+    }
+  ]
+}
