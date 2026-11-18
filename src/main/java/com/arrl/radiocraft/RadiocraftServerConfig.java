@@ -229,11 +229,22 @@ public class RadiocraftServerConfig {
 	public static final ModConfigSpec.ConfigValue<Double> CRYSTAL_POOR_EXTRA_NOISE;
 	public static final ModConfigSpec.ConfigValue<Double> CRYSTAL_POOR_DRIFT_HZ;
 
+	/** Every band's distances times this (2026-11-18): a server on a smaller or bigger map scales them all at once. */
+	public static final ModConfigSpec.ConfigValue<Double> BAND_RANGE_MULTIPLIER;
+
 	public record BandConfig(String name, ModConfigSpec.ConfigValue<Integer> losRange, ModConfigSpec.ConfigValue<Integer> minSkipDay, ModConfigSpec.ConfigValue<Integer> maxSkipDay, ModConfigSpec.ConfigValue<Integer> minSkipNight, ModConfigSpec.ConfigValue<Integer> maxSkipNight, ModConfigSpec.ConfigValue<Double> minFrequency, ModConfigSpec.ConfigValue<Double> maxFrequency) {
 		public Band getBand() {
 			// Doubles in the file: TOML reads every decimal back as a Double, and a Float value would fail its check and be
 			// rewritten on every load (the file watcher then reloads it, forever).
-			return new Band(name, losRange.get(), minSkipDay.get(), maxSkipDay.get(), minSkipNight.get(), maxSkipNight.get(), minFrequency.get().floatValue(), maxFrequency.get().floatValue());
+			// Every distance times band_range_multiplier (2026-11-18): line of sight, the skip zone and the skip window
+			// together, so they still meet where they did.
+			double k = BAND_RANGE_MULTIPLIER.get();
+			return new Band(name, scale(losRange.get(), k), scale(minSkipDay.get(), k), scale(maxSkipDay.get(), k), scale(minSkipNight.get(), k),
+					scale(maxSkipNight.get(), k), minFrequency.get().floatValue(), maxFrequency.get().floatValue());
+		}
+
+		private static int scale(int blocks, double k) {
+			return (int)Math.round(blocks * k);
 		}
 	}
 
@@ -294,6 +305,9 @@ public class RadiocraftServerConfig {
 
 		BUILDER.comment(" While name and frequency are to measures of the same principle, when we refer to a band like say 10m, we mean a range of actual frequencies that aren't exactly 10m in name");
 		BUILDER.comment(" Band names like 10m are just for human convenience (so you don't have to say radio capable of 144MHz to 146MHz");
+
+		BAND_RANGE_MULTIPLIER = BUILDER.comment(" Multiplies every band's distances below: line of sight, the skip zone and the skip window together (0.5 for",
+				" half the range on a small map, 2 for twice as far)").defineInRange("band_range_multiplier", 1.0, 0.05, 20.0);
 
 		BAND_CONFIGS.clear();
 		for(Band band : Band.getAllDefaults()) {

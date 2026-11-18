@@ -6,17 +6,27 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "A signal reaches another station two ways:$(li)$(thing)Line of sight$(): out to a range set by the band (VHF about 500 blocks), fading with distance.$(li)$(thing)Skip$(): HF bounces off the sky and comes down far away, in a window of distances that differs by band and between day and night. In between is a silent zone."
+      "text": "A signal reaches another station two ways:$(li)$(thing)Line of sight$(): out to a range set by the band (2 m about 500 blocks), fading with distance. High ground sees further: two masts 6 blocks above the land around them get the band's range, a hilltop station much more, two handhelds on flat ground about half.$(li)$(thing)Skip$(): HF bounces off the sky and comes down far away, in a window of distances that differs by band and between day and night. In between is a silent zone."
     },
     {
       "type": "patchouli:text",
-      "text": "Rules of thumb: 80 and 40 m are best at night, 20 m by day, 10 m only opens when the sun is lively.$(br2)$(thing)/bandcalculate <from> <to>$() estimates every band between two points under the current conditions.",
-      "title": "Which band?"
+      "title": "Each band's job",
+      "text": "$(li)$(thing)80 m$(): close and regional, never a silent zone; furthest at night.$(li)$(thing)40 m$(): the daytime workhorse; at night it goes long and loses the middle distances to 80 m.$(li)$(thing)20 m$(): far away by day, weak at night.$(li)$(thing)10 m$(): a short opening in average weather, far when the sun is lively; also good locally.$(li)$(thing)2 m$(): local, repeaters and satellites."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Which band?",
+      "text": "Up to 1,000 blocks: 80 or 40 m by day, 80 m at night. To 2,000: 40 m by day, 80 m at night. To 4,000: 20 m by day, 40 or 80 m at night. Further: 20 m by day, 40 m at night.$(br2)The radio computer's $(thing)PREDICT$() shows which bands open to a place over the next day; admins can use $(thing)/bandcalculate <from> <to>$()."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "More than one hop",
+      "text": "When 10, 20 or 40 m is open (fair or better), skip can bounce off the ground and up again: two hops reach twice as far, three hops three times, each hop leaving about half the signal.$(br2)Each hop leaves at the angle that reaches the sky half way along it: a short hop goes nearly straight up, a long one skims the horizon."
     },
     {
       "type": "patchouli:text",
       "title": "Commercial bands",
-      "text": "Besides the ham bands there are two commercial ones. $(thing)Low band$() (30-50 MHz) sits between 10 m and VHF: by line of sight it reaches further than 2 m but not quite as far as 10 m, and like 10 m it only skips by day when the sun is lively, never at night. $(thing)Commercial VHF$() (150-174 MHz, with the marine channels) travels like 2 m. See the $(l:radiocraft:propagation/band_plan)Band Plan$() for who uses what."
+      "text": "Besides the ham bands there are two commercial ones. $(thing)Low band$() (30-50 MHz) sits between 10 m and VHF: by line of sight it reaches a little further than 2 m and not as far as 10 m, and it skips with 10 m, by day only. $(thing)Commercial VHF$() (150-174 MHz, with the marine channels) travels like 2 m. See the $(l:radiocraft:propagation/band_plan)Band Plan$() for who uses what."
     },
     {
       "type": "patchouli:text",
@@ -25,8 +35,13 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Hills in the way weaken line of sight: badly on VHF, much less on 80 m, and HF also loses some at every cliff. Skip leaves at a low angle on 10 and 20 m, so a station deep in a valley loses it over the valley walls, while 80 m goes nearly straight up. A handheld indoors or underground is weaker. RF passes through wood planks, stairs and slabs, glass, wool and leaves, so an antenna in the attic does fine. Build high!",
+      "text": "Hills in the way weaken line of sight: badly on 2 m, less on 10 m and CB, least on 80 m, and HF also loses some at every cliff. Skip needs a clear view up at its hop's angle: a station deep in a valley loses long, low hops over the valley walls but keeps short, steep ones. A handheld indoors or underground is weaker. RF passes through wood planks, slabs, glass, wool and leaves. Build high!",
       "title": "Hills and valleys"
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Server settings",
+      "text": "Admins can change every band's ranges in the server config, or scale them all at once with $(thing)band_range_multiplier$() (line of sight, silent zone and skip together). The radio horizon, hops and bounce height are under Terrain and Skip."
     }
   ]
 }

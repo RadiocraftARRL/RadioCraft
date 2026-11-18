@@ -13,7 +13,7 @@
     {
       "type": "patchouli:text",
       "title": "Poles for each band",
-      "text": "$(li)10 m: 3 poles$(li)20 m: 5 poles$(li)40 m: 6 poles (more of the coil)$(li)80 m: 7 poles (most of the coil)$(br2)Right on: SWR 1.3. One pole off: about 2.5, which a tuner can fix. Off the tapped band it does not match.$(br2)It sends low, like any vertical: less reach by line of sight, more by skip. The coil costs a little on 40 m and more on 80 m."
+      "text": "$(li)10 m: 3 poles$(li)20 m: 5 poles$(li)40 m: 6 poles (more of the coil)$(li)80 m: 7 poles (most of the coil)$(br2)Right on: SWR 1.3. One pole off: about 2.5, which a tuner can fix. Off the tapped band it does not match.$(br2)It sends low, like any vertical: less reach by line of sight, and its skip lands about a fifth further out, silent zone and all. The coil costs a little on 40 m and more on 80 m."
     },
     {
       "type": "patchouli:multiblock",
