@@ -4,6 +4,15 @@ Minecraft 1.21.1, NeoForge. Needs Simple Voice Chat and GeckoLib;
 [Another Weather Mod](https://github.com/RadiocraftARRL/AnotherWeatherMod) is optional (1.13.0 or later).
 Everything below is explained in the in-game ARRL Radiocraft Handbook and on the [wiki](https://radiocraft.bigtimeradio.us/wiki/).
 
+## 1.13.1
+
+### Fixed
+- The FIRE ALARM, SCADA and FCC Monitor program floppies can now be crafted (they were creative-only in 1.13.0), each
+  a blank floppy and one more item, shapeless:
+  - **FIRE ALARM**: flint and steel.
+  - **SCADA**: a redstone repeater.
+  - **FCC Monitor**: a spyglass.
+
 ## 1.13.0
 
 ### New
@@ -128,8 +137,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   a line: `IF 3.N >= 10 THEN 7.E = 15`, `COPY 1.N TO 0.U`, `POLL 2`. An RTU that misses three polls is COMM FAIL and
   the outputs it drives drop to 0. RTUs relay like fire alarm boxes. They need a little power. The **SCADA** program
   is the HMI: every unit's faces live, the rules and trends.
-- Everything here has a recipe. The FIRE ALARM floppy is a blank floppy and flint and steel, the SCADA floppy a blank
-  floppy and a redstone repeater.
+- Everything here has a recipe except the FIRE ALARM and SCADA floppies, which are in the creative menu (recipes in
+  1.13.1).
 
 #### Commercial licenses
 - Commercial VHF (150-174 MHz) and low band (30-50 MHz) belong to licensed businesses. A **Commercial Frequency
@@ -146,8 +155,8 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   **License Check** asks you to confirm.
 - The **FCC Monitor** program tunes a direction finder on the computer and tells you who is on a frequency and whether
   they may be: LICENSED and the holder, UNLICENSED (flashing, with a beep), AMATEUR BAND, CB, MARINE / WEATHER, MURS: NO
-  LICENSE NEEDED or OUT OF BAND, with the bearing once the finder locks on. Its floppy is a blank floppy and a
-  spyglass.
+  LICENSE NEEDED or OUT OF BAND, with the bearing once the finder locks on. Its floppy is in the creative menu
+  (recipe in 1.13.1).
 
 #### Weather network
 - The weather station is now the **Local Weather Station**. It has no radio of its own: anything that wants weather
