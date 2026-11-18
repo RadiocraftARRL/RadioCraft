@@ -25,7 +25,8 @@ Projects, their Modrinth ids and dependency lists live in tools/modrinth_project
 .PARAMETER Version
 The version number, e.g. 1.9.1. Defaults to the git tag on HEAD (`git describe --tags --exact-match`).
 .PARAMETER Type
-alpha (default), beta or release. Anything but release is marked a pre-release on GitHub.
+alpha (default), beta or release, for Modrinth. On GitHub every release is a full one marked Latest: all versions are
+alpha so far, and the newest is the one to use (maintainer, 2026-11-18).
 .PARAMETER Notes
 Markdown changelog. Defaults to the project's "notes" pattern in modrinth_projects.json (for RadioCraft,
 doc/ReleaseNotes-<major.minor>.md); the "# " section naming the version is used.

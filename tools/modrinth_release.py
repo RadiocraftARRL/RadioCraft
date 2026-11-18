@@ -112,8 +112,10 @@ def push_github(repo: str, args, changelog: str, jar: Path, token: str) -> str:
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json",
                "X-GitHub-Api-Version": "2022-11-28"}
     tag = args.tag or args.version
+    # Every version so far is an alpha, but the newest is the one players should use, so on GitHub it is a full
+    # release marked Latest (maintainer, 2026-11-18); Modrinth still gets the alpha/beta/release type.
     payload = {"tag_name": tag, "name": args.name or f"{args.display_name} {args.version}", "body": changelog,
-               "prerelease": args.type != "release", "draft": False}
+               "prerelease": False, "make_latest": "true", "draft": False}
     if args.dry_run:
         print(f"GitHub release on {repo}:\n" + json.dumps(payload, indent=2))
         return "(dry run)"
