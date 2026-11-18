@@ -2,7 +2,7 @@
 name: Research
 about: Track something to research and log the results in github
 title: 'RESEARCH: '
-labels: 'research'
+labels: research
 assignees: ''
 
 ---
@@ -14,5 +14,3 @@ assignees: ''
 ## Existing Knowledge
 
 ## Objectives
-
-
