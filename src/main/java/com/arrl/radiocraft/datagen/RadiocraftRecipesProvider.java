@@ -209,6 +209,42 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .define('B', Items.IRON_BARS)
                 .unlockedBy("has_comparator", has(Items.COMPARATOR))
                 .save(recipeOutput, Radiocraft.id("weather_station"));
+        // The weather network (approved 2026-11-18). Headless APRS TNC: an iron case with a lapis front, a diamond like the
+        // radio interface it can stand in for, a comparator modem, a redstone torch for the lamps and wire.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.HEADLESS_TNC.get(), 1)
+                .pattern("ILI")
+                .pattern("WDC")
+                .pattern("IRI")
+                .define('I', Items.IRON_INGOT)
+                .define('L', Items.LAPIS_LAZULI)
+                .define('W', RadiocraftItems.WIRE.get())
+                .define('D', Items.DIAMOND)
+                .define('C', Items.COMPARATOR)
+                .define('R', Items.REDSTONE_TORCH)
+                .unlockedBy("has_comparator", has(Items.COMPARATOR))
+                .save(recipeOutput, Radiocraft.id("headless_tnc"));
+        // Weather Observer: a stone box with a green lamp, wire, a comparator and an observer watching the weather.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WEATHER_OBSERVER.get(), 1)
+                .pattern("SGS")
+                .pattern("WCW")
+                .pattern("SOS")
+                .define('S', Items.SMOOTH_STONE_SLAB)
+                .define('G', Items.LIME_STAINED_GLASS_PANE)
+                .define('W', RadiocraftItems.WIRE.get())
+                .define('C', Items.COMPARATOR)
+                .define('O', Items.OBSERVER)
+                .unlockedBy("has_weather_station", has(RadiocraftItems.WEATHER_STATION.get()))
+                .save(recipeOutput, Radiocraft.id("weather_observer"));
+        // Local Weather Station Display: a wooden case round a red window, a comparator behind it.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WEATHER_DISPLAY.get(), 1)
+                .pattern("PPP")
+                .pattern("PGP")
+                .pattern("PCP")
+                .define('P', ItemTags.PLANKS)
+                .define('G', Items.RED_STAINED_GLASS_PANE)
+                .define('C', Items.COMPARATOR)
+                .unlockedBy("has_weather_station", has(RadiocraftItems.WEATHER_STATION.get()))
+                .save(recipeOutput, Radiocraft.id("weather_display"));
         // Wall speakers, two at a time: an iron frame, wool grille cloth, a speaker and a nugget terminal strip.
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WALL_SPEAKER.get(), 2)
                 .pattern("IWI")

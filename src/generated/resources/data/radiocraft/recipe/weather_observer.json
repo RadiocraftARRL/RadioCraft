@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "G": {
+      "item": "minecraft:lime_stained_glass_pane"
+    },
+    "O": {
+      "item": "minecraft:observer"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone_slab"
+    },
+    "W": {
+      "item": "radiocraft:wire"
+    }
+  },
+  "pattern": [
+    "SGS",
+    "WCW",
+    "SOS"
+  ],
+  "result": {
+    "count": 1,
+    "id": "radiocraft:weather_observer"
+  }
+}

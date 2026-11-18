@@ -19,6 +19,10 @@
       "type": "patchouli:text",
       "title": "An outpost",
       "text": "Local Weather Station, Weather Observer, a radio and an antenna: that is a weather outpost. Right click the observer to see what it is missing (a callsign, a station, a radio switched on) or when it last sent."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:weather_observer"
     }
   ]
 }

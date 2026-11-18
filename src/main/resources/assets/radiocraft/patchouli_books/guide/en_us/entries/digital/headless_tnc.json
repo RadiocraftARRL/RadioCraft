@@ -19,6 +19,10 @@
       "type": "patchouli:text",
       "title": "Front and back",
       "text": "Right click it for its front panel: DCD (a packet decoded), PTT (sending), STA (a repeat waiting or a beacon just sent), CON (an H19 connected) and PWR, and the ON/OFF rocker.$(br2)$(thing)Turn it around$() for the back: the callsign, the SSID wheel (each APRS station needs its own), and the DIGI and BEACON switches."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:headless_tnc"
     }
   ]
 }

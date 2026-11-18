@@ -13,6 +13,10 @@
     {
       "type": "patchouli:text",
       "text": "It needs no power. With no station in range it shows dashes and NO STATION.$(br2)Right click it for every reading at once."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:weather_display"
     }
   ]
 }

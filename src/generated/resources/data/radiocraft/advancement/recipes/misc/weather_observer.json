@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "radiocraft:weather_observer"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_weather_station": {
+      "conditions": {
+        "items": [
+          {
+            "items": "radiocraft:weather_station"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_weather_station"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "radiocraft:weather_observer"
+    ]
+  }
+}
