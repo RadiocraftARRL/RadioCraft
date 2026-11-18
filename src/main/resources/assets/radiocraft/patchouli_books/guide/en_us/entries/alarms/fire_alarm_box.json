@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "A radio fire alarm is three parts: $(l:radiocraft:alarms/pull_stations)pull stations$(/l) in a building, wired to a $(item)Radio Fire Alarm Box$() on the wall, which radios each alarm to a $(l:radiocraft:alarms/fire_alarm_controller)Fire Alarm Controller$(/l) at the fire station. Boxes pass each other's messages on, so one controller can watch a whole town.$(br2)None of it can be crafted yet: it is in the creative menu."
+      "text": "A radio fire alarm is three parts: $(l:radiocraft:alarms/pull_stations)pull stations$(/l) in a building, wired to a $(item)Radio Fire Alarm Box$() on the wall, which radios each alarm to a $(l:radiocraft:alarms/fire_alarm_controller)Fire Alarm Controller$(/l) at the fire station. Boxes pass each other's messages on, so one controller can watch a whole town.$(br2)Every block here has a recipe: look it up in JEI."
     },
     {
       "type": "patchouli:spotlight",

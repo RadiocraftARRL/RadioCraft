@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "$(thing)SCADA$() is redstone over the radio. Each $(item)SCADA RTU$() out in the field reads redstone on some of its faces and puts it out on others; a $(item)SCADA Master$() polls them one by one and runs your rules on what they read. It is a few seconds slower than a wire, and reaches as far as the radio does.$(br2)Like the fire alarm, none of it can be crafted yet: it is in the creative menu."
+      "text": "$(thing)SCADA$() is redstone over the radio. Each $(item)SCADA RTU$() out in the field reads redstone on some of its faces and puts it out on others; a $(item)SCADA Master$() polls them one by one and runs your rules on what they read. It is a few seconds slower than a wire, and reaches as far as the radio does.$(br2)The RTU and Master have recipes: look them up in JEI."
     },
     {
       "type": "patchouli:spotlight",
