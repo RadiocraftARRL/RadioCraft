@@ -12,6 +12,13 @@ public final class AlertArea {
 
 	/** Blocks the area reaches past the outermost weather stations. */
 	public static final int DEFAULT_MARGIN = 200;
+	/** With one station (tier 1) the area is only round it: what is at the station now (2026-11-18). */
+	public static final int STATION_MARGIN = 150;
+
+	/** The margin for a generator at {@code tier}. */
+	public static int marginFor(int tier) {
+		return tier <= 1 ? STATION_MARGIN : DEFAULT_MARGIN;
+	}
 
 	private final List<double[]> hull;
 	private final double margin;

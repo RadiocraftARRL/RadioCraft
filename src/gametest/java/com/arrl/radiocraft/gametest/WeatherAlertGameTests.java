@@ -122,8 +122,54 @@ public class WeatherAlertGameTests {
 		return be.getState();
 	}
 
+	/** A tornado tracking east along z = {@code z}: at {@code startX} now, moving {@code perTick} blocks a tick, radius 40. */
+	private record Moving(double startX, double z, double perTick) implements WeatherSource {
+		@Override public String name() { return "test"; }
+		@Override public boolean handles(Level level) { return true; }
+		@Override public boolean isLocal() { return true; }
+		@Override public WeatherReport reportAt(ServerLevel level, BlockPos pos, long gameTime) {
+			return new WeatherReport(WeatherReport.Precipitation.RAIN, 1.0F, 1.0F, 30.0D, 270.0D, 20.0D, 990.0D, 90.0D, Set.of(WeatherReport.Hazard.TORNADO));
+		}
+		@Override public double rainAt(ServerLevel level, double x, double z, long gameTime) { return 1.0D; }
+		@Override public double thunderAt(ServerLevel level, double x, double z, long gameTime) { return 1.0D; }
+		@Override public Optional<Arrival> nextArrival(ServerLevel level, BlockPos pos, long horizon) { return Optional.empty(); }
+		@Override public long forecastHorizon(ServerLevel level) { return 0L; }
+		@Override public List<StormReport> storms(ServerLevel level, BlockPos center, double radius, boolean forecast) {
+			long now = level.getGameTime();
+			List<StormReport.TrackPoint> track = new java.util.ArrayList<>();
+			for(int i = 0; i <= 12; i++)
+				track.add(new StormReport.TrackPoint(now + i * 2000L, startX + perTick * i * 2000L, z, 40.0D, 1.0F));
+			return List.of(new StormReport(78L, StormReport.Kind.TORNADO, false, 0L, track, 2));
+		}
+	}
+
+	/**
+	 * The tiers (2026-11-18): one station warns only of a storm over its area now, two also of one heading in within five
+	 * minutes, three also give a watch for one due within fifteen.
+	 */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 20)
+	public static void moreStationsWarnFurtherAhead(GameTestHelper helper) {
+		BlockPos here = helper.absolutePos(new BlockPos(2, 1, 2));
+		AlertArea area = AlertArea.around(List.of(new double[] {here.getX(), here.getZ()}), AlertArea.STATION_MARGIN);
+		long now = helper.getLevel().getGameTime();
+		// 0.1 blocks a tick: 400 blocks off now, so over the area's edge (150 + 40) in about 2100 ticks; another 1200 off
+		// reaches it in about 10 000 ticks, inside the watch time but past the warning lookahead.
+		WeatherSource near = new Moving(here.getX() - 400, here.getZ(), 0.1D), far = new Moving(here.getX() - 1200, here.getZ(), 0.1D);
+		WeatherSource over = new Moving(here.getX(), here.getZ(), 0.0D);
+		java.util.function.BiFunction<WeatherSource, Integer, List<WeatherAlert>> build = (source, tier) -> AlertBuilder.build(helper.getLevel(), source, List.of(), area, now, tier);
+		java.util.function.Predicate<List<WeatherAlert>> warned = alerts -> alerts.stream().anyMatch(a -> a.event().isWarning());
+		java.util.function.Predicate<List<WeatherAlert>> watched = alerts -> alerts.stream().anyMatch(a -> a.event() == WeatherAlert.Event.TOA);
+		helper.assertTrue(warned.test(build.apply(over, 1)), "one station gave no warning for a tornado over it");
+		helper.assertFalse(warned.test(build.apply(near, 1)), "one station warned of a tornado still on its way");
+		helper.assertTrue(warned.test(build.apply(near, 2)), "two stations gave no warning for a tornado heading in");
+		helper.assertFalse(watched.test(build.apply(far, 2)), "two stations gave a watch");
+		helper.assertFalse(warned.test(build.apply(far, 3)), "a tornado an hour off was warned of");
+		helper.assertTrue(watched.test(build.apply(far, 3)), "three stations gave no tornado watch");
+		helper.succeed();
+	}
+
 	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 60)
-	public static void generatorNeedsSpreadOutWeatherStations(GameTestHelper helper) {
+	public static void generatorTiersWithItsStations(GameTestHelper helper) {
 		BlockPos lone = new BlockPos(12, 1, 12), generator = new BlockPos(2, 1, 2), h19 = new BlockPos(3, 1, 2);
 		helper.setBlock(lone, RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get());
 		helper.setBlock(generator, RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get());
@@ -135,20 +181,27 @@ public class WeatherAlertGameTests {
 							"a generator with no APRS station is " + state(helper, lone));
 					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.TOO_FEW,
 							"a station that heard nothing is " + state(helper, generator));
-					AprsTerminalBlockEntity terminal = GameTestUtil.blockEntity(helper, h19, AprsTerminalBlockEntity.class);
-					beacon(helper, terminal, "WX1", -200, 0);
-					beacon(helper, terminal, "WX2", 200, 0);
-					terminal.receiveDirect(TncPacket.beacon(helper.getLevel().getRandom().nextLong(), "NOWX", helper.absolutePos(BlockPos.ZERO).offset(0, 0, 300), "", "HOUSE"));
-					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.TOO_FEW,
-							"two weather beacons and a plain one are " + state(helper, generator));
-					beacon(helper, terminal, "WX3", -150, 60); // 78 from WX1: too close.
-					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.TOO_CLOSE,
-							"three beacons, two of them close, are " + state(helper, generator));
 					WeatherAlertGeneratorBlockEntity be = GameTestUtil.blockEntity(helper, generator, WeatherAlertGeneratorBlockEntity.class);
-					helper.assertTrue(be.getHeard() == 3 && be.getSpread() == 2, "heard " + be.getHeard() + ", spread " + be.getSpread());
+					AprsTerminalBlockEntity terminal = GameTestUtil.blockEntity(helper, h19, AprsTerminalBlockEntity.class);
+					terminal.receiveDirect(TncPacket.beacon(helper.getLevel().getRandom().nextLong(), "NOWX", helper.absolutePos(BlockPos.ZERO).offset(0, 0, 300), "", "HOUSE"));
+					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.TOO_FEW, "a plain beacon counted");
+					beacon(helper, terminal, "WX1", -200, 0);
+					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.NO_ANTENNA && be.getTier() == 1,
+							"one weather beacon is " + state(helper, generator) + " tier " + be.getTier());
+					beacon(helper, terminal, "WX2", 200, 0);
+					beacon(helper, terminal, "WX3", -150, 60); // 78 from WX1: too close.
+					state(helper, generator);
+					helper.assertTrue(be.getHeard() == 3 && be.getTier() == 2, "heard " + be.getHeard() + ", tier " + be.getTier());
+					helper.assertTrue(be.getHeardStations().stream().anyMatch(h -> h.standing() == WeatherAlertGeneratorBlockEntity.Standing.TOO_CLOSE),
+							"no station listed as too close: " + be.getHeardStations());
 					beacon(helper, terminal, "WX4", 0, 300);
-					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.NO_ANTENNA,
-							"three spread-out beacons and no antenna are " + state(helper, generator));
+					state(helper, generator);
+					helper.assertTrue(be.getTier() == 3, "three spread-out beacons are tier " + be.getTier());
+					beacon(helper, terminal, "WX4", 0, -300); // The same callsign from somewhere else.
+					state(helper, generator);
+					helper.assertTrue(be.getHeardStations().stream().anyMatch(h -> h.call().equals("WX4") && h.standing() == WeatherAlertGeneratorBlockEntity.Standing.SAME_CALL),
+							"one callsign from two places was not caught: " + be.getHeardStations());
+					helper.assertTrue(be.statusLines().size() > 3, "the status lists no stations");
 				})
 				.thenSucceed();
 	}
