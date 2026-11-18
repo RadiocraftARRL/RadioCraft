@@ -87,6 +87,9 @@ public class BandCalculateCommands {
 			}
 			boolean day = level.isDay();
 			int min = day ? band.minSkipDay() : band.minSkipNight(), max = day ? band.maxSkipDay() : band.maxSkipNight();
+			double reach = SolarEventManager.getReach(level, band);
+			if(reach < 1.0D && max > min)
+				max = (int)Math.round(min + (max - min) * reach); // A light opening (2026-11-18).
 			BandCondition condition = SolarEventManager.getCondition(level, band, a, b);
 			if(max > 0 && distance >= min && distance <= max && condition != BandCondition.CLOSED)
 				results.add(new Result(band, Path.SKIP, condition, condition.getSkipMultiplier()).through(TerrainPropagation.factor(level, band, a, false, b, false, true)));

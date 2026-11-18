@@ -89,7 +89,7 @@ public abstract class NonDirectionalAntennaType<T extends AntennaData> implement
         // aurora over either end costs HF a condition step, and lets VHF skip between two stations under it.
         double skip = getSkipEfficiency() * SolarEventManager.getCondition(level, packet.getBand(), source, destination).getSkipMultiplier();
         double strength = BandUtils.getBaseStrength(packet.getBand(), effectiveDistance, getLosEfficiency(), skip, level.isDay(),
-                getLosRangeScale(packet.getBand()), getMaxSkipScale(packet.getBand()));
+                getLosRangeScale(packet.getBand()), getMaxSkipScale(packet.getBand()), SolarEventManager.getReach(level, packet.getBand()));
         // Terrain: hills in the way of line of sight, or the horizon around either station for skip.
         if(strength > 0.0D && packet.getBand() != null)
             strength *= TerrainPropagation.factor(packet, destination, effectiveDistance >= packet.getBand().losRange() * getLosRangeScale(packet.getBand()));

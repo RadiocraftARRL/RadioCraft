@@ -16,6 +16,15 @@ public class BandUtils {
 	 */
 	public static double getBaseStrength(Band band, double distance, double losEfficiency, double skipEfficiency, boolean isDay,
 	                                     double losScale, double maxSkipScale) {
+		return getBaseStrength(band, distance, losEfficiency, skipEfficiency, isDay, losScale, maxSkipScale, 1.0D);
+	}
+
+	/**
+	 * {@link #getBaseStrength(Band, double, double, double, boolean, double, double)} with the solar weather's
+	 * {@code skipReach} (2026-11-18): skip reaches only that share of its window, from the near edge (a light opening).
+	 */
+	public static double getBaseStrength(Band band, double distance, double losEfficiency, double skipEfficiency, boolean isDay,
+	                                     double losScale, double maxSkipScale, double skipReach) {
 		if(band == null)
 			return 0.0D;
 
@@ -25,6 +34,8 @@ public class BandUtils {
 
 		double minSkip = isDay ? band.minSkipDay() : band.minSkipNight();
 		double maxSkip = (isDay ? band.maxSkipDay() : band.maxSkipNight()) * maxSkipScale;
+		if(skipReach < 1.0D && maxSkip > minSkip)
+			maxSkip = minSkip + (maxSkip - minSkip) * skipReach;
 
 		if(distance > minSkip && distance < maxSkip) { // If within skip range
 			double skipRadius = (maxSkip - minSkip) / 2;

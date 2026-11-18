@@ -218,15 +218,25 @@ public final class PropagationHandler implements ComputerAppHandler {
 		PropagationForecast.Settings settings = new PropagationForecast.Settings(RadiocraftServerConfig.TNC_MIN_SIGNAL.get(), RadiocraftServerConfig.TNC_MIN_SNR.get(),
 				RadiocraftServerConfig.LOS_SOLAR_NOISE_SHARE.get());
 		List<Band> bands = bands();
-		PropagationForecast.Result result = PropagationForecast.predict(bands, distance, hours, (band, h) -> {
-			PropagationForecast.Hour hour = hours.get(h);
-			Sky sky = skies.get(h);
-			BandCondition condition = SolarSources.condition(level, band, hour.day()); // Another mod's space weather first.
-			if(condition == null)
-				condition = condition(sky.event(), band, hour.day());
-			if(auroraOnPath && sky.current())
-				condition = condition.worse();
-			return condition.getSkipMultiplier();
+		PropagationForecast.Result result = PropagationForecast.predict(bands, distance, hours, new PropagationForecast.Conditions() {
+			@Override
+			public double skipMultiplier(Band band, int h) {
+				PropagationForecast.Hour hour = hours.get(h);
+				Sky sky = skies.get(h);
+				BandCondition condition = SolarSources.condition(level, band, hour.day()); // Another mod's space weather first.
+				if(condition == null)
+					condition = condition(sky.event(), band, hour.day());
+				if(auroraOnPath && sky.current())
+					condition = condition.worse();
+				return condition.getSkipMultiplier();
+			}
+
+			@Override
+			public double skipReach(Band band, int h) {
+				boolean day = hours.get(h).day();
+				return SolarSources.condition(level, band, day) != null ? 1.0D
+						: com.arrl.radiocraft.common.radio.solar.SolarEventManager.reach(skies.get(h).event(), band, day);
+			}
 		}, settings);
 
 		CompoundTag out = source.copy();

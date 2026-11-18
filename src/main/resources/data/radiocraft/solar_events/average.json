@@ -5,7 +5,7 @@
   "maxDuration": 48000,
   "bands": {
     "day": {
-      "10m": "closed",
+      "10m": "fair",
       "20m": "good",
       "40m": "good",
       "80m": "good"
@@ -15,6 +15,11 @@
       "20m": "poor",
       "40m": "good",
       "80m": "good"
+    }
+  },
+  "reach": {
+    "day": {
+      "10m": 0.18
     }
   }
 }

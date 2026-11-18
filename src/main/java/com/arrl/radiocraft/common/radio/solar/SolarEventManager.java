@@ -95,6 +95,24 @@ public class SolarEventManager {
 	}
 
 	/**
+	 * How far {@code band}'s skip reaches in {@code level} right now, as a share of its window from the near edge
+	 * ({@link SolarEvent#getReach}): 1 unless the current event shortens it. Another mod's space weather reaches fully.
+	 */
+	public static double getReach(Level level, @Nullable Band band) {
+		if(band == null || com.arrl.radiocraft.api.weather.SolarSources.condition(level, band, level.isDay()) != null)
+			return 1.0D;
+		SolarEventInstance event = getEvent(level);
+		return event == null ? 1.0D : reach(event.getEvent(), band, level.isDay());
+	}
+
+	/** {@code band}'s reach during {@code event}, following the band it behaves like when the event leaves it out. */
+	public static double reach(@Nullable SolarEvent event, Band band, boolean day) {
+		if(event == null)
+			return 1.0D;
+		return event.getReach(event.hasReach(band.name(), day) ? band.name() : band.conditionName(), day);
+	}
+
+	/**
 	 * How {@code band} carries skip between stations at {@code positions}: {@link #getCondition(Level, Band)}, one step
 	 * worse if any of them is under an aurora.
 	 */

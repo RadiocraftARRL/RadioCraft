@@ -94,6 +94,11 @@ public final class PropagationForecast {
 	@FunctionalInterface
 	public interface Conditions {
 		double skipMultiplier(Band band, int hour);
+
+		/** How far {@code band}'s skip reaches at hour {@code hour}, a share of its window ({@code SolarEvent#getReach}). */
+		default double skipReach(Band band, int hour) {
+			return 1.0D;
+		}
 	}
 
 	/**
@@ -137,10 +142,17 @@ public final class PropagationForecast {
 
 	/** How a signal on {@code band} covers {@code distance} blocks, by day or night (as {@link BandUtils#getBaseStrength} decides). */
 	public static Path path(Band band, double distance, boolean day) {
+		return path(band, distance, day, 1.0D);
+	}
+
+	/** {@link #path(Band, double, boolean)} with skip reaching {@code reach} of its window. */
+	public static Path path(Band band, double distance, boolean day, double reach) {
 		if(distance < band.losRange())
 			return Path.LOS;
 		double minSkip = day ? band.minSkipDay() : band.minSkipNight();
 		double maxSkip = day ? band.maxSkipDay() : band.maxSkipNight();
+		if(reach < 1.0D && maxSkip > minSkip)
+			maxSkip = minSkip + (maxSkip - minSkip) * reach;
 		if(distance > minSkip && distance < maxSkip)
 			return Path.SKIP;
 		return distance <= minSkip ? Path.SKIP_ZONE : Path.BEYOND;
@@ -152,12 +164,17 @@ public final class PropagationForecast {
 	 * signal the whole noise floor, a line of sight one only {@link Settings#losNoiseShare} of the solar part.
 	 */
 	public static Cell cell(Band band, double distance, boolean day, double skipMultiplier, double solarNoise, double extraNoise, Settings settings) {
-		Path path = path(band, distance, day);
-		double strength = BandUtils.getBaseStrength(band, distance, 1.0D, skipMultiplier, day);
+		return cell(band, distance, day, skipMultiplier, 1.0D, solarNoise, extraNoise, settings);
+	}
+
+	/** {@link #cell(Band, double, boolean, double, double, double, Settings)} with skip reaching {@code reach} of its window. */
+	public static Cell cell(Band band, double distance, boolean day, double skipMultiplier, double reach, double solarNoise, double extraNoise, Settings settings) {
+		Path path = path(band, distance, day, reach);
+		double strength = BandUtils.getBaseStrength(band, distance, 1.0D, skipMultiplier, day, 1.0D, 1.0D, reach);
 		double quality = strength / settings.threshold(noise(path, solarNoise, extraNoise, settings));
 		double cwDistance = distance / CW_RANGE_MULTIPLIER;
-		double cwStrength = BandUtils.getBaseStrength(band, cwDistance, 1.0D, skipMultiplier, day);
-		double cwQuality = cwStrength / settings.threshold(noise(path(band, cwDistance, day), solarNoise, extraNoise, settings));
+		double cwStrength = BandUtils.getBaseStrength(band, cwDistance, 1.0D, skipMultiplier, day, 1.0D, 1.0D, reach);
+		double cwQuality = cwStrength / settings.threshold(noise(path(band, cwDistance, day, reach), solarNoise, extraNoise, settings));
 		Grade grade = grade(quality);
 		Grade cw = grade(cwQuality);
 		return new Cell(grade, path, strength, quality, cw.ordinal() < grade.ordinal() ? cw : grade);
@@ -177,7 +194,7 @@ public final class PropagationForecast {
 			double bestQuality = 0.0D;
 			for(int h = 0; h < hours.size(); h++) {
 				Hour hour = hours.get(h);
-				Cell cell = cell(band, distance, hour.day(), conditions.skipMultiplier(band, h), hour.solarNoise(), hour.extraNoise(), settings);
+				Cell cell = cell(band, distance, hour.day(), conditions.skipMultiplier(band, h), conditions.skipReach(band, h), hour.solarNoise(), hour.extraNoise(), settings);
 				cells.add(cell);
 				if(cell.grade() != Grade.CLOSED && cell.quality() > bestQuality) {
 					bestQuality = cell.quality();
