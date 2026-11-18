@@ -145,7 +145,8 @@ final class AwmWeatherSource implements WeatherSource {
 		catch(IllegalArgumentException e) {
 			kind = StormReport.Kind.OTHER;
 		}
-		int category = kind == StormReport.Kind.HURRICANE ? view.category()
+		// Its category now, from AWM 1.10.1: a hurricane forms as a tropical storm and is upgraded as it strengthens.
+		int category = kind == StormReport.Kind.HURRICANE ? view.categoryAt(Math.max(now, view.birthTick() + 200))
 				: kind == StormReport.Kind.TORNADO ? view.tornadoRating() : -1;
 		return new StormReport(view.id(), kind, false, view.birthTick(), List.copyOf(track), category);
 	}
