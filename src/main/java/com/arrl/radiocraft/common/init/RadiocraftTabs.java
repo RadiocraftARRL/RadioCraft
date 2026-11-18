@@ -239,6 +239,7 @@ public class RadiocraftTabs {
         output.accept(RadiocraftItems.WEATHER_ALERT_RECEIVER.get());
         output.accept(RadiocraftItems.WEATHER_OBSERVER.get()); // 2026-11-18.
         output.accept(RadiocraftItems.HEADLESS_TNC.get()); // 2026-11-18.
+        output.accept(RadiocraftItems.WEATHER_DISPLAY.get()); // 2026-11-18.
         output.accept(RadiocraftItems.REAL_WORLD_INTERFACE.get()); // 1.12 step 11; off unless the server config turns it on.
         // FCC gear (1.12 step 10). The badge is left out on purpose: operators issue it with /radiocraft fcc badge.
         output.accept(RadiocraftItems.FCC_HAT.get());

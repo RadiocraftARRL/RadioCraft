@@ -140,6 +140,9 @@ public class RadiocraftBlocks {
 	/** The Headless APRS TNC (2026-11-18): a radio interface and APRS beacon/digipeater in one, an H19's modem. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.HeadlessTncBlock> HEADLESS_TNC = BLOCKS.register("headless_tnc",
 			() -> new com.arrl.radiocraft.common.blocks.HeadlessTncBlock(PROPERTIES_RADIO));
+	/** The Local Weather Station Display (2026-11-18): a red LCD of the nearest Local Weather Station's readings. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherDisplayBlock> WEATHER_DISPLAY = BLOCKS.register("weather_display",
+			() -> new com.arrl.radiocraft.common.blocks.WeatherDisplayBlock(Properties.ofFullCopy(Blocks.OAK_PLANKS).noOcclusion()));
 	/** The Weather Observer (2026-11-18): a Local Weather Station's readings out through a radio, for weather alert generators. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherObserverBlock> WEATHER_OBSERVER = BLOCKS.register("weather_observer",
 			() -> new com.arrl.radiocraft.common.blocks.WeatherObserverBlock(PROPERTIES_RADIO));

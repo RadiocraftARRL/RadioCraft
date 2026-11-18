@@ -107,6 +107,7 @@ public class ClientSetupEvents {
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.SATELLITE_TRACKER.get(), com.arrl.radiocraft.client.render.SatelliteTrackerRenderer::new);
 		// The frequency, mode and S-meter on each radio's screen; a radio whose model has no DISPLAY draws nothing.
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.AUTO_TUNER.get(), com.arrl.radiocraft.client.render.AutoTunerDisplayRenderer::new);
+		event.registerBlockEntityRenderer(RadiocraftBlockEntities.WEATHER_DISPLAY.get(), com.arrl.radiocraft.client.render.WeatherDisplayRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.BATTERY_METER.get(), com.arrl.radiocraft.client.render.BatteryMeterRenderer::new);
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.FIRE_ALARM_CONTROLLER.get(), com.arrl.radiocraft.client.render.MeshScreenRenderer::new); // Green screens on the blocks (2026-11-11).
 		event.registerBlockEntityRenderer(RadiocraftBlockEntities.SCADA_MASTER.get(), com.arrl.radiocraft.client.render.MeshScreenRenderer::new);

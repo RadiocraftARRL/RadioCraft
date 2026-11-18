@@ -91,4 +91,18 @@ public class WeatherObserverGameTests {
 				})
 				.thenSucceed();
 	}
+
+	/** The Local Weather Station Display reads a station in range, in °F, mph and inHg (2026-11-18). */
+	@GameTest(template = GameTestUtil.EMPTY, timeoutTicks = 100)
+	public static void displayReadsTheStation(GameTestHelper helper) {
+		int[] r = com.arrl.radiocraft.common.blockentities.WeatherDisplayBlockEntity.readingsOf(new com.arrl.radiocraft.api.weather.WeatherReport(
+				com.arrl.radiocraft.api.weather.WeatherReport.Precipitation.RAIN, 1.0F, 0.0F, 10.0D, 270.0D, 20.0D, 1013.25D, 55.0D, java.util.Set.of()), 15.0D, 25.4D);
+		helper.assertTrue(r[0] == 68 && r[1] == 55 && r[2] == 2992 && r[3] == 270 && r[4] == 22 && r[5] == 34 && r[6] == 100,
+				"the units are wrong: " + java.util.Arrays.toString(r));
+		BlockPos display = new BlockPos(2, 2, 2);
+		helper.setBlock(display, RadiocraftBlocks.WEATHER_DISPLAY.get());
+		helper.setBlock(new BlockPos(6, 2, 6), RadiocraftBlocks.WEATHER_STATION.get());
+		helper.succeedWhen(() -> helper.assertTrue(GameTestUtil.blockEntity(helper, display, com.arrl.radiocraft.common.blockentities.WeatherDisplayBlockEntity.class).getReadings() != null,
+				"the display never read the station"));
+	}
 }

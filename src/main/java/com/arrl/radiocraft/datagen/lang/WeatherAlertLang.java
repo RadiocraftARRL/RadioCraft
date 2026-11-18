@@ -12,6 +12,11 @@ public final class WeatherAlertLang {
 		provider.addBlock(RadiocraftBlocks.WEATHER_ALERT_GENERATOR, "Simple Weather Alert Generator");
 		provider.addBlock(RadiocraftBlocks.WEATHER_ALERT_RECEIVER, "Simple Weather Alert Receiver");
 		provider.addBlock(RadiocraftBlocks.WEATHER_OBSERVER, "Weather Observer");
+		// The Local Weather Station Display (2026-11-18).
+		provider.addBlock(RadiocraftBlocks.WEATHER_DISPLAY, "Local Weather Station Display");
+		provider.add("tooltip.radiocraft.weather_display", "A desk weather display: within 64 blocks of a Local Weather Station its red LCD steps through the temperature, humidity, pressure, wind and rain. Right click for them all.");
+		provider.add("message.radiocraft.weather_display.no_station", "No Local Weather Station within 64 blocks.");
+		provider.add("message.radiocraft.weather_display.readings", "%s °F, %s%% humidity, %s inHg, wind from %s at %s mph gusting %s, rain %s in last hour");
 		// The Headless APRS TNC (2026-11-18).
 		provider.addBlock(RadiocraftBlocks.HEADLESS_TNC, "Headless APRS TNC");
 		provider.add("container.radiocraft.headless_tnc", "Headless APRS TNC");
