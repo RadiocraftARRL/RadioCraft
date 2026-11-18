@@ -1,7 +1,7 @@
 # RadioCraft alpha 1.13
 
 Minecraft 1.21.1, NeoForge. Needs Simple Voice Chat and GeckoLib;
-[Another Weather Mod](https://github.com/RadiocraftARRL/AnotherWeatherMod) is optional (1.10.1 or later).
+[Another Weather Mod](https://github.com/RadiocraftARRL/AnotherWeatherMod) is optional (1.13.0 or later).
 Everything below is explained in the in-game ARRL Radiocraft Handbook and on the [wiki](https://radiocraft.bigtimeradio.us/wiki/).
 
 ## 1.13.0
@@ -258,7 +258,7 @@ Everything below is explained in the in-game ARRL Radiocraft Handbook and on the
   longer opens JEI.
 
 ### Changed
-- Another Weather Mod is now listed as an **optional dependency**, 1.10.1 or later. That version costs far less frame
+- Another Weather Mod is now listed as an **optional dependency**, 1.13.0 or later. That version costs far less frame
   rate in storms and adds a Rain Detail setting. Weather alerts give a hurricane's category at the time, not its peak.
 - CW is keyed by hand by default (`cw_keying` is now TRUE_MORSE): the screen's PTT button, the CW key or the iambic
   keyer. The CW key's default is now **Space** (it was Left Alt).
