@@ -99,7 +99,7 @@ public class BareConnectorAntenna implements IAntenna {
 			double strength = strengthAt(distanceTo(other));
 			if(strength <= 0.0D)
 				continue;
-			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio.clone(), band, frequencyHertz, strength, this, sourcePlayer, ctcssTone);
+			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio, band, frequencyHertz, strength, this, sourcePlayer, ctcssTone).shareAudio();
 			packet.setDestination(other);
 			other.receiveAudioPacket(packet);
 		}

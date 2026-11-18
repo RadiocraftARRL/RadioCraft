@@ -73,6 +73,11 @@ public final class ModerationLog {
 
 	/** A transmission ends after this long with no frame. */
 	public static final long GAP_MS = 1000L;
+	/**
+	 * Server ticks of silence that also close a transmission (2026-11-18), a second at 20 ticks a second: the GameTest
+	 * server runs ticks as fast as it can, so its tests timed out before a second of real time had passed.
+	 */
+	public static final int GAP_TICKS = 20;
 	/** A transmission longer than this is split, so a beacon that never stops still makes records. */
 	public static final long MAX_MS = 10L * 60_000L;
 	/** Frequencies this close on one antenna are one transmission (a poor crystal drifts under 1 kHz). */
@@ -251,11 +256,17 @@ public final class ModerationLog {
 		if(server.getTickCount() % 5 != 0)
 			return;
 		long now = System.currentTimeMillis();
+		int tickNow = server.getTickCount();
 		for(Map.Entry<Object, OpenSet> entry : open.entrySet()) {
 			OpenSet set = entry.getValue();
 			for(OpenTransmission tx : set.snapshot()) {
 				listeners(tx, now);
-				if(now - tx.lastMs > GAP_MS || now - tx.startMs > MAX_MS)
+				long last = tx.lastMs;
+				if(last != tx.seenMs) {
+					tx.seenMs = last;
+					tx.seenTick = tickNow;
+				}
+				if(now - last > GAP_MS || tickNow - tx.seenTick > GAP_TICKS || now - tx.startMs > MAX_MS)
 					close(set, tx);
 			}
 			set.dropIfEmpty(entry.getKey(), open);

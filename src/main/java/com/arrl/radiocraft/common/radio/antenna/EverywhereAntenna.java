@@ -90,7 +90,7 @@ public class EverywhereAntenna implements IAntenna {
 	@Override
 	public void transmitAudioPacket(de.maxhenkel.voicechat.api.ServerLevel level, short[] rawAudio, Band band, float frequencyHertz, UUID sourcePlayer, float ctcssTone) {
 		for(IAntenna other : others()) {
-			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio.clone(), band, frequencyHertz, STRENGTH, this, sourcePlayer, ctcssTone);
+			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio, band, frequencyHertz, STRENGTH, this, sourcePlayer, ctcssTone).shareAudio();
 			packet.setDestination(other);
 			other.receiveAudioPacket(packet);
 		}

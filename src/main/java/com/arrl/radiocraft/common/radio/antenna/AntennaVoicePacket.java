@@ -10,7 +10,14 @@ import java.util.UUID;
 public class AntennaVoicePacket implements IAntennaPacket {
 
 	private final de.maxhenkel.voicechat.api.ServerLevel level; // This is a voice api ServerLevel not a minecraft one.
-	private final short[] rawAudio;
+	private short[] rawAudio;
+	/**
+	 * Whether {@link #rawAudio} is the sender's frame, shared with the packets to every other receiver (2026-11-18): it
+	 * is copied the first time this packet's receiver asks for it ({@link #getRawAudio}), as some process it in place.
+	 * Most receivers are not tuned to it and drop the packet without asking, so most copies are never made: every
+	 * transmission used to copy each frame for every antenna in range, a good share of the server's garbage.
+	 */
+	private boolean sharedAudio;
 	private final Band band;
 	private final float frequency;
 	private double strength;
@@ -101,8 +108,22 @@ public class AntennaVoicePacket implements IAntennaPacket {
 		return (ServerLevel)level.getServerLevel();
 	}
 
+	/** The audio, this packet's own (copied from the sender's frame on first use if it was shared). */
 	public short[] getRawAudio() {
+		if(sharedAudio) {
+			rawAudio = rawAudio.clone();
+			sharedAudio = false;
+		}
 		return rawAudio;
+	}
+
+	/**
+	 * Marks the audio as the sender's frame, shared with other packets: it is copied when first asked for. For senders
+	 * handing one frame to many receivers.
+	 */
+	public AntennaVoicePacket shareAudio() {
+		sharedAudio = true;
+		return this;
 	}
 
 	public void setStrength(double strength) {

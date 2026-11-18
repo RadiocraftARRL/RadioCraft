@@ -84,7 +84,7 @@ public class CabinetAntenna implements IAntenna {
 			AntennaPos there = antenna.getAntennaPos();
 			if(there == null || there.level() != pos.level())
 				continue;
-			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio.clone(), band, frequencyHertz, 1.0F, this, sourcePlayer, 0.0F);
+			AntennaVoicePacket packet = new AntennaVoicePacket(level, rawAudio, band, frequencyHertz, 1.0F, this, sourcePlayer, 0.0F).shareAudio();
 			packet.setDestination(antenna);
 			packet.setStrength(CabinetAntennaType.INSTANCE.getTransmitEfficiency(packet, new EmptyAntennaData(), there.position(), false));
 			if(packet.getStrength() > 0.0D)
@@ -132,7 +132,7 @@ public class CabinetAntenna implements IAntenna {
 			if(!present)
 				continue;
 			for(short[] frame : frames) {
-				AntennaVoicePacket packet = new AntennaVoicePacket(level, frame.clone(), band, frequencyHertz, 1.0F, this, sourcePlayer, 0.0F);
+				AntennaVoicePacket packet = new AntennaVoicePacket(level, frame, band, frequencyHertz, 1.0F, this, sourcePlayer, 0.0F).shareAudio();
 				packet.setDestination(entry.getKey());
 				packet.setStrength(entry.getValue());
 				entry.getKey().receiveAudioPacket(packet);

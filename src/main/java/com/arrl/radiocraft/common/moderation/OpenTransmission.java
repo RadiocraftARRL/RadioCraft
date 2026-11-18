@@ -45,6 +45,12 @@ final class OpenTransmission {
 	@Nullable final UUID tapeRecording;
 
 	volatile long lastMs;
+	/**
+	 * The {@link #lastMs} the log's tick last saw, and the server tick it saw it change: so a transmission also closes
+	 * after {@code ModerationLog#GAP_TICKS} quiet ticks (2026-11-18). Server thread only.
+	 */
+	long seenMs = Long.MIN_VALUE;
+	int seenTick;
 	/** When the sweeper last looked for proximity listeners. Server thread. */
 	long lastListenerCheck = Long.MIN_VALUE / 2;
 	/** Voice ids its frames went out under, so a receiver can tell two transmissions on one antenna apart. */
