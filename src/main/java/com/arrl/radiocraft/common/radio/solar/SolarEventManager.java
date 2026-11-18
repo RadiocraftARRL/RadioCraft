@@ -109,8 +109,21 @@ public class SolarEventManager {
 		SolarEventInstance event = getEvent(level);
 		if(event == null)
 			return 1.0D;
-		// Across sunrise and sunset, between the night's reach and the day's (2026-11-18).
-		return DayCycle.blend(reach(event.getEvent(), band, false), reach(event.getEvent(), band, true), DayCycle.dayness(level));
+		// Across sunrise and sunset, between the night's reach and the day's (2026-11-18), each counted by how strongly
+		// that side carries: a closed night does not stretch a light day opening at dusk.
+		double t = sideDayness(band, DayCycle.dayness(level));
+		double rd = reach(event.getEvent(), band, true), rn = reach(event.getEvent(), band, false);
+		double wd = t * getCondition(level, band, true).getSkipMultiplier(), wn = (1.0D - t) * getCondition(level, band, false).getSkipMultiplier();
+		return wd + wn <= 0.0D ? 1.0D : (wd * rd + wn * rn) / (wd + wn);
+	}
+
+	/**
+	 * {@code dayness} for blending {@code band}'s day and night weather: a band with skip only by day (or only by night)
+	 * follows that side's weather throughout (its window fades instead, {@code BandUtils.skipWindow}).
+	 */
+	private static double sideDayness(Band band, double dayness) {
+		boolean day = band.maxSkipDay() > band.minSkipDay(), night = band.maxSkipNight() > band.minSkipNight();
+		return day && !night ? 1.0D : night && !day ? 0.0D : dayness;
 	}
 
 	/**
@@ -119,7 +132,7 @@ public class SolarEventManager {
 	 * ({@link DayCycle}, 2026-11-18), each a step worse under an aurora as {@link #getCondition(Level, Band, BlockPos...)}.
 	 */
 	public static double skipMultiplier(Level level, @Nullable Band band, BlockPos... positions) {
-		double dayness = DayCycle.dayness(level);
+		double dayness = band == null ? DayCycle.dayness(level) : sideDayness(band, DayCycle.dayness(level));
 		double day = dayness > 0.0D ? withAurora(level, getCondition(level, band, true), positions).getSkipMultiplier() : 0.0D;
 		double night = dayness < 1.0D ? withAurora(level, getCondition(level, band, false), positions).getSkipMultiplier() : 0.0D;
 		return DayCycle.blend(night, day, dayness);
