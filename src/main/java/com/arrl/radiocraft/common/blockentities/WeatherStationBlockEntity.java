@@ -238,7 +238,7 @@ public class WeatherStationBlockEntity extends BlockEntity {
 	public String describe() {
 		String wind = report.windSpeed() < 0.5 ? "calm" : String.format(Locale.ROOT, "wind from %03.0f at %.1f m/s, gusts %.1f",
 				report.windFrom(), report.windSpeed(), gust());
-		return String.format(Locale.ROOT, "WX: %s; %.0f °C, %.0f %%, %.0f hPa; rain last hour %.1f mm. H19s within %d blocks beacon it.",
+		return String.format(Locale.ROOT, "WX: %s; %.0f °C, %.0f %%, %.0f hPa; rain last hour %.1f mm. Devices within %d blocks read it.",
 				wind, report.temperature(), report.humidity(), report.pressure(), rainLastHour(), RANGE);
 	}
 }
