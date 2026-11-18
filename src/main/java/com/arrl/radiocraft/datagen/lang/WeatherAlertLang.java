@@ -12,6 +12,24 @@ public final class WeatherAlertLang {
 		provider.addBlock(RadiocraftBlocks.WEATHER_ALERT_GENERATOR, "Simple Weather Alert Generator");
 		provider.addBlock(RadiocraftBlocks.WEATHER_ALERT_RECEIVER, "Simple Weather Alert Receiver");
 		provider.addBlock(RadiocraftBlocks.WEATHER_OBSERVER, "Weather Observer");
+		// The Headless APRS TNC (2026-11-18).
+		provider.addBlock(RadiocraftBlocks.HEADLESS_TNC, "Headless APRS TNC");
+		provider.add("container.radiocraft.headless_tnc", "Headless APRS TNC");
+		provider.add("tooltip.radiocraft.headless_tnc", "A packet modem with no screen: touch it to a radio (or cable it with data wire). It beacons (with a Local Weather Station's weather within 64 blocks), digipeats if you switch DIGI on, and feeds a Weather Alert Generator the beacons it hears. Next to an H19 it stands in for the Radio Interface (not for a computer or fax).");
+		java.util.function.BiConsumer<String, String> t = (key, text) -> provider.add("screen.radiocraft.headless_tnc." + key, text);
+		t.accept("front", "Front");
+		t.accept("back", "Turn around");
+		t.accept("callsign_hint", "The station's callsign; Enter saves it, empty takes yours. Each APRS station needs its own SSID (W1ABC-1, -2...).");
+		t.accept("ssid_tip", "SSID: click the top to go up, the bottom to go down (or scroll). 0 is none.");
+		t.accept("digi_tip", "DIGI: repeat the packets it hears (a digipeater).");
+		t.accept("beacon_tip", "BEACON: send its position (and weather) every few minutes.");
+		t.accept("turn_on", "Switch it on");
+		t.accept("turn_off", "Switch it off: nothing in or out");
+		t.accept("lamp.dcd", "DCD: a packet decoded");
+		t.accept("lamp.ptt", "PTT: its radio is sending");
+		t.accept("lamp.sta", "STA: a repeat waiting, or a beacon just sent");
+		t.accept("lamp.con", "CON: an H19 is connected");
+		t.accept("lamp.pwr", "PWR: on");
 		provider.add("tooltip.radiocraft.weather_observer", "Touch it to a radio (or cable it with data wire) within 64 blocks of a Local Weather Station: every 5 minutes, and on a redstone pulse, it sends the station's readings on the radio's frequency. A Weather Alert Generator with a radio on that frequency counts it as a station. One callsign does for all your observers.");
 		java.util.function.BiConsumer<String, String> o = (key, text) -> provider.add("message.radiocraft.weather_observer." + key, text);
 		o.accept("no_callsign", "No callsign: right-click it once you have one.");

@@ -66,6 +66,7 @@
     "radiocraft:adsb_receiver",
     "radiocraft:weather_alert_generator",
     "radiocraft:weather_observer",
+    "radiocraft:headless_tnc",
     "radiocraft:microphone",
     "radiocraft:weather_alert_receiver",
     "radiocraft:weather_station",

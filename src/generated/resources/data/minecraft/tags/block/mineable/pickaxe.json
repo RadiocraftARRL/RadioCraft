@@ -32,6 +32,7 @@
     "radiocraft:adsb_antenna",
     "radiocraft:weather_alert_generator",
     "radiocraft:weather_alert_receiver",
+    "radiocraft:headless_tnc",
     "radiocraft:weather_observer",
     "radiocraft:fire_alarm_box",
     "radiocraft:pull_station",

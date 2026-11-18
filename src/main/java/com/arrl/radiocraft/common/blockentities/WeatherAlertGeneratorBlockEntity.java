@@ -259,9 +259,13 @@ public class WeatherAlertGeneratorBlockEntity extends BlockEntity implements INe
 		boolean any = bus.hasInterface() || !DataWire.linked(serverLevel, worldPosition, RadioBlockEntity.class).isEmpty();
 		Map<String, WeatherNetwork.Station> byKey = new LinkedHashMap<>();
 		Map<String, HeardStation> listedByKey = new LinkedHashMap<>();
-		for(StationTerminal terminal : bus.terminals()) {
+		List<Object> aprsStations = new ArrayList<>(bus.terminals());
+		aprsStations.addAll(bus.interfaces()); // A Headless TNC keeps the beacons it hears too (2026-11-18).
+		for(Object terminal : aprsStations) {
 			List<AprsTerminalBlockEntity.Heard> beacons;
-			if(terminal instanceof AprsTerminalBlockEntity h19)
+			if(terminal instanceof HeadlessTncBlockEntity tnc)
+				beacons = tnc.getBeacons();
+			else if(terminal instanceof AprsTerminalBlockEntity h19)
 				beacons = h19.getBeacons();
 			else if(terminal instanceof RadioComputerBlockEntity computer && computer.isInstalled(ComputerApps.APRS))
 				beacons = AprsHandler.state(computer).stations();

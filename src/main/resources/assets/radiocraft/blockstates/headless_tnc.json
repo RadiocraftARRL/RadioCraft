@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north,on=false,ptt=false": {
+      "model": "radiocraft:block/headless_tnc"
+    },
+    "facing=north,on=false,ptt=true": {
+      "model": "radiocraft:block/headless_tnc"
+    },
+    "facing=north,on=true,ptt=false": {
+      "model": "radiocraft:block/headless_tnc_on"
+    },
+    "facing=north,on=true,ptt=true": {
+      "model": "radiocraft:block/headless_tnc_ptt"
+    },
+    "facing=east,on=false,ptt=false": {
+      "model": "radiocraft:block/headless_tnc",
+      "y": 90
+    },
+    "facing=east,on=false,ptt=true": {
+      "model": "radiocraft:block/headless_tnc",
+      "y": 90
+    },
+    "facing=east,on=true,ptt=false": {
+      "model": "radiocraft:block/headless_tnc_on",
+      "y": 90
+    },
+    "facing=east,on=true,ptt=true": {
+      "model": "radiocraft:block/headless_tnc_ptt",
+      "y": 90
+    },
+    "facing=south,on=false,ptt=false": {
+      "model": "radiocraft:block/headless_tnc",
+      "y": 180
+    },
+    "facing=south,on=false,ptt=true": {
+      "model": "radiocraft:block/headless_tnc",
+      "y": 180
+    },
+    "facing=south,on=true,ptt=false": {
+      "model": "radiocraft:block/headless_tnc_on",
+      "y": 180
+    },
+    "facing=south,on=true,ptt=true": {
+      "model": "radiocraft:block/headless_tnc_ptt",
+      "y": 180
+    },
+    "facing=west,on=false,ptt=false": {
+      "model": "radiocraft:block/headless_tnc",
+      "y": 270
+    },
+    "facing=west,on=false,ptt=true": {
+      "model": "radiocraft:block/headless_tnc",
+      "y": 270
+    },
+    "facing=west,on=true,ptt=false": {
+      "model": "radiocraft:block/headless_tnc_on",
+      "y": 270
+    },
+    "facing=west,on=true,ptt=true": {
+      "model": "radiocraft:block/headless_tnc_ptt",
+      "y": 270
+    }
+  }
+}

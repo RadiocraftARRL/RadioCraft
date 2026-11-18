@@ -56,7 +56,12 @@ public class RadioInterfaceBlockEntity extends BlockEntity implements MenuProvid
 	private record PendingDigipeat(TncPacket packet, long dueGameTime) {}
 
 	public RadioInterfaceBlockEntity(BlockPos pos, BlockState state) {
-		super(RadiocraftBlockEntities.RADIO_INTERFACE.get(), pos, state);
+		this(RadiocraftBlockEntities.RADIO_INTERFACE.get(), pos, state);
+	}
+
+	/** For a device that is a radio interface and more (the Headless APRS TNC, 2026-11-18). */
+	protected RadioInterfaceBlockEntity(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+		super(type, pos, state);
 	}
 
 	public static <T extends BlockEntity> void tick(Level level, BlockPos pos, BlockState state, T t) {
@@ -64,7 +69,7 @@ public class RadioInterfaceBlockEntity extends BlockEntity implements MenuProvid
 			radioInterface.serverTick(serverLevel);
 	}
 
-	private void serverTick(ServerLevel level) {
+	protected void serverTick(ServerLevel level) {
 		long now = level.getGameTime();
 		if(syncPending && now % 2 == 0) {
 			syncPending = false;
@@ -146,7 +151,13 @@ public class RadioInterfaceBlockEntity extends BlockEntity implements MenuProvid
 			sync();
 		}
 		for(StationTerminal terminal : StationBus.find(level, worldPosition).terminals())
-			terminal.receive(packet);
+			if(deliversTo(terminal))
+				terminal.receive(packet);
+	}
+
+	/** Whether what it decodes goes to {@code terminal}: every terminal on its bus (the Headless TNC is pickier). */
+	protected boolean deliversTo(StationTerminal terminal) {
+		return true;
 	}
 
 	/**
@@ -247,7 +258,7 @@ public class RadioInterfaceBlockEntity extends BlockEntity implements MenuProvid
 	// -------------------- SAVE & SYNC --------------------
 
 	/** Sends the new state to clients on the next even tick, so a burst of changes goes as one update. */
-	private void sync() {
+	protected void sync() {
 		if(level != null && !level.isClientSide)
 			syncPending = true;
 	}

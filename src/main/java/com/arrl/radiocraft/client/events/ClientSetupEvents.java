@@ -51,6 +51,7 @@ public class ClientSetupEvents {
 		event.register(RadiocraftMenuTypes.HF_RECEIVER.get(), HFReceiverScreen::new);
 		event.register(RadiocraftMenuTypes.DESK_CHARGER.get(), DeskChargerScreen::new);
 		event.register(RadiocraftMenuTypes.RADIO_INTERFACE.get(), RadioInterfaceScreen::new);
+		event.register(RadiocraftMenuTypes.HEADLESS_TNC.get(), com.arrl.radiocraft.client.screens.HeadlessTncScreen::new);
 		event.register(RadiocraftMenuTypes.DTMF_DECODER.get(), DtmfDecoderScreen::new);
 		event.register(RadiocraftMenuTypes.DTMF_ENCODER.get(), DtmfEncoderScreen::new);
 		event.register(RadiocraftMenuTypes.TELETYPE.get(), TeletypeScreen::new);
