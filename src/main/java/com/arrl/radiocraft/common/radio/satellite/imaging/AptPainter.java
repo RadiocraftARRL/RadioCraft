@@ -109,7 +109,7 @@ public final class AptPainter {
 	double[] warp(double x, double z, long now) {
 		StormReport nearest = null;
 		StormReport.TrackPoint centre = null;
-		double best = 1.6D;
+		double best = SPIRAL_REACH;
 		for(StormReport storm : storms) {
 			if(storm.worldWide() || !storm.formed(now))
 				continue;
@@ -117,6 +117,8 @@ public final class AptPainter {
 			if(at.radius() <= 1.0D)
 				continue;
 			double share = Math.hypot(x - at.x(), z - at.z()) / at.radius();
+			if(share >= 1.6D && storm.kind() != StormReport.Kind.HURRICANE)
+				continue; // Only a hurricane's arms reach that far.
 			if(share < best) {
 				best = share;
 				nearest = storm;
@@ -129,10 +131,44 @@ public final class AptPainter {
 		StormReport.TrackPoint later = nearest.at(now + 400L);
 		double heading = Math.hypot(later.x() - centre.x(), later.z() - centre.z()) > 1.0D ? Math.atan2(later.z() - centre.z(), later.x() - centre.x())
 				: hash((int)nearest.id(), 99) * Math.PI;
-		double f = outline(nearest.id(), Math.atan2(dz, dx), heading, now);
+		double angle = Math.atan2(dz, dx);
+		double f = outline(nearest.id(), angle, heading, now);
 		double blend = best < 1.2D ? 1.0D : Math.max(0.0D, (1.6D - best) / 0.4D);
 		f = 1.0D + (f - 1.0D) * blend;
+		if(nearest.kind() == StormReport.Kind.HURRICANE)
+			f *= spiral(nearest.id(), best, angle, now);
 		return new double[] { centre.x() + dx / f, centre.z() + dz / f };
+	}
+
+	/** How far out a hurricane's spiral arms reach, in radii. */
+	static final double SPIRAL_REACH = 2.2D;
+	/** A hurricane's spiral arms, how tightly they wind (radians of turn for each e-fold outward), and how far they pull. */
+	static final int ARMS = 3;
+	static final double TWIST = 2.4D, TAIL = 0.55D;
+
+	/**
+	 * A hurricane's spiral bands (2026-11-18, the maintainer: tails coming off the edges showing rotation): the weather
+	 * mod gives a hurricane round rings of rain, so here a pixel {@code share} radii from the eye at {@code angle} reads
+	 * nearer the eye along {@link #ARMS} arms that wind out from about half the radius (so their rain trails out as
+	 * tails, up to {@link #SPIRAL_REACH} radii) and further out between them (clear gaps), turning slowly over
+	 * {@code now}. The arms curve against the storm's turn, counter-clockwise seen from above as its wind blows, as a
+	 * hurricane's bands do. The eye and eyewall are left as they are. A divisor for the distance, as {@link #outline}.
+	 */
+	static double spiral(long id, double share, double angle, long now) {
+		double start = smooth((share - 0.45D) / 0.4D);
+		if(start <= 0.0D)
+			return 1.0D;
+		double fade = share <= 1.8D ? 1.0D : Math.max(0.0D, (SPIRAL_REACH - share) / (SPIRAL_REACH - 1.8D));
+		int seed = (int)(id ^ (id >>> 32));
+		double turn = hash(seed, 77) * 2.0D * Math.PI + now / 24_000.0D * 2.0D * Math.PI; // A turn a day.
+		// Angle grows outward (z is south, so the wind's turn takes angle down): the arms trail behind the turn.
+		double arm = Math.cos(ARMS * (angle - TWIST * Math.log(Math.max(0.05D, share)) + turn));
+		return Math.max(0.35D, 1.0D + TAIL * arm * start * fade);
+	}
+
+	private static double smooth(double x) {
+		x = Math.max(0.0D, Math.min(1.0D, x));
+		return x * x * (3.0D - 2.0D * x);
 	}
 
 	/**

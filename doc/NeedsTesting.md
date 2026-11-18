@@ -192,6 +192,7 @@ keeps the history).
 
 - [ ] Check the Jade box no longer shows through at the top left while the computer (or any radio panel) is open, and still shows with no screen open (2026-11-18)
 - [x] Test the radio computer, monitor and scanner (Shift+Esc (or Leave in any menu) steps away with the program still on the screen; every program left on it keeps running on the monitor while you are within 18 blocks, SATTRACK and WXSAT included, games paused; models, boot, text mode, keys, live monitor in the world, power (2026-11-15: the monitor is dark with no power, and goes dark a second or two after the battery runs flat), two players at once, break and replace keeps files)
+- [ ] Look at a hurricane in the WXSAT pictures (2026-11-18): spiral bands winding out of the core with tails past its edge and gaps between, curving the way it turns (counter-clockwise from above), the eye still clear; a later pass shows the arms turned a little
 - [x] Test the shell and SETUP (launcher views, Program Manager icons, prompt commands, colour schemes, password, name and clock, Services page, ABOUT, launcher search)
 - [x] Test menu bars in every program (click items, greyed items, keyboard still works, no icons through menus)
 - [x] Test data floppies, File Manager and prompt copying (labels, DIR/COPY, A: and C:)
