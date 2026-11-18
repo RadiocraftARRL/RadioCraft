@@ -1976,6 +1976,11 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SATTRACK, Items.PHANTOM_MEMBRANE);
         // WXSAT (2026-11-12, maintainer): a blank floppy and a lightning rod, for the weather.
         programs.put(com.arrl.radiocraft.common.computer.ComputerApps.WXSAT, Items.LIGHTNING_ROD);
+        // FIRE ALARM, SCADA and FCC (maintainer, 2026-11-18): flint and steel for the fire, a repeater for redstone over the
+        // radio, a spyglass for watching the airwaves.
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.FIRE_ALARM, Items.FLINT_AND_STEEL);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.SCADA, Items.REPEATER);
+        programs.put(com.arrl.radiocraft.common.computer.ComputerApps.FCC, Items.SPYGLASS);
         programs.forEach((app, ingredient) -> net.minecraft.data.recipes.ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, java.util.Objects.requireNonNull(RadiocraftItems.floppy(app)))
                 .requires(RadiocraftItems.FLOPPY_DISK.get())
                 .requires(ingredient)

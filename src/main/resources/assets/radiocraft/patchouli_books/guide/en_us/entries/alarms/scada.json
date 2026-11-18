@@ -32,7 +32,7 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:floppy_scada",
       "title": "SCADA program",
-      "text": "The HMI for a master touching a $(l:radiocraft:computer/radio_computer)radio computer$(/l) or on its data wire: the master and every RTU with their six faces live, wanted outputs in cyan, and the rules. $(thing)Ins$() adds a rule, $(thing)Del$() removes one, $(thing)F3$() steps the poll speed. The $(item)SCADA Floppy Disk$() is in the creative menu."
+      "text": "The HMI for a master touching a $(l:radiocraft:computer/radio_computer)radio computer$(/l) or on its data wire: the master and every RTU with their six faces live, wanted outputs in cyan, and the rules. $(thing)Ins$() adds a rule, $(thing)Del$() removes one, $(thing)F3$() steps the poll speed. Craft the $(item)SCADA Floppy Disk$() from a blank floppy and a redstone repeater."
     }
   ]
 }

@@ -28,7 +28,7 @@
       "type": "patchouli:spotlight",
       "item": "radiocraft:floppy_fire_alarm",
       "title": "FIRE ALARM program",
-      "text": "On a $(l:radiocraft:computer/radio_computer)radio computer$(/l) touching the controller or on its data wire: every box and its state, and the log, newest first. The header flashes red while an alarm waits. $(thing)F2$() silences, $(thing)F5$() puts the picked box in or out of service, $(thing)Del$() forgets it.$(br2)The $(item)Fire Alarm Floppy Disk$() has no recipe yet: it is in the creative menu."
+      "text": "On a $(l:radiocraft:computer/radio_computer)radio computer$(/l) touching the controller or on its data wire: every box and its state, and the log, newest first. The header flashes red while an alarm waits. $(thing)F2$() silences, $(thing)F5$() puts the picked box in or out of service, $(thing)Del$() forgets it.$(br2)Craft the $(item)Fire Alarm Floppy Disk$() from a blank floppy and flint and steel."
     }
   ]
 }

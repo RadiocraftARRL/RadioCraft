@@ -20,9 +20,9 @@
       "text": "The bearing shows once the finder's modules lock on, with how sure it is. One bearing gives a line; take more from other places and the $(l:radiocraft:computer/direction_finding)Direction Finding$(/l) program finds where they cross. Fire alarm boxes and SCADA units show up here too: their bursts are on the air like any transmitter.$(br2)With licensing OFF on the server it says NOT CHECKED."
     },
     {
-      "type": "patchouli:spotlight",
-      "item": "radiocraft:floppy_fcc",
-      "text": "The $(item)FCC Monitor Floppy Disk$() has no recipe yet: it is in the creative menu."
+      "type": "patchouli:crafting",
+      "recipe": "radiocraft:floppy_fcc",
+      "text": "The $(item)FCC Monitor Floppy Disk$(): a blank floppy and a spyglass."
     }
   ]
 }
