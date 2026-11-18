@@ -158,6 +158,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.BALUN_ONE_TO_ONE.get())
                 .add(RadiocraftBlocks.BALUN_FOUR_TO_ONE.get(), RadiocraftBlocks.BALUN_TWO_TO_ONE.get())
                 .add(RadiocraftBlocks.BALUN_NINE_TO_ONE.get())
+                .add(RadiocraftBlocks.VERTICAL_ANTENNA_BASE.get()) // 2026-11-18.
                 .add(RadiocraftBlocks.J_POLE_ANTENNA.get(), RadiocraftBlocks.EGGBEATER_ANTENNA.get(), RadiocraftBlocks.SATELLITE_TRACKER.get())
                 .add(RadiocraftBlocks.AIRBAND_ANTENNA.get(), RadiocraftBlocks.AIRBAND_GROUND_PLANE.get(), RadiocraftBlocks.FM_BROADCAST_ANTENNA.get())
                 .add(RadiocraftBlocks.RINGO_ANTENNA.get(), RadiocraftBlocks.FOLDED_DIPOLE_ANTENNA.get())
@@ -195,6 +196,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.COAX_WIRE.get())
                 .add(RadiocraftBlocks.COLOURED_COAX.values().stream().map(net.neoforged.neoforge.registries.DeferredHolder::get).toArray(Block[]::new))
                 .add(RadiocraftBlocks.ANTENNA_CONNECTOR.get()) // I'm not convinced this is the feed end of the antenna - jrddunbr
+                .add(RadiocraftBlocks.VERTICAL_ANTENNA_BASE.get()) // 2026-11-18.
                 .add(RadiocraftBlocks.BALUN_ONE_TO_ONE.get())
                 .add(RadiocraftBlocks.BALUN_FOUR_TO_ONE.get(), RadiocraftBlocks.BALUN_TWO_TO_ONE.get())
                 .add(RadiocraftBlocks.BALUN_NINE_TO_ONE.get())
@@ -212,7 +214,6 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
 
         // Define the ANTENNA_WIRE_HOLDERS tag
         tag(RadiocraftTags.Blocks.ANTENNA_WIRE_HOLDERS)
-                .add(RadiocraftBlocks.ANTENNA_POLE.get()) // I'm not convinced this is used for this - jrddunbr
                 .add(RadiocraftBlocks.ANTENNA_CONNECTOR.get())
                 .add(RadiocraftBlocks.BALUN_ONE_TO_ONE.get())
                 .add(RadiocraftBlocks.BALUN_FOUR_TO_ONE.get(), RadiocraftBlocks.BALUN_TWO_TO_ONE.get())

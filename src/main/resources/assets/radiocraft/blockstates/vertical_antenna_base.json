@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "tap=b10": {
+      "model": "radiocraft:block/vertical_antenna_base_b10"
+    },
+    "tap=b20": {
+      "model": "radiocraft:block/vertical_antenna_base_b20"
+    },
+    "tap=b40": {
+      "model": "radiocraft:block/vertical_antenna_base_b40"
+    },
+    "tap=b80": {
+      "model": "radiocraft:block/vertical_antenna_base_b80"
+    }
+  }
+}

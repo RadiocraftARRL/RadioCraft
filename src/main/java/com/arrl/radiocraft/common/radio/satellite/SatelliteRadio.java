@@ -237,7 +237,7 @@ public final class SatelliteRadio {
 	/** Antenna types with a vertical's null straight up (2026-11-12). */
 	private static final Set<net.minecraft.resources.ResourceLocation> VERTICALS = Set.of(
 			com.arrl.radiocraft.Radiocraft.id("j_pole"), com.arrl.radiocraft.Radiocraft.id("slim_jim"), com.arrl.radiocraft.Radiocraft.id("ringo"),
-			com.arrl.radiocraft.Radiocraft.id("folded_dipole"), com.arrl.radiocraft.Radiocraft.id("quarter_wave_vertical"),
+			com.arrl.radiocraft.Radiocraft.id("folded_dipole"), com.arrl.radiocraft.Radiocraft.id("vertical"),
 			com.arrl.radiocraft.Radiocraft.id("rubber_ducky"), com.arrl.radiocraft.Radiocraft.id("manpack_whip"),
 			com.arrl.radiocraft.Radiocraft.id("lightning_rod"), com.arrl.radiocraft.Radiocraft.id("cb_whip"),
 			com.arrl.radiocraft.Radiocraft.id("cb_ground_plane"), com.arrl.radiocraft.Radiocraft.id("five_btv"));

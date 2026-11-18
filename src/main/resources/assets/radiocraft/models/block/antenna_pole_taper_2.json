@@ -1,0 +1,148 @@
+{
+  "credit": "tools/vertical_antenna_model.py",
+  "parent": "block/block",
+  "textures": {
+    "0": "radiocraft:block/antenna_pole",
+    "particle": "radiocraft:block/antenna_pole"
+  },
+  "elements": [
+    {
+      "name": "pole",
+      "from": [
+        6.75,
+        0,
+        6.75
+      ],
+      "to": [
+        9.25,
+        16,
+        9.25
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            2,
+            0,
+            4,
+            16
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            6,
+            16
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            8,
+            16
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            10,
+            2
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            2,
+            10,
+            4
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "collar",
+      "from": [
+        6.625,
+        0,
+        6.625
+      ],
+      "to": [
+        9.375,
+        1,
+        9.375
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            4,
+            10,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

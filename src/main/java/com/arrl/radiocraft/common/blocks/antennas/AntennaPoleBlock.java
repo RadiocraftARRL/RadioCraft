@@ -35,7 +35,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * Antenna Pole Block (place from the bottom max of 10) based on ScaffoldingBlock
+ * Antenna Pole Block (place from the bottom max of 10) based on ScaffoldingBlock. On a Vertical Antenna Base
+ * ({@link #ON_BASE}, 2026-11-18) the stack is the vertical's radiator and tapers as it goes up. It holds no antenna wire
+ * (a metal pole would become part of the antenna): an Antenna Wire Isolator or a balun goes on top of it instead.
  */
 public class AntennaPoleBlock extends Block implements SimpleWaterloggedBlock {
     private static final VoxelShape SHAPE = Shapes.or(Block.box(7.0D, 0.0D, 7.0D, 9.0D, 16.0D, 9.0D));
@@ -43,16 +45,18 @@ public class AntennaPoleBlock extends Block implements SimpleWaterloggedBlock {
     public static final IntegerProperty DISTANCE = IntegerProperty.create("distance", 0, STABILITY_MAX_DISTANCE);
     public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
     public static final BooleanProperty BOTTOM = BlockStateProperties.BOTTOM;
+    /** Standing on a Vertical Antenna Base, through the poles below it: drawn tapering by {@link #DISTANCE}. */
+    public static final BooleanProperty ON_BASE = BooleanProperty.create("on_base");
 
     @SuppressWarnings("this-escape")
     public AntennaPoleBlock(BlockBehaviour.Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(DISTANCE, STABILITY_MAX_DISTANCE).setValue(WATERLOGGED, Boolean.FALSE).setValue(BOTTOM, Boolean.FALSE));
+        this.registerDefaultState(this.stateDefinition.any().setValue(DISTANCE, STABILITY_MAX_DISTANCE).setValue(WATERLOGGED, Boolean.FALSE).setValue(BOTTOM, Boolean.FALSE).setValue(ON_BASE, Boolean.FALSE));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(DISTANCE, WATERLOGGED, BOTTOM);
+        builder.add(DISTANCE, WATERLOGGED, BOTTOM, ON_BASE);
     }
 
     @Override
@@ -89,7 +93,7 @@ public class AntennaPoleBlock extends Block implements SimpleWaterloggedBlock {
     @Override
     public void tick(BlockState state, @NotNull ServerLevel level, @NotNull BlockPos pos, @NotNull RandomSource random) {
         int i = getDistance(level, pos);
-        BlockState blockstate = state.setValue(DISTANCE, i).setValue(BOTTOM, i == 0);
+        BlockState blockstate = state.setValue(DISTANCE, i).setValue(BOTTOM, i == 0).setValue(ON_BASE, onBase(level, pos));
         if (blockstate.getValue(DISTANCE) == STABILITY_MAX_DISTANCE) {
 
             if (state.getValue(DISTANCE) == STABILITY_MAX_DISTANCE)
@@ -107,7 +111,21 @@ public class AntennaPoleBlock extends Block implements SimpleWaterloggedBlock {
         BlockPos blockpos = context.getClickedPos();
         Level level = context.getLevel();
         int i = getDistance(level, blockpos);
-        return this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(blockpos).getType() == Fluids.WATER).setValue(DISTANCE, i).setValue(BOTTOM, i == 0);
+        return this.defaultBlockState().setValue(WATERLOGGED, level.getFluidState(blockpos).getType() == Fluids.WATER).setValue(DISTANCE, i).setValue(BOTTOM, i == 0)
+                .setValue(ON_BASE, onBase(level, blockpos));
+    }
+
+    /** Whether the stack under {@code pos} stands on a Vertical Antenna Base. */
+    public static boolean onBase(BlockGetter level, BlockPos pos) {
+        MutableBlockPos below = pos.mutable();
+        for(int i = 0; i <= STABILITY_MAX_DISTANCE; i++) {
+            BlockState state = level.getBlockState(below.move(Direction.DOWN));
+            if(state.getBlock() instanceof VerticalAntennaBaseBlock)
+                return true;
+            if(!(state.getBlock() instanceof AntennaPoleBlock))
+                return false;
+        }
+        return false;
     }
 
     public static int getDistance(BlockGetter level, BlockPos pos) {
@@ -117,7 +135,7 @@ public class AntennaPoleBlock extends Block implements SimpleWaterloggedBlock {
 
         if (state.is(RadiocraftBlocks.ANTENNA_POLE.get()))
             i = Math.min(i, state.getValue(DISTANCE) + 1);
-        else if(state.isFaceSturdy(level, mutablePos, Direction.UP) || state.getBlock() instanceof BalunBlock)
+        else if(state.isFaceSturdy(level, mutablePos, Direction.UP) || state.getBlock() instanceof BalunBlock || state.getBlock() instanceof VerticalAntennaBaseBlock)
             return 0;
 
         return i;

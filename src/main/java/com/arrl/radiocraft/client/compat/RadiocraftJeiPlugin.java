@@ -52,6 +52,7 @@ public class RadiocraftJeiPlugin implements IModPlugin {
 		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.DtmfDecoderScreen.class, screen -> null);
 		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.moderation.ModerationComputerScreen.class, screen -> null); // It fills the window.
 		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.computer.RadioComputerScreen.class, screen -> null); // So does the radio computer.
+		registration.addGuiScreenHandler(com.arrl.radiocraft.client.screens.BandPlanScreen.class, screen -> null); // A sheet to read: JEI's list took clicks on its bars (2026-11-18).
 	}
 
 	/** Recipes JEI must not show: the MARS mod is contraband (maintainer, 2026-11-05). The item stays in the list. */

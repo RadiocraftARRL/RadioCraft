@@ -142,7 +142,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		BlockState wall = level.getBlockState(wallPos);
 		if(wall.getBlock() instanceof WireBlock wire && wire.conductsAll())
 			return true;
-		if(Strand.isCable(wall) || wall.isAir() || wall.getBlock() instanceof TowerBeamBlock)
+		if(Strand.isCable(wall) || wall.isAir() || isMast(wall))
 			return false;
 		for(BlockState strand : strands)
 			if(((WireBlock)strand.getBlock()).canConnectTo(level, wallPos))
@@ -690,7 +690,15 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 	 * width), which a cable running up it is drawn out against; 0 for anything else (a solid wall: the face itself).
 	 */
 	public static int beamReach(BlockGetter level, BlockPos wallPos) {
-		return level.getBlockState(wallPos).getBlock() instanceof TowerBeamBlock beam ? 8 - beam.getWidth() / 2 : 0;
+		BlockState wall = level.getBlockState(wallPos);
+		if(wall.getBlock() instanceof com.arrl.radiocraft.common.blocks.antennas.AntennaPoleBlock)
+			return 7; // An antenna pole, 2 px thick: coax beside it clings to it (2026-11-18).
+		return wall.getBlock() instanceof TowerBeamBlock beam ? 8 - beam.getWidth() / 2 : 0;
+	}
+
+	/** A tower beam or an antenna pole: a cable beside it runs up against the metal, not the block's face. */
+	public static boolean isMast(BlockState state) {
+		return state.getBlock() instanceof TowerBeamBlock || state.getBlock() instanceof com.arrl.radiocraft.common.blocks.antennas.AntennaPoleBlock;
 	}
 
 	/**
@@ -901,7 +909,7 @@ public class WireBlock extends Block implements SimpleWaterloggedBlock {
 		if(canConnectTo(level, wallPos))
 			return false;
 		BlockState wall = level.getBlockState(wallPos);
-		return wall.getBlock() instanceof TowerBeamBlock || wall.isFaceSturdy(level, wallPos, faceTowardsUs);
+		return isMast(wall) || wall.isFaceSturdy(level, wallPos, faceTowardsUs);
 	}
 
 	/**

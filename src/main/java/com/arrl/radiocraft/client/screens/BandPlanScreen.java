@@ -176,15 +176,23 @@ public class BandPlanScreen extends Screen {
 			guiGraphics.renderComponentTooltip(font, tooltip, mouseX, mouseY);
 	}
 
-	/** The tooltip for the mouse at {@code mouseX} over {@code row}'s bar: frequency, use, and markers under it. */
+	/**
+	 * The tooltip for the mouse at {@code mouseX} over {@code row}'s bar: the range of the part of the band under it and
+	 * what it is for (2026-11-18), then any markers near it. With no part there, the frequency alone.
+	 */
 	private List<Component> hover(BandPlan.Row row, int mouseX) {
 		Band band = row.band();
 		double hzPerPixel = ((double)band.maxFrequency() - band.minFrequency()) / barWidth;
 		double hz = band.minFrequency() + (mouseX - barLeft + 0.5D) * hzPerPixel;
 		List<Component> out = new ArrayList<>();
-		out.add(Component.literal(String.format(Locale.ROOT, "%.4f MHz", hz / 1_000_000.0D)));
-		String use = plan.useAt(hz);
-		out.add(Component.literal(use == null ? "-" : use));
+		BandPlan.Segment segment = plan.segmentAt(hz);
+		if(segment != null) {
+			out.add(Component.literal(mhz(segment.fromHz()) + " - " + mhz(segment.toHz()) + " MHz"));
+			out.add(Component.literal(segment.use()).withStyle(net.minecraft.ChatFormatting.GRAY));
+			out.add(Component.literal(BandPlan.legend(segment.colour())).withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+		}
+		else
+			out.add(Component.literal(String.format(Locale.ROOT, "%.4f MHz", hz / 1_000_000.0D)));
 		for(BandPlan.Marker marker : plan.markersNear(hz, hzPerPixel * 2.0D))
 			out.add(Component.literal(mhz(marker.hz()) + " " + marker.label()));
 		return out;

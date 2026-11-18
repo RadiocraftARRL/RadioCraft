@@ -1,6 +1,7 @@
 package com.arrl.radiocraft.datagen;
 
 import com.arrl.radiocraft.common.blocks.radios.MicrophoneBlock;
+import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import net.neoforged.neoforge.client.model.generators.MultiPartBlockStateBuilder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.core.Direction;
@@ -56,7 +57,7 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 		deskMicrophone();
 		wefax();
 		complexBlockWithItem(RadiocraftBlocks.SOLAR_PANEL.get());
-		complexBlockWithItem(RadiocraftBlocks.ANTENNA_POLE.get());
+		antennaPole();
 		towerFoothold(RadiocraftBlocks.TOWER_FOOTHOLD.get());
 		towerFoothold(RadiocraftBlocks.OLD_TOWER_FOOTHOLD.get());
 		radio(RadiocraftBlocks.QRP_RADIO_40M.get());
@@ -99,6 +100,19 @@ public class RadiocraftBlockstateProvider extends BlockStateProvider {
 	private void simpleBlockWithItem(Block block) {
 		simpleBlock(block);
 		simpleBlockItem(block, models().getExistingFile(modLoc("block/" + key(block).getPath())));
+	}
+
+	/** The antenna pole: straight, or on a Vertical Antenna Base tapering by its height (2026-11-18). */
+	private void antennaPole() {
+		Block pole = RadiocraftBlocks.ANTENNA_POLE.get();
+		ModelFile straight = models().getExistingFile(modLoc("block/antenna_pole"));
+		getVariantBuilder(pole).forAllStatesExcept(state -> {
+			if(!state.getValue(com.arrl.radiocraft.common.blocks.antennas.AntennaPoleBlock.ON_BASE))
+				return ConfiguredModel.builder().modelFile(straight).build();
+			int section = Math.min(6, state.getValue(com.arrl.radiocraft.common.blocks.antennas.AntennaPoleBlock.DISTANCE));
+			return ConfiguredModel.builder().modelFile(models().getExistingFile(modLoc("block/antenna_pole_taper_" + section))).build();
+		}, com.arrl.radiocraft.common.blocks.antennas.AntennaPoleBlock.WATERLOGGED, com.arrl.radiocraft.common.blocks.antennas.AntennaPoleBlock.BOTTOM);
+		simpleBlockItem(pole, straight);
 	}
 
 	private void complexBlockWithItem(Block block) {

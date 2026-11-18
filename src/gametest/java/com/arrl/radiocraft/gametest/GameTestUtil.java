@@ -24,12 +24,12 @@ public final class GameTestUtil {
 
     /**
      * Strings an antenna wire between two relative positions, the same way a player using the wire item would. Wires
-     * only survive between wire-holder blocks (poles, baluns, connectors), so if {@code to} is air an antenna pole is
-     * placed there first.
+     * only survive between wire-holder blocks (baluns and Antenna Wire Isolators; not poles since 2026-11-18), so if
+     * {@code to} is air an isolator is placed there first.
      */
     public static AntennaWire wire(GameTestHelper helper, BlockPos from, BlockPos to) {
         if (helper.getBlockState(to).isAir())
-            helper.setBlock(to, RadiocraftBlocks.ANTENNA_POLE.get());
+            helper.setBlock(to, RadiocraftBlocks.ANTENNA_CONNECTOR.get());
         AntennaWire wire = new AntennaWire(helper.getLevel(), helper.absolutePos(from));
         helper.getLevel().addFreshEntity(wire);
         wire.setEndPos(helper.absolutePos(to));

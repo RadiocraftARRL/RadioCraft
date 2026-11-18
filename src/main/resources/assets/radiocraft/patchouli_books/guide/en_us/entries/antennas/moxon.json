@@ -19,22 +19,23 @@
       "multiblock": {
         "mapping": {
           "0": "radiocraft:balun_one_to_one[placed_on=down]",
-          "P": "radiocraft:antenna_pole"
+          "P": "radiocraft:antenna_pole",
+          "I": "radiocraft:antenna_connector[placed_on=up]"
         },
         "pattern": [
           [
-            "PPPP",
+            "IIII",
             "    ",
             "    ",
             "0   ",
             "    ",
             "    ",
             "    ",
-            "PPPP"
+            "IIII"
           ]
         ]
       },
-      "text": "Wire balun to both front poles, each front pole one back, then the reflector from the third poles round the back. It beams away from the reflector.",
+      "text": "Wire balun to the isolators on both front poles, each one back, then the reflector from the third ones round the back. It beams away from the reflector.",
       "radiocraft_wires": [
         [
           [

@@ -19,18 +19,19 @@
       "multiblock": {
         "mapping": {
           "0": "radiocraft:balun_four_to_one[placed_on=down]",
-          "P": "radiocraft:antenna_pole"
+          "P": "radiocraft:antenna_pole",
+          "I": "radiocraft:antenna_connector[placed_on=up]"
         },
         "pattern": [
           [
             "0      ",
             "       ",
             "       ",
-            "      P",
+            "      I",
             "       ",
             "       ",
             "       ",
-            "P      "
+            "I      "
           ],
           [
             "P      ",
@@ -74,7 +75,7 @@
           ]
         ]
       },
-      "text": "Balun and two corner poles, all 4 blocks up. String wire balun, corner, apex corner, balun.",
+      "text": "Balun and two corner poles with isolators on top, all 4 blocks up. String wire balun, corner, apex corner, balun.",
       "radiocraft_wires": [
         [
           [

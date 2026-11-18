@@ -20,13 +20,14 @@
           "G": "radiocraft:solar_panel",
           "Q": "radiocraft:charge_controller[facing=west]",
           "V": "radiocraft:large_battery[facing=west]",
-          "r": "radiocraft:wire[east=true,west=true]"
+          "r": "radiocraft:wire[east=true,west=true]",
+          "I": "radiocraft:antenna_connector[placed_on=up]"
         },
         "pattern": [
           [
             "G   ",
             "G   ",
-            "G  P",
+            "G  I",
             "Q   ",
             "r   ",
             "V   ",
@@ -36,11 +37,11 @@
             "    ",
             "    ",
             "    ",
-            "   P"
+            "   I"
           ]
         ]
       },
-      "text": "Wire from the balun to each pole, 5 blocks each side. Solar panels, controller and battery power it.",
+      "text": "Wire from the balun to the isolator on each pole, 5 blocks each side. Solar panels, controller and battery power it.",
       "radiocraft_wires": [
         [
           [

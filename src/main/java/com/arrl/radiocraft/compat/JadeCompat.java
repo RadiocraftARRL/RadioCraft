@@ -42,6 +42,12 @@ public class JadeCompat implements IWailaPlugin {
 
     @Override
     public void registerClient(IWailaClientRegistration registration) {
+        // Jade's box is part of the HUD, which draws under open screens: our screens (the computer, radio panels) do not
+        // dim the world behind them, so it showed through at the top left. Hide it while one is open (2026-11-18).
+        registration.addBeforeRenderCallback((box, rect, graphics, accessor) -> {
+            net.minecraft.client.gui.screens.Screen screen = net.minecraft.client.Minecraft.getInstance().screen;
+            return screen != null && screen.getClass().getName().startsWith("com.arrl.radiocraft.");
+        });
         registration.registerBlockComponent(AntennaWireProvider.INSTANCE, AntennaCenterBlock.class);
         registration.registerBlockComponent(AntennaInfoProvider.INSTANCE, AntennaCenterBlock.class);
         registration.registerBlockComponent(CoaxWireProvider.INSTANCE, WireBlock.class);

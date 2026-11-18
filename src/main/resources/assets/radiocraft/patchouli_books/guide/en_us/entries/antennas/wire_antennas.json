@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Wire antennas are strung between $(item)wire holders$(): baluns, $(item)antenna poles$() and $(item)antenna connectors$(). Right click one holder with $(item)antenna wire$(), then another, and a wire runs between them. A wire must end on a holder or it falls down."
+      "text": "Wire antennas are strung between $(item)wire holders$(): baluns and $(item)Antenna Wire Isolators$(). Not $(item)antenna poles$(): metal would become part of the antenna, so put an isolator (or a balun) on top of a pole to hold a wire up there. Coax run up beside a pole clings to it. Right click one holder with $(item)antenna wire$(), then another, and a wire runs between them. A wire must end on a holder or it falls down."
     },
     {
       "type": "patchouli:text",

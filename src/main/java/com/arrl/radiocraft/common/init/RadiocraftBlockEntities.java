@@ -115,6 +115,7 @@ public class RadiocraftBlockEntities {
 
 	public static final Supplier<BlockEntityType<?>> ANTENNA = BLOCK_ENTITY_TYPES.register("antenna",
 			() -> BlockEntityType.Builder.of(AntennaBlockEntity::new,
+					RadiocraftBlocks.VERTICAL_ANTENNA_BASE.get(), // 2026-11-18.
 					RadiocraftBlocks.BALUN_ONE_TO_ONE.get(),
 					RadiocraftBlocks.BALUN_FOUR_TO_ONE.get(), RadiocraftBlocks.BALUN_TWO_TO_ONE.get(),
 					RadiocraftBlocks.BALUN_NINE_TO_ONE.get(),

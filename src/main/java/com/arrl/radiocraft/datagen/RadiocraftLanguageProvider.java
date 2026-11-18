@@ -146,7 +146,8 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("message.radiocraft.ground.excellent", "excellent");
 			provider.addBlock(RadiocraftBlocks.ANTENNA_TUNER, "Antenna Tuner");
 			provider.addBlock(RadiocraftBlocks.AUTO_TUNER, "Automatic Antenna Tuner");
-			provider.addBlock(RadiocraftBlocks.ANTENNA_CONNECTOR, "Antenna Connector");
+			provider.addBlock(RadiocraftBlocks.ANTENNA_CONNECTOR, "Antenna Wire Isolator");
+			provider.addBlock(RadiocraftBlocks.VERTICAL_ANTENNA_BASE, "Vertical Antenna Base");
 			provider.addBlock(RadiocraftBlocks.BALUN_ONE_TO_ONE, "Balun (1:1)");
 			provider.addBlock(RadiocraftBlocks.BALUN_FOUR_TO_ONE, "Balun (4:1)");
 			provider.addBlock(RadiocraftBlocks.BALUN_TWO_TO_ONE, "Balun (2:1)");
@@ -596,8 +597,10 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
             provider.add(Radiocraft.translationKey("tooltip", "old_tower_foothold"), "Weathered. Now and then one gives way under a climber.");
             provider.add(Radiocraft.translationKey("commands", "guide.given"), "Gave %s the ARRL Radiocraft Handbook");
             provider.add(Radiocraft.translationKey("commands", "guide.no_patchouli"), "The ARRL Radiocraft Handbook needs the Patchouli mod, which is not installed");
-            provider.add(Radiocraft.translationKey("tooltip", "antenna_pole"), "Holds the end of an antenna wire. Use antenna wire on this and another holder to string a wire between them.");
-            provider.add(Radiocraft.translationKey("tooltip", "antenna_connector"), "Joins antenna wires and coax: a wire holder you can also run coax into.");
+            provider.add(Radiocraft.translationKey("tooltip", "vertical_antenna_base"), "Stack antenna poles on it and feed it with coax. Right click to move the loading coil's tap: 10 m wants 3 poles, 20 m 5, 40 m 6, 80 m 7.");
+            provider.add("message.radiocraft.vertical_antenna_base.tap", "Coil tapped for %s: wants %s poles, %s up");
+            provider.add(Radiocraft.translationKey("tooltip", "antenna_pole"), "A metal mast section. Stack them on a Vertical Antenna Base for a vertical (they taper as they go up), or put an Antenna Wire Isolator or a balun on top to hold a wire antenna up. Coax beside it clings to it.");
+            provider.add(Radiocraft.translationKey("tooltip", "antenna_connector"), "Holds the end of an antenna wire, insulated from what it stands on (a wall, a block, or the top of an antenna pole), and joins antenna wires and coax.");
             provider.add(Radiocraft.translationKey("tooltip", "j_pole_antenna"), "VHF antenna for 2m base stations and repeaters. Connect it with coax.");
             provider.add(Radiocraft.translationKey("tooltip", "eggbeater_antenna"), "VHF satellite antenna: strong all pass long, best overhead, where a J-pole or whip fades and loses the uplink. A little shorter reach along the ground. Connect it with coax.");
             provider.add(Radiocraft.translationKey("tooltip", "satellite_tracker"), "VHF dish on a powered mount that follows a satellite across the sky: full strength all pass long, even under an aurora or in a storm, and the only way to hear a stealth satellite. Coax to the radio, power wire to the mount; it draws power while it tracks. It follows the satellite its radio is tuned to, else the highest one up.");

@@ -65,8 +65,9 @@ public enum AntennaInfoProvider implements IBlockComponentProvider, IServerDataP
         if(antennaData instanceof EndFedAntennaData endFed) {
             data.putString("antennaDimension_" + index++, String.format("Length: %.2f m", endFed.getLength()));
         }
-        else if(antennaData instanceof QuarterWaveVerticalAntennaData vertical) {
-            data.putString("antennaDimension_" + index++, "Height: " + vertical.getHeight() + " m");
+        else if(antennaData instanceof com.arrl.radiocraft.common.radio.antenna.data.VerticalAntennaData vertical) {
+            data.putString("antennaDimension_" + index++, "Poles: " + vertical.getPoles() + " m");
+            data.putString("antennaDimension_" + index++, "Coil: " + vertical.getTapMetres() + " m tap");
         }
         else if(antennaData instanceof DipoleAntennaData dipole) {
             data.putString("antennaDimension_" + index++, String.format("Arm 1: %.2f m", dipole.getArmLength1()));
@@ -105,8 +106,6 @@ public enum AntennaInfoProvider implements IBlockComponentProvider, IServerDataP
         double wavelengthMeters = 0.0D;
         if(antennaData instanceof EndFedAntennaData endFed)
             wavelengthMeters = endFed.getLength() * 4.0D;
-        else if(antennaData instanceof QuarterWaveVerticalAntennaData vertical)
-            wavelengthMeters = vertical.getHeight() * 4.0D;
         else if(antennaData instanceof DipoleAntennaData dipole)
             wavelengthMeters = ((dipole.getArmLength1() + dipole.getArmLength2()) / 2.0D) * 4.0D;
         else if(antennaData instanceof InvertedVAntennaData v)

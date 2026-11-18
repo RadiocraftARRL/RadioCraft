@@ -96,6 +96,8 @@ keeps the history).
 - [ ] Test the wire antennas: dipole, inverted V, random wire on 9:1, OCFD on 4:1, delta loop, Moxon (Jade names, SWR, Moxon reflector strung last)
 - [ ] Test improvised antennas (bent dipole reads Improvised, still works, tuner fixes it)
 - [x] Test the 5-BTV (seven segments, SWR 1.3, coax runs in, hitbox)
+- [ ] Test the Vertical Antenna Base (2026-11-18): model (stone pad, eight radials, ceramic insulator, coil, tap clip moving up the coil per band); right click cycles the tap 10/20/40/80 m (sneak goes back) and says poles wanted vs up; poles on it taper as they go up with collars, poles elsewhere stay straight; 3/5/6/7 poles match (1.3:1), one off about 2.5:1 and a tuner fixes it; coax runs into the base; an old 1:1 balun with poles is no longer an antenna
+- [ ] Test poles with wire antennas (2026-11-18): antenna wire no longer attaches to a pole (wires already on poles in old worlds drop); an Antenna Wire Isolator (the renamed Antenna Connector) and a balun sit on top of a pole and hold wire; coax placed beside a pole runs up against it and turns into a balun on top; the guide's dipole, delta loop, Moxon, HF radio and teletype pictures show isolators on the poles
 - [x] Test the J-pole, Slim Jim and Yagi (no flicker with coax, still hear after a restart, yagi aimed in 16 directions)
 - [x] Test the VHF Ringo and folded dipole (models, range, lightning damage)
 - [x] Test the EB-VHF eggbeater (two blocks, model, best for satellites overhead)
@@ -183,10 +185,12 @@ keeps the history).
 - [x] Test the commercial radio module (sealed cabinet, creative setup screen, SSB/AM, dead air hiss)
 - [ ] Test speakers (desk, wall, large/premium; passband, static, music from a computer)
 - [x] Test the camera and photo paper (viewfinder, zoom, color/B&W, cooldown, item frame, fax PHOTO slot, `camera_photo_cap`, `camera_enabled`)
+- [ ] Check the Band Plan sheet: clicking a bar does nothing (no JEI recipes), and its tooltip gives the part of the band (e.g. 14.000 - 14.150 MHz), what it is for and its category, then markers near it (2026-11-18)
 - [ ] Test the Band Plan on a wall (use the sheet on a block's side to hang it, all four ways round; right click to read; break it or the wall and the sheet drops; floor/ceiling still reads it; placeholder model, 2026-11-18)
 
 ## Radio computer
 
+- [ ] Check the Jade box no longer shows through at the top left while the computer (or any radio panel) is open, and still shows with no screen open (2026-11-18)
 - [x] Test the radio computer, monitor and scanner (Shift+Esc (or Leave in any menu) steps away with the program still on the screen; every program left on it keeps running on the monitor while you are within 18 blocks, SATTRACK and WXSAT included, games paused; models, boot, text mode, keys, live monitor in the world, power (2026-11-15: the monitor is dark with no power, and goes dark a second or two after the battery runs flat), two players at once, break and replace keeps files)
 - [x] Test the shell and SETUP (launcher views, Program Manager icons, prompt commands, colour schemes, password, name and clock, Services page, ABOUT, launcher search)
 - [x] Test menu bars in every program (click items, greyed items, keyboard still works, no icons through menus)

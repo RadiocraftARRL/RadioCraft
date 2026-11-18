@@ -69,7 +69,7 @@ public class SableGameTests {
     }
 
     private static BlockPos place(GameTestHelper helper, BlockPos pos) {
-        helper.setBlock(pos, RadiocraftBlocks.ANTENNA_POLE.get());
+        helper.setBlock(pos, RadiocraftBlocks.ANTENNA_CONNECTOR.get()); // A wire holder (poles are not, 2026-11-18).
         return pos;
     }
 }

@@ -1,26 +1,33 @@
 {
-  "name": "Quarter-Wave Vertical",
-  "icon": "radiocraft:antenna_pole",
+  "name": "Vertical Antenna",
+  "icon": "radiocraft:vertical_antenna_base",
   "category": "radiocraft:antennas",
   "sortnum": 3,
   "pages": [
     {
+      "type": "patchouli:spotlight",
+      "item": "radiocraft:vertical_antenna_base",
+      "title": "Vertical Antenna Base",
+      "text": "A stone pad with radials and a $(thing)loading coil$(). Stack $(item)antenna poles$() straight up on it (they taper as they go up) and run coax into the base: that is a vertical. Right click the base to move the coil's tap to the band you want."
+    },
+    {
       "type": "patchouli:text",
-      "text": "Stack $(item)antenna poles$() straight up on a $(item)1:1 balun$(), with no wire at all. The stack must be exactly a quarter wave tall for the band (5 poles on 20 m, 3 on 10 m): one block off and it does not match."
+      "title": "Poles for each band",
+      "text": "$(li)10 m: 3 poles$(li)20 m: 5 poles$(li)40 m: 6 poles (more of the coil)$(li)80 m: 7 poles (most of the coil)$(br2)Right on: SWR 1.3. One pole off: about 2.5, which a tuner can fix. Off the tapped band it does not match.$(br2)It sends low, like any vertical: less reach by line of sight, more by skip. The coil costs a little on 40 m and more on 80 m."
     },
     {
       "type": "patchouli:multiblock",
       "name": "A 20 m vertical",
       "multiblock": {
         "mapping": {
-          "B": "radiocraft:balun_one_to_one[placed_on=down]",
           "P": "radiocraft:antenna_pole",
           "a": "radiocraft:coax_wire[north=true,south=true]",
           "0": "radiocraft:hf_radio_20m[facing=west]",
           "G": "radiocraft:solar_panel",
           "Q": "radiocraft:charge_controller[facing=west]",
           "V": "radiocraft:large_battery[facing=west]",
-          "r": "radiocraft:wire[east=true,west=true]"
+          "r": "radiocraft:wire[east=true,west=true]",
+          "A": "radiocraft:vertical_antenna_base[tap=b20]"
         },
         "pattern": [
           [
@@ -81,11 +88,11 @@
             "r  ",
             "V  ",
             "r  ",
-            "0aB"
+            "0aA"
           ]
         ]
       },
-      "text": "Five poles on the balun. Solar panels, controller and battery power it."
+      "text": "Five poles on the base, its coil tapped for 20 m. Solar panels, controller and battery power it."
     }
   ]
 }

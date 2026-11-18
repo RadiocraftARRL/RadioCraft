@@ -250,6 +250,7 @@ public class RadiocraftItems {
 	public static final Supplier<BlockItem> ANTENNA_TUNER = simpleBlockItem("antenna_tuner", RadiocraftBlocks.ANTENNA_TUNER);
 	public static final Supplier<BlockItem> AUTO_TUNER = simpleBlockItem("auto_tuner", RadiocraftBlocks.AUTO_TUNER);
 	public static final Supplier<BlockItem> ANTENNA_CONNECTOR = simpleBlockItem("antenna_connector", RadiocraftBlocks.ANTENNA_CONNECTOR);
+	public static final Supplier<BlockItem> VERTICAL_ANTENNA_BASE = simpleBlockItem("vertical_antenna_base", RadiocraftBlocks.VERTICAL_ANTENNA_BASE); // 2026-11-18.
 	public static final Supplier<BlockItem> BALUN_ONE_TO_ONE = simpleBlockItem("balun_one_to_one", RadiocraftBlocks.BALUN_ONE_TO_ONE);
 	public static final Supplier<BlockItem> BALUN_FOUR_TO_ONE = simpleBlockItem("balun_four_to_one", RadiocraftBlocks.BALUN_FOUR_TO_ONE);
 	public static final Supplier<BlockItem> BALUN_TWO_TO_ONE = simpleBlockItem("balun_two_to_one", RadiocraftBlocks.BALUN_TWO_TO_ONE);

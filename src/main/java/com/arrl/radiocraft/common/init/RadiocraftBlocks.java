@@ -246,6 +246,9 @@ public class RadiocraftBlocks {
 	public static final DeferredHolder<Block, TowerFootholdBlock> OLD_TOWER_FOOTHOLD = BLOCKS.register("old_tower_foothold", () -> new TowerFootholdBlock(PROPERTIES_FOOTHOLD, true));
 	public static final DeferredHolder<Block, AntennaPoleBlock> ANTENNA_POLE = BLOCKS.register("antenna_pole", () -> new AntennaPoleBlock(PROPERTIES_IRON_BARS));
 	public static final DeferredHolder<Block, AntennaConnectorBlock> ANTENNA_CONNECTOR = BLOCKS.register("antenna_connector", () -> new AntennaConnectorBlock(PROPERTIES_STONE_NO_OCCLUDE));
+	/** The Vertical Antenna Base (2026-11-18): a pad, radials and a loading coil for a vertical of antenna poles. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.antennas.VerticalAntennaBaseBlock> VERTICAL_ANTENNA_BASE = BLOCKS.register("vertical_antenna_base",
+			() -> new com.arrl.radiocraft.common.blocks.antennas.VerticalAntennaBaseBlock(Properties.ofFullCopy(Blocks.SMOOTH_STONE_SLAB).noOcclusion()));
 	public static final DeferredHolder<Block, BalunBlock> BALUN_ONE_TO_ONE = BLOCKS.register("balun_one_to_one", () -> new BalunBlock(PROPERTIES_STONE_NO_OCCLUDE, "balun_one_to_one"));
 	public static final DeferredHolder<Block, BalunBlock> BALUN_FOUR_TO_ONE = BLOCKS.register("balun_four_to_one", () -> new BalunBlock(PROPERTIES_STONE_NO_OCCLUDE, "balun_four_to_one"));
 	public static final DeferredHolder<Block, BalunBlock> BALUN_TWO_TO_ONE = BLOCKS.register("balun_two_to_one", () -> new BalunBlock(PROPERTIES_STONE_NO_OCCLUDE, "balun_two_to_one"));

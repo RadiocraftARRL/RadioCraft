@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "A $(item)balun$() joins coax to antenna wire, and its ratio decides the antenna:$(li)$(thing)1:1$(): dipole, inverted V, end-fed, vertical$(li)$(thing)2:1$(): quad loops$(li)$(thing)4:1$(): off-centre-fed dipole$(li)$(thing)9:1$(): random wire",
+      "text": "A $(item)balun$() joins coax to antenna wire, and its ratio decides the antenna:$(li)$(thing)1:1$(): dipole, inverted V, end-fed$(li)$(thing)2:1$(): quad loops$(li)$(thing)4:1$(): off-centre-fed dipole$(li)$(thing)9:1$(): random wire",
       "title": "Baluns"
     },
     {

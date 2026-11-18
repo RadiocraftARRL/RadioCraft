@@ -15,7 +15,8 @@ public class RadiocraftAntennaTypes {
 	public static EndFedAntennaType END_FED;
 	public static HorizontalQuadLoopAntennaType HORIZONTAL_QUAD_LOOP;
 	public static VerticalQuadLoopAntennaType VERTICAL_QUAD_LOOP;
-	public static QuarterWaveVerticalAntennaType QUARTER_WAVE_VERTICAL;
+	/** A vertical on a Vertical Antenna Base (2026-11-18; the 1:1 balun quarter-wave vertical is gone). */
+	public static com.arrl.radiocraft.common.radio.antenna.types.VerticalAntennaType VERTICAL;
 	public static InvertedVAntennaType INVERTED_V;
 	public static RandomWireAntennaType RANDOM_WIRE;
 	public static OffCenterFedDipoleAntennaType OFF_CENTER_FED_DIPOLE;
@@ -47,7 +48,7 @@ public class RadiocraftAntennaTypes {
 		END_FED = AntennaTypes.registerType(new EndFedAntennaType());
 		HORIZONTAL_QUAD_LOOP = AntennaTypes.registerType(new HorizontalQuadLoopAntennaType());
 		VERTICAL_QUAD_LOOP = AntennaTypes.registerType(new VerticalQuadLoopAntennaType());
-		QUARTER_WAVE_VERTICAL = AntennaTypes.registerType(new QuarterWaveVerticalAntennaType());
+		VERTICAL = AntennaTypes.registerType(new com.arrl.radiocraft.common.radio.antenna.types.VerticalAntennaType());
 		INVERTED_V = AntennaTypes.registerType(new InvertedVAntennaType());
 		RANDOM_WIRE = AntennaTypes.registerType(new RandomWireAntennaType());
 		OFF_CENTER_FED_DIPOLE = AntennaTypes.registerType(new OffCenterFedDipoleAntennaType());

@@ -94,7 +94,7 @@ public class DeltaLoopMoxonGameTests {
         GameTestUtil.wire(helper, front1, front1.south());
         GameTestUtil.wire(helper, front2, front2.south());
         if(reflector) {
-            helper.setBlock(front1.south(2), RadiocraftBlocks.ANTENNA_POLE.get());
+            helper.setBlock(front1.south(2), RadiocraftBlocks.ANTENNA_CONNECTOR.get());
             GameTestUtil.wire(helper, front1.south(2), front1.south(3));
             GameTestUtil.wire(helper, front1.south(3), front2.south(3));
             GameTestUtil.wire(helper, front2.south(3), front2.south(2));
@@ -143,7 +143,7 @@ public class DeltaLoopMoxonGameTests {
                 .thenWaitUntil(() -> helper.assertTrue(antenna(helper, balun) != null, "Antenna not recognized yet"))
                 .thenExecute(() -> {
                     helper.assertTrue(antenna(helper, balun).type != RadiocraftAntennaTypes.MOXON, "A Moxon before its reflector");
-                    helper.setBlock(front1.south(2), RadiocraftBlocks.ANTENNA_POLE.get());
+                    helper.setBlock(front1.south(2), RadiocraftBlocks.ANTENNA_CONNECTOR.get());
                     GameTestUtil.wire(helper, front1.south(2), front1.south(3));
                     back[0] = GameTestUtil.wire(helper, front1.south(3), front2.south(3));
                     GameTestUtil.wire(helper, front2.south(3), front2.south(2));
