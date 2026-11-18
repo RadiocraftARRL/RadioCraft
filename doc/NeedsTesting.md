@@ -49,6 +49,7 @@ keeps the history).
 ## CB radios
 
 - [x] Test the CB mobiles 5875 and PC68 (panels, block models, channel/clock windows, volume knob on/off, FUNCTION/CLAR/RF GAIN, NB/ANL, AM/FM)
+- [ ] Look at the PC68's panel again (its background was stretched, so the painted knobs sat below the live ones over the labels; the mic cord is back under the faceplate, 2026-11-18)
 - [x] Test the CB portable (3D item, screen, battery, two players talking, belt slot, held size)
 - [x] Test the CB ground plane antenna (five blocks, breaks as one)
 - [ ] Test next-channel bleedover (19 and 20 close together)
