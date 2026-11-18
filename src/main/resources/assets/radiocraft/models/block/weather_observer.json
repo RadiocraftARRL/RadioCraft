@@ -1,0 +1,293 @@
+{
+  "credit": "tools/weather_observer_model.py (placeholder, see doc/ModelDesignBounty.md)",
+  "parent": "block/block",
+  "textures": {
+    "all": "radiocraft:block/weather_observer",
+    "particle": "radiocraft:block/weather_observer"
+  },
+  "elements": [
+    {
+      "name": "case",
+      "from": [
+        3,
+        0,
+        4
+      ],
+      "to": [
+        13,
+        5,
+        13
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#all"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#all"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#all"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#all"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#all",
+          "cullface": "down"
+        },
+        "north": {
+          "uv": [
+            0,
+            0,
+            8,
+            8
+          ],
+          "texture": "#all"
+        }
+      }
+    },
+    {
+      "name": "panel",
+      "from": [
+        3.5,
+        0.5,
+        3.5
+      ],
+      "to": [
+        12.5,
+        4.5,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#all"
+        },
+        "east": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#all"
+        },
+        "west": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#all"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#all"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#all"
+        }
+      }
+    },
+    {
+      "name": "label",
+      "from": [
+        5,
+        2.5,
+        3.4
+      ],
+      "to": [
+        10,
+        3.5,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            8,
+            10
+          ],
+          "texture": "#all"
+        }
+      }
+    },
+    {
+      "name": "lamp",
+      "from": [
+        10.5,
+        2.5,
+        3.2
+      ],
+      "to": [
+        11.5,
+        3.5,
+        3.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            10,
+            10
+          ],
+          "texture": "#all"
+        },
+        "east": {
+          "uv": [
+            8,
+            8,
+            10,
+            10
+          ],
+          "texture": "#all"
+        },
+        "west": {
+          "uv": [
+            8,
+            8,
+            10,
+            10
+          ],
+          "texture": "#all"
+        },
+        "up": {
+          "uv": [
+            8,
+            8,
+            10,
+            10
+          ],
+          "texture": "#all"
+        },
+        "down": {
+          "uv": [
+            8,
+            8,
+            10,
+            10
+          ],
+          "texture": "#all"
+        }
+      }
+    },
+    {
+      "name": "gland",
+      "from": [
+        7,
+        1.5,
+        13
+      ],
+      "to": [
+        9,
+        3.5,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#all"
+        },
+        "east": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#all"
+        },
+        "south": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#all"
+        },
+        "west": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#all"
+        },
+        "up": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#all"
+        },
+        "down": {
+          "uv": [
+            12,
+            8,
+            16,
+            12
+          ],
+          "texture": "#all"
+        }
+      }
+    }
+  ]
+}

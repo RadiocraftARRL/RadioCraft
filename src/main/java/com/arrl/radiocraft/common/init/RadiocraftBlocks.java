@@ -137,6 +137,9 @@ public class RadiocraftBlocks {
 			() -> new com.arrl.radiocraft.common.blocks.WeatherAlertGeneratorBlock(PROPERTIES_RADIO));
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock> WEATHER_ALERT_RECEIVER = BLOCKS.register("weather_alert_receiver",
 			() -> new com.arrl.radiocraft.common.blocks.WeatherAlertReceiverBlock(PROPERTIES_RADIO));
+	/** The Weather Observer (2026-11-18): a Local Weather Station's readings out through a radio, for weather alert generators. */
+	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.WeatherObserverBlock> WEATHER_OBSERVER = BLOCKS.register("weather_observer",
+			() -> new com.arrl.radiocraft.common.blocks.WeatherObserverBlock(PROPERTIES_RADIO));
 	/** Fire alarms and SCADA on the radio mesh (2026-11-10). Placeholder models until the maintainer's are made. */
 	public static final DeferredHolder<Block, com.arrl.radiocraft.common.blocks.mesh.FireAlarmBoxBlock> FIRE_ALARM_BOX = BLOCKS.register("fire_alarm_box",
 			() -> new com.arrl.radiocraft.common.blocks.mesh.FireAlarmBoxBlock(PROPERTIES_RADIO));

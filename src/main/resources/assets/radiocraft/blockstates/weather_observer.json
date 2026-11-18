@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,sending=false": {
+      "model": "radiocraft:block/weather_observer"
+    },
+    "facing=north,sending=true": {
+      "model": "radiocraft:block/weather_observer_sending"
+    },
+    "facing=east,sending=false": {
+      "model": "radiocraft:block/weather_observer",
+      "y": 90
+    },
+    "facing=east,sending=true": {
+      "model": "radiocraft:block/weather_observer_sending",
+      "y": 90
+    },
+    "facing=south,sending=false": {
+      "model": "radiocraft:block/weather_observer",
+      "y": 180
+    },
+    "facing=south,sending=true": {
+      "model": "radiocraft:block/weather_observer_sending",
+      "y": 180
+    },
+    "facing=west,sending=false": {
+      "model": "radiocraft:block/weather_observer",
+      "y": 270
+    },
+    "facing=west,sending=true": {
+      "model": "radiocraft:block/weather_observer_sending",
+      "y": 270
+    }
+  }
+}

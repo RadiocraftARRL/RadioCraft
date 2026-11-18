@@ -287,7 +287,7 @@ public class RadiocraftLanguageProvider extends LanguageProvider {
 			provider.add("screen.radiocraft.pabx.all_call_taken", "A phone already has extension %s");
 			provider.add("screen.radiocraft.pabx.ext_in_use", "EXT IN USE: %s");
 			provider.add("screen.radiocraft.pabx.bad_extension", "The first extension is a number from 0 to 99999");
-			provider.addBlock(RadiocraftBlocks.WEATHER_STATION, "Weather Station");
+			provider.addBlock(RadiocraftBlocks.WEATHER_STATION, "Local Weather Station");
 			// The alternator only exists with Create (compat/create), so it is named by key.
 			provider.add("block.radiocraft.alternator", "Alternator");
 			provider.add("radiocraft.goggles.alternator.production", "Energy Production:");

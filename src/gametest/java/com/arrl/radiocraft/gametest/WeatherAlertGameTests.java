@@ -177,7 +177,7 @@ public class WeatherAlertGameTests {
 		helper.startSequence()
 				.thenIdle(2)
 				.thenExecute(() -> {
-					helper.assertTrue(state(helper, lone) == WeatherAlertGeneratorBlockEntity.State.NO_APRS,
+					helper.assertTrue(state(helper, lone) == WeatherAlertGeneratorBlockEntity.State.NO_SOURCE,
 							"a generator with no APRS station is " + state(helper, lone));
 					helper.assertTrue(state(helper, generator) == WeatherAlertGeneratorBlockEntity.State.TOO_FEW,
 							"a station that heard nothing is " + state(helper, generator));

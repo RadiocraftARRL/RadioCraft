@@ -93,6 +93,7 @@ public class RadiocraftBlockTagsProvider extends BlockTagsProvider {
                 .add(RadiocraftBlocks.RADIO_COMPUTER.get(), RadiocraftBlocks.SCANNER.get()) // The computer's line to its radios, scanner and station bus.
                 .add(RadiocraftBlocks.ADSB_RECEIVER.get()) // The computer's ADS-B program reads it.
                 .add(RadiocraftBlocks.WEATHER_ALERT_GENERATOR.get()) // Its line to the APRS station (weather alerts, 1.12).
+                .add(RadiocraftBlocks.WEATHER_OBSERVER.get()) // Its line to its radio (2026-11-18).
                 .add(RadiocraftBlocks.MICROPHONE.get()) // A desk mic away from its radio, on the radio's data wire (2026-11-14).
                 .add(RadiocraftBlocks.WEATHER_ALERT_RECEIVER.get(), RadiocraftBlocks.WEATHER_STATION.get()) // An FM station's alert decoder and instruments (2026-11-14).
                 .add(RadiocraftBlocks.WIRE_JUNCTION.get()) // Data wire of any colour joins through it, as power wire does (2026-11-09).

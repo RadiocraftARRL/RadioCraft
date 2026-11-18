@@ -11,13 +11,23 @@ public final class WeatherAlertLang {
 	public static void add(LanguageProvider provider) {
 		provider.addBlock(RadiocraftBlocks.WEATHER_ALERT_GENERATOR, "Simple Weather Alert Generator");
 		provider.addBlock(RadiocraftBlocks.WEATHER_ALERT_RECEIVER, "Simple Weather Alert Receiver");
+		provider.addBlock(RadiocraftBlocks.WEATHER_OBSERVER, "Weather Observer");
+		provider.add("tooltip.radiocraft.weather_observer", "Touch it to a radio (or cable it with data wire) within 64 blocks of a Local Weather Station: every 5 minutes, and on a redstone pulse, it sends the station's readings on the radio's frequency. A Weather Alert Generator with a radio on that frequency counts it as a station. One callsign does for all your observers.");
+		java.util.function.BiConsumer<String, String> o = (key, text) -> provider.add("message.radiocraft.weather_observer." + key, text);
+		o.accept("no_callsign", "No callsign: right-click it once you have one.");
+		o.accept("no_station", "No Local Weather Station within %s blocks.");
+		o.accept("no_radio", "No radio: touch it to one, or cable it to one with data wire.");
+		o.accept("radio_off", "Its radio is off.");
+		o.accept("ready", "Sending as %s on %s MHz, from a Local Weather Station %s blocks away.");
+		o.accept("last", "Last report %s min ago; every %s min.");
 		provider.add("tooltip.radiocraft.weather_alert_generator", "Touch it to an APRS station (an H19 or a radio computer running APRS) that hears weather beacons, and it broadcasts weather alerts for their area on 162.500 MHz: one station warns of what is at it, two (150+ blocks apart) of storms heading in, three add watches. Needs power and a VHF antenna on coax.");
 		provider.add("tooltip.radiocraft.weather_alert_receiver", "Battery weather radio for 162.500 MHz: flashes, beeps, speaks and gives one redstone pulse on an alert for where it stands. Shift + right-click with a Small Alkaline (or NiCd) Battery to change it.");
 
 		java.util.function.BiConsumer<String, String> g = (key, text) -> provider.add("message.radiocraft.weather_alert_generator." + key, text);
 		g.accept("no_power", "No power: run a power wire to it.");
-		g.accept("no_aprs", "No APRS station: touch it to an H19 APRS terminal or a radio computer with APRS installed, or cable it to one with data wire.");
-		g.accept("too_few", "No weather station heard yet: it needs at least one APRS weather beacon (more, each %s+ blocks apart, do more).");
+		g.accept("no_source", "Nothing to hear weather stations with: touch it to an APRS station (an H19, a Headless TNC or a radio computer running APRS) or to a radio for Weather Observers, or cable it to one with data wire.");
+		g.accept("observer", "%s observer");
+		g.accept("too_few", "No weather station heard yet: it needs at least one APRS weather beacon or Weather Observer (more, each %s+ blocks apart, do more).");
 		g.accept("no_antenna", "No antenna: coax a VHF antenna to it.");
 		g.accept("two_antennas", "More than one antenna on its coax: it can send through only one.");
 		g.accept("ready", "On the air on 162.500 MHz: %s, an area about %s blocks across.");
