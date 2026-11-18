@@ -14,9 +14,6 @@ someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
   (maintainer, 2026-11-15)
 - [ ] Port to Minecraft 26.1 and its NeoForge, keeping a 1.21.1 branch alongside, once most of this list is done
   (maintainer, 2026-10-23). Expect churn in GUI/render APIs, registries, mixins, SVC, Jade, TOP, GeckoLib
-- [ ] Recipes awaiting the maintainer's review: Airband Radio, Aircraft VHF Antenna, FM Broadcast Transmitter, FM
-  Broadcast Receiver (none yet, 2026-11-13); the 1.13 batch recipes (fire alarm, SCADA, keyer, amp, tracker, Computer
-  Redstone) are in the provider (check: maybe approved in the 2026-11-13 review, see RadiocraftRecipesProvider.java)
 
 - [ ] 1.14 is the performance release: plan in doc/Plan-1.14.md (draft, for review). Performance leftovers from the 2026-11-15 review (build/agy-notes/performance.md; done: CRT textures reused, bundle
   layouts worked out once a block, wire caches capped, audio not copied for out-of-reach antennas, CRT wall poll):
@@ -57,7 +54,6 @@ someone else to draw is in [doc/ModelDesignBounty.md](doc/ModelDesignBounty.md).
 - [ ] Loop antennas: play the horizontal/vertical quads (2:1 balun) and the delta loop, then settle the loop gains
   (maintainer, 2026-10-21)
 - [ ] VHF Moxon block: needs a model (two tall like the Yagi, SWR 1 on 2m; doc/DeltaLoopAndMoxonPlan.md)
-- [ ] Handheld Yagi recipe (built 2026-11-15, creative tab only until the maintainer approves one)
 - [ ] Antenna analyzer screen (a swept SWR graph) if chat turns out not to be enough
 - [ ] Index each network's antennas by area, if servers grow past a few hundred antennas per band
 

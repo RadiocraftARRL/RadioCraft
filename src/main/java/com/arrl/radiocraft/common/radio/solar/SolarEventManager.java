@@ -1,5 +1,6 @@
 package com.arrl.radiocraft.common.radio.solar;
 
+import com.arrl.radiocraft.common.radio.DayCycle;
 import com.arrl.radiocraft.Radiocraft;
 import com.arrl.radiocraft.RadiocraftServerConfig;
 import com.arrl.radiocraft.common.init.RadiocraftData;
@@ -82,13 +83,17 @@ public class SolarEventManager {
 	 * no event has been picked yet, and for bands without a name.
 	 */
 	public static BandCondition getCondition(Level level, @Nullable Band band) {
-		BandCondition fromApi = com.arrl.radiocraft.api.weather.SolarSources.condition(level, band, level.isDay()); // Another mod's space weather first.
+		return getCondition(level, band, level.isDay());
+	}
+
+	/** {@link #getCondition(Level, Band)} by day or by night. */
+	public static BandCondition getCondition(Level level, @Nullable Band band, boolean day) {
+		BandCondition fromApi = com.arrl.radiocraft.api.weather.SolarSources.condition(level, band, day); // Another mod's space weather first.
 		if(fromApi != null)
 			return fromApi;
 		SolarEventInstance event = getEvent(level);
 		if(event == null || band == null)
 			return BandCondition.GOOD;
-		boolean day = level.isDay();
 		// A band the event leaves out follows the band it behaves like (low band: 10m), see Band#conditionName.
 		String name = event.getEvent().hasCondition(band.name(), day) ? band.name() : band.conditionName();
 		return event.getEvent().getCondition(name, day);
@@ -102,7 +107,30 @@ public class SolarEventManager {
 		if(band == null || com.arrl.radiocraft.api.weather.SolarSources.condition(level, band, level.isDay()) != null)
 			return 1.0D;
 		SolarEventInstance event = getEvent(level);
-		return event == null ? 1.0D : reach(event.getEvent(), band, level.isDay());
+		if(event == null)
+			return 1.0D;
+		// Across sunrise and sunset, between the night's reach and the day's (2026-11-18).
+		return DayCycle.blend(reach(event.getEvent(), band, false), reach(event.getEvent(), band, true), DayCycle.dayness(level));
+	}
+
+	/**
+	 * The skip multiplier ({@link BandCondition#getSkipMultiplier}) of {@code band} between stations at
+	 * {@code positions} right now: across sunrise and sunset, between the night's condition and the day's
+	 * ({@link DayCycle}, 2026-11-18), each a step worse under an aurora as {@link #getCondition(Level, Band, BlockPos...)}.
+	 */
+	public static double skipMultiplier(Level level, @Nullable Band band, BlockPos... positions) {
+		double dayness = DayCycle.dayness(level);
+		double day = dayness > 0.0D ? withAurora(level, getCondition(level, band, true), positions).getSkipMultiplier() : 0.0D;
+		double night = dayness < 1.0D ? withAurora(level, getCondition(level, band, false), positions).getSkipMultiplier() : 0.0D;
+		return DayCycle.blend(night, day, dayness);
+	}
+
+	private static BandCondition withAurora(Level level, BandCondition condition, BlockPos... positions) {
+		if(Aurora.isActive(level))
+			for(BlockPos pos : positions)
+				if(Aurora.inZone(pos))
+					return condition.worse();
+		return condition;
 	}
 
 	/** {@code band}'s reach during {@code event}, following the band it behaves like when the event leaves it out. */
@@ -117,12 +145,7 @@ public class SolarEventManager {
 	 * worse if any of them is under an aurora.
 	 */
 	public static BandCondition getCondition(Level level, @Nullable Band band, BlockPos... positions) {
-		BandCondition condition = getCondition(level, band);
-		if(Aurora.isActive(level))
-			for(BlockPos pos : positions)
-				if(Aurora.inZone(pos))
-					return condition.worse();
-		return condition;
+		return withAurora(level, getCondition(level, band), positions);
 	}
 
 	/** Starts a fresh spell of {@code event} in {@code level}, tells its players the new noise and rolls for an aurora. */

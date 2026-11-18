@@ -36,6 +36,15 @@ public class BandUtils {
 	 */
 	public static double getBaseStrength(Band band, double distance, double losEfficiency, double skipEfficiency, boolean isDay,
 	                                     double losScale, double skipScale, double skipReach, int maxHops, double hopLoss) {
+		return getBaseStrength(band, distance, losEfficiency, skipEfficiency, isDay ? 1.0D : 0.0D, losScale, skipScale, skipReach, maxHops, hopLoss);
+	}
+
+	/**
+	 * As above at {@code dayness} ({@link DayCycle}, 2026-11-18): through sunrise and sunset the skip window moves from
+	 * its night place to its day one ({@link #skipWindow(Band, double, double, double)}).
+	 */
+	public static double getBaseStrength(Band band, double distance, double losEfficiency, double skipEfficiency, double dayness,
+	                                     double losScale, double skipScale, double skipReach, int maxHops, double hopLoss) {
 		if(band == null)
 			return 0.0D;
 
@@ -43,8 +52,42 @@ public class BandUtils {
 		if(distance < los)
 			return (1 - (distance / los)) * losEfficiency; // If within LoS scale the strength linearly to 0 as it reaches LoS
 
-		double[] window = skipWindow(band, isDay, skipScale, skipReach);
-		return window == null ? 0.0D : SkipPath.best(distance, window[0], window[1], maxHops, hopLoss).share() * skipEfficiency;
+		double[] window = skipWindow(band, dayness, skipScale, skipReach);
+		return window == null ? 0.0D : SkipPath.best(distance, window[0], window[1], maxHops, hopLoss).share() * skipEfficiency * window[2];
+	}
+
+	/**
+	 * {@code band}'s skip window at {@code dayness} (0 night, 1 day; 2026-11-18), {min, max, fade}: between the night
+	 * and day windows, each edge moving across; a band with skip only by day (or night) keeps that window and fades it
+	 * ({@code fade}, 0 to 1) instead. Edges times {@code skipScale}, the far edge pulled in to {@code skipReach}. Null
+	 * when there is none.
+	 */
+	public static double[] skipWindow(Band band, double dayness, double skipScale, double skipReach) {
+		double[] day = dayness > 0.0D ? skipWindow(band, true, skipScale, 1.0D) : null;
+		double[] night = dayness < 1.0D ? skipWindow(band, false, skipScale, 1.0D) : null;
+		double min, max, fade;
+		if(day != null && night != null) {
+			min = DayCycle.blend(night[0], day[0], dayness);
+			max = DayCycle.blend(night[1], day[1], dayness);
+			fade = 1.0D;
+		}
+		else if(day != null) {
+			min = day[0];
+			max = day[1];
+			fade = dayness;
+		}
+		else if(night != null) {
+			min = night[0];
+			max = night[1];
+			fade = 1.0D - dayness;
+		}
+		else
+			return null;
+		if(fade <= 0.0D || max <= min)
+			return null;
+		if(skipReach < 1.0D)
+			max = min + (max - min) * skipReach;
+		return new double[] { min, max, fade };
 	}
 
 	/**

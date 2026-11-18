@@ -184,3 +184,13 @@ the Handbook and the code; the dates are when they were built.
 - [x] LAN (doc/Plan-Computer4.md): LAN RELAY, LAN EMAIL, LAN REDSTONE, Computer Redstone Block (2026-11-13)
 - [x] Advancements (doc/Plan-Advancements.md): all but the two skipped (2026-11-06)
 - [x] Fire alarm, SCADA and commercial licenses (doc/Plan-FireAlarmScadaLicensing.md), most of it (2026-11-10..13)
+- [x] Recipes approved (maintainer, 2026-11-18): Airband Radio, Aircraft VHF Antenna, FM Broadcast Transmitter and
+  Receiver, the 1.13 batch (fire alarm, SCADA, keyer, amp, tracker, Computer Redstone), Handheld Yagi, Headless APRS
+  TNC, Weather Observer, Local Weather Station Display, Vertical Antenna Base (`WCW / WQW / SSS`)
+- [x] Weather network (doc/Plan-WeatherNetwork.md): generator tiers, Weather Observer, Headless APRS TNC, Local Weather
+  Station Display (2026-11-18)
+- [x] Vertical Antenna Base; poles hold no wire, Antenna Wire Isolators and baluns sit on them, coax clings (2026-11-18)
+- [x] Band rework (2026-11-18): every HF band its own job at 2 blocks a km, light 10m/CB opening in average weather,
+  radio horizon, bounce-point takeoff, multi-hop skip, whole-window skip scale, band_range_multiplier, skip ranges
+  moving through sunrise and sunset; wiki "How Propagation Works" explorer
+- [x] Another Weather Mod listed as an optional dependency (1.10.1 or later) in neoforge.mods.toml (2026-11-18)

@@ -224,6 +224,18 @@ public class RadiocraftRecipesProvider extends RecipeProvider {
                 .unlockedBy("has_comparator", has(Items.COMPARATOR))
                 .save(recipeOutput, Radiocraft.id("headless_tnc"));
         // Weather Observer: a stone box with a green lamp, wire, a comparator and an observer watching the weather.
+        // Vertical Antenna Base (2026-11-18): antenna wire radials, a copper coil, a quartz insulator, a stone pad.
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.VERTICAL_ANTENNA_BASE.get(), 1)
+                .pattern("WCW")
+                .pattern("WQW")
+                .pattern("SSS")
+                .define('W', RadiocraftItems.ANTENNA_WIRE.get())
+                .define('C', Items.COPPER_INGOT)
+                .define('Q', Items.QUARTZ)
+                .define('S', Items.SMOOTH_STONE_SLAB)
+                .unlockedBy("has_antenna_wire", has(RadiocraftItems.ANTENNA_WIRE.get()))
+                .save(recipeOutput, Radiocraft.id("vertical_antenna_base"));
+
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RadiocraftItems.WEATHER_OBSERVER.get(), 1)
                 .pattern("SGS")
                 .pattern("WCW")

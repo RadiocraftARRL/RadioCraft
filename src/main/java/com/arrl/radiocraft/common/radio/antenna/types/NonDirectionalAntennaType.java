@@ -89,7 +89,8 @@ public abstract class NonDirectionalAntennaType<T extends AntennaData> implement
         // Solar weather only touches the sky wave: a poor or closed band weakens skip, line of sight is unchanged. An
         // aurora over either end costs HF a condition step, and lets VHF skip between two stations under it.
         Band band = packet.getBand();
-        double condition = SolarEventManager.getCondition(level, band, source, destination).getSkipMultiplier();
+        // Solar weather by day and by night, blended through sunrise and sunset (2026-11-18).
+        double condition = SolarEventManager.skipMultiplier(level, band, source, destination);
         double skip = getSkipEfficiency() * condition;
         double reach = SolarEventManager.getReach(level, band);
         // Skip can hop more than once while the band is open (2026-11-18), each hop costing signal.
@@ -98,7 +99,7 @@ public abstract class NonDirectionalAntennaType<T extends AntennaData> implement
         // Line of sight reaches further from high ground (the radio horizon, 2026-11-18).
         double losScale = getLosRangeScale(band) * TerrainPropagation.horizonScale(packet, destination);
         double skipScale = getMaxSkipScale(band);
-        boolean day = level.isDay();
+        double day = com.arrl.radiocraft.common.radio.DayCycle.dayness(level);
         double strength = BandUtils.getBaseStrength(band, effectiveDistance, getLosEfficiency(), skip, day, losScale, skipScale, reach, maxHops, hopLoss);
         // Terrain: hills in the way of line of sight, or for skip the horizon around either station at the angle each hop leaves at.
         if(strength > 0.0D && band != null) {

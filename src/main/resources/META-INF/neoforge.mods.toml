@@ -58,3 +58,12 @@ Ham radio is a hobby and service that involves using the radio frequency spectru
     versionRange="[4.7.5,)"
     ordering="NONE"
     side="BOTH"
+
+# Another Weather Mod (optional, 2026-11-18): its storms feed the weather radios, WEFAX, WXSAT and alerts. 1.10.1 is
+# the first with the API this version uses (a hurricane's category now).
+[[dependencies.radiocraft]]
+    modId="anotherweathermod"
+    type="optional"
+    versionRange="[1.10.1,)"
+    ordering="NONE"
+    side="BOTH"

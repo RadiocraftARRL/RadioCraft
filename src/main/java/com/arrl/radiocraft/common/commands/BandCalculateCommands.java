@@ -85,15 +85,16 @@ public class BandCalculateCommands {
 					results.add(new Result(band, Path.NONE, null, 0.0D));
 				continue;
 			}
-			boolean day = level.isDay();
+			double day = com.arrl.radiocraft.common.radio.DayCycle.dayness(level); // Through sunrise and sunset too (2026-11-18).
 			double reach = SolarEventManager.getReach(level, band); // A light opening (2026-11-18).
 			BandCondition condition = SolarEventManager.getCondition(level, band, a, b);
+			double multiplier = SolarEventManager.skipMultiplier(level, band, a, b);
 			double[] window = com.arrl.radiocraft.common.radio.BandUtils.skipWindow(band, day, 1.0D, reach);
 			com.arrl.radiocraft.common.radio.SkipPath.Hops hops = window == null ? com.arrl.radiocraft.common.radio.SkipPath.Hops.NONE
 					: com.arrl.radiocraft.common.radio.SkipPath.best(distance, window[0], window[1],
-							com.arrl.radiocraft.common.radio.SkipPath.maxHops(band, condition.getSkipMultiplier(), reach), com.arrl.radiocraft.common.radio.SkipPath.hopLoss());
+							com.arrl.radiocraft.common.radio.SkipPath.maxHops(band, multiplier, reach), com.arrl.radiocraft.common.radio.SkipPath.hopLoss());
 			if(hops.count() > 0 && condition != BandCondition.CLOSED)
-				results.add(new Result(band, Path.SKIP, condition, condition.getSkipMultiplier() * Math.pow(com.arrl.radiocraft.common.radio.SkipPath.hopLoss(), hops.count() - 1))
+				results.add(new Result(band, Path.SKIP, condition, multiplier * window[2] * Math.pow(com.arrl.radiocraft.common.radio.SkipPath.hopLoss(), hops.count() - 1))
 						.through(TerrainPropagation.factor(level, band, a, false, b, false, true, false, hops.count())));
 			else
 				results.add(new Result(band, Path.NONE, condition, 0.0D));
